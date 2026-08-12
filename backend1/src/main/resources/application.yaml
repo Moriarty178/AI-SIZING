@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: sizing_local
+  datasource:
+    url: jdbc:mysql://localhost:3306/sizing_local?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      maximum-pool-size: 10
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    stream-read-constraints:
+      max-string-length: 104857600  # 100MB
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    clean-disabled: true
+    repair-on-migrate: true
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+
+server:
+  address: 0.0.0.0
+  port: 8081
+  tomcat:
+    max-http-form-post-size: -1
+    connection-timeout: 120000ms
+    max-swallow-size: -1
+    ## Increase max POST size for large file uploads
+    max-http-post-size: 104857600  # 100MB
+
+logging:
+  level:
+    root: INFO
+    com.example.sizing: DEBUG
+    com.example.sizing.controller: INFO
+    com.example.sizing.service: DEBUG
+    com.example.sizing.security: INFO
+    com.example.sizing.exception: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+sms:
+  server-url: "http://10.58.41.7:8585/send?message={message}&phone={phone}"
+  timeout-ms: 5000

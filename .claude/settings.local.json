@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -i -X POST http://localhost:8081/api/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin\"}')",
+      "Bash(curl -s -i -X OPTIONS http://localhost:8081/api/auth/login -H \"Origin: http://localhost:5500\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST \"http://localhost:8081/localhost:8081/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin\"}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:8081/api/auth/login\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST \"http://localhost:9000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin\"}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:9000/\")",
+      "Bash(netstat -ano)",
+      "Bash(tasklist)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST \"http://localhost:5500/localhost:8081/api/projects/my-projects\" -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:5500/localhost:8081/api/projects/my-projects\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST \"http://localhost:5500/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"username\":\"a\",\"password\":\"b\"}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:5500/login.html\")",
+      "Bash(find . -iname \"login.html\" -not -path \"*/node_modules/*\")",
+      "Bash(find . -iname \"login.css\" -not -path \"*/node_modules/*\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://127.0.0.1:5500/login.html\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://127.0.0.1:5500/frontend/login.html\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://127.0.0.1:5500/dashboard/login.html\")",
+      "Bash(curl -s -A \"Mozilla/5.0\" -H \"Accept: text/html\" \"http://127.0.0.1:5500/frontend/login.html\")",
+      "Bash(curl -s -A \"Mozilla/5.0\" -H \"Accept: text/html\" \"http://127.0.0.1:5500/login.html\")",
+      "Bash(curl -s -o /dev/null -w \"/frontend/login.html -> %{http_code}\\\\n\" -A \"Mozilla/5.0\" -H \"Accept: text/html\" \"http://127.0.0.1:5500/frontend/login.html\")",
+      "Bash(curl -s -o /dev/null -w \"/login.html -> %{http_code}\\\\n\" -A \"Mozilla/5.0\" -H \"Accept: text/html\" \"http://127.0.0.1:5500/login.html\")",
+      "Bash(env)",
+      "Bash(HTTP_PROXY= HTTPS_PROXY= ALL_PROXY= curl -s --noproxy \"*\" -o /tmp/lv_login.html -w \"HTTP %{http_code}\\\\n\" \"http://127.0.0.1:5500/frontend/login.html\")",
+      "Read(//tmp/**)",
+      "Bash(tasklist /FI \"PID eq 9576\")",
+      "Bash(wmic process *)",
+      "Bash(powershell *)",
+      "Bash(grep -oE \"#[0-9a-fA-F]{3,6}\" frontend/index.html)",
+      "Bash(git *)"
+    ]
+  }
+}
