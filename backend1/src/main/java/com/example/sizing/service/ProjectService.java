@@ -280,6 +280,10 @@ public class ProjectService {
         log.info("Deleting project id: {}", id);
         Project project = projectRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Project", "id", id));
+        if (!canDeleteProject(project)) {
+            throw new ForbiddenException("Bạn không có quyền xóa dự án này");
+        }
+
         // Backward compatible cleanup for environments where FK cascade is not yet active.
         projectRevisionRepository.clearBaselineByProjectId(id);
         entityManager.flush();
@@ -461,6 +465,21 @@ public class ProjectService {
             return currentUser.getId().equals(project.getAssignedAdmin1Id());
         }
         return currentUser.getId().equals(project.getUserId());
+    }
+
+    /**
+     * Kiểm tra quyền xóa dự án:
+     * - admin2: được xóa mọi dự án
+     * - user: chỉ được xóa dự án do chính mình tạo
+     */
+    private boolean canDeleteProject(Project project) {
+        User currentUser = getCurrentAuthUser();
+        if (currentUser == null || project == null) return false;
+
+        String role = currentUser.getRole() == null ? "user" : currentUser.getRole().toLowerCase();
+        if ("admin2".equals(role)) return true;
+
+        return "user".equals(role) && currentUser.getId().equals(project.getUserId());
     }
 
     /**

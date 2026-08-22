@@ -29,7 +29,28 @@
       "Bash(wmic process *)",
       "Bash(powershell *)",
       "Bash(grep -oE \"#[0-9a-fA-F]{3,6}\" frontend/index.html)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(sed -i 's/#4f46e5 100%/var\\(--method-green-dark, #15803d\\) 100%/g' style.css)",
+      "Bash(sed -i 's/#6366f1/var\\(--method-green\\)/g' style.css script.js sed -i 's/rgba\\(99, 102, 241, 0.12\\)/rgba\\(31, 157, 85, 0.12\\)/g' style.css grep -rn \"6366f1\\\\|4f46e5\\\\|rgba\\(99, 102, 241\" style.css script.js)",
+      "Bash(perl -e 'print \"perl ok\\\\n\"')",
+      "Bash(perl --version)",
+      "Bash(perl -0777 -ne ' *)",
+      "Bash(perl -0777 -ne 'if \\(/>\\\\s*<th\\\\s*style=\"width: 100px; background-color: #fff9e6/\\) { print \"MATCH 100px\\\\n\" } else { print \"NO MATCH\\\\n\" }' frontend/index.html)",
+      "Bash(cp frontend/index.html /tmp/index_backup.html)",
+      "Bash(perl -i -0777 -pe ' *)",
+      "Bash(cp frontend/script.js /tmp/script_backup.js)",
+      "Bash(perl -0777 -ne 'print \"Y\" if /#fff3cd|#ffc107|#856404|#eefbf3/' frontend/script.js)",
+      "Bash(echo \"remaining full hex: $\\(perl -0777 -ne 'print \"Y\" if /#fff3cd|#ffc107|#856404|#eefbf3/' frontend/script.js\\)\")",
+      "Bash(cp frontend/script.js /tmp/script_backup2.js)",
+      "Bash(cp frontend/script.js /tmp/script_backup3.js)",
+      "Bash(perl -i -0777 -pe 's/#6366f1/var\\(--admin-text\\)/g;' frontend/script.js)",
+      "Bash(perl -0777 -ne 's/#f0f9ff/#e9ecef/g; print;' frontend/index.html)",
+      "Bash(cp frontend/index.html /tmp/index_backup2.html)",
+      "Bash(perl -i -0777 -pe 's/#f0f9ff/#e9ecef/g;' frontend/index.html)",
+      "Bash(cp frontend/style.css /tmp/style_backup.js)",
+      "Bash(node --check frontend/script.js)",
+      "Bash(cp frontend/script.js /tmp/script_backup4.js)"
     ]
   }
 }
