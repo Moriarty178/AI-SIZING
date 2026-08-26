@@ -53,6 +53,32 @@ Xây dựng một **copilot đứng ở phía đơn vị xin tài nguyên**, ch�
 - Tự động sửa và ghi đè file Word của người dùng.
 - Thay thế bộ tài liệu tiêu chí hoặc tự sinh quy tắc mới.
 - Dự báo tăng trưởng tài nguyên dài hạn, tối ưu chi phí hạ tầng.
+- Trợ lý soạn thảo trực tiếp trong Word (add-in), hoặc thay thế luồng nhập liệu
+  của web app hiện hành.
+
+#### Hỗ trợ khâu tạo đến đâu
+
+Câu hỏi hay gặp: *"công cụ có đỡ tôi ngay lúc đang viết không, hay chỉ chấm điểm
+sau khi viết xong?"* Trả lời thẳng: **Copilot là bước kiểm trước khi nộp, không
+phải trợ lý soạn thảo từng bước.** Đây là lựa chọn có chủ ý, vì ba lý do:
+
+1. **Người dùng soạn trên Word** — môi trường Copilot không can thiệp vào được.
+   Muốn đỡ từng bước thì phải làm add-in Word hoặc bắt người dùng đổi cách soạn.
+   Cả hai đều vượt xa phạm vi và mâu thuẫn với gạch đầu dòng "không tự sửa và ghi
+   đè file Word" ở trên.
+2. **Phần hỗ trợ khâu tạo thật sự nằm ở C6** — tìm bản đã ký gần nhất và sinh bản
+   nháp đã scale theo thông số mới (Giai đoạn 2, mục 2.6–2.9). Đây mới là thứ giúp
+   người viết có điểm khởi đầu, thay vì bắt đầu từ trang trắng.
+3. **Trước khi có C6, cách rẻ nhất để đỡ người tạo không phải là AI:** một mẫu Word
+   chuẩn có sẵn các mục bắt buộc (mục 1.16), cộng với việc chạy kiểm **nhiều lần
+   trên bản nháp** thay vì một lần lúc sắp nộp (mục 2.14). Hai việc này không cần
+   mô hình nào cả.
+
+> Lưu ý cho người đọc sau: hệ thống web hiện hành đã có luồng tạo sizing từng bước
+> (5 tab) và tự sinh `.docx` từ dữ liệu có cấu trúc. Điều đó gợi ý phương án kiểm
+> thẳng trên dữ liệu JSON thay vì đọc ngược file Word. Phương án đó **đã được cân
+> nhắc và bác bỏ** — lý do ghi trong Nhật ký quyết định ở `PLAN.md` (2026-08-24).
+> Đừng đặt lại câu hỏi này nếu không có dữ kiện mới.
 
 ---
 

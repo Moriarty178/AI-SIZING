@@ -1,0 +1,2622 @@
+===== TRANG 1 =====
+STT
+Người ký
+Đơn vị
+Thời gian ký
+Ý kiến
+1
+TẬP ĐOÀN
+CÔNG
+NGHIỆP -
+VIỄN THÔNG
+QUÂN ĐỘI
+30/09/2021
+08:00:12
+Đã đóng dấu
+2
+TÀO ĐỨC
+THẮNG
+Phó Tổng giám đốc -
+Tập đoàn Công
+nghiệp - Viễn thông
+Quân đội
+29/09/2021
+11:43:26
+3
+NGUYỄN ĐỊCH
+TUẤN ANH
+Phó ban Công nghệ
+thông tin - Ban Công
+nghệ thông tin - Khối
+cơ quan Tập đoàn
+29/09/2021
+10:29:06
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 2 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 1/44 
+ 
+STT Trang 
+Nội dung sửa đổi 
+Ngày có hiệu lực 
+1 
+ 
+Điều chỉnh tỷ lệ tham chiếu cintrated_2006 
+và cintrated_2017 
+01/10/2021 
+2 
+ 
+Hiệu chỉnh và bổ sung phụ lục cho SPEC 
+CPU int/float cho cả giá trị peak và base 
+01/10/2021 
+3 
+ 
+Bổ sung phụ lục về hệ thống đánh giá CPU 
+01/10/2021 
+4 
+ 
+Bổ sung và làm rõ thêm một số khái niệm 
+01/10/2021 
+5 
+ 
+Thay thế SPECrate int_peak và int_base cho 
+CintRated; SPECrate fp_peak và fp_base cho 
+CfpRated 
+01/10/2021 
+6 
+ 
+Đổi tên từ “Guideline định cỡ thiết bị công 
+nghệ thông tin” thành “Guideline định cỡ, cấp 
+phát hạ tầng công nghệ thông tin” 
+01/07/2019 
+7 
+ 
+Bổ sung định cỡ cho hạ tầng ảo hóa, cloud 
+01/07/2019 
+8 
+ 
+Bổ sung định cỡ IOPS, latency của thiết bị 
+lưu trữ 
+01/07/2019 
+9 
+ 
+Bổ sung nội dung cấp phát, thu hồi hạ tầng 
+CNTT 
+01/07/2019 
+10 
+ 
+Bổ sung nội dung kiểm thử hiệu năng hệ 
+thống CNTT 
+01/07/2019 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Biên soạn 
+Kiểm tra 
+Phê duyệt 
+Chữ 
+ký 
+ 
+ 
+ 
+ 
+ 
+ 
+Nguyễn Khánh Tiềm 
+ 
+ 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 3 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 2/44 
+ 
+ 
+MỤC LỤC 
+TÓM TẮT NỘI DUNG GUIDELINE _______________________________________________ 3 
+I. 
+MỤC ĐÍCH _____________________________________________________________ 5 
+II. 
+KHÁI NIỆM, PHẠM VI ____________________________________________________ 5 
+III. 
+CÁC TÀI LIỆU THAM CHIẾU: _____________________________________________ 8 
+IV. 
+NỘI DUNG ___________________________________________________________ 8 
+A. 
+ĐỊNH CỠ HẠ TẦNG CÔNG NGHỆ THÔNG TIN ______________________________ 8 
+B. 
+CẤP PHÁT, THU HỒI HẠ TẦNG CÔNG NGHỆ THÔNG TIN __________________ 40 
+C. 
+KIỂM THỬ HIỆU NĂNG HỆ THỐNG CNTT _________________________________ 43 
+ 
+ 
+ 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 4 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 3/44 
+ 
+ 
+TÓM TẮT NỘI DUNG GUIDELINE 
+1. Mục đích 
+Đưa ra các bước thực hiện, phương pháp định cỡ, cấp phát hạ tầng công 
+nghệ thông tin dựa vào nhu cầu dịch vụ. Các thiết bị bao gồm: máy chủ (server, 
+bao gồm máy chủ vật lý và máy chủ ảo hóa), thiết bị lưu trữ (storage), thiết bị 
+sao lưu (tape), các thiết bị mạng (chuyển mạch, tường lửa, cân bằng tải, chuyển 
+mạch quang) và tủ rack chứa thiết bị. 
+2. Phạm vi điều chỉnh và đối tượng áp dụng 
+Phạm vi điều chỉnh: Điều chỉnh công tác định cỡ, cấp phát hạ tầng công 
+nghệ thông tin trong Tập đoàn và các hệ thống kinh doanh, triển khai cho khách 
+hàng ngoài, Guideline áp dụng để định cỡ cho một hệ thống ứng dụng công 
+nghệ thông tin cụ thể. 
+Đối tượng áp dụng: Guideline áp dụng xuyên suốt đối với Khối cơ quan 
+Tập đoàn, các Tổng Công ty, Công ty, Trung tâm, Viện, Học viện Viettel và 
+các đơn vị hạch toán phụ thuộc khác phụ thuộc Tập đoàn trong công tác định 
+cỡ, cấp phát hạ tầng công nghệ thông tin. 
+3. Tóm tắt nội dung 
+- Nguyên tắc định cỡ: 
+o Đảm bảo hiệu suất hoạt động (KPI) của hệ thống được định cỡ. 
+o Đảm bảo khả năng dự phòng. 
+o Tuân thủ các quy định, guideline, hướng dẫn hiện hành về thiết kế 
+đảm bảo an toàn thông tin của Tập đoàn. 
+o Thông số đánh giá hiệu năng: máy chủ sử dụng cint_rated và 
+cfp_rated đánh giá khả năng của CPU, thiết bị lưu trữ sử dụng thông 
+số IOPS và latency, ứng dụng và dịch vụ sử dụng một trong các thông 
+số CCU/TPS/QPS và latency trong môi trường production. 
+o Dự phòng sai số tính toán với sai số ≤ 10%. 
+- Cơ sở định cỡ: 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 5 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 4/44 
+ 
+Việc định cỡ được thực hiện thông qua việc đánh giá, so sánh năng lực 
+của hệ thống đã có, hệ thống testbed, hệ thống tương đồng để thực hiện 
+ước lượng số lượng tài nguyên cần có cho hệ thống mới đảm bảo đáp 
+ứng và hoạt động tốt trong tương lai với các chỉ số KPI, profile dịch vụ 
+mong muốn. 
+Việc định cỡ được chia thành ba trường hợp: 
+o Định cỡ khi chưa có sản phẩm phần mềm: căn cứ vào các hệ thống 
+tham chiếu có các đặc điểm tương đồng. 
+o Định cỡ sau khi có sản phẩm phần mềm: sử dụng môi trường kiểm 
+thử, đo nhu cầu tài nguyên sử dụng của hệ thống theo các mẫu đầu 
+vào khác nhau. 
+o Định cỡ khi nâng cấp hệ thống: Căn cứ vào hiện trạng hoạt động của 
+hệ thống hiện tại và yêu cầu mở rộng. 
+- Các bước thực hiện định cỡ: 
+1. Thu thập, chuẩn bị, ước lượng thông số đầu vào 
+2. Mô hình triển khai thực tế gồm đầy đủ các thành phần 
+3. Tính toán tài nguyên định cỡ cho từng thành phần 
+4. Xác định số lượng, cấu hình 
+5. Hoàn thiện tài liệu định cỡ 
+- Nội dung cụ thể các bước thực hiện định cỡ: 
+1. Máy chủ,  
+2. Thiết bị lưu trữ, thiết bị sao lưu,  
+3. Thiết bị chuyển mạch,  
+4. Thiết bị tường lửa, thiết bị cân bằng tải,  
+5. Thiết bị tủ rack. 
+- Cấp phát, thu hồi hạ tầng công nghệ thông tin 
+- Đánh giá kiểm thử hiệu năng hệ thống 
+ 
+ 
+ 
+ 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 6 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 5/44 
+ 
+I. MỤC ĐÍCH 
+Đưa ra các bước thực hiện, phương pháp định cỡ, cấp phát hạ tầng công nghệ 
+thông tin dựa vào nhu cầu dịch vụ. Các thiết bị bao gồm: máy chủ (server, bao 
+gồm máy chủ vật lý và máy chủ ảo hóa), thiết bị lưu trữ (storage), thiết bị sao 
+lưu (tape), các thiết bị mạng (chuyển mạch, tường lửa, cân bằng tải, chuyển 
+mạch quang) và tủ rack chứa thiết bị. 
+II. KHÁI NIỆM, PHẠM VI 
+1. Khái niệm 
+- Định cỡ: là quá trình xác định số lượng và cấu hình cần thiết của thiết bị để đáp 
+ứng các yêu cầu đặt ra với chi phí nhỏ nhất. 
+- Thành phần hệ thống: là một phần tương đối độc lập trong hệ thống, ứng dụng; 
+thành phần có thể là một bộ phận phần mềm, cơ sở dữ liệu hoặc nhóm các thành 
+phần phần cứng. 
+- IOPS: Input/Output Operations Per Second, là một chỉ số thông dụng đo năng 
+lực truy xuất của đĩa cứng (HDD), đĩa thể rắn (SDD) và các thiết bị lưu trữ 
+(Tape...). 
+- Frontend IOPS: Tổng số lượng thao tác đọc ghi trong 01 giây thiết bị lưu trữ có 
+thể xử lý. 
+- Backend IOPS: Tổng số lượng thao tác đọc ghi trong 01 giây mà các đĩa cứng 
+vật lý của thiết bị lưu trữ cần xử lý. 
+- Dự phòng 1+1: Có 1 thành phần chạy chính và 1 thành phần dự phòng. Khi 
+thành phần chạy chính bị sự cố, thành phần dự phòng sẽ hoạt động thay thế. 
+- Dự phòng N+1 (N>1): N thành phần chạy chính có chung 1 thành phần dự 
+phòng. Khi có 1 trong N thành phần chạy chính bị sự cố, thành phần dự phòng 
+sẽ hoạt động thay thế thành phần chạy chính bị sự cố (nếu dự phòng là chính-
+phụ - Active-Standby), hoặc các thành phần còn lại cùng chia tải thay thế thành 
+phần chạy chính bị sự cố (nếu dự phòng là ngang tải – Active-Active). 
+- 95th: Là phương pháp thống kê toán học percentile để ước tính tỷ lệ dữ liệu 
+trong một tập số liệu rơi vào vùng cao hơn hoặc vùng thấp hơn một giá trị cho 
+trước, 95th là một giá trị mà tại đó nhiều nhất có 95% số mẫu trong tập dữ liệu 
+có giá trị thấp hơn hoặc bằng giá trị này.  
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 7 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 6/44 
+ 
+- CCU – ConCurrent User: số lượng phiên (người dùng) sử dụng đồng thời trong 
+một thời điểm hoặc một khoảng thời gian, thường được sử dụng để đánh giá 
+khả năng đáp ứng của dịch vụ. 
+- RPS – Request Per Second: số lượng yêu cầu dịch vụ có thể tiếp nhận và thực 
+hiện trong 01 giây, thường dùng để đánh giá hiệu năng và phục vụ định cỡ cho 
+Ứng dụng/Dịch vụ.  
+- QPS – Query Per Second hoặc TPS – Transaction Per Second: số lượng câu 
+truy vấn hoặc giao dịch có thể thực hiện trong 01 giây, thường dùng để đánh 
+giá hiệu năng và phục vụ định cỡ cho Database. 
+- Latency - Thời gian đáp ứng: đơn vị giây, mili-giây (ms), micro-giây (us). Là 
+thời gian phản hồi của một ứng dụng, dịnh vụ, hoặc cổng APIs, cổng dịch vụ 
+của hệ thống.   
+- Máy chủ : Khái niệm “Máy chủ” được nhắc đến trong tài liệu được hiểu chung 
+cho cả hai loại “Máy chủ vật lý” và “Máy chủ ảo” 
+- Máy chủ vật lý: Thiết bị máy chủ hoặc còn gọi là bare-metal server. 
+- Máy chủ ảo: Là máy chủ ảo hoá được hệ thống hạ tầng cloud cấp phát. Nhiều 
+máy chủ ảo chia sẻ tài nguyên trên cùng một máy chủ vật lý. 
+- vCPU : Là số lượng CPU ảo được cấp phát cho máy chủ ảo. 
+- Khái niệm quá tải :  Hệ thống được coi là quá tải khi vượt quá ngưỡng đã định 
+hay năng lực xử lý của thiết bị, đường truyền. 
+- SPECspeed2017_int, 
+SPECrate2017_int, 
+SPECspeed2017_fp, 
+SPECrate2017_fp: là các chỉ số đánh giá năng lực xử lý của các loại CPU được 
+đánh giá theo hệ thống đo SPEC CPU2017. Chi tiết tham khảo phụ lục II – Hệ 
+thống đánh giá hiệu năng CPU Spec.org. 
+- SPECspeed2006_int, 
+SPECrate2006_int, 
+SPECspeed2006_fp, 
+SPECrate2006_fp: là các chỉ số đánh giá năng lực xử lý của các loại CPU, được 
+đánh giá theo hệ thống đo SPEC CPU2006. Chi tiết tham khảo phụ lục II – Hệ 
+thống đánh giá hiệu năng CPU Spec.org. 
+- Cint_Rated, Cfp_Rated: Trong guideline vẫn sử dụng các chỉ số cũ này do tính 
+tương thích trong các tài liệu. Giá trị có thể hiểu như sau:  
+Chỉ số cũ 
+Chỉ số mới 
+Áp dụng với 
+Cint_Rated 
+SPECrate_int_base 
+Với các hệ thống CNTT thông 
+thường 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 8 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 7/44 
+ 
+Cint_Rated 
+SPECrate_int_peak 
+Các hệ thống có yếu tố tính toán tối 
+ưu, (C/C++ được biên dịch tối ưu). 
+Cfp_Rated 
+SPECrate_fp_base 
+Các hệ thống tính toán cần ưu tiên 
+dấu phảy động thông thường 
+Cfp_Rated 
+SPECrate_fp_peak 
+Các hệ thống tính toán cần ưu tiên 
+dấu phảy động có yếu tố tính toán, 
+biên dịch tối ưu 
+- Tỷ lệ overcommit (OR): Là tỷ lệ phân chia CPU hoặc RAM cho các máy chủ 
+ảo vượt quá năng lực, tài nguyên thực của hệ thống. Ví dụ tỷ lệ OR của CPU 
+bằng 4 nghĩa là 1 core CPU vật lý được chia cho có 4 vCPU. Tỷ lệ này sẽ ảnh 
+hưởng đến hiệu năng xử lý và tài nguyên RAM của hệ thống. 
+Lưu ý: Để xác định được giá trị SPEC int/float peak hoặc base cho vCPU, cần 
+xác định số core của CPU và tỉ lệ overcommit OR hiện tại theo công thức: 
+ 
+specValue of vCPU = [specValue CPU / ( numOfCores * OR )] 
+ 
+ 
+ 
+Thường giá trị OR cho CPU  hiện đang là 4 hoặc 2 (với hệ thống VM cần 
+hiệu năng cao). Khi lựa chọn tỷ lệ 2:1 hoặc tỷ lệ riêng, cần tham khảo ý kiến 
+VTNet. 
+ 
+Giá trị OR cho RAM đang xác định là 1. 
+ - “Dung lượng lưu trữ” hay “Dung lượng lưu trữ cần thiết”: Là dung lượng có thể 
+sử dụng được của chương trình ứng dụng (sau khi RAID, chia partition và 
+format,..). 
+- “Dung lượng lưu trữ thô”: Là dung lượng thiết bị lưu trữ vật lý cần cấp phát 
+(SSD, HDD, Tape) (trước khi RAID). 
+2. Phạm vi điều chỉnh và Đối tượng áp dụng 
+- Phạm vi điều chỉnh: Điều chỉnh công tác định cỡ, cấp phát hạ tầng công nghệ 
+thông tin trong nội bộ Tập đoàn và các hệ thống phục vụ kinh doanh, triển khai 
+cho khách hàng ngoài, Guideline áp dụng để định cỡ cho một hệ thống ứng 
+dụng công nghệ thông tin cụ thể. 
+- Đối tượng áp dụng: Guideline áp dụng xuyên suốt đối với Khối cơ quan Tập 
+đoàn, các Tổng Công ty, Công ty, Trung tâm, Viện, Học viện Viettel và các 
+đơn vị hạch toán phụ thuộc thuộc Tập đoàn trong công tác định cỡ, cấp phát 
+hạ tầng cho các dự án và hệ thống CNTT. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 9 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 8/44 
+ 
+III.  CÁC TÀI LIỆU THAM CHIẾU: 
+Các tài liệu có tham chiếu và được sử dụng trong guideline gồm:  
+- 
+Bộ 
+tiêu 
+chuẩn chất 
+lượng 
+dịch 
+vụ 
+công 
+nghệ 
+thông 
+tin: 
+TC.CNVTQĐ.CNTT.25 
+- Guideline phân chia mức độ quan trọng hệ thống ứng dụng công nghệ thông 
+tin: GL.CNVTQĐ.CNTT.03 
+IV. NỘI DUNG 
+A. ĐỊNH CỠ HẠ TẦNG CÔNG NGHỆ THÔNG TIN 
+A.1 Nguyên tắc định cỡ 
+- Đảm bảo hiệu suất hoạt động (KPI): tải hệ thống không vượt ngưỡng KPI yêu 
+cầu của hệ thống. Trong đó tải hệ thống là giá trị 95th các thông số tải trong 
+khoảng thời gian đo tải (ngày, tháng, năm). 
+• Với máy chủ: theo bộ chỉ tiêu hiệu suất sử dụng máy chủ hệ thống công 
+nghệ thông tin hiện hành: 
+o Tải CPU không vượt quá 75%. 
+o Tỷ lệ sử dụng dung lượng RAM không vượt quá 90%. 
+o Tỷ lệ sử dụng dung lượng ổ cứng không vượt quá 80%. 
+• Với thiết bị lưu trữ:  
+o Hiệu năng thiết bị (IOPS) không vượt quá 80%. 
+o Dung lượng thiết bị lưu trữ không vượt quá 80%, ngoại trừ các 
+ngoại lệ sau: 
+• Ổ đĩa SSD dành cho hệ điều hành, DB dạng OLTP, cache, 
+snapshot cho các DB in-mem cần tốc độ cao, cần tốc độ ghi 
+lớn (write intensive) dung lượng lưu trữ không vượt quá 
+75% của ổ đĩa SSD đó. Vượt quá ngưỡng trên, ổ đĩa sẽ hoạt 
+động với tốc độ ghi/update thông tin giảm đáng kể. 
+• Với ổ đĩa (cả SSD và HDD), volume lưu trữ dung lượng 
+lớn, lưu trữ dữ liệu có tính chất lâu dài trên 03 tháng, lưu 
+dữ liệu media, lưu trữ CDR,… có thể cân nhắc để mức sử 
+dụng từ 80-90% tuỳ trường hợp cụ thể.  
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 10 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 9/44 
+ 
+• Với thiết bị mạng: dự phòng 20% số port, thông lượng thiết bị. 
+• Với các hệ thống dự phòng (active-active hoặc active-standby), thiết bị 
+không hoạt động quá tải khi 1 node bị lỗi. 
+- Đảm bảo khả năng dự phòng 
+• Mức độ dự phòng của từng hệ thống, thiết bị căn cứ vào phân loại hệ 
+thống trong các quy định về dự phòng của Tập đoàn hiện hành. 
+• Các thiết bị phần cứng phải đảm bảo hoạt động với cơ chế dự phòng 
+active-active (đối với các hệ thống Rất quan trọng trở lên) hoặc active-
+standby (đối với các hệ thống Quan trọng). 
+• Máy chủ dự phòng tối thiểu N+1 mức vật lý: các ứng dụng, cơ sở dữ 
+liệu hoạt động bình thường khi có 01 máy chủ gặp sự cố. 
+• Thiết bị mạng dự phòng 1+1. 
+- Máy chủ ảo hóa định cỡ cấu hình cần có £ 32 vCPU và £128GB RAM do có 
+giới hạn của server ảo hoá . 
+- Với dịch vụ yêu cầu hiệu năng cao vượt cấu hình quy định máy chủ ảo hóa, 
+thực hiện định cỡ máy chủ chạy trên môi trường vật lý. 
+- Với các máy chủ ảo hoá, đóng vai trò trong mạng lưới như thành phần dự 
+phòng 1+N, (Ví dụ 2 VM làm DB dự phòng 1+1) thì các máy chủ ảo hoá đó 
+phải được phân bổ  trên hai máy chủ vật lý. 
+- Tuân thủ các quy định, guideline, hướng dẫn hiện hành về thiết kế đảm bảo an 
+toàn thông tin của Tập đoàn. 
+- Thông số đánh giá hiệu năng: 
+• Máy chủ: Sử dụng thông số Cint_rated và Cfp_rated đánh giá khả năng 
+của CPU: 
+o Cint_rated: sử dụng trong hầu hết trường hợp, với các phần mềm, 
+ứng dụng, cơ sở dữ liệu hệ thống thông dụng như phục vụ quản 
+lý, kinh doanh. 
+o Cfp_rated: sử dụng trong định cỡ các hệ thống games, tính toán 
+hiệu năng cao, tính toán lĩnh vực khoa học, mô phỏng, xử lý đồ 
+họa,... 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 11 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 10/44 
+ 
+o Sử dụng Cint_rated và Cfp_rated trong công cụ 
+SPECCPU2017, chỉ sử dụng kết quả SPECCPU2006 nếu CPU 
+không có kết quả đánh giá với công cụ SPECCPU2017.  
+o Với các CPU chỉ có kết quả SPECCPU2006, khi tính toán, 
+thực hiện quy đổi sang điểm SPECCPU2017 với tỷ lệ như sau: 
+STT 
+SPEC CPU 2006 
+SPEC CPU 2017 
+Tỷ lệ  
+1 
+SPECint_rate2006 
+SPECrate®2017_int_peak 
+8.38 
+2 
+SPECint_rate_base2006 SPECrate®2017_int_base 
+9.36 
+3 
+SPECfp_rate2006 
+SPECrate®2017_fp_peak 
+6.74 
+4 
+SPECfp_rate_base2006 
+SPECrate®2017_fp_base 
+7.38 
+ 
+• Thiết bị lưu trữ: sử dụng thông số IOPS và latency để đánh giá. 
+- Dự phòng sai số tính toán, với sai số ≤ 10%. 
+A.2 Cơ sở định cỡ 
+- Việc định cỡ hệ thống được xây dựng dựa trên giả định môi trường hệ thống 
+sẽ diễn ra trong tương lai bao gồm các KPI giả định như tổng số người dùng 
+đồng thời, số giao dịch đồng thời, các hành vi của người dùng (các hoạt động 
+và giao dịch trên hệ thống) kết hợp các các tính toán nhu cầu tài nguyên cần 
+sử dụng theo đặc tả phần mềm (của người dùng, giao dịch, dữ liệu…) và đặc 
+tính của thiết bị hoặc giải pháp để suy ra tài nguyên cần thiết để đáp ứng yêu 
+cầu. Do đầu vào của việc định cỡ là các thông số giả định nên việc tính toán 
+định cỡ sẽ không ra kết quả chính xác 100% và phụ thuộc vào độ chính xác 
+của các thông số đầu vào giả định. 
+- Khi thực hiện định cỡ cần xác định các yếu tố sẽ ảnh hưởng và thay đổi khi 
+cần mở rộng hay thu hẹp, ví dụ khi tăng số lượng người dùng (CCU) sẽ tăng 
+thêm tài nguyên vật lý hay bổ sung thêm server để cân bằng tải qua thiết bị 
+LB. Đa phần các yếu tố này phụ thuộc vào công nghệ và giải pháp của ứng 
+dụng. Ví dụ: khi mở rộng hệ thống để đáp ứng từ 100TPS lên 200TPS thì phải 
+mở rộng những loại module nào và từng module đó mở rộng theo chiều dọc 
+hay chiều ngang. Cần thực hiện kiểm thử hiệu năng để xác định ngưỡng tới 
+hạn của 1 node của từng thành phần và hiệu năng hệ thống có suy giảm khi 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 12 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 11/44 
+ 
+thêm node thành phần với Load Blancing hay không và suy giảm bao nhiêu %  
+để xác định thành phần hệ thống phù hợp với mở rộng theo chiều dọc hay mở 
+rộng theo chiều ngang. 
+- Định cỡ phụ thuộc các giai đoạn phát triển của sản phẩm, bao gồm các dạng 
+chính sau: 
+o Dạng I: Định cỡ khi chưa có sản phẩm phần mềm:  
+Việc định cỡ khi mới chỉ có bài toán và đặc tả phần mềm, cần định cỡ sơ 
+bộ để phục vụ yêu cầu cấu hình hệ thống kiểm thử, đầu tư thử nghiệm hoặc 
+tham gia thầu. 
+Với các hệ thống CNTT nội bộ của Tập đoàn và các đơn vị trực thuộc 
+Tập đoàn, không thực hiện cấp phát tài nguyên trên hạ tầng CNTT 
+của Tập đoàn với các hệ thống CNTT định cỡ theo phương pháp này. 
+Yêu cầu các hệ thống CNTT phải được kiểm thử hiệu năng và định cỡ 
+chính xác trước khi cấp phát. 
+Cơ sở định cỡ: căn cứ vào các hệ thống tham chiếu có các đặc điểm tương 
+đồng. Hệ thống tương đồng là hệ thống có đặc điểm chung về kiến trúc, 
+công nghệ, các chức năng, luồng nghiệp vụ chính và đối tượng sử dụng. 
+Đơn vị phát triển cần nêu các đặc điểm tương đồng về kiến trúc, công nghệ, 
+chức năng giữa hệ thống định cỡ và hệ thống tham chiếu.  
+Nếu sản phẩm phần mềm chưa có và không có hệ thống tham chiếu tương 
+đồng thì đơn vị phát triển phải hoàn thiện sản phẩm và thực hiện kiểm thử 
+hiệu năng để định cỡ. 
+o Dạng II: Định cỡ khi đã có sản phẩm phần mềm:  
+Khi đã có sản phẩm phần mềm, cần định cỡ để triển khai thực tế. Với các 
+sản phẩm phần mềm đã triển khai thực tế, khi định cỡ cho một hệ thống 
+khác cùng sản phẩm phần mềm thì thực hiện như định cỡ khi nâng cấp hệ 
+thống. 
+Không áp dụng phương pháp I - Định cỡ khi chưa có sản phẩm phần 
+mềm đối với các sản phẩm đã có phần mềm. 
+Cơ sở định cỡ: sử dụng môi trường kiểm thử, đo nhu cầu tài nguyên sử 
+dụng của hệ thống theo các mẫu đầu vào khác nhau. Từ đó tính ra bình 
+quân nhu cầu tài nguyên sử dụng của mỗi người dùng (hoặc giao dịch) để 
+làm cơ sở tính toán nhu cầu tài nguyên của hệ thống cần đáp ứng. 
+o Dạng III - Định cỡ khi nâng cấp hệ thống:  
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 13 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 12/44 
+ 
+Thực hiện khi sản phẩm phần mềm đã đi vào hoạt động, cần tăng số lượng 
+người dùng, tăng quy mô phần mềm... cần nâng cấp hạ tầng để đảm bảo. 
+Sau khi hệ thống hoạt động có tải, cần thực hiện đánh giá và điều chỉnh 
+sizing để đảm bảo hoạt động của hệ thống và tối ưu hiệu suất sử dụng. 
+Cơ sở định cỡ: Căn cứ vào hiện trạng hoạt động của hệ thống hiện tại (tải, 
+số người dùng, chất lượng dịch vụ...) và yêu cầu mở rộng (số người dùng, 
+CCU/TPS/RPS, Latency...) để tính toán và xác định được cấu hình tài 
+nguyên cần nâng cấp. 
+A.3 Các bước thực hiện định cỡ 
+ 
+ 
+ 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 14 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 13/44 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+STT 
+Nội dung thực hiện 
+Mô tả 
+Đơn vị/ nhân sự 
+chủ trì thực hiện 
+1 
+Xác định CTKT 
+chính và thông số 
+đầu vào phục vụ 
+sizing, các thông tin 
+- Chuẩn bị các thông số đầu 
+vào phục vụ định cỡ cho 
+ứng dụng và hạ tầng CNTT. 
+Nhóm 
+dự 
+án, 
+lãnh đạo đơn vị 
+Xác định CTKT và thông số đầu vào 
+Tính toán tài nguyên từng thành phần 
+Xác định số lượng, tài nguyên 
+Đã đủ thành 
+phần 
+Hoàn thiện hồ sơ 
+Thẩm định hồ sơ 
+Phê duyệt hồ sơ 
+Kết thúc 
+Bắt đầu 
+Hình 1 - Lưu đồ thực hiện 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 15 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 14/44 
+ 
+STT 
+Nội dung thực hiện 
+Mô tả 
+Đơn vị/ nhân sự 
+chủ trì thực hiện 
+đi kèm như thiết kế 
+hệ thống HLD, bộ 
+CTKT đã được ký 
+(nếu có) 
+Bao gồm CTKT chính và 
+profile, thông tin dịch vụ. 
+- Các thông số đầu vào phục 
+vụ định cỡ phải được lãnh 
+đạo đơn vị chủ trì sản phẩm 
+xác nhận bằng văn bản. 
+Trường hợp yêu cầu đến từ 
+đơn vị, nhu cầu kinh doanh, 
+cần có xác nhận của đơn 
+vị/bộ phận liên quan ký xác 
+nhận nhu cầu.  
+- Biên bản kiểm thử hiệu 
+năng phải được lãnh đạo 
+đơn vị thực hiện kiểm thử 
+xác nhận bằng văn bản. 
+2 
+Tính toán tài nguyên 
+từng thành phần 
+- Dựa vào thông tin đầu vào, 
+tính toán tài nguyên cần 
+thiết cho từng thành phần 
+hệ thống định cỡ. 
+- Cần chỉ rõ các yếu tố ảnh 
+hưởng mở rộng chiều dọc/ 
+mở rộng chiều ngang (scale 
+up/scale out), làm sở cứ 
+phục vụ mở rộng sau này. 
+Ví dụ: Cần chỉ rõ khi mở 
+rộng hệ thống để đáp ứng từ 
+100TPS lên 200TPS thì 
+phải mở rộng những loại 
+module nào và từng module 
+Nhóm dự án 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 16 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 15/44 
+ 
+STT 
+Nội dung thực hiện 
+Mô tả 
+Đơn vị/ nhân sự 
+chủ trì thực hiện 
+đó mở rộng theo chiều dọc 
+hay chiều ngang. Cần thực 
+hiện kiểm thử hiệu năng để 
+xác định ngưỡng tới hạn 
+của 1 node của từng thành 
+phần và hiệu năng hệ thống 
+có suy giảm khi thêm node 
+thành 
+phần 
+với 
+Load 
+Blancing hay không và suy 
+giảm bao nhiêu %  để xác 
+định thành phần hệ thống 
+phù hợp với mở rộng theo 
+chiều dọc hay mở rộng theo 
+chiều ngang. 
+3 
+Xác định số lượng, 
+cấu hình 
+- Xác định số lượng, cấu hình 
+các thiết bị của hệ thống 
+Nhóm dự án 
+4 
+Hoàn thiện bản dự 
+thảo tài liệu định cỡ 
+- Hoàn thiện tài liệu định cỡ 
+theo mẫu trong phụ lục 01. 
+Nhóm dự án 
+5 
+Thẩm định tài liệu 
+định cỡ 
+- Xin ý kiến thẩm định các 
+đơn vị chức năng: với các 
+hệ thống CNTT triển khai 
+tại hạ tầng CNTT của Tập 
+đoàn, đơn vị xây dựng tài 
+liệu định cỡ cần xin ý kiến 
+thẩm định của TCT VTNet. 
+Nhóm dự án 
+6 
+Phê duyệt tài liệu 
+định cỡ 
+- Điều chỉnh theo các ý kiến 
+thẩm định và ký duyệt, ban 
+hành tài liệu định cỡ 
+Nhóm dự án, đơn 
+vị chủ trì sản 
+phẩm 
+3. Thông số đầu vào định cỡ: 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 17 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 16/44 
+ 
+Tuỳ theo đặc thù hệ thống CNTT, cần cân nhắc đưa ra các CTKT và thông số 
+đầu vào phục vụ sizing. 
+Các CTKT phục vụ tính toán định cỡ có thể được lấy dựa trên số liệu, yêu cầu 
+của đơn vị kinh doanh (có xác nhận) hoặc lấy từ bộ CTKT hệ thống (dự kiến 
+phải đáp ứng hoặc đã được ký ban hành chính thức). 
+Các thông số được chọn phục vụ đánh giá định cỡ các module phải là các 
+thông số có ảnh hưởng đến năng lực xử lý, khả năng quản lý của tài nguyên 
+phần cứng cũng như năng lực xử lý của phần mềm. 
+Các thông số phục vụ đầu vào khi định cỡ máy chủ, thiết bị mạng, thiết bị lưu 
+trữ và đường truyền có thể khác nhau. 
+Một số thông tin cần thiết, đưa vào định cỡ cho từng module bao gồm: 
+Stt 
+Thông số 
+Đơn vị 
+Diễn giải 
+1 
+Dung lượng thuê bao đăng 
+ký 
+Sub/account/user
+ 
+ 
+Dung lượng quản 
+lý của hệ thống, 
+ảnh hưởng đến 
+dung lượng DB, 
+licence,… 
+2 
+Số thuê bao/người dùng 
+hoạt động 
+ 
+Sub/account/user 
+Số lượng thuê 
+bao thực sự hoạt 
+động 
+của 
+hệ 
+thống 
+3 
+Số thuê bao/người dùng 
+online, hay CCU 
+Sub/account/user 
+Số CCU tại giờ 
+bận 
+4 
+Số lượng giao dịch 
+TPS/RPS/…IOPS Số lượng giao 
+dịch của hệ thống 
+đáp ứng với độ 
+trễ dịch vụ chấp 
+nhận được 
+5 
+Độ trễ chấp nhận được của 
+giao dịch, của các bản tin 
+nội bộ 
+ms, s, phút 
+Latency của các 
+API chính, quan 
+trọng.  
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 18 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 17/44 
+ 
+6 
+Chi tiết các CTKT khác  
+ 
+Các chỉ tiêu kỹ 
+thuật 
+có 
+ảnh 
+hưởng đến sizing 
+khác 
+7 
+Kích thước dữ liệu lưu trữ 
+cần thiết cho các bản ghi, 
+bản tin 
+ 
+Xác định dung 
+lượng lưu trữ cần 
+thiết 
+cho 
+DB, 
+cache,… 
+ 
+4. Định cỡ máy chủ 
+a. Chuẩn bị thông số đầu vào 
+ 
+Thông số đầu vào là các thông số sử dụng để tính toán, định cỡ máy chủ, gồm 
+các thông số chính sau: 
+- Thông tin đầu vào của đơn vị yêu cầu bao gồm: 
+• Thông tin về số lượng thuê bao/người dùng sử dụng dịch vụ, được lưu 
+trữ trên hệ thống. Bao gồm thuê bao đăng ký, thuê bao hoạt động… 
+• Thông tin về giả định tải mà hệ thống cần phải đáp ứng. Tải này được 
+tính theo TPS - Transaction Per Second (hoặc có thể tính theo TPM-
+Transaction Per Minute) hoặc CCU/RPS tại thời điểm tải hệ thống 
+đạt giá trị peak. Tải này là tổ hợp của toàn bộ các loại giao dịch/nghiệp 
+vụ của hệ thống cần đáp ứng (trong ví dụ bảng phía dưới là tải cho 2 loại 
+chức năng/nghiệp vụ): 
+TT 
+Nội dung yêu cầu 
+Đơn vị 
+Giá trị 
+Ghi chú 
+1 
+Tổng số thuê bao/người dùng 
+sử dụng dịch vụ 
+Người dùng 
+/ thuê bao 
+X 
+ 
+2 
+Tổng số giao dịch đồng thời tại 
+thời điểm đạt giá trị Peak 
+TPS (TPM) 
+Y 
+Trong hệ thống có nhiều loại 
+nghiệp vụ. Do vậy cần làm rõ 
+những loại tải cần đáp ứng 
+trong thời điểm Peak và tỉ lệ 
+về số lượng mỗi loại trên tổng 
+số giao dịch (tỉ lệ này được 
+đánh giá, giả định sát nhất 
+với thực tế). 
+- Chức 
+năng/nghiệp 
+vụ 
+1 
+(chiếm a%) 
+TPS (TPM) 
+Y x a% 
+- Chức 
+năng/nghiệp 
+vụ 
+2 
+(chiếm b%) 
+TPS (TPM) 
+Y x b% 
+- Thông tin về khả năng đáp ứng của phần mềm: 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 19 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 18/44 
+ 
+TT 
+Nội dung yêu cầu 
+Đơn vị 
+Giá trị 
+Ghi chú 
+1 
+Tính sẵn sàng của hệ thống 
+Phút/tháng 
+X 
+Là thời gian cho phép 
+downtime/tháng 
+2 
+Thời gian downtime cho phép 
+đối với mỗi sự cố 
+Phút 
+Y 
+Là thời gian cho phép 
+downtime đối với mỗi một lỗi 
+xảy ra trên hệ thống. 
+3 
+Hệ thống đáp ứng được các chỉ 
+tiêu Kỹ thuật và các tiêu chí của 
+Tập đoàn ban hành. (về KPI hạ 
+tầng, KPI ứng dụng, khả năng 
+lưu log, tính dự phòng,...) 
+ 
+ 
+Dựa trên bộ chỉ tiêu Kỹ thuật 
+được ban  hành cho hệ thống. 
+4 
+Tải dung lượng lưu trữ và hiệu 
+năng của các diskgroup trên 
+database, các raidgroup trên 
+thiết bị lưu trữ không quá 80% 
+ 
+80% 
+(Lưu ý các trường hợp 
+ngoại lệ đã được nêu tại 
+mục A.1 – Nguyên tắc 
+định cỡ) 
+5 
+Thời gian hoàn thành backup, 
+sao lưu 
+Giờ/đơn vị 
+dữ liệu 
+Z 
+Ví dụ: backup 1TB trong 2h 
+6 
+Các thông tin khác có liên quan 
+đến thiết kế hệ thống 
+ 
+ 
+ 
+ 
+- Các yếu tố ảnh hưởng thông số tài nguyên máy chủ 
+• Số lượng người/thuê bao đăng ký (registered account/sub) 
+• Số lượng thuê bao đăng ký (active account/sub) 
+• Số lượng người dùng đồng thời (conccurent account/sub) 
+• Số lượng thiết bị kết nối/phục vụ đồng thời 
+• Số lượng tiến trình (process) đồng thời 
+• Số lượng yêu cầu (request) đồng thời 
+• Số lượng giao dịch một người dùng 
+• Độ phức tạp của giao dịch 
+• Yêu cầu về kích thước, dung lượng bản tin trao đổi và lưu trữ 
+• Yêu cầu cụ thể về lưu trữ của ứng dụng (lưu log, dữ liệu văn bản, media, 
+cơ sở dữ liệu, kết nối SAN...) 
+• Mục đích sử dụng máy chủ: cơ sở dữ liệu, ứng dụng, lưu media, kết nối 
+SAN... 
+Các yếu tố này có thể bị ảnh hưởng bởi việc thay đổi kiến trúc ứng dụng, thêm 
+hoặc chỉnh sửa chức năng, tăng quy mô sử dụng ứng dụng... 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 20 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 19/44 
+ 
+Ngoài ra còn có thể có các yếu tố ảnh hưởng đến tài nguyên máy chủ tùy theo 
+đặc điểm hệ thống cụ thể. 
+Khi định cỡ máy chủ database cần lưu ý về dung lượng database, kiểu 
+DB (RDB hay NoSQL, IMDB) để thực hiện định cỡ cho phù hợp. 
+ 
+- Tải và cấu hình hệ thống 
+• Hệ thống cần lấy thông tin: 
+o Định cỡ khi chưa có sản phẩm phần mềm: các hệ thống tham chiếu. 
+o Định cỡ khi đã có sản phẩm phần mềm: hệ thống kiểm thử. 
+o Định cỡ nâng cấp hệ thống: hệ thống hiện tại. 
+• Các thông tin cần lấy:  
+o Tải hệ thống:  
+§ Tải CPU, RAM máy chủ: Lấy giá trị 95th trong thời gian lấy 
+tải. Tải máy chủ lấy từ phần mềm kiểm thử hiệu năng, các hệ 
+thống giám sát, các script tự viết hoặc log hệ thống. 
+§ Cần tính toán, xác định yêu cầu về IOPS đáp ứng của hệ thống 
+khi thực hiện định cỡ. 
+§ Xác định độ trễ cho phép khi đáp ứng IOPS hoặc KPI đã cho. 
+§ Với hệ thống tham chiếu và hệ thống hiện tại cần lấy tải tối 
+thiểu 01 tháng (tính cao điểm các tháng trong năm). Tải máy 
+chủ là giá trị 95th các giá trị tải máy chủ trong thời gian lấy tải 
+(ngày, tháng, năm), bỏ qua khoảng thời gian máy chủ chạy 
+không tải. 
+§ Với hệ thống kiểm thử, lấy tải máy chủ khi thực hiện kiểm thử 
+với các giá trị đầu vào khác nhau. Tùy đặc thù từng loại ứng 
+dụng, hệ thống, trước khi kiểm thử cần thực hiện khởi động lại 
+ứng dụng, xóa cache RAM, thiết lập tham số,... để kết quả đo 
+tải được chính xác nhất. 
+§ Với các hệ thống kiểm thử, khi thực hiện định cỡ cần tính toán 
+thêm các yếu tố ảnh hưởng khả năng mở rộng trong môi trường 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 21 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 20/44 
+ 
+thực tế, ví dụ như FW, LB cứng… có thể tham khảo từ CTKT 
+thiết bị hoặc các hệ thống tham chiếu có sử dụng thiết bị. 
+o Cấu hình hệ thống: 
+§ CPU: cần chỉ rõ số lượng và dòng (model) cụ thể, lưu ý đối với 
+ảo hoá nên chỉ rõ số lượng vCPU tương ứng với model pCPU 
+(vật lý) hoặc CPU vật lý tham chiếu. 
+§ RAM: Dung lượng RAM của máy chủ, tính theo GB. 
+§ Ổ cứng: Dung lượng khả dụng (tính theo GB, sau RAID) hoặc 
+dung lượng ổ cứng nếu không có RAID của máy chủ. Cần chỉ 
+rõ IOPS và latency cho từng phân vùng phục vụ các mục đích 
+hoặc nghiệp vụ khác nhau. 
+b. Tính toán tài nguyên từng thành phần 
+- Định cỡ phải đáp ứng được yêu cầu đầu vào của đơn vị yêu cầu, bao gồm: 
+Định cỡ toàn bộ hệ thống và chi tiết đến từng module: 
+• Định cỡ toàn bộ hệ thống: 
+o Tổng tải giao dịch tại một thời điểm trong giờ Peak sẽ bao gồm 
+tổ hợp giao dịch của các chức năng/nghiệp vụ. Kết quả định cỡ 
+sẽ là kết quả dựa trên tổng tải này. 
+o Bảng tổng hợp nhu cầu tài nguyên toàn hệ thống sẽ bao gồm 
+tổng hợp kết quả tính toán của từng Module (tổng hợp lại một 
+số thành phần dùng chung như mạng, Firewall, LB). 
+• Với từng Module, định cỡ phải đảm bảo:  
+o Nếu Module đó có phục vụ nhiều loại nghiệp vụ, giao dịch đầu 
+vào, phải thực hiện định cỡ dựa trên tổng giao dịch gồm toàn bộ 
+các loại giao dịch đầu vào theo giả định sát nhất với thực tế.  
+o Module sau khi được định cỡ đáp ứng về giao dịch, cần thiết kế 
+định cỡ để đảm bảo tính sẵn sàng, dự phòng và các yêu cầu trong 
+chỉ tiêu kĩ thuật.  
+o Có giải pháp sao lưu phục hồi đi kèm. Các máy chủ tính toán 
+năng lực cần bổ sung năng lực đáp ứng cho tác vụ sao lưu dữ 
+liệu. Tác vụ sao lưu cần đáp ứng được đưa yêu cầu về thời gian 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 22 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 21/44 
+ 
+hoàn thành (ví dụ: backup 1TB trong 2h xong thì vùng lưu trữ 
+backup phải là đĩa SSD, cổng quang 32Gbps,...). Bổ sung cấu 
+hình máy chủ thực hiện tác vụ sao lưu (nếu dùng chung giải pháp 
+sao lưu của VTNet hoặc một giải pháp khác phải chỉ ra). Đối với 
+mạng lưu trữ, mạng IP phục vụ sao lưu, dự phòng cần thiết kế 
+tính toán riêng không để ảnh hưởng, chiếm kênh traffic phục vụ 
+người dùng. 
+- Xác định hệ số so sánh (Ksosánh) 
+  
+Định nghĩa: K so sánh là tỷ lệ so sánh giữa hai hệ thống hệ thống mới cần 
+sizing định cỡ và hệ thống tham chiếu. 
+• Định cỡ khi chưa có sản phẩm phần mềm: 
+o Ksosánh = tỷ lệ thông số đầu vào giữa hệ thống mới và hệ thống 
+tương đồng. 
+Nhóm dự án cần lựa chọn hệ thống có tính chất, chức năng, mô 
+hình hệ thống, giải pháp kỹ thuật và quy mô tương tự để thực 
+hiện ước lượng tỷ lệ.  
+Với trường hợp sản phẩm phần mềm chưa có và không có hệ 
+thống tham chiếu tương đồng thì đơn vị phát triển phải hoàn 
+thiện sản phẩm và thực hiện kiểm thử hiệu năng để định cỡ và 
+lấy hệ thống kiểm thử làm hệ thống tương đồng với Ksosanh được 
+lựa chọn và ước lượng tương ứng theo quy tắc trên. 
+• Định cỡ khi đã có sản phẩm phần mềm: 
+o Thực hiện kiểm thử hiệu năng, đo tài nguyên (CPU, RAM) 
+chiếm dụng với các mẫu thông số đầu vào tăng dần trong điều 
+kiện giao dịch thành công.  
+o Yêu cầu thực hiện kiểm thử với tối thiểu 05 mẫu đầu vào, mỗi 
+mẫu đầu vào thực hiện kiểm thử tối thiểu 05 lần. Kiểm thử với 
+giá trị thông số đầu vào không quá nhỏ để đảm bảo độ chính xác. 
+o Cần thực hiện kiểm thử toàn bộ các nghiệp vụ chính của hệ 
+thống. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 23 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 22/44 
+ 
+o Xác định tài nguyên sử dụng trung bình cho một thông số đầu 
+vào (người dùng, giao dịch...). Khi tính toán cần trừ tài nguyên 
+chiếm dụng của hệ điều hành, tài nguyên khởi tạo phần mềm, 
+ứng dụng.  
+o Ksosánh = thông số đầu vào hệ thống cần định cỡ. 
+• Định cỡ nâng cấp hệ thống: 
+o Ksosánh = tỷ lệ thông số đầu vào giữa hệ thống nâng cấp và hệ 
+thống hiện tại.  
+- Tính toán tài nguyên sử dụng 
+• Máy chủ vật lý: 
+CPUsử dụng = [CPU95percentile] x [Cint_rated 1 CPU (hoặc Cfp_rated)] x 
+[Số lượng CPU vật lý]. 
+• Với máy chủ ảo:  
+CPUsử dụng = [CPU95percentilemáyảo]x [Số vCPU cấp cho máy ảo] / [Tổng 
+số vCPU của máy vật lý] * [Cint_rated 1 CPU (hoặc Cfp_rated)] x [Số 
+lượng CPU vật lý của máy vật lý] 
+Khi kiểm thử hiệu năng trên máy ảo, tài nguyên kiểm thử cần cố định, 
+không chia sẻ, cấp phát động. 
+• RAMsử dụng = [RAM95percentile] x [Dung lượng RAM]. 
+Tùy trường hợp, cần tính đến dung lượng RAM sử dụng cho hệ điều hành 
+hoặc phần mềm ảo hóa. Với hệ điều hành Linux, Windows, yêu cầu tối 
+thiểu 02 core CPU và 04GB RAM.  
+Với phần mềm ảo hóa, cấp tương đương 10% CPU máy chủ và 6GB RAM 
+cho phần mềm ảo hóa (hypervisor). 
+• Tính toán Ổ cứngsử dụng  theo từng loại dữ liệu lưu trữ của hệ thống.  
+Ví dụ như bảng sau (loại dữ liệu phụ thuộc vào từng hệ thống cụ thể): 
+Bảng tính toán dung lượng ổ cứng cho máy chủ 
+Loại dữ liệu  
+Dung lượng/1 
+ngày 
+Thời gian lưu 
+trữ (ngày) 
+Tổng dung lượng 
+Hệ điều hành 
+  
+  
+30GB 
+Log (tiến trình + 
+ứng dụng)  
+1GB 
+180 1*180=180GB 
+Source code 
+10GB 
+  
+10GB 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 24 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 23/44 
+ 
+Các file xử lý 
+1GB 
+180 1x180=180GB 
+Tổng dung lượng 
+  
+  
+400GB 
+- Tính toán tài nguyên: công thức cơ bản như sau: 
+• ∑CPU= [∑CPUsử dụng] x [Ksosánh] / [Kkpi] x [Ksaisố] 
+• ∑RAM= [∑RAMsử dụng] x [Ksosánh] / [Kkpi] x [Ksaisố] 
+• ∑Ổ cứng= [∑Ổ cứngsử dụng] x [Ksosánh] / [Kkpi] x [Ksaisố] 
+Trong đó: 
+o ∑CPU, ∑RAM, ∑ổ cứng: Tổng tài nguyên về CPU, RAM và ổ cứng. 
+Với định cỡ khi đã có phần mềm, ∑CPU, ∑RAM, ∑ổ cứng là các giá 
+trị tài nguyên bình quân (của các giá trị kiểm thử) cho một đơn vị 
+thông số đầu vào (người dùng, giao dịch). Xác định bằng cách lập 
+bảng tổng hợp: 
+STT 
+Đầu vào 
+(CCU) 
+CINT_r
+ated 
+CINT_rated/
+CCU 
+RAM 
+(MB) 
+RAM/CCU
+(MB) 
+1 
+ 
+ 
+ 
+ 
+ 
+2 
+ 
+ 
+ 
+ 
+ 
+3 
+ 
+ 
+ 
+ 
+ 
+Trung bình 
+ 
+ 
+ 
+ 
+o Ksosánh: hệ số so sánh tính toán ở bước trên. 
+o Kkpi: hệ số đảm bảo KPI. Kkpi_cpu=0.75, Kkpi_ram=0.9, Kkpi_ổ cứng=0.8. 
+o Ksaisố=1.1: hệ số dự phòng sai số tính toán.  
+Với các hệ thống cần lưu trữ nhiều dữ liệu (đa phương tiện, cơ sở dữ liệu, 
+máy chủ file, log hệ thống...) trên máy chủ cần thực hiện tính toán dung 
+lượng lưu trữ theo từng nhu cầu và đặc điểm loại dữ liệu lưu trữ. 
+c. Xác định số lượng và cấu hình 
+- Dựa vào kết quả tài nguyên cần thiết và đặc điểm của từng thành phần hệ 
+thống, có thể dồn nhiều thành phần tương đồng chạy chung trên máy chủ để 
+tối ưu chi phí: 
+• ∑CPU= ∑CPUthànhphần 
+• ∑RAM= ∑RAMthànhphần 
+• ∑Ổ cứng= ∑Ổ cứngthànhphần 
+- Hệ thống hoạt động dự phòng N+M, (N≥1, M≥1): 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 25 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 24/44 
+ 
+Lập bảng thông tin: 
+STT 
+Chức năng 
+máy chủ 
+Số lượng máy chủ 
+hoạt động 
+(N) 
+Cấu hình 
+CPU01 máychủ 
+(Cint_rated) 
+Cấu hình 
+RAM01 máychủ 
+(GB) 
+1 
+ 
+1 
+ 
+ 
+2 
+2 
+ 
+ 
+3 
+3 
+ 
+ 
+ 
+Trong đó, với máy chủ vật lý: 
+Cấu hình CPU1 máychủ = ∑CPU/N 
+Cấu hình RAM1 máychủ = ∑RAM/N 
+Căn cứ vào cấu hình của 01 máy chủ theo các giá trị của N trong bảng trên để 
+chọn N sao cho tối ưu chi phí và cân đối cấu hình. 
+Với các hệ thống chỉ có thể hoạt động Active/Standby, khi lựa chọn cấu hình 
+máy chủ cần tính toán đến khả năng mở rộng cấu hình máy chủ và khả năng 
+tăng trưởng của thành phần hệ thống để tránh quá tải máy chủ sau này. 
+Giá trị M mặc định bằng 1 (tức hệ thống hoạt động với mức độ dự phòng N+1) 
+và phụ thuộc vào phân loại, đặc điểm, yêu cầu dự phòng của hệ thống theo 
+quy định. 
+- Với các thành phần hệ thống hoạt động trên máy chủ ảo hóa, phải thực 
+hiện quy đổi sang vCPU như sau: 
+ 
+Số [vCPUthànhphần] = ∑CPUthànhphần / [Cint_rated 01 vCPU của dòng CPU dự 
+kiến đầu tư] 
+Trong đó: [Cint_rated 01 vCPU của dòng CPU dự kiến đầu tư] = [Cint_rated 01 
+CPU dự kiến đầu tư] / [số core của 01 CPU] / [số thread / 01 core] 
+Với [số thread/01 core] = 2 với CPU của Intel sử dụng công nghệ Hyper 
+Threading. 
+Tham chiếu giá chị Cint_rated2017 các dòng CPU hiện tại trong phụ lục 02. 
+ 
+Lưu ý: 
+ 
+- Việc xác định cấu hình máy ảo phù hợp với từng ứng dụng là một việc 
+quan trọng, ảnh hưởng đến việc mở rộng ứng dụng theo chiều ngang. Nếu máy 
+ảo cấu hình quá thấp, ứng dụng sẽ không hoạt động tốt và có thể gặp lỗi. Nếu 
+máy ảo cấu hình quá lớn, dư thừa tài nguyên thì ứng dụng không hiệu quả về mặt 
+chi phí và không đảm bảo hiệu suất sử dụng tối ưu. Thông thường, cấu hình máy 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 26 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 25/44 
+ 
+ảo tối ưu cho một thành phần ứng dụng là cấu hình máy ảo nhỏ nhất và hoạt động 
+tốt. Tuy nhiên, không có cách nào đơn giản để xác định các hoạt động tốt trên các 
+ứng dụng, ví dụ cấu hình máy ảo tối ưu cho các ứng dụng decode video lớn có thể 
+lớn hơn các ứng dụng đơn giản như gửi hóa đơn. Chỉ với kiểm thử hiệu năng kết 
+hợp tăng dần cấu hình máy ảo mới xác định được chính xác cấu hình máy ảo 
+tối ưu nhất cho một thành phần ứng dụng. 
+ 
+- Với các Ứng dụng đặc thù sử dụng tài nguyên dành riêng(ví dụ dedicate 
+CPU core như DPDK, dedicate RAM như Storm) cần mô tả rõ để có thể định 
+cỡ phù hợp. 
+ 
+- Với các Ứng dụng sử dụng RAM nhiều (như IMDB, Redis…) cần mô tả 
+về cơ chế sử dụng swap và huge-page, có cấu hình và sử dụng swap không, cho 
+phép sử dụng bao nhiêu % RAM thì mới sử dụng Swap để tránh ảnh hưởng 
+hiệu năng sử dụng. 
+5. Định cỡ thiết bị lưu trữ 
+a. Chuẩn bị thông số đầu vào 
+- Các loại dữ liệu cần lưu trữ 
+- Đặc điểm các loại dữ liệu: dung lượng lưu trữ cho 01 người dùng, 01 chức 
+năng, 01 bản tin, 01 file media,...; dữ liệu lưu CSDL, media, văn bản, sao lưu...; 
+tỷ lệ đọc ghi của dữ liệu. 
+- Thời gian lưu trữ dữ liệu. 
+- Thời gian, tốc độ sao lưu dữ liệu. 
+- Thời gian, tốc độ phục hồi dữ liệu sau khi sao lưu (làm cơ sở lựa chọn băng 
+từ, tủ sao lưu) 
+- Loại cấu hình RAID (RAID 1, RAID 5, RAID 6) dự kiến. Khi sử dụng ổ cứng 
+NL-SAS hoặc SATA 7.2krpm, do thời gian xây dựng lại dữ liệu (rebuild) kéo 
+dài nên khuyến cáo nên sử dụng RAID 6 để đảm bảo an toàn. 
+- Thông tin tham khảo IOPS từng loại ổ cứng (ổ Flash/SSD phụ thuộc vào loại 
+chip nhớ để tạo nên ổ (SLC, MLC, eMLC, TLC): 
+ 
+NL-SAS/SATA 
+7.2k rpm 
+SAS 10k rpm 
+SAS/FC 15k rpm 
+Flash/SSD 
+IOPS tối đa 
+100 
+140 
+210 
+≥5000 
+b. Tính toán tài nguyên 
+Tính toán dung lượng lưu trữ: các bước thực hiện: 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 27 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 26/44 
+ 
+- Xác định tổng dung lượng lưu trữ cần thiết để lưu các loại dữ liệu. 
+Ví dụ:  
+Tổng dung lượng lưu trữ cần thiết = [số người dùng] * [dung lượng lưu trữ cho 
+01 người dùng] 
+Tổng dung lượng lưu trữ cần thiết = [số lượng file media] * [dung lượng lưu 
+trữ trung bình 01 file] 
+Lưu ý khi tính dung lượng lưu trữ cần thiết phải thực hiện tính toán dung lượng 
+cần có khi thực hiện phục hồi dữ liệu (ví dụ: lưu trữ online 3 bản backup tương 
+đương 1TB, dung lượng  tối đa cần restore tương đương 1 bản backup, thì cần 
+3+1=4TB).  
+- Dung lượng thô thiết bị lưu trữ = [Tổng dung lượng lưu trữ cần thiết] * [tỷ lệ 
+cấu hình RAID] * [tỷ lệ định dạng] * [tỷ lệ sai số] * [tỷ lệ dự phòng] 
+Trong đó: 
+• Tỷ lệ cấu hình RAID = [Tổng số ổ cứng của nhóm RAID] / [số lượng ổ 
+cứng lưu dữ liệu của nhóm RAID]. 
+Ví dụ:  
+Nhóm RAID 5 gồm 6 ổ cứng: tỷ lệ cấu hình RAID = 6/5 
+Nhóm RAID 6 gồm 8 ổ cứng: tỷ lệ cấu hình RAID = 8/6 
+• Tỷ lệ định dạng là tỷ lệ do có hao hụt trong quá trình định dạng (format) ổ 
+cứng và filesystem. 
+Tỷ lệ định dạng = 1.1 
+• Tỷ lệ sai số = hệ số dự phòng sai số tính toán.  
+Tỷ lệ sai số = 1.1 
+• Tỷ lệ dự phòng: Mục đích sử dụng tối đa 80% tổng dung lượng lưu trữ. 
+Tỷ lệ dự phòng = 1.25 
+(Lưu ý các trường hợp ngoại lệ đã được nêu tại mục A.1 – Nguyên tắc 
+định cỡ) 
+Tính toán hiệu năng: với các hệ thống có yêu cầu cao về năng lực đọc ghi của 
+thiết bị lưu trữ như hệ thống VDI, thiết bị lưu trữ dùng chung nhiều hệ thống hiệu 
+năng cao như CSDL OLTP, ảo hóa số lượng máy chủ lớn, hệ thống đa phương 
+tiện (media), dữ liệu lớn,... cần tính toán hiệu năng thiết bị lưu trữ cần đáp ứng. 
+Cần thiết kế và tính toán hiệu năng cho mỗi phân vùng riêng biệt tương ứng với 
+một loại dữ liệu cần lưu trữ, ví dụ phân vùng cho DB, phân vùng cho backup và 
+archive. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 28 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 27/44 
+ 
+Các bước thực hiện: 
+- Xác định hiệu năng yêu cầu của hệ thống: xác định bởi yêu cầu IOPS của 
+các máy chủ trong hệ thống.  
+Việc đo đạc có thể thực hiện như sau: 
+o Trên mỗi máy chủ thiết lập chạy script chạy và lưu kết quả lệnh iostat 
+định kỳ (1 phút/1 lần). 
+o Thực hiện thống kê tải đọc ghi trong tối thiểu 7 ngày. 
+o [IOPS hệ thống] = ∑ [IOPS máy chủ] 
+Trong đó 
+[IOPS máy chủ] = ∑ [IOPS phân vùng của máy chủ theo mỗi loại dữ liệu] 
+[IOPS các phân vùng của máy chủ] là giá trị 95th IOPS các phân vùng 
+của máy chủ thống kê ở trên. 
+Giá trị IOPS lấy trường thông tin r/s và w/s khi thực hiện lệnh iostat. 
+- Xác định giá trị của Backend IOPS của thiết bị lưu trữ: 
+Công thức tính: 
+Frontend IOPS = [IOPS hệ thống] 
+Backend IOPS = [Frontend IOPS] * (1* %read + penalty* %write) 
+Trong đó: 
+• Backend IOPS: Tổng số lượng thao tác đọc ghi trong 01 giây mà các đĩa 
+cứng vật lý của thiết bị lưu trữ cần xử lý. 
+• Frontend IOPS: Tổng số lượng thao tác đọc ghi trong 01 giây thiết bị lưu 
+trữ có thể xử lý. 
+• Số penalty: là số thao tác thiết bị lưu trữ phải thực hiện với 1 thao tác ghi 
+trên máy chủ. Giá trị penalty tùy theo loại Raid sử dụng, cụ thể: 
+STT 
+Loại RAID 
+Write Penalty 
+1 
+0 
+1 
+2 
+1 hoặc 10 
+2 
+3 
+5 
+4 
+4 
+6 
+6 
+• %read, %write: tỷ lệ đọc, ghi dữ liệu. 
+- Xác định hiệu năng tối đa của thiết bị lưu trữ sử dụng các công cụ như 
+fio. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 29 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 28/44 
+ 
+Việc đo đạc hiệu năng của thiết bị hoặc phân vùng logic lưu trữ có thể thực 
+hiện từ máy chủ sử dụng (có mount) phân vùng lưu trữ thông qua công cụ fio, 
+cụ thể các bước như sau: 
+• Chạy lệnh:  
+fio --ioengine=libaio --direct=1 --name=bench --filename=bench --bs=4k -
+-iodepth=64 --size=4G --readwrite=randrw --rwmixread=65 
+• Trong đó các tham số có thể tuỳ chỉnh: 
+a. Tham số bs – block size: kích thước của 1 block đọc ghi xuống: 4k, 
+8k, 1M… 
+b. Tham số size: kích thước của file sẽ ghi ra phục vụ kiểm thử hiệu 
+năng: 4G, 8G, 1T… 
+c. Tham số readwrite: kiểu đọc ghi, tuỳ vào đặc thù ứng dụng, với DB 
+là randrw (random read write), với ứng dụng thông thường là 
+sequence read (read) hoặc sequence write (write). 
+d. Tham số rwmixread: tỉ lệ đọc ghi khi kiểm thử, ví dụ 65 tương ứng 
+với 65% read, 35% write. Hiện tại đa phần các ứng dụng của Viettel 
+đang đọc ghi với tỉ lệ 65-35. 
+• Kết quả trả về sẽ lấy giá trị RW IOPS và 95th cho latency như ví dụ: 
+[root@bench]# fio --ioengine=libaio --direct=1 --name=test1 --
+filename=test1 --bs=4k --iodepth=64 --size=4G --readwrite=randrw --
+rwmixread=75 
+test1: (g=0): rw=randrw, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-
+4096B, ioengine=libaio, iodepth=64 
+fio-3.1 
+Starting 1 process 
+test1: Laying out IO file (1 file / 4096MiB) 
+Jobs: 1 (f=1): [m(1)][100.0%][r=26.3MiB/s,w=9321KiB/s][r=6744,w=2330 
+IOPS][eta 00m:00s]  
+test1: (groupid=0, jobs=1): err= 0: pid=133170: Mon Feb 11 11:20:27 2019 
+  read: IOPS=12.2k, BW=47.6MiB/s (49.0MB/s)(3070MiB/64429msec) 
+    slat (usec): min=3, max=7431, avg=14.12, stdev=11.84 
+    clat (usec): min=221, max=185337, avg=3509.51, stdev=9794.65 
+     lat (usec): min=229, max=185360, avg=3523.88, stdev=9794.78 
+    clat percentiles (usec): 
+     |  1.00th=[   412],  5.00th=[   502], 10.00th=[   553], 20.00th=[   
+627], 
+     | 30.00th=[   693], 40.00th=[   750], 50.00th=[   807], 60.00th=[   
+889], 
+     | 70.00th=[  1045], 80.00th=[  1893], 90.00th=[  7635], 95.00th=[ 
+15664], 
+     | 99.00th=[ 52691], 99.50th=[ 69731], 99.90th=[106431], 
+99.95th=[120062], 
+     | 99.99th=[145753] 
+   bw (  KiB/s): min=22853, max=76761, per=100.00%, avg=49071.18, 
+stdev=7539.25, samples=128 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 30 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 29/44 
+ 
+   iops        : min= 5713, max=19190, avg=12267.69, stdev=1884.87, 
+samples=128 
+  write: IOPS=4076, BW=15.9MiB/s (16.7MB/s)(1026MiB/64429msec) 
+    slat (usec): min=3, max=2402, avg=17.45, stdev=13.55 
+    clat (usec): min=1103, max=196780, avg=5124.94, stdev=10515.63 
+     lat (usec): min=1109, max=196793, avg=5142.66, stdev=10515.79 
+    clat percentiles (usec): 
+     |  1.00th=[  1614],  5.00th=[  1844], 10.00th=[  1975], 20.00th=[  
+2147], 
+     | 30.00th=[  2278], 40.00th=[  2409], 50.00th=[  2507], 60.00th=[  
+2638], 
+     | 70.00th=[  2802], 80.00th=[  3195], 90.00th=[  7767], 95.00th=[ 
+18744], 
+     | 99.00th=[ 58459], 99.50th=[ 76022], 99.90th=[114820], 
+99.95th=[128451], 
+     | 99.99th=[156238] 
+   bw (  KiB/s): min= 7711, max=25426, per=100.00%, avg=16399.52, 
+stdev=2451.43, samples=128 
+   iops        : min= 1927, max= 6356, avg=4099.75, stdev=612.88, 
+samples=128 
+  lat (usec)   : 250=0.01%, 500=3.74%, 750=26.82%, 1000=20.22% 
+  lat (msec)   : 2=12.13%, 4=21.53%, 10=8.34%, 20=3.00%, 50=3.00% 
+  lat (msec)   : 100=1.06%, 250=0.15% 
+  cpu          : usr=10.43%, sys=30.75%, ctx=582499, majf=0, minf=598 
+  IO depths    : 1=0.1%, 2=0.1%, 4=0.1%, 8=0.1%, 16=0.1%, 32=0.1%, 
+>=64=100.0% 
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, 
+>=64=0.0% 
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.1%, 
+>=64=0.0% 
+     issued rwt: total=785920,262656,0, short=0,0,0, dropped=0,0,0 
+     latency   : target=0, window=0, percentile=100.00%, depth=64 
+ 
+Run status group 0 (all jobs): 
+   READ: bw=47.6MiB/s (49.0MB/s), 47.6MiB/s-47.6MiB/s (49.0MB/s-
+49.0MB/s), io=3070MiB (3219MB), run=64429-64429msec 
+  WRITE: bw=15.9MiB/s (16.7MB/s), 15.9MiB/s-15.9MiB/s (16.7MB/s-
+16.7MB/s), io=1026MiB (1076MB), run=64429-64429msec 
+ 
+Disk stats (read/write): 
+  rbd0: ios=785746/262630, merge=0/44, ticks=2744510/1340731, 
+in_queue=4100376, util=100.00% 
+ 
+Như vậy, thiết bị lưu trữ trên có thể đạt tới 12.2K IOPS Read với latency trung 
+bình 15ms, 4K IOPS Write với latency trung bình 19ms, tỉ lệ 65-35. Loại lưu trữ 
+này không phù hợp với việc đọc ghi liên tục random với blocksize nhỏ, yêu cầu 
+latency <5ms như DB truyền thống. 
+c. Xác định số lượng và cấu hình 
+- Căn cứ kết quả tính toán dung lượng và hiệu năng thiết bị lưu trữ, xác định số 
+lượng và cấu hình thiết bị lưu trữ đáp ứng yêu cầu. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 31 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 30/44 
+ 
+- Số lượng ổ cứng = MAX ([Số lượng ổ cứngđáp ứng dung lượng], [Số lượng ổ cứngđáp 
+ứng hiệu năng]) + [Số lượng ổ cứng hotspare] 
+Tức là số lượng ổ cứng thiết bị lưu trữ phải đáp ứng đồng thời yêu cầu về dung 
+lượng, yêu cầu về hiệu năng và ổ cứng dự phòng nóng (hotspare). 
+- Số lượng ổ cứngđáp ứng dung lượng = [Dung lượng thô thiết bị lưu trữ] / [Dung lượng 
+01 ổ cứng] 
+Trong đó: 
+Dung lượng 01 ổ cứng tùy thuộc loại ổ cứng sử dụng, cụ thể: 
+STT 
+Loại ổ cứng 
+Dung lượng thông dụng 
+1 
+Flash/SSD 
+100GB, 
+200GB, 
+400GB, 
+800GB, 
+1.6TB, 
+1.92TB,... 
+2 
+SAS/FC 15krpm 
+300GB, 600GB,… 
+3 
+SAS/FC 10krpm 
+300GB, 
+600GB, 
+900GB, 
+1200GB, 
+1.6TB, 
+2.0TB,… 
+4 
+SATA/NL-SAS 7.2krpm 
+1TB, 2TB, 3TB, 4TB, 6TB, 8TB,… 
+- Số lượng ổ cứngđáp ứng hiệu năng = [Backend IOPS] * [Tỷ lệ dự phòng] / [IOPS 
+loại ổ cứng] 
+Trong đó: 
+Tỷ lệ dự phòng: Mục đích sử dụng tối đa 80% hiệu năng theo IOPS của thiết 
+bị lưu trữ. Tỷ lệ dự phòng = 1.25. 
+(Lưu ý các trường hợp ngoại lệ đã được nêu tại mục A.1 – Nguyên tắc định cỡ) 
+IOPS loại ổ cứng: sử dụng theo IOPS của loại ổ cứng tại mục a. 
+Với các hệ thống có yêu cầu cao về năng lực đọc ghi ngẫu nhiên (như ứng 
+dụng VAS, CSDL OLTP, File server với nhiều file dung lượng nhỏ, số lượng 
+file lớn,...) nên sử dụng các ổ cứng có tốc độ cao (10krpm, 15krpm, SSD) và 
+dung lượng nhỏ hơn 1TB để đảm bảo hiệu năng và thời gian khôi phục dữ liệu 
+nhanh. 
+Với ổ đĩa SSD, khi lưu trữ đến dung lượng ³75%, tốc độ ghi, update dữ liệu 
+sẽ giảm đáng kể, vì vậy với các hệ thống có nhu cầu cao về ghi dữ liệu lớn, 
+cần lưu ý đến tỷ lệ này để lựa chọn mức sử dụng cho phù hợp với hệ thống. 
+Khi xác định loại ổ cứng để lưu trữ dữ liệu, cần tính toán thời gian đồng bộ, 
+khôi phục dữ liệu cho các ổ hotspare (loại ổ có dung lượng thấp có thời gian khôi 
+phục, đồng bộ nhanh hơn, xét trên cùng đơn vị dung lượng cũng có hiệu năng tốt 
+hơn). 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 32 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 31/44 
+ 
+- Số lượng ổ cứng hotspare: tối thiểu 02 ổ với mỗi loại ổ cứng. Nếu số lượng 
+loại ổ cứng lớn, số lượng ổ cứng hotspare tương đương 7% tổng số lượng ổ 
+cứng cùng loại, làm tròn lên (round up). 
+- Bổ sung tính toán dung lượng cần có khi phục hồi dữ liệu (ví dụ: lưu trữ online 
+3 bản backup tương đương 1TB, dung lượng tối đa cần restore tương đương 1 
+bản backup, thì cần 3+1=4TB). 
+6. Định cỡ thiết bị sao lưu 
+a. Xác định thông số đầu vào 
+- Các loại dữ liệu cần sao lưu 
+- Đặc điểm các loại dữ liệu: dung lượng sao lưu cho từng người dùng, từng loại 
+dữ liệu; dữ liệu lưu CSDL, đa phương tiện (media), văn bản, sao lưu.... 
+- Thời gian lưu trữ dữ liệu. 
+- Tỷ lệ thay đổi dữ liệu. 
+- Thời gian, tốc độ sao lưu dữ liệu. 
+- Thời gian, tốc độ phục hồi dữ liệu sau khi sao lưu (làm cơ sở lựa chọn băng 
+từ, tủ sao lưu). 
+b. Tính toán tài nguyên 
+- Xác định tổng dung lượng sao lưu cần thiết của các loại dữ liệu. 
+Tổng dung lượng sao lưu = [Tổng dung lượng sao lưu toàn bộ] + [Tổng dung 
+lượng sao lưu gia tăng] 
+Trong đó: 
+[Tổng dung lượng sao lưu toàn bộ] = [Tổng dung lượng các bản sao lưu toàn 
+bộ trong thời gian lưu trữ dữ liệu] 
+Dung lượng sao lưu toàn bộ là dung lượng các dữ liệu cần sao lưu như dữ liệu 
+người dùng, bản sao lưu đầy đủ (backup full) CSDL, dữ liệu lịch sử, dữ liệu 
+cước, dữ liệu backup code ứng dụng... 
+Dữ liệu sao lưu gia tăng = [Tổng dung lượng các bản sao lưu gia tăng trong 
+chu kỳ, thời gian lưu trữ dữ liệu] 
+c. Xác định số lượng và cấu hình 
+Với thiết bị sao lưu băng từ: 
+- Tổng số Tape = [số lượng tape sao lưu toàn bộ] + [số lượng tape sao lưu gia 
+tăng] 
+- [Số lượng tape sao lưu toàn bộ] =  [Tổng dung lượng sao lưu toàn bộ] / [Dung 
+lượng của 01 Tape]) * [số bản sao lưu] * [Hệ số dự phòng] 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 33 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 32/44 
+ 
+- [Số lượng tape sao lưu gia tăng] = [Tổng dung lượng sao lưu gia tăng] / [Dung 
+lượng của 1 Tape]) * [số bản sao lưu] * [Hệ số dự phòng] 
+- Tổng dung lượng cần xử lý/giây = [Tổng dung lượng cần sao lưu] / [yêu cầu 
+thời gian cần sao lưu (phục hồi) tính theo giây] 
+- Tổng số đầu đọc/ghi (driver) = Max {(Tổng dung lượng cần xử lý/giây (MBps) 
+/ Tốc độ đọc-ghi của 1 Tape (MBps)), 2} 
+- Số đường kết nối = Max {(Tổng dung lượng cần xử lý/giây (MBps) / Tốc độ 
+1 đường kết nối (MBps), 2} 
+Trong đó: 
+• Tốc độ, dung lượng của 1 Tape tùy thuộc chủng loại Tape: 
+STT 
+Tape 
+Dung lượng (GB) 
+Tốc độ (MBps) 
+1 
+LTO-3 
+400 
+80 
+2 
+LTO-4 
+800 
+120 
+3 
+LTO-5 
+1500 
+140 
+4 
+LTO-6 
+2500 
+160 
+5 
+LTO-7 
+6 TB 
+300 
+6 
+LTO-8 
+12 TB 
+360 
+7 
+LTO-9 
+18 TB 
+400 
+• Số bản sao lưu: số bản sao lưu cùng một dữ liệu. Theo quy định, một dữ 
+liệu phải đảm bảo sao lưu trên tối thiểu 02 băng từ khác nhau. 
+• Hệ số dự phòng = 1.1 
+- Ngoài các tape để lưu trữ dữ liệu, thiết bị sao lưu cần lượng cleaning tape (để 
+lau đầu đọc) tương đương với lượng đầu đọc (tape drive) đề xuất. 
+- Tùy theo yêu cầu về sao lưu của các hệ thống, có thể sử dụng các thiết bị sao 
+lưu trên nền đĩa cứng để phù hợp với yêu cầu của từng hệ thống. Định cỡ thiết 
+bị sao lưu bằng đĩa cứng tương tự như định cỡ thiết bị lưu trữ (về tính toán 
+dung lượng cần đáp ứng, loại RAID, tốc độ và dung lượng ổ cứng…) và bổ 
+sung các tính năng cần thiết như băng thông tối đa, khả năng giao tiếp qua 
+NFS, CIFS, tính năng giả lập thiết bị tape (VTL), tính năng chống trùng lặp dữ 
+liệu, khả năng đồng bộ dữ liệu.... 
+7. Định cỡ thiết bị chuyển mạch mạng lưu trữ (SAN switch) 
+a. Xác định thông số đầu vào 
+- Số lượng dịch vụ: Xác định số hệ thống, dịch vụ cần triển khai kết nối qua 
+SAN switch. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 34 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 33/44 
+ 
+- Số port cho từng dịch vụ: Xác định số lượng port cần triển khai cho từng hệ 
+thống, dịch vụ. 
+b. Tính toán tài nguyên 
+- Số lượng port cần = ∑[số port cần cho từng dịch vụ] * Kdựphòngport 
+Trong đó: Kdựphòngport =1.2 
+Ví dụ: Dịch vụ 1 cần kết nối 5 server, 1 thiết bị lưu trữ, 01 thiết bị sao lưu; dịch 
+vụ 2 cần kết nối 10 server. 
+Lập bảng để tính số port cần: 
+STT 
+Tên thiết bị 
+Số lượng 
+Số lượng 
+port/thiết bị 
+Tổng 
+1 
+Máy chủ 
+15 
+2 
+30 
+2 
+Thiết bị lưu trữ 
+1 
+4 
+5 
+3 
+Thiết bị sao lưu 
+1 
+2 
+2 
+  
+Tổng 
+37 
+ 
+Số lượng port cần 
+45 
+c. Xác định tính năng và cấu hình 
+- Số port Active là số port có thể sử dụng và có licence của SAN switch  
+Số lượng port Active 01 thiết bị = [ Số lượng port cần] / [số thiết bị] 
+Trong đó: số thiết bị tối thiểu là 02.  
+- Quy tắc chọn thiết bị: 
+ü Nếu [Số port Active 01 thiết bị] < 24 port => Chọn thiết bị 24 port. 
+ü Nếu: 24 < [số port Active 01 thiết bị] < 48 port => Chọn switch 48 port. 
+Ngoài các thông số số lượng port, có thể cần xác định thêm các tiêu chí kỹ 
+thuật sau: 
+• Tốc độ cổng: 2, 4, 8 hoặc 16Gbps. 
+• Các chuẩn công nghệ: VSAN/zoning hoặc tương đương. 
+• Quản trị (https, ssh, console). 
+• Nguồn (AC/DC, công suất, dải điện áp hỗ trợ). 
+• Khả năng tích hợp, tương thích với các thiết bị đang sử dụng. 
+8. Định cỡ thiết bị chuyển mạch mạng LAN 
+a. Xác định thông số đầu vào 
+- Số lượng dịch vụ: Xác định số dịch vụ cần triển khai kết nối qua switch 
+- Số port cho từng dịch vụ: Xác định số lượng port downlink cần triển khai cho 
+từng dịch vụ. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 35 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 34/44 
+ 
+Ví dụ: Dịch vụ 1 cần kết nối 10 server, dịch vụ 2 cần kết nối 15 server  
+=> Cần tổng 25 port switch để đảm bảo cho 2 dịch vụ 
+- Số lượng port theo kiến trúc mạng: Xác định số port kết nối uplink, port kết 
+nối bắt cặp (switch-switch). 
+- Lưu lượng của từng dịch vụ: Xác định lưu lượng up/down từng dịch vụ 
+- Quy chuẩn lấy tải dựa vào công cụ lấy tải hoặc chỉ số 95 percentile.  
+- Lưu lượng (lượng dữ liệu thực tế truyền tải trên port, lưu lượng ≤ bandwidth 
+port). 
+- Bandwidth port (maximum lưu lượng có thể truyền dữ liệu 100Mbps, 1Gbps, 
+10Gbps)  
+- Thông lượng (throughput) thiết bị: khả năng chuyển mạch của thiết bị theo 
+chiều 2 up và down (throughput ≥ tổng bandwidth các port). Ví dụ: switch 24 
+port Gigabit, throughput luôn ≥ 24x2 (48Gbps). 
+b. Tính toán tài nguyên 
+- Số lượng port = (∑[số port cần cho từng dịch vụ] + [số port cần theo kiến trúc 
+mạng])*Kdựphòngport 
+ü Trong đó: Kdựphòngport =1.2 
+ü Số lượng port < 24 port => Chọn switch 24 port. 
+ü Nếu: 24< số lượng port < 48 port => Chọn switch 48 port hoặc kết nối mở 
+rộng chuyên dụng trên switch 24 port. Ví dụ: sử dụng cáp stack kết nối 2 
+switch 24 port thành switch 48 port. 
+ü Lưu lượng port trung bình = ∑[Tổng lưu lượng của dịch vụ] / [Số port dịch 
+vụ] 
+ü So sánh lưu lượng trung bình của các dịch vụ với các giá trị 100 Mbps, 
+1000Mbps, 10000 Mbps (chuẩn bandwidth port switch). Giá trị lưu lượng 
+trung bình nào gần bằng với các giá trị tương ứng 100Mbps, 1000Mbps, 
+10000Mbps thì sử dụng port switch với bandwidth tương ứng. 
+VD: Lưu lượng port trung bình của dịch vụ A là 500 Mbps, so sánh 
+(100<500<1000) => Sử dụng switch port 1000Mbps. 
+ü Bandwidth port cần đảm bảo cho dịch vụ < 100 Mbps => sử dụng switch 
+với port 100Mbps. 
+ü Bandwidth port cần đảm bảo: 100Mbps < Bandwidth port <1000 Mbps và 
+không thể triển khai ghép port vật lý thành port logic với bandwidth cao 
+hơn => sử dụng switch với port 1000 Mbps 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 36 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 35/44 
+ 
+ü Bandwidth port cần đảm bảo: 1000Mbps < Bandwidth port <10 Gbps và 
+không thể triển khai ghép port vật lý thành port logic với bandwidth cao 
+hơn => sử dụng switch với port 10 Gbps 
+ü Thông lượng thiết bị = [Bandwidth port * số lượng port] * 2 
+Lưu ý:  
+- Trong trường hợp lưu lượng port switch tính toán <100 Mbps, hãng không còn 
+sản xuất dòng switch này hoặc không hỗ trợ (support) thì sẽ sử dụng switch 
+port 1000Mbps. Với các ứng dụng CNTT triển khai trong các Tổng trạm thì 
+tối thiểu sử dụng port 1000Mbps. 
+- Với các thiết bị chuyển mạch có khả năng ghép các port vật lý thành port logic 
+với bandwidth cao hơn. Chỉ sử dụng ghép tối đa 4 port. 
+c. Xác định tính năng và cấu hình 
+Ngoài các thông số tính toán ở trên (số lượng port, bandwidth port và thông 
+lượng thiết bị),  tùy kiến trúc hệ thống và dịch vụ có thể cần xác định thêm các 
+tiêu chí kỹ thuật sau: 
+• Loại cổng: Ethernet hay SFP 
+• Giao thức định tuyến: layer 2 hay layer 3 (support OSPF, BGP, MPLS), 
+Layer 3 routing base (RIPv2 + static). 
+• Giao thức dự phòng gateway 
+• Giao thức chống loop 
+• Lọc địa chỉ MAC, chống giả mạo địa chỉ MAC, DHCP spoofing 
+• Số lượng địa chỉ MAC 
+• Số lượng VLAN cần đáp ứng 
+• Các tính năng khác: VRRP, stacking hoặc tương đương 
+• Xác định các tính năng, giao thức bảo mật: 802.1X, MAC filter… 
+• Quản trị (https, ssh, console); nguồn (AC or DC, công suất…) 
+• Khả năng tích hợp, tương thích với các thiết bị đang sử dụng 
+9. Định cỡ thiết bị tường lửa (Firewall) 
+a. Xác định thông số đầu vào 
+- Số lượng dịch vụ: Xác định số dịch vụ cần triển khai kết nối qua firewall 
+- Số lượng port: Xác định số lượng zone kết nối (MPBN, IPBN, DCN, VAS, 
+COREIT…), số port kết nối từng zone, port kết nối dự phòng HA. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 37 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 36/44 
+ 
+- Xác định số kết nối đồng thời, số kết nối khởi tạo mới trong 1s. Đơn vị thực 
+hiện định cỡ phải nêu rõ cách tính số kết nối đồng thời, số kết nối khởi tạo mới 
+trong 1s của hệ thống thực hiện định cỡ. 
+- Xác định các tính năng đảm bảo cho việc triển khai hệ thống 
+- Xác định lưu lượng mỗi connection (lưu lượng truyền tải của 1 kết nối từ nguồn 
+đến đích) 
+- Quy chuẩn lấy tải dựa vào công cụ lấy tải hoặc chỉ số 95 percentile.  
+- Lưu lượng (lượng dữ liệu thực tế truyền tải trên port, lưu lượng ≤ bandwidth 
+port). 
+- Bandwidth port (maximum lưu lượng có thể truyền dữ liệu 100Mbps, 1Gbps, 
+10Gbps)  
+- Thông lượng (throughput) firewall: khả năng chuyển mạch của thiết bị được 
+tính toán theo kích cỡ gói tin (512Byte hoặc 1518 Byte). VD: firewall fortigate 
+800 với kích cỡ gói tin 1518 Byte thì throughput là 2Gbps, với kích cỡ gói tin 
+512Byte thì throughput là 1Gbps. Thông thường sử dụng đơn vị đo throughput 
+với kích cỡ gói tin lớn nhất là 1518Byte. 
+b. Tính toán tài nguyên 
+- Số lượng port = (∑ [số port cần cho từng zone] + [số port triển khai HA]) * 
+Kdựphòngport 
+- Lưu lượng dịch vụ A = [Số kết nối đồng thời của dịch vụ A] * [lưu lượng mỗi 
+kết nối dịch vụ A] 
+- Với nhiều dịch vụ trên 1 zone: 
+∑ [Lưu lượng zone] =[Lưu lượng dịch vụ A (up/down) + Lưu lượng dịch vụ 
+B (up/down) + …] 
+Thông lượng thiết bị = ∑ [Lưu lượng zone chiều up + lưu lượng zone chiều 
+down]* Kdựphòngthônglượng  
+Lưu lượng port =  ∑ [Lưu lượng zone] / [số lượng port trong zone] 
+ü Nếu bandwidth port < 100 Mbps => Sử dụng firewall với bandwidth port 
+100 Mbps. Khi lựa chọn cấu hình cần cân nhắc thay thế bằng port 
+1000Mbps nếu dịch vụ có khả năng mở rộng về quy mô sau này để tránh 
+việc phải thay thế thiết bị. 
+ü Nếu 100 Mbps < lưu lượng port < 1000 Mbps  và thiết bị không thể ghép 
+các port vật lý thành port logic với bandwidth cao hơn => Sử dụng firewall 
+port 1000 Mbps 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 38 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 37/44 
+ 
+ü Nếu 1000 Mbps < lưu lượng port < 10 Gbps, thiết bị không thể ghép port 
+vật lý thành port logic => Sử dụng firewall port 10 Gbps 
+Trong đó: 
+Kdựphòngport = 1.2 
+Kdựphòngthônglượng = 1.2 
+c. Xác định tính năng và cấu hình 
+Ngoài các thông số tính toán ở trên (số lượng port, bandwidth port, thông 
+lượng thiết bị),  tùy hệ thống và mô hình triển khai có thể cần xác định thêm 
+các tiêu chí kỹ thuật sau: 
+• Loại cổng: ethernet hay SFP, tốc độ cổng. 
+• Giao thức dự phòng gateway 
+• Routing dynamic, routing static 
+• Firewall layer (firewall base, firewall layer 7) 
+• Dự phòng HA (Active-Active, Active-Standby) 
+• Tính năng khác: IPS, IDS, VPN, Antivirus, URL filter, giao thức mã hóa… 
+•  Tính năng quản trị (https, ssh, console); nguồn (AC or DC, công suất…) 
+10. Định cỡ thiết bị cân bằng tải 
+a. Xác định thông số đầu vào 
+- Xác định mô hình triển khai GTM (Global traffic managerment) hay LTM 
+(Local traffic managerment). 
+- Số lượng dịch vụ: Xác định số lượng dịch vụ triển khai cân bằng tải  
+- Xác định số lượng port sử dụng cho mỗi dịch vụ tương ứng. 
+- Xác định lưu lượng /1 connecton, lưu lượng/1 transaction của từng dịch vụ 
+- Xác định số CPS layer 4, TPS layer 7. Đơn vị thực hiện định cỡ phải nêu rõ 
+cách tính số CPS layer4, TPS layer 7 của hệ thống thực hiện định cỡ. 
+b. Tính toán tài nguyên 
+- Số lượng port = ∑[số lượng port từng dịch vụ]  
+- Số CPS (Connection Per Second), TPS (Transaction Per Second) 
+• Số CPS layer 4 = ∑ [Số CPS layer 4 từng dịch vụ] * KdựphòngCPS 
+• Số TPS layer 7 = ∑ [Số TPS layer 7 từng dịch vụ] * KdựphòngTPS 
+- Lưu lượng dịch vụ = [Số CPS layer 4] * [lưu lượng 01 CPS layer 4] + [Số TPS 
+layer 7] * [lưu lượng 01 TPS layer 7] 
+- Thông lượng thiết bị = ∑ [Lưu lượng dịch vụ] * Kdựphònglưulượng 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 39 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 38/44 
+ 
+- Lưu lượng port = [Lưu lượng dịch vụ] / [số lượng port dịch vụ] 
+ü Nếu lưu lượng port trung bình <1000 Mbps => sử dụng thiết bị LB với port 
+1000Mbps. 
+ü Nếu 1000 Mbps < lưu lượng port trung bình <10 Gbps, thiết bị không có 
+khả năng bundle hoặc ghép các port tốc độ thấp thành port tốc độ cao => 
+sử dụng thiết bị LB với port 10 Gbps. 
+Trong đó:  
+KdựphòngCPS = 1.2 
+Kdựphònglưulượng = 1.2 
+c. Xác định tính năng và cấu hình 
+Ngoài các thông số tính toán ở trên (số lượng port, tốc độ port và thông lượng 
+thiết bị),  tùy hệ thống có thể cần xác định thêm các tiêu chí kỹ thuật sau: 
+• Loại cổng: ethernet hay SFP 
+• Tính năng firewall, mã hóa dữ liệu, nén dữ liệu… 
+• Khả năng tích hợp, tương thích với các thiết bị đang sử dụng 
+11. Định cỡ thiết bị tủ Rack 
+a. Xác định thông số đầu vào 
+- Danh sách, cấu hình các thiết bị. 
+b. Tính toán tài nguyên 
+- Lập bảng danh sách thiết bị lắp đặt: 
+STT 
+Tên loại thiết bị 
+Số lượng 
+Rack Unit (RU) 
+Tổng RU 
+1 
+Máy chủ 
+ 
+ 
+ 
+2 
+SAN Switch 
+ 
+ 
+ 
+3 
+Thiết bị lưu trữ 
+ 
+ 
+ 
+4 
+Thiết bị sao lưu 
+ 
+ 
+ 
+5 
+Load Balancer 
+ 
+ 
+ 
+6 
+Firewall 
+ 
+ 
+ 
+7 
+Switch 
+ 
+ 
+ 
+ Tổng 
+ 
+ 
+ 
+Số Rack Unit của từng loại thiết bị thông thường như sau: 
+STT 
+Tên loại thiết bị 
+Rack Unit (RU) 
+1 
+Máy chủ 
+2 
+2 
+SAN Switch 
+1 
+3 
+Thiết bị lưu trữ 
+ 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 40 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 39/44 
+ 
+4 
+Thiết bị sao lưu 
+8 
+5 
+Load Balancer 
+1 
+6 
+Firewall 
+1 
+7 
+Switch 
+1 
+Với thiết bị lưu trữ: [Số Rack Unit] = [Số tray đĩa] * 3U. 
+Trong đó số tray đĩa được xác định từ số lượng và chủng loại ổ cứng của thiết 
+bị lưu trữ (ổ chuẩn 3.5” hay 2.5”). 
+c. Xác định tính năng và cấu hình 
+- Số lượng Rack = [Tổng RU] / 38. 
+(2U trên cùng của Rack để tạo khoảng trống đi dây mạng và 2U dưới cùng của 
+Rack để tạo khoảng trống thao tác với dây nguồn). 
+-    Kích thước Rack: cao 42U, rộng 600mm, sâu tối thiểu 1000mm. 
+- Bộ phân phối nguồn: 02 bộ, số ổ cắm trên PDU căn cứ theo số lượng thiết bị 
+dự kiến lắp đặt trên Rack. 
+ Lưu ý: Trường hợp các server trên một rack có tổng công suất tiêu thụ danh định 
+vượt quá mức công suất cho phép của một tủ rack trong DC thì cần phân chia lại 
+số lượng rack cho phù hợp 
+ 
+ 
+ 
+ 
+ 
+ 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 41 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 40/44 
+ 
+ 
+B. CẤP PHÁT, THU HỒI HẠ TẦNG CÔNG NGHỆ THÔNG TIN 
+B.1. Quan điểm 
+- Toàn bộ các hệ thống CNTT nội bộ Tập đoàn phải triển khai, tích hợp với hạ 
+tầng điện toán đám mây (Cloud) của Tập đoàn, ngoại trừ các hệ thống triển 
+khai phân tán tại các vị trí không có hạ tầng Cloud hoặc yêu cầu đặc thù về 
+điều kiện triển khai (cô lập về hạ tầng, thiết bị đặc chủng...). 
+- Cấp phát tài nguyên LB, lưu trữ trên mạng lưới cần tránh lưu lượng chạy 
+vòng qua nhiều lớp mạng, quy hoạch cấp phát tài nguyên lưu trữ, các node 
+ảo hoá quan trọng (Ví dụ các cặp DB) đảm bảo an toàn khi gặp sự cố phần 
+cứng thiết bị. 
+- Khi thực hiện cấp phát yêu cầu hệ thống CNTT phải được kiểm thử hiệu năng 
+và định cỡ chính xác trước khi cấp phát. Các hệ thống được định cỡ khi chưa 
+có sản phẩm, khi yêu cầu cấp phát cần định cỡ lại theo phương pháp có sản 
+phẩm phần mềm. 
+- Cấp phát tài nguyên và theo dõi, điều chỉnh để đảm bảo hiệu suất sử dụng tối 
+ưu nhất. 
+B.2 Quy định cấp phát hạ tầng CNTT 
+Phương pháp cấp phát: 
+- Chỉ thực hiện cấp phát hạ tầng CNTT với các hệ thống CNTT có tờ trình đầu 
+tư tài nguyên, có quy hoạch định cỡ. Được kiểm thử hiệu năng và có tài liệu 
+định cỡ đáp ứng quy định. 
+- Việc cấp phát tài nguyên vật lý tách biệt hoàn toàn, một phần, Bare-Metal, 
+VM hay container là theo nhu cầu của bài toán, nếu không có yêu cầu đặc 
+biệt thì cần phải triển khai trên hạ tầng Cloud tập trung của Tập đoàn. Đơn 
+vị chủ quản hệ thống và TCT VTNet thống nhất phương án cấp phát trong 
+quá trình xây dựng sizing và triển khai hệ thống. 
+- Cấp phát tài nguyên đảm bảo hoạt động của hệ thống trong 06 tháng và thực 
+hiện theo dõi và điều chỉnh (tăng, giảm) tài nguyên để đảm bảo hoạt động 
+của hệ thống và hiệu suất sử dụng theo KPI của Tập đoàn. 
+- Thực hiện áp hạn ngạch (quota) với các tài nguyên cấp phát. 
+Về cấp phát tài nguyên ảo hóa:  
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 42 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 41/44 
+ 
+- Các hệ thống Big data (xử lý tập dữ liệu lớn phân tán): Cấp phát Bare-Metal 
+trên hạ tầng Cloud (ứng dụng được cài đặt trên các server vật lý, không sử 
+dụng ảo hóa). 
+- Các hệ thống còn lại: Cấp phát máy chủ ảo hóa trên hạ tầng Cloud để tận 
+dụng các ưu điểm của hạ tầng này (tận dụng tối đa tài nguyên phần cứng của 
+máy chủ vật lý, tiết kiệm chi phí đầu tư hệ thống). 
+- Để đảm bảo hiệu năng và an toàn, khi cấp phát tài nguyên ảo hóa cần đảm 
+bảo tỷ lệ cấp phát overcommit như sau: 
+o Tỷ lệ overcommit CPU ≤  4 
+o Tỷ lệ overcommit RAM ≤ 1.5. 
+Thu hồi hạ tầng CNTT: 
+- VTNet là đơn vị kiểm soát chung về hạ tầng, có trách nhiệm cảnh bảo về hiệu 
+suất sử dụng của các đơn vị thấp (tiến tới tính chi phí (nội bộ) dựa trên tài 
+nguyên tiêu dùng). 
+- Với các hệ thống CNTT nội bộ Tập đoàn, TTKTTC VTNet chịu trách nhiệm 
+rà soát, đánh giá hiệu suất sử dụng tài nguyên và lập kế hoạch thu hồi hạ tầng 
+CNTT để đảm bảo hiệu suất sử dụng theo KPI Tập đoàn. Việc rà soát, đánh 
+giá thực hiện tối thiểu với 02 chu kỳ tải (tuần, tháng, quý…) tùy theo đặc thù 
+từng hệ thống nhưng cần đảm bảo các hệ thống được rà soát tối thiểu 06 
+tháng 01 lần.  
+- Thực hiện đánh giá, thu hồi với hạ tầng CNTT có hiệu suất sử dụng thấp dựa 
+trên tình hình sử dụng: đánh giá các chỉ tiêu thực tế của hệ thống như CCU 
+hoặc TPS/TPM, RPS, QPS,.... Nếu KPI thực tế thấp hơn nhiều so với giá trị 
+định cỡ, cần xem xét thu hồi/cắt giảm tài nguyên đã cấp. Nếu thực tế cao hơn 
+giá trị định cỡ và gây ảnh hưởng cao tải, lỗi dịch vụ, các đơn vị liên quan cần 
+phối hợp thực hiện bổ sung định cỡ cấp phát tài nguyên cho phù hợp. 
+- Thực hiện đánh giá, thu hồi với hạ tầng CNTT có hiệu suất sử dụng thấp dựa 
+trên tải server: với máy chủ, thực hiện với máy chủ có tải CPU ≤ 15% hoặc 
+tải RAM ≤ 30% trong thời gian đánh giá. 
+- Với các hệ thống mới triển khai hoặc có kế hoạch phát triển, tăng trưởng, đơn 
+vị chủ quản dịch vụ phải có văn bản thông báo và thống nhất với VTNet để 
+tạm dừng thu hồi tài nguyên và có kế hoạch đảm bảo hạ tầng CNTT đảm bảo 
+chất lượng dịch vụ. 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 43 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 42/44 
+ 
+- Với từng hệ thống, cần thực hiện đánh giá giữa phương án thực hiện giảm số 
+máy chủ trong hệ thống và phương án so với giảm cấu hình từng máy chủ 
+của hệ thống. 
+- Với máy chủ ứng dụng chạy hạ tầng ảo hóa, ưu tiên thực hiện giảm số máy 
+chủ trong hệ thống trước khi giảm cấu hình từng máy chủ trong hệ thống. 
+- Với các hệ thống chạy cluster như cơ sở dữ liệu, khi thu hồi cần đảm bảo số 
+lượng máy chủ tối thiểu theo mô hình cụm cluster. 
+ 
+ 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 44 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 43/44 
+ 
+ 
+C. KIỂM THỬ HIỆU NĂNG HỆ THỐNG CNTT 
+- Đối với lớp ứng dụng (application) và nền tảng (platform như DB), cần tính 
+toán, định cỡ sử dụng các công cụ thông dụng ra được các con số phục vụ 
+sizing như CCU, TPS, RPS. 
+- Đối với các CSDL nguồn mở, có thể sử dụng công cụ sysbench hoặc công 
+cụ tương đương với bài test OLTP (OnLine Transaction Processing) để đánh 
+giá tải của DB trên hạ tầng thử nghiệm, triển khai thực tế. 
+[root@bench ]# sysbench --test=oltp --oltp-table-size=5000000 --oltp-
+table-name=t_test \ 
+--db-driver=mysql \ 
+--mysql-socket=/u01/database/mysql.sock \ 
+--mysql-table-engine=innodb \ 
+--mysql-host=localhost \ 
+--mysql-db=dbtest \ 
+--mysql-user=root \ 
+run 
+ 
+SQL statistics: 
+    queries performed: 
+        read:                            614660 
+        write:                           0 
+        other:                           122932 
+        total:                           737592 
+    transactions:                        61466  (204.84 per sec.) 
+    queries:                             737592 (2458.08 per sec.) 
+    ignored errors:                      0      (0.00 per sec.) 
+    reconnects:                          0      (0.00 per sec.) 
+  
+Throughput: 
+    events/s (eps):                      204.8403 
+    time elapsed:                        300.0679s 
+    total number of events:              61466 
+  
+Latency (ms): 
+         min:                                   24.91 
+         avg:                                   78.10 
+         max:                                  331.91 
+         95th percentile:                      137.35 
+         sum:                              4800234.60 
+  
+Threads fairness: 
+    events (avg/stddev):           3841.6250/20.87 
+    execution time (avg/stddev):   300.0147/0.02 
+ 
+Với ví dụ trên, giải pháp DB MySQL có thể thực hiện 62K giao dịch TPS, 2k4 
+QPS, trung bình 1 giao dịch hết 137ms trên hạ tầng được cấp phát 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021
+===== TRANG 45 =====
+ 
+ 
+ 
+TẬP ĐOÀN CÔNG NGHIỆP- VIỄN THÔNG QUÂN ĐỘI Mã hiệu: GL.CNVTQĐ.CNTT.18 
+GUIDELINE ĐỊNH CỠ,  
+CẤP PHÁT HẠ TẦNG  
+CÔNG NGHỆ THÔNG TIN 
+Ngày có hiệu lực:  01/10/2021 
+Ngày hết hiệu lực:  01/10/2023 
+Lần ban hành: 06 
+Trang: 44/44 
+ 
+- Đối với ứng dụng, có thể sử dụng các công cụ benchmark end-2-end để tính 
+toán ra các con số CCU, RPS như jmeter, ab. Ví dụ dưới là kết quả test tải 
+của 1 ứng dụng sử dụng jmeter 
+ 
+Kết quả cho thấy ứng dụng có thể chịu tải 867 request per minutes. 
+- Việc tính toán và định cỡ ứng dụng, nền tảng không phụ thuộc và bó buộc 
+vào một công cụ duy nhất, do đó, đơn vị PTPM cần phối hợp và thống nhất 
+với đơn vị quy hoạch định cỡ, triển khai để thống nhất cùng một công cụ, 
+cùng một cách thức đo kiểm để có thể phục vụ việc nâng cấp, mở rộng sau 
+này. Khi tiến hành đầu tư, triển khai, tất cả các công thức, công cụ, bài kiểm 
+thử định cỡ cần phải được lưu vết, ký xác nhận để làm sở cứ phục vụ các 
+công tác sau này. 
+ 
+ 
+Tài liệu này thuộc sở hữu của Viettel. Việc phát tán, sử dụng trái phép bị nghiêm cấm
+Số và ký hiệu: GL.CNVTQĐ.CNTT.18.514
+Thời gian ký: 30/09/2021 08:00:12 +07:00
+Ngày ban hành: 29/09/2021

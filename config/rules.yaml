@@ -1,0 +1,282 @@
+# =============================================================================
+# rules.yaml — Bộ quy tắc định cỡ của Sizing Copilot
+# =============================================================================
+#
+# NGUYÊN TẮC NT3: quy tắc là DỮ LIỆU, không phải code hay prompt.
+# Người nghiệp vụ sửa file này trực tiếp, KHÔNG cần lập trình viên.
+# Không hard-code công thức/ngưỡng vào Python, không nhét quy tắc vào prompt.
+#
+# SAU MỖI LẦN SỬA FILE NÀY, BẮT BUỘC CHẠY LẠI EVAL SET (PLAN.md mục 4.4):
+#   uv run python -m eval.run_eval
+#
+# -----------------------------------------------------------------------------
+# TRẠNG THÁI: KHUNG RỖNG — chưa có quy tắc thật.
+# Hai quy tắc dưới đây là VÍ DỤ MẪU (docs/ke-hoach-trien-khai.md, Phụ lục A),
+# dùng để minh họa cấu trúc. Xóa hoặc thay khi điền quy tắc thật.
+# Quy tắc thật chỉ được điền sau khi hoàn tất và xác nhận mục 0.1–0.4
+# (bảng nháp: docs/0.1-danh-sach-quy-tac.md).
+# -----------------------------------------------------------------------------
+#
+# LƯỢC ĐỒ MỘT QUY TẮC
+# ===================
+#
+# Trường chung — BẮT BUỘC cho mọi quy tắc:
+#   id            Mã định danh duy nhất, dạng <NHÓM>-<số>. VD: STO-01, CPU-03.
+#                 Mã này xuất hiện trong `rule_ref` của mỗi finding (NT2).
+#                 KHÔNG đổi mã đã dùng — sẽ làm hỏng liên kết với eval set.
+#   name          Tên ngắn, một dòng, tiếng Việt.
+#   type          quantitative | qualitative
+#                 quantitative → C4 (src/validators/quantitative.py, thuần code)
+#                 qualitative  → C5 (src/validators/qualitative.py, RAG + LLM)
+#   applies_to_equipment  Loại thiết bị quy tắc áp dụng. Xem `equipment_types` bên dưới.
+#                 BẮT BUỘC — mọi quy tắc đều phải điền ít nhất một giá trị.
+#                 Quy tắc không gắn với thiết bị nào thì dùng `tat_ca` (áp cho mọi
+#                 thiết bị: thủ tục, phương pháp định cỡ) hoặc `tai_lieu` (yêu cầu
+#                 về cấu trúc/trình bày bản sizing). KHÔNG để trống.
+#   applies_to_module     (tùy chọn) Module phần mềm đặc thù. Xem `module_types`.
+#                 Để trống = áp dụng cho mọi module.
+#   scope         Quy tắc được chấm BAO NHIÊU LẦN trên một bản sizing. Xem
+#                 `evaluation_scopes` bên dưới. Khác với `applies_to_*` — hai
+#                 trường đó nói quy tắc áp cho LOẠI nào, `scope` nói chấm mấy lần.
+#                 Bỏ trống mặc định `he_thong` (một lần cho cả tài liệu).
+#   round         1 = vòng checklist, chỉ hỏi "thành phần cần có đã có chưa".
+#                 2 = vòng tài liệu định cỡ, kiểm cách tính có đúng không.
+#                 C7 phải CHẶN finding vòng 2 của mục đã trượt vòng 1.
+#                 Chi tiết: docs/rules/rules-checklist-flat.md
+#   legacy_ref    (tùy chọn) Mã tạm ở danh sách phẳng 0.1, để truy vết ngược.
+#                 VD: [R48, R49] hoặc [CPU-01]. Xem docs/rules/rules-crossmap.md.
+#   code_ref      (tùy chọn) Vị trí hiện thực hóa trong web app hiện hành, nếu có.
+#                 VD: "frontend/script.js:6704". Dùng để đối chiếu khi code đổi.
+#   severity      critical | major | minor | info
+#                 critical — chắc chắn bị trả lại (thiếu mục bắt buộc, sai công
+#                            thức bắt buộc, vượt ngưỡng cứng)
+#                 major    — nhiều khả năng bị hỏi lại (thiếu sở cứ, số liệu mâu thuẫn)
+#                 minor    — nên sửa cho hoàn thiện (trình bày, đơn vị, làm tròn)
+#                 info     — hệ thống không kiểm chứng được, người dùng tự xác nhận
+#   source_doc    Trích dẫn vị trí trong tài liệu gốc (tên TL, mục, trang).
+#                 BẮT BUỘC — đây là căn cứ grounding theo NT2. Không có thì
+#                 finding sinh ra sẽ bị lọc bỏ.
+#
+# Trường riêng cho type: quantitative
+#   formula          Biểu thức tính lại. Chỉ dùng tên tham số khai trong `inputs`
+#                    và các hàm số học an toàn (pow, min, max, ceil, floor, round).
+#                    Đánh giá bằng asteval/simpleeval — KHÔNG BAO GIỜ dùng eval().
+#   inputs           Danh sách tham số: {name, unit, required, default}
+#                    - required: true  → thiếu thì KHÔNG đoán, sinh finding
+#                                        category "thiếu thông tin" (NT4)
+#                    - default         → chỉ dùng khi tài liệu tiêu chí cho phép
+#                                        mặc định; ghi rõ trong source_doc
+#   compare_with     Tên trường trong bản sizing để đối chiếu với kết quả formula.
+#   tolerance        Sai lệch tương đối cho phép, dạng thập phân (0.10 = 10%).
+#   message_template Mẫu câu tiếng Việt cho finding. Biến dùng được:
+#                    {expected} {declared} {diff_pct} {unit} + tên các inputs.
+#
+# Trường riêng cho type: qualitative
+#   criteria         Tiêu chí "thế nào là ĐẠT", viết CỤ THỂ. Tránh "hợp lý",
+#                    "đầy đủ", "phù hợp" — LLM sẽ tự chế tiêu chuẩn riêng.
+#                    Nêu rõ cả trường hợp KHÔNG đạt.
+#   examples         (khuyến nghị) {pass: [...], fail: [...]} — trích từ bản
+#                    sizing thật, dùng làm few-shot cho C5.
+#
+# Trường tùy chọn cho cả hai loại
+#   enabled          true (mặc định) | false — tắt tạm một quy tắc mà không xóa.
+#   confidence_floor high | medium | low — chỉ xuất finding từ quy tắc này khi
+#                    độ tin cậy đạt mức trở lên. Dùng để siết false positive.
+#   note             Ghi chú nội bộ, không hiển thị cho người dùng cuối.
+# =============================================================================
+
+version: "0.1.0"
+updated: "2026-08-23"
+
+# Nguồn tài liệu gốc mà bộ quy tắc này số hóa. Mỗi `source_doc` ở dưới phải
+# tham chiếu về một trong các mục ở đây.
+sources:
+  - key: TL-DINH-CO
+    title: "GUIDELINE ĐỊNH CỠ, CẤP PHÁT HẠ TẦNG CNTT"
+    doc_id: "GL.CNVTQĐ.CNTT.18"
+    issue: 7                      # lần ban hành — cập nhật 2026-08-25
+    effective_from: "2023-10-01"
+    effective_to: "2025-10-01"
+    pages: 44
+    file: "Guideline_Dinh_co_thiet_bi_CNTT_lan7_7.01.pdf"
+    # Nguồn trích dẫn nguyên văn (rule_quote). Ở bản này trang vật lý = trang in,
+    # không lệch 1 như bản lần 06.
+    extracted_text: "docs/rules/.tmp-lan7/clean.txt"
+    extracted_to: "docs/rules/rules-flat-draft.md"   # 100 quy tắc R01–R100
+    # Đã đối chiếu lần 06 -> lần 07: KHÔNG quy tắc nào đổi (giống nhau 97,9% ở các
+    # dòng có số; khác biệt chỉ ở chữ ký, lịch sử sửa đổi, mục lục).
+    # Chi tiết: docs/rules/rules-lan7-doi-chieu.md
+    previous_issue:
+      issue: 6
+      effective_to: "2023-10-01"
+      pages: 45
+      extracted_text: "docs/rules/.tmp/clean.txt"   # giữ để truy vết
+      rules_changed: 0
+    # Ngày hết hiệu lực in trên tài liệu là 01/10/2025, NHƯNG đã được xác nhận
+    # (2026-08-24) là bản đang áp dụng thực tế. Không dùng ngày in để suy ra
+    # tài liệu hết hạn.
+    status: "active_confirmed"
+    confirmed_on: "2026-08-24"
+    successor:
+      # Tài liệu ĐỊNH CỠ SERVER CÓ GẮN GPU — chưa nhận. Đã kiểm: lần 07 KHÔNG
+      # chứa nội dung GPU nào (tìm GPU/NVIDIA/CUDA trên cả 44 trang, không có).
+      # Khi nhận: mở lại 0.1–0.4 cho riêng phần GPU, rồi bổ sung vào đây.
+      status: "pending"
+      adds: "Định cỡ server có gắn GPU"
+    missing:
+      # Cả ba vẫn thiếu ở lần 07. Bảng lịch sử sửa đổi có nhắc tới chúng nên chúng
+      # tồn tại, chỉ không nằm trong file PDF.
+      - "Phụ lục 01 — mẫu tài liệu định cỡ (chặn R34 và mục 1.16)"
+      - "Phụ lục 02 — bảng Cint_rated/Cfp_rated theo dòng CPU (đã có quy ước thay thế ở 0.3)"
+      - "Checklist rà soát đánh giá nội dung định cỡ — thay đổi DUY NHẤT mà lần 07
+         tuyên bố đã bổ sung, nhưng không có trong 44 trang. Đây là danh mục kiểm
+         của người thẩm định, giá trị cao nhất với dự án — xin riêng."
+
+  - key: NOI-BO
+    title: "Quy ước nội bộ chưa có văn bản (trích từ frontend/script.js)"
+    extracted_to: "docs/0.1-danh-sach-quy-tac.md"
+    note: >
+      Quy tắc đang chạy thật trên web app nhưng KHÔNG có trong Guideline: ngưỡng
+      Redis/Kafka, MariaDB chia 3 khi Active-Active, KPI Datanode ≤ 50%.
+      Chưa có căn cứ văn bản → giữ severity thấp cho tới khi có nguồn.
+      Đối chiếu đầy đủ: docs/rules/rules-crossmap.md mục 3.
+
+# HAI TRỤC PHÂN LOẠI — xem docs/rules/rules-crossmap.md mục 5.
+# Một quy tắc có thể thuộc cả hai: bản sizing Redis vừa là "định cỡ máy chủ" theo
+# Guideline, vừa là "module Redis" theo web app.
+#
+# Trục 1 — loại thiết bị, theo cách Guideline chia chương (dùng cho MỌI quy tắc).
+equipment_types:
+  - may_chu          # 4. Định cỡ máy chủ          (R36–R52)
+  - luu_tru          # 5. Định cỡ thiết bị lưu trữ (R54–R69)
+  - sao_luu          # 6. Định cỡ thiết bị sao lưu (R70–R76)
+  - san_switch       # 7. SAN switch                (R77–R78)
+  - lan_switch       # 8. LAN switch                (R79–R82)
+  - firewall         # 9. Firewall                  (R83–R85)
+  - load_balancer    # 10. Cân bằng tải             (R86–R87)
+  - rack             # 11. Tủ Rack                  (R88–R90)
+  - cap_phat         # B. Cấp phát, thu hồi         (R91–R97)
+  - kiem_thu         # C. Kiểm thử hiệu năng        (R98–R99)
+  # --- Hai giá trị bổ sung 2026-08-26, quyết định khi gỡ chặn cho mục 0.5 ---
+  # Guideline chia chương theo LOẠI THIẾT BỊ, nhưng ~21 quy tắc không gắn được
+  # với thiết bị nào: 10 quy tắc thủ tục/phương pháp áp cho mọi thiết bị (R26,
+  # R30, R102…) và 11 mục checklist chỉ nói về cấu trúc tài liệu (CL-2.2, CL-2.6…).
+  # Vì `applies_to_equipment` là trường BẮT BUỘC, cần hai giá trị này — nếu không
+  # sẽ phải liệt kê cả 10 loại thiết bị cho một quy tắc về... mục lục tài liệu.
+  - tat_ca          # áp cho MỌI loại thiết bị — quy tắc thủ tục, phương pháp
+                    # định cỡ, nguyên tắc chung. VD: R26, R30, R31, R102, R103.
+  - tai_lieu        # KHÔNG gắn thiết bị nào — yêu cầu về cấu trúc/trình bày của
+                    # bản sizing. VD: CL-2.2 mô tả tổng quan, CL-2.6 mô hình
+                    # logic, CL-2.8 luồng nghiệp vụ, CL-2.9 bảng tổng hợp.
+#
+# QUY ƯỚC "thiết bị mạng": Guideline nói chung "thiết bị mạng" ở R09 và R12.
+# KHÔNG thêm giá trị `mang` (sẽ chồng lấn và gây nhập nhằng khi so khớp) — thay
+# vào đó liệt kê đủ bốn loại:
+#     applies_to_equipment: [san_switch, lan_switch, firewall, load_balancer]
+
+# Phạm vi chấm — một quy tắc sinh bao nhiêu lần đánh giá trên một bản sizing.
+# Checklist thẩm định phân rõ ba cấp: Tổng quan / từng phân hệ / từng công nghệ
+# lưu trữ trong phân hệ. Độ mịn này khớp sẵn với web app hiện hành
+# (moduleInstanceReviews[].instanceKey và storageRowReviews[].rowIndex).
+evaluation_scopes:
+  - he_thong                      # một lần cho cả hệ thống
+  - phan_he                       # một lần cho mỗi phân hệ có trong tài liệu
+  - phan_he_x_cong_nghe_luu_tru   # một lần cho mỗi công nghệ lưu trữ trong mỗi phân hệ
+
+# Trục 2 — module phần mềm, theo web app hiện hành (frontend/script.js —
+# MODULE_TEMPLATE_MAPPING). CHỈ điền cho quy tắc đặc thù công nghệ; để trống
+# nghĩa là quy tắc áp dụng cho mọi module.
+module_types:
+  - app
+  - mariadb
+  - redis
+  - kafka
+  - k8s
+  - lb_fw
+  - other
+
+# Ngưỡng dùng chung, tham chiếu được từ `formula` của nhiều quy tắc.
+# Giữ ở một chỗ để sửa một lần, tránh lệch giữa các quy tắc.
+#
+# Giá trị đã ĐỐI CHIẾU với Guideline (docs/rules/rules-formulas.md), nhưng vẫn phụ
+# thuộc việc xác minh tài liệu còn hiệu lực — xem `sources.status` ở trên.
+globals:
+  # Hệ số đảm bảo KPI — R49 (trang 23); tương ứng ngưỡng R02/R03/R04 (trang 8)
+  cpu_kpi: 0.75         # Kkpi_cpu  — tải CPU tối đa 75%
+  ram_kpi: 0.90         # Kkpi_ram  — tải RAM tối đa 90%
+  disk_kpi: 0.80        # Kkpi_dia  — tải ổ cứng tối đa 80%
+  error_margin: 1.10    # Ksaisố    — dự phòng sai số 10% (R19, R49)
+
+  # Dự phòng thiết bị mạng — R09 (trang 9); dùng lại ở R77, R79, R83, R84, R86
+  port_reserve: 1.20    # Kdph_port / Kdph_thongluong / Kdph_CPS / Kdph_luuluong
+
+  # Hệ số dung lượng thô — R57 (trang 26)
+  format_ratio: 1.10    # TyLe_format
+  storage_error_ratio: 1.10   # TyLe_saiso (lưu trữ — tách khỏi error_margin máy chủ)
+  storage_reserve: 1.25 # TyLe_duphong — mục tiêu dùng ≤ 80% dung lượng
+
+  # Overcommit — R21, R22 (trang 7). Lưu ý R94 (cấp phát) cho ram ≤ 1.5, khác ngữ
+  # cảnh với R22 (định cỡ) = 1. Xem rules-formulas.md điểm 9.
+  overcommit_cpu: 4     # OR CPU thường; = 2 với VM hiệu năng cao
+  overcommit_ram: 1     # OR RAM khi ĐỊNH CỠ
+
+  # Quy ước thay Phụ lục 02 (đã chốt 2026-08-24) — rules-formulas.md
+  cint_rated_per_vcpu: 3   # VM (~90% trường hợp)
+  # Máy chủ vật lý (~10%): KHÔNG có mặc định → None, tự lấy từ spec.org (NT4)
+
+  # KHÔNG có nguồn trong Guideline — giữ null, không tự điền (NT2/NT4)
+  datanode_kpi: null    # code ghim 0.50 nhưng R01–R100 không có quy tắc này
+
+rules:
+
+  # ---------------------------------------------------------------------------
+  # VÍ DỤ MẪU 1 — quy tắc định lượng.
+  # Nguồn: docs/ke-hoach-trien-khai.md, Phụ lục A. KHÔNG PHẢI quy tắc thật của
+  # đơn vị. Xóa khi điền quy tắc thật.
+  # ---------------------------------------------------------------------------
+  - id: STO-01
+    name: "Dung lượng lưu trữ phải tính đủ replication, tăng trưởng và overhead"
+    type: quantitative
+    applies_to_equipment: [luu_tru]
+    severity: critical
+    enabled: false            # tắt vì đây chỉ là ví dụ
+    formula: "data_volume * replication_factor * pow(1 + growth_rate, years) * (1 + overhead)"
+    inputs:
+      - {name: data_volume,        unit: GB, required: true}
+      - {name: replication_factor, unit: lần, required: false, default: 3}
+      - {name: growth_rate,        unit: tỷ_lệ, required: false, default: 0.3}
+      - {name: years,              unit: năm, required: false, default: 3}
+      - {name: overhead,           unit: tỷ_lệ, required: false, default: 0.2}
+    compare_with: declared_storage
+    tolerance: 0.10
+    source_doc: "TL-DINH-CO, mục 4.2, trang 18"
+    message_template: >
+      Dung lượng khai báo {declared} GB, tính lại theo công thức được {expected} GB
+      (chênh {diff_pct}%). Đề nghị rà soát tham số hoặc bổ sung giải thích.
+
+  # ---------------------------------------------------------------------------
+  # VÍ DỤ MẪU 2 — quy tắc định tính.
+  # Nguồn: docs/ke-hoach-trien-khai.md, Phụ lục A. KHÔNG PHẢI quy tắc thật.
+  # ---------------------------------------------------------------------------
+  - id: EVD-03
+    name: "Số liệu tải phải có sở cứ đo đạc hoặc tham chiếu hệ thống tương tự"
+    type: qualitative
+    applies_to_equipment: [may_chu]
+    severity: major
+    enabled: false            # tắt vì đây chỉ là ví dụ
+    criteria: >
+      Mục về tải hệ thống phải nêu được nguồn số liệu: kết quả đo trên môi trường
+      hiện tại, kết quả benchmark, hoặc tham chiếu hệ thống tương tự đang vận hành.
+      Số liệu ước lượng thuần túy không kèm cơ sở được coi là chưa đạt.
+    examples:
+      pass:
+        - "Số liệu lấy từ giám sát Zabbix môi trường hiện tại, trung bình 30 ngày (tháng 6/2026)."
+      fail:
+        - "Ước tính khoảng 5000 TPS."
+    source_doc: "TL-DINH-CO, mục 2.4, trang 9"
+
+  # ---------------------------------------------------------------------------
+  # QUY TẮC THẬT — điền từ đây trở xuống.
+  # Thứ tự khuyến nghị: KPI-* → SCL-* → theo từng module (MDB, RDS, KFK, K8S, LBF).
+  # Không thêm quy tắc nào chưa qua bước xác nhận ở docs/0.1-danh-sach-quy-tac.md.
+  # ---------------------------------------------------------------------------

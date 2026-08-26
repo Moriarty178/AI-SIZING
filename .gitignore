@@ -1,2 +1,13 @@
 .idea/
 *.log
+
+# Gói chuyển file giữa các máy — không commit (docs.zip ~21MB, chứa cả venv)
+*.zip
+
+# Môi trường ảo tạm khi trích text PDF
+**/.tmp/venv/
+.venv/
+__pycache__/
+
+# Giữ lại docs/rules/.tmp/clean.txt và raw-layout.txt — đó là nguồn trích dẫn
+# nguyên văn cho quy tắc định tính (NT2), phải commit.
