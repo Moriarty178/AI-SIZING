@@ -1,0 +1,130 @@
+{
+  "method": "chia theo Đầu mối yêu cầu, cân bằng tham lam theo số nhãn, seed cố định",
+  "seed": 20260903,
+  "dev": {
+    "dossiers": [
+      {
+        "dossier": "cap moi BCCS3_thị_trường_Lào 34221",
+        "dau_moi_yeu_cau": "anhnv174",
+        "labels": 8
+      },
+      {
+        "dossier": "cap moi Data Security VTT 18476",
+        "dau_moi_yeu_cau": "cuongnx8",
+        "labels": 45
+      },
+      {
+        "dossier": "Cấp mới hệ thống VAPS",
+        "dau_moi_yeu_cau": "giangnt109",
+        "labels": 9
+      },
+      {
+        "dossier": "cap bo sung campaign 2.0 8964",
+        "dau_moi_yeu_cau": "giangnt109",
+        "labels": 28
+      },
+      {
+        "dossier": "cap moi PNM 57012",
+        "dau_moi_yeu_cau": "hieund28",
+        "labels": 5
+      },
+      {
+        "dossier": "cap moi APIGW-Meta_2024 18927",
+        "dau_moi_yeu_cau": "hoanglm9",
+        "labels": 28
+      },
+      {
+        "dossier": "cap moi FMRA_Sizing_server_Backup_2024 58352",
+        "dau_moi_yeu_cau": "hungbs",
+        "labels": 16
+      },
+      {
+        "dossier": "cap moi APIGee Mini App 64015",
+        "dau_moi_yeu_cau": "ngoctv1",
+        "labels": 13
+      },
+      {
+        "dossier": "cap moi c360 58872",
+        "dau_moi_yeu_cau": "sonln3",
+        "labels": 14
+      },
+      {
+        "dossier": "cap moi PBH 4.0 20043",
+        "dau_moi_yeu_cau": "thanhdv125",
+        "labels": 30
+      },
+      {
+        "dossier": "cap moi MySign 10371",
+        "dau_moi_yeu_cau": "thanhtt69",
+        "labels": 15
+      },
+      {
+        "dossier": "cap bo sung VTracking 2.0.1 14716",
+        "dau_moi_yeu_cau": "thiendv1",
+        "labels": 21
+      },
+      {
+        "dossier": "cap moi GSCG CSKH_bosung2022 23096",
+        "dau_moi_yeu_cau": "tungct",
+        "labels": 47
+      },
+      {
+        "dossier": "cap moi hethong Vtag",
+        "dau_moi_yeu_cau": "tungnt12",
+        "labels": 38
+      }
+    ],
+    "labels": 317
+  },
+  "test": {
+    "dossiers": [
+      {
+        "dossier": "cap moi SSO 2.0 46385",
+        "dau_moi_yeu_cau": "chinh3",
+        "labels": 22
+      },
+      {
+        "dossier": "cap moi CALLBASE 44087",
+        "dau_moi_yeu_cau": "hanq1",
+        "labels": 6
+      },
+      {
+        "dossier": "cap moi Mybox 38327",
+        "dau_moi_yeu_cau": "hungnh46",
+        "labels": 31
+      },
+      {
+        "dossier": "cap moi callbot inbound CSKH_bosung videobot XMKH 35485",
+        "dau_moi_yeu_cau": "kientt6",
+        "labels": 30
+      },
+      {
+        "dossier": "cap moi StrongSwan 40325",
+        "dau_moi_yeu_cau": "lamtn6",
+        "labels": 6
+      },
+      {
+        "dossier": "cap moi C360_Public 9367",
+        "dau_moi_yeu_cau": "quannv28",
+        "labels": 14
+      },
+      {
+        "dossier": "cap moi Mykid 2.0 30959",
+        "dau_moi_yeu_cau": "tamdtt1",
+        "labels": 16
+      },
+      {
+        "dossier": "cap moi CMP 40562",
+        "dau_moi_yeu_cau": "thuyttt12",
+        "labels": 13
+      },
+      {
+        "dossier": "cap moi MNP 32034",
+        "dau_moi_yeu_cau": "tiendc",
+        "labels": 20
+      }
+    ],
+    "labels": 158
+  },
+  "rule": "Tập test GIỮ KÍN: không đọc nhãn test khi chỉnh quy tắc/prompt; chỉ chạy một lần ở 3.6."
+}

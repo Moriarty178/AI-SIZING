@@ -11,3 +11,6 @@ __pycache__/
 
 # Giữ lại docs/rules/.tmp/clean.txt và raw-layout.txt — đó là nguồn trích dẫn
 # nguyên văn cho quy tắc định tính (NT2), phải commit.
+
+# cấu hình có thể chứa endpoint nội bộ; khóa API nằm trong biến môi trường
+config/settings.yaml

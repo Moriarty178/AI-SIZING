@@ -1,0 +1,13 @@
+# Copy thành config/settings.yaml rồi điền. KHÔNG commit settings.yaml.
+# Khóa API KHÔNG để ở đây — đặt biến môi trường SIZING_COPILOT_API_KEY.
+
+llm:
+  base_url: "https://<vllm-endpoint>/v1"   # endpoint OpenAI-compatible (vLLM) nội bộ
+  chat_model: "<tên-model-chat>"           # bắt buộc
+  vision_model: ""                          # để trống nếu cụm không có model vision
+  embedding_model: ""                       # để trống nếu cụm không có endpoint embedding
+  temperature: 0.1                          # 0–0.2 cho cả trích xuất lẫn thẩm định
+  timeout_s: 120
+
+qdrant:
+  url: "http://localhost:6333"
