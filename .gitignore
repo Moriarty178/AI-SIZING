@@ -14,3 +14,6 @@ __pycache__/
 
 # cấu hình có thể chứa endpoint nội bộ; khóa API nằm trong biến môi trường
 config/settings.yaml
+
+# Mẫu Word sinh lại được bằng scripts/make_word_template.py — không commit bản sinh
+data/knowledge_base/mau-sizing-chuan.docx

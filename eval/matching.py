@@ -1,0 +1,176 @@
+"""1.13 — Đối chiếu finding của Copilot với nhãn vàng từ PNX. THUẦN CODE.
+
+Tách khỏi `run_eval.py` để test được offline: phần so khớp và tính recall không cần
+model, chỉ phần chạy pipeline mới cần.
+
+Cách tính lấy nguyên từ `data/eval_set.json` → `meta.scoring_note`, không tự nghĩ:
+
+    Một finding TRÚNG nhãn khi `rule_ref` của finding nằm trong danh sách `rule_ref`
+    của nhãn VÀ cùng hồ sơ.
+
+Hai mẫu số, cố ý tách rời:
+
+  **so với bộ quy tắc hiện có** — chỉ 469 nhãn có `rule_ref`. Trả lời: *trong những
+  điều bộ quy tắc CÓ THỂ bắt, ta bắt được bao nhiêu?*
+  **so với mọi yêu cầu** — cả 475 nhãn, gồm `khoang_trong` (yêu cầu thật mà bộ quy tắc
+  chưa phủ) và `khong_neo_duoc`. Trả lời: *so với người thẩm định, ta bắt được bao
+  nhiêu?* Con số này luôn thấp hơn, và nó mới là con số nói với người dùng.
+
+⚠️ **Recall ở đây HÀO PHÓNG hơn thực tế.** 397/475 nhãn nhận gợi ý `rule_ref` của máy
+nguyên xi, thường **dư mã** (xem `docs/0.7-nhan-vang-tu-pnx.md` mục 6). Nhãn càng nhiều
+mã thì càng dễ có một mã trùng với finding. Phải nêu hạn chế này mỗi lần công bố số.
+
+⚠️ **KHÔNG đo được false positive.** Finding không khớp nhãn nào KHÔNG có nghĩa là sai:
+PNX chỉ ghi những điều người thẩm định CHỌN nhận xét, không phải mọi lỗi có trong tài
+liệu. Và bản đã ký cũng không sạch (c360 ký với lỗi còn nguyên). Nên phần "không khớp"
+chỉ để soi, không được gọi là false positive.
+"""
+from __future__ import annotations
+
+import json
+from collections import Counter
+from dataclasses import dataclass, field
+
+DUONG_DAN_EVAL = "data/eval_set.json"
+DUONG_DAN_SPLIT = "data/eval_split.json"
+
+
+@dataclass
+class KetQuaHoSo:
+    dossier: str
+    file_da_dung: str = ""
+    nhan_tong: int = 0
+    nhan_co_rule: int = 0
+    trung: int = 0
+    trung_ids: list[str] = field(default_factory=list)
+    truot_ids: list[str] = field(default_factory=list)
+    finding_khong_khop: list[str] = field(default_factory=list)
+    ghi_chu: str = ""
+
+
+@dataclass
+class KetQuaEval:
+    ho_so: list[KetQuaHoSo] = field(default_factory=list)
+    tap: str = "dev"
+    canh_bao: list[str] = field(default_factory=list)
+
+    @property
+    def nhan_co_rule(self) -> int:
+        return sum(h.nhan_co_rule for h in self.ho_so)
+
+    @property
+    def nhan_tong(self) -> int:
+        return sum(h.nhan_tong for h in self.ho_so)
+
+    @property
+    def trung(self) -> int:
+        return sum(h.trung for h in self.ho_so)
+
+    @property
+    def recall_quy_tac(self) -> float:
+        return self.trung / self.nhan_co_rule if self.nhan_co_rule else 0.0
+
+    @property
+    def recall_moi_yeu_cau(self) -> float:
+        return self.trung / self.nhan_tong if self.nhan_tong else 0.0
+
+
+def nap_nhan(tap: str = "dev", *, duong_dan: str = DUONG_DAN_EVAL,
+             duong_dan_split: str = DUONG_DAN_SPLIT) -> list[dict]:
+    """Nhãn của một tập. `tap='test'` GIỮ KÍN — chỉ chạy một lần ở 3.6."""
+    labels = json.load(open(duong_dan, encoding="utf-8"))["labels"]
+    if tap == "tat_ca":
+        return labels
+    split = json.load(open(duong_dan_split, encoding="utf-8"))
+    ten = {d["dossier"] for d in split[tap]["dossiers"]}
+    return [l for l in labels if l["dossier"] in ten]
+
+
+def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
+              tap: str = "dev", file_da_dung: dict[str, str] | None = None
+              ) -> KetQuaEval:
+    """So khớp theo `meta.scoring_note`. `findings_theo_ho_so`: hồ sơ → list[Finding]."""
+    file_da_dung = file_da_dung or {}
+    theo_ho_so: dict[str, list[dict]] = {}
+    for l in labels:
+        theo_ho_so.setdefault(l["dossier"], []).append(l)
+
+    kq = KetQuaEval(tap=tap)
+    for dossier, ds in sorted(theo_ho_so.items()):
+        fs = findings_theo_ho_so.get(dossier)
+        h = KetQuaHoSo(dossier=dossier, nhan_tong=len(ds),
+                       nhan_co_rule=sum(1 for l in ds if l.get("rule_ref")),
+                       file_da_dung=file_da_dung.get(dossier, ""))
+        if fs is None:
+            # KHÔNG chạy được hồ sơ này. Đếm vào mẫu số (nếu bỏ ra thì recall sẽ đẹp
+            # lên một cách giả tạo), nhưng ghi rõ lý do.
+            h.ghi_chu = "chưa chạy được (không tìm thấy bản .docx hoặc lỗi khi chạy)"
+            h.truot_ids = [l["label_id"] for l in ds if l.get("rule_ref")]
+            kq.ho_so.append(h)
+            continue
+
+        ma_finding = {f.rule_ref for f in fs if f.rule_ref}
+        ma_trung: set[str] = set()
+        for l in ds:
+            refs = set(l.get("rule_ref") or [])
+            if not refs:
+                continue                      # khoang_trong / khong_neo_duoc
+            chung = refs & ma_finding
+            if chung:
+                h.trung += 1
+                h.trung_ids.append(l["label_id"])
+                ma_trung |= chung
+            else:
+                h.truot_ids.append(l["label_id"])
+        h.finding_khong_khop = sorted(ma_finding - ma_trung)
+        kq.ho_so.append(h)
+    return kq
+
+
+def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
+    d = [f"# Kết quả eval — tập `{kq.tap}`", "",
+         "| | Giá trị |", "|---|---:|",
+         f"| Hồ sơ | {len(kq.ho_so)} |",
+         f"| Nhãn (mọi yêu cầu) | {kq.nhan_tong} |",
+         f"| Nhãn có `rule_ref` | {kq.nhan_co_rule} |",
+         f"| Trúng | **{kq.trung}** |",
+         f"| **Recall so với bộ quy tắc hiện có** | **{kq.recall_quy_tac:.1%}** |",
+         f"| **Recall so với mọi yêu cầu** | **{kq.recall_moi_yeu_cau:.1%}** |",
+         "",
+         "> **Hai con số này KHÔNG thay thế nhau.** Con số dưới là con số nói với "
+         "người dùng: so với người thẩm định, công cụ bắt được bao nhiêu. Con số trên "
+         "chỉ nói bộ quy tắc hiện có được khai thác tới đâu.",
+         "",
+         "## Hạn chế phải nêu kèm mỗi khi công bố",
+         "",
+         "1. **Recall ở đây hào phóng hơn thực tế** — 397/475 nhãn nhận gợi ý "
+         "`rule_ref` của máy nguyên xi, thường dư mã; nhãn càng nhiều mã càng dễ trúng.",
+         "2. **Không đo được false positive.** Finding không khớp nhãn KHÔNG phải là "
+         "sai: PNX chỉ ghi những điều người thẩm định chọn nhận xét, và bản đã ký cũng "
+         "không sạch. Cột dưới chỉ để soi.",
+         "3. **Nhãn chưa qua kiểm định độc lập** — gợi ý và phán quyết cùng do một tác "
+         "nhân AI (`docs/0.7-nhan-vang-tu-pnx.md` mục 6).",
+         ""]
+    if kq.canh_bao:
+        d += ["## Cảnh báo khi chạy", ""] + [f"- {c}" for c in kq.canh_bao] + [""]
+
+    d += ["## Theo hồ sơ", "",
+          "| Hồ sơ | Nhãn | Có `rule_ref` | Trúng | Recall | Mã finding không khớp nhãn |",
+          "|---|---:|---:|---:|---:|---|"]
+    for h in sorted(kq.ho_so, key=lambda x: -x.nhan_tong):
+        r = f"{h.trung / h.nhan_co_rule:.0%}" if h.nhan_co_rule else "—"
+        kk = ", ".join(h.finding_khong_khop[:6]) or "—"
+        if h.ghi_chu:
+            kk = f"⚠ {h.ghi_chu}"
+        d.append(f"| {h.dossier[:38]} | {h.nhan_tong} | {h.nhan_co_rule} | "
+                 f"{h.trung} | {r} | {kk} |")
+
+    truot = Counter()
+    for h in kq.ho_so:
+        for _ in h.truot_ids:
+            truot[h.dossier] += 1
+    d += ["", f"Tổng nhãn trượt: **{sum(truot.values())}**.", ""]
+    if meta:
+        d += [f"Nguồn nhãn: `{meta.get('source', '?')}` · sinh ngày "
+              f"{meta.get('generated', '?')}.", ""]
+    return "\n".join(d)
