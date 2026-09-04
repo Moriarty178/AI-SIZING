@@ -602,10 +602,32 @@
       giảm thiệt hại khi một lượt hỏng.
       → 📏 Sau khi giảm nhóm: BCCS3 13 phân hệ còn **81 lượt** (trước 223) ≈ **9 phút**
       với 6 luồng.
-      → ⬜ **Chưa đo lại trên tài liệu thật SAU hướng A** — cần chạy lại
-      `try_c3_on_dossier.py`. Kiểm bằng mắt: dòng đầu phải in `C3-v4`. Con số phải nhìn là
-      **`lấy từ ô bảng`** (càng cao càng tốt) so với **`cột không có thật`** +
-      **`giá trị không nằm trong cột khai`**.
+      → 📊 **Đo v4 (18:51): hướng A có tác dụng nhưng chưa đủ.** Cùng bản BCCS3, cùng
+      bộ lọc: thời gian **579s → 216s** · không neo được **64 → 25** · C4 báo vi phạm
+      **4 → 1** · **39/72 giá trị (54%) lấy từ ô bảng đã kiểm đúng cột**.
+      → 🔴 **Chế độ hỏng còn lại, nay ĐO ĐƯỢC nhờ `note` ghi cột nguồn: ĐIỀN BỪA.**
+      **44/72 giá trị (61%)** đến từ một ô mà **tham số khác cũng nhận làm nguồn**. Kỷ
+      lục: ô `#93 = 16` của DBIN/FTP được **9 tham số** cùng nhận; cột «RAM (GB)» một
+      mình cấp cho 6 tham số (`ram_cau_hinh_gb`, `dung_luong_ram_gb`, `datanode_95th`,
+      `core_danh_cho_hdh`, `he_so_quy_doi`, `ram_danh_cho_hdh_gb`).
+      **Nguyên nhân cấu trúc:** lược đồ hỏi 8–12 tham số, mà bảng một phân hệ chỉ có
+      **2–3 con số**. Model không thể để trống gần hết nên rải số ra khắp các trường.
+      → ✅ **v5 — cổng "một ô, một tham số"**: cùng một ô mà nhiều tham số cùng nhận thì
+      **bỏ HẾT**, không giữ cái nào — khi 9 tham số trỏ một ô thì không có căn cứ chọn
+      cái đúng, giữ lại là đoán. Chạy SAU khi mọi nhóm xong, vì một ô có thể bị nhiều
+      nhóm khác nhau nhận nên không kiểm được trong phạm vi một lượt gọi.
+      → ✅ **v5 — ngân sách token**: 7/53 lượt hỏng vì `finish_reason=length`, kể cả lượt
+      chỉ 12 trường (ngân sách 4560). Lý do đã biết từ 0.10 mà tôi chưa tính vào:
+      **`reasoning_content` ăn vào chính `max_tokens`**. Nay `3000 + 450×trường`, trần
+      16000; nhóm cắt nhỏ **12 → 8 trường** (lượt 8 trường được 6600 token).
+      → ✅ **v5 — neo phân hệ theo SỐ HIỆU BẢNG**: v4 mất neo **3/10 phân hệ** vì model
+      trả tên mô tả dài không có nguyên văn trong tài liệu. Mất neo là mất luôn giới hạn
+      khoảng, và phân hệ đó lại đi lấy số của chỗ khác — đúng thứ khoảng phân hệ sinh ra
+      để chặn. Ngữ cảnh đã đánh số `[BẢNG #N]` nên hỏi thẳng số hiệu, kiểm được ngay.
+      → 📏 Chi phí: BCCS3 10 phân hệ, lọc KPI/CPU/RAM → **83 lượt** (v4: 53), vì nhóm nhỏ hơn.
+      → ⬜ **Chưa đo lại v5 trên tài liệu thật.** Con số phải nhìn:
+      **`bỏ vì một ô bị nhiều tham số nhận`** (kỳ vọng cao — đó là 61% cũ bị chặn) và
+      **`lượt gọi hỏng`** (kỳ vọng về 0).
       → ⚠️ **1.7 tick `[x]` là cho phần CODE. Chất lượng trích xuất CHƯA đạt**; đừng coi
       C3 là dùng được cho tới khi có hướng xử lý (a)(b) ở trên.
 - [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**

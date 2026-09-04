@@ -60,8 +60,12 @@ MIN_KY_TU_NGU_CANH_HEP = 400
 # `finish_reason=length, max_tokens=4000`. Một lượt 18 trường phải sinh tới 54 chuỗi
 # (giá trị + câu chứa + tiêu đề cột), nên 4000 token là không đủ — mà mặc định 4000 vốn
 # đặt ra ở 0.10 cho một lời gọi 3 trường.
-TOKEN_NEN = 1200
-TOKEN_MOI_TRUONG = 280
+# Lượt 18:51 vẫn hỏng 7/53 lượt, có lượt 12 trường với ngân sách 4560. Lý do đã biết
+# từ 0.10 nhưng tôi chưa tính vào: gateway trả kèm `reasoning_content`, và phần đó ĂN
+# VÀO CHÍNH `max_tokens` — nên ngân sách phải phủ cả suy luận lẫn đầu ra.
+TOKEN_NEN = 3000
+TOKEN_MOI_TRUONG = 450
+TOKEN_TOI_DA = 16000        # trần an toàn: model có giới hạn đầu ra riêng
 
 
 # ---------------------------------------------------------------- lược đồ --
@@ -154,6 +158,7 @@ class ThongKe:
     gia_tri_khong_co_trong_cau: int = 0
     cot_khong_co_that: int = 0      # model khai tiêu đề cột không tồn tại
     gia_tri_khong_trong_cot: int = 0  # giá trị không nằm trong cột model khai
+    o_bi_nhieu_tham_so: int = 0     # cùng một ô được nhiều tham số nhận làm nguồn
     lay_tu_bang: int = 0            # lấy được đúng ô bảng — ca đáng tin nhất
     loi: list[str] = field(default_factory=list)
 
@@ -168,6 +173,7 @@ class ThongKe:
                 f"{self.ngoai_khoang_hop_le} ngoài khoảng hợp lệ · "
                 f"{self.gia_tri_khong_co_trong_cau} giá trị không có trong câu · "
                 f"{self.lay_tu_bang} lấy từ ô bảng · "
+                f"{self.o_bi_nhieu_tham_so} bỏ vì một ô bị nhiều tham số nhận · "
                 f"{self.cot_khong_co_that} cột không có thật · "
                 f"{self.gia_tri_khong_trong_cot} giá trị không nằm trong cột khai")
 
@@ -234,11 +240,12 @@ class Extractor:
         return (ph.element_index, sau[0] if sau else het)
 
     # ------------------------------------------------------------------ neo
-    def neo(self, doc: DocxDocument, cau: str, gia_tri: str
-            ) -> tuple[Element | None, str]:
-        """Tìm lại câu model trích trong tài liệu. (phần tử, cách neo)."""
-        el, i = _neo_doc(doc, cau, gia_tri)
-        return el, ("câu", "giá trị")[i] if i >= 0 else ""
+    def neo(self, doc: DocxDocument, *khoa: str) -> tuple[Element | None, str]:
+        """Tìm lại đoạn model trích trong tài liệu. (phần tử, cách neo)."""
+        el, i = _neo_doc(doc, *khoa)
+        if i < 0:
+            return None, ""
+        return el, ("câu", "giá trị")[i] if i < 2 else "khoá phụ"
 
     def o_trong_cot(self, doc: DocxDocument, tieu_de: str, raw: str,
                     khoang: tuple[int, int] | None = None
@@ -400,6 +407,41 @@ class Extractor:
             ev = self._so(t, raw, ev)          # type: ignore[assignment]
         return ev
 
+    # ------------------------------------------- một ô, một tham số ---------
+    def loc_o_bi_nhieu_tham_so(self, dich: SizingCore | SizingExtension) -> int:
+        """Cùng một ô bảng mà nhiều tham số cùng nhận làm nguồn ⇒ BỎ HẾT.
+
+        Đo trên lượt chạy thật 2026-09-04 18:51: **44/72 giá trị (61%)** đến từ một ô
+        mà tham số khác cũng nhận. Kỷ lục là ô `#93 = 16` của DBIN/FTP được **9 tham
+        số** cùng nhận, và cột «RAM (GB)» một mình cấp cho 6 tham số khác nhau.
+
+        Đây là chữ ký của việc ĐIỀN BỪA: lược đồ hỏi 8–12 tham số, mà bảng phân hệ chỉ
+        có 2–3 con số, nên model rải con số đang có ra khắp các trường được hỏi.
+
+        Bỏ HẾT chứ không giữ lại một cái: khi 9 tham số cùng trỏ vào một ô, ta không có
+        căn cứ nào để chọn cái đúng — giữ lại là đoán. Ưu tiên độ chính xác hơn độ phủ.
+        """
+        theo_o: dict[tuple, list[str]] = {}
+        for ten, ev in dich.params.items():
+            if ev.value is None or ev.element_index is None or not ev.raw:
+                continue
+            theo_o.setdefault((ev.element_index, _chuan(ev.raw)), []).append(ten)
+
+        bo = 0
+        for _, ds in theo_o.items():
+            if len(ds) < 2:
+                continue
+            for ten in ds:
+                ev = dich.params[ten]
+                ev.value = None
+                ev.confidence = "thap"
+                ev.note = "; ".join(x for x in (ev.note, (
+                    f"BỎ: ô này còn được {len(ds) - 1} tham số khác nhận làm nguồn "
+                    f"({', '.join(t for t in ds if t != ten)}) — không có căn cứ để "
+                    f"chọn tham số nào đúng")) if x)
+                bo += 1
+        return bo
+
     # ------------------------------------------------------------ một nhóm --
     def trich_nhom(self, doc: DocxDocument, nhom: NhomTrich, dich: SizingCore | SizingExtension,
                    *, section: str = "", ten_phan_he: str = "",
@@ -423,7 +465,8 @@ class Extractor:
                     f"Trích các thông tin sau{pham_vi} từ tài liệu định cỡ dưới đây.\n"
                     f"{NHAC_NHO}\n\n=== TÀI LIỆU ===\n{nc}"},
             ], model=self.model,
-                max_tokens=TOKEN_NEN + TOKEN_MOI_TRUONG * len(nhom.tham_so))
+                max_tokens=min(TOKEN_TOI_DA,
+                               TOKEN_NEN + TOKEN_MOI_TRUONG * len(nhom.tham_so)))
         except (ExtractionFailed, LLMError) as e:
             # Hết lượt thử vẫn không ra JSON hợp lệ: KHÔNG bịa giá trị (NT4).
             # Để trống, C4 sẽ sinh finding "thiếu thông tin" cho từng tham số.
@@ -464,7 +507,18 @@ class Extractor:
         for p in kq.phan_he:
             if not p.ten_phan_he.strip():
                 continue
-            el, _ = self.neo(doc, p.muc, p.ten_phan_he)
+            # Neo theo SỐ HIỆU BẢNG trước, tên sau. Lượt 18:51 mất neo 3/10 phân hệ vì
+            # model trả tên mô tả dài (*"Các module vệ tinh, monitor (Birt report, VSA,
+            # Oracle GoldenGate MONyog, MariaDB)"*) không có nguyên văn trong tài liệu.
+            # Mất neo nghĩa là mất luôn giới hạn khoảng, và phân hệ đó đi lấy số của
+            # chỗ khác — đúng thứ khoảng phân hệ sinh ra để chặn.
+            el = None
+            bang = int(getattr(p, "bang_cau_hinh", 0) or 0)
+            if bang:
+                el = next((e for e in doc.elements
+                           if e.index == bang and e.kind == "table"), None)
+            if el is None:
+                el, _ = self.neo(doc, p.ten_phan_he, p.cong_nghe or "", p.muc)
             clt = p.cong_nghe_luu_tru.strip()
             if clt == KHONG_NEU:
                 clt = ""
@@ -538,6 +592,14 @@ class Extractor:
                           f"{ph.ten_phan_he}/{nhom.ten}") for nhom in ds]
 
         self._chay(doc, viec, tong)
+
+        # Chạy SAU khi mọi nhóm đã xong: một ô có thể bị nhiều nhóm khác nhau cùng
+        # nhận, nên không kiểm được trong phạm vi một lượt gọi.
+        for dich in [core, *core.phan_he]:
+            n = self.loc_o_bi_nhieu_tham_so(dich)
+            with self._khoa:
+                self.tk.o_bi_nhieu_tham_so += n
+                self.tk.truong_co_gia_tri -= n
         return core
 
     def _chay(self, doc: DocxDocument, viec: list[tuple], tong: int) -> None:
@@ -595,6 +657,11 @@ def _lop_phan_he() -> type[BaseModel]:
                                  "KHÔNG chép tên công nghệ hay tiêu đề mục vào đây."))),
         muc=(str, Field(
             description="Số mục chứa phân hệ, ví dụ 'IV.2'. Rỗng nếu không có")),
+        bang_cau_hinh=(int, Field(
+            default=0,
+            description="Số hiệu bảng chứa cấu hình của phân hệ này — lấy đúng con số "
+                        "sau dấu # trong '[BẢNG #N]'. Để 0 nếu phân hệ không có bảng "
+                        "riêng.")),
     )
 
 
