@@ -10,7 +10,7 @@
 | GĐ | Tên | Tiến độ | Trạng thái |
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
-| 1 | MVP chỉ xử lý text | 12 / 17 | 🟡 Đang làm — chờ số recall thật (1.13) |
+| 1 | MVP chỉ xử lý text | 13 / 17 | 🟡 Đang làm — chờ số recall thật (1.13) |
 | 2 | Đa phương thức & tái sử dụng | 0 / 14 | ⬜ Chưa bắt đầu |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
@@ -835,12 +835,42 @@
       → ✅ **Tự kiểm bằng chính C1**: mẫu sinh ra được `read_docx` đọc lại, **204 phần tử
       · 60 số mục nhận ra**. Mẫu ta phát ra mà C1 không đọc được thì vô nghĩa.
       → ✅ Vá 3 lỗi nguồn Excel lúc đọc (ô A42, dòng 18, dòng 50), **không sửa file gốc**.
-- [ ] 1.17 — **Điền hộ cột C của checklist.** Đọc file Word, với mỗi mục trong 57
-      mục xác định nó nằm ở trang/mục nào, xuất bản checklist đã điền sẵn cột
-      "Tham chiếu theo tài liệu sizing", đánh dấu rõ mục **không tìm thấy**.
-      Gần như một MVP độc lập: chỉ cần C1 + C3 + C5 nhẹ, không cần C4/C6.
-      Rủi ro thấp — điền sai vị trí thì người dùng sửa vài giây, khác hẳn một cảnh
-      báo sai về số liệu. Cân nhắc làm sớm để có thứ giao được cho người dùng.
+- [x] 1.17 — **Điền hộ cột C của checklist** — **XONG 2026-09-04.**
+      **→ `src/reporting/dinh_vi_checklist.py` + `scripts/fill_checklist.py`** ·
+      **11 unit test** · xuất Markdown (để soi) + CSV `utf-8-sig` (mở thẳng bằng Excel,
+      checklist gốc vốn là Excel).
+      → ✅ **KHÔNG gọi LLM.** So khớp từ vựng giữa tên hạng mục và tài liệu là việc xác
+      định; đưa cho model chỉ thêm một nguồn bịa. Đổi lại: **chạy được ngoài mạng nội
+      bộ**, và hai lần chạy cho kết quả y hệt — thứ đường LLM không hứa được.
+      → 📊 **Đo trên cả 47 bản: trung vị 22/57 mục** (thấp nhất 8, cao nhất 31).
+      Nguồn neo dùng được: **ô bảng 477 (44%)** · nhãn mục 329 (30%) · đề mục 262 (24%)
+      · văn xuôi 2. **Chỉ khớp đề mục thì hỏng** — BCCS3 có 7 đề mục trên 112 phần tử.
+      → 🔴 **Ba lỗi phải sửa sau khi chạy trên hồ sơ thật, đều có test hồi quy:**
+      (a) **Đo phủ một chiều là sai phép đo.** Tên hạng mục checklist là *câu mô tả tiêu
+      chí* ("Mô hình logic tổng quan triển khai thực tế gồm đầy đủ các thành phần" — 13
+      từ khoá), còn đề mục tài liệu là *tên ngắn* ("Mô hình logic" — 3 từ). Đo theo phía
+      hạng mục thì đề mục đúng chỉ 23% và bị loại; đo theo phía tài liệu thì mọi đoạn
+      văn dài đều đạt 100% và hút hết mọi mục. Nay dùng **F1 của hai tập từ khoá**.
+      (b) **Bỏ sót nhãn dòng trong bảng.** Bảng đầu của BCCS3 chính là bảng "Thông tin
+      hệ thống", mỗi dòng một hạng mục checklist (*Mô tả hệ thống*, *Cơ sở định cỡ*…);
+      chấm cả bảng như một khối thì chúng chìm trong nội dung. Thêm nhãn dòng làm neo:
+      **8 → 11 mục** trên BCCS3, và trên toàn bộ đây là nguồn neo lớn nhất.
+      (c) **Chấm thêm theo PHẦN ĐẦU tên hạng mục** (5 từ khoá đầu) — tiếng Việt đặt từ
+      chính trước, phần đuôi là điều kiện đạt: **11 → 14 mục**.
+      → ✅ **Dưới ngưỡng thì ghi `KHÔNG TÌM THẤY`, KHÔNG điền ứng viên gần nhất vào cột**
+      (NT4). Ứng viên vẫn hiện ở cột riêng có nhãn *phỏng đoán*. Cột tham chiếu điền bừa
+      tệ hơn cột để trống: người thẩm định mở đúng chỗ đó và không thấy gì.
+      → ✅ Báo cáo nói rõ `KHÔNG TÌM THẤY` **không** đồng nghĩa "tài liệu thiếu mục" —
+      có thể tài liệu đặt tên đề mục khác (có test).
+      → ❓ **8 mục KHÔNG định vị được ở BẤT KỲ bản nào trong 47 bản**: `3.1.6`/`3.2.7`
+      (mức độ dự phòng theo 849/QĐ-CNVTQĐ), `3.1.9`/`3.2.10` (nguồn request),
+      `3.1.10`/`3.2.11` (giao thức, port), `3.1.15`/`3.2.16` (IOPS, latency mỗi request).
+      Hai cách hiểu, **cần hỏi đơn vị thẩm định**: hoặc hồ sơ sizing thực tế không bao
+      giờ nêu chúng (thì đây là khoảng trống có hệ thống, giống ca "khâu cấp phát" đã
+      ghi 2026-08-26), hoặc chúng được nêu bằng cách gọi khác mà máy chưa biết.
+      → ⬜ **Độ CHÍNH XÁC chưa kiểm.** Mới đo được độ phủ; chưa có nhãn vàng cho việc
+      "mục này đúng ra nằm ở đâu". Cần người soi một bản kết quả — vài phút, không cần
+      mạng nội bộ.
 
 **Tiêu chí hoàn thành:** ~~recall ≥ 50% trên tập phát triển~~ — **hiện KHÔNG ĐO ĐƯỢC**
 (bị chặn bởi 0.13, chưa có eval set). Phần còn đo được: KHÔNG finding nào thiếu căn cứ
