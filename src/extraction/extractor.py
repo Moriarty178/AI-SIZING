@@ -46,7 +46,8 @@ from ..llm.client import ExtractionFailed, LLMClient, LLMError
 from ..normalization.numbers import parse_number
 from ..normalization.units import UnknownUnit, Units, load_units
 from ..validators.rules_loader import RuleSet
-from .plan import NhomTrich, ThamSo, ke_hoach_trich
+from .plan import (NhomTrich, ThamSo, ke_hoach_trich,
+                   tham_so_cua_bo_quy_tac)
 from .schema import ExtractedValue, SizingCore, SizingExtension
 
 KHONG_NEU = "khong_neu"
@@ -455,12 +456,8 @@ class Extractor:
             if not p.ten_phan_he.strip():
                 continue
             el, _ = self.neo(doc, p.muc, p.ten_phan_he)
-            # Model hay chép nguyên `cong_nghe` sang `cong_nghe_luu_tru` ("MariaDB
-            # Database" làm công nghệ LƯU TRỮ). Hậu quả không chỉ là sai nhãn: mọi phân
-            # hệ khi đó đều chạy thêm một vòng `phan_he_x_cong_nghe_luu_tru`, nhân đôi
-            # chi phí cho một trường vô nghĩa.
             clt = p.cong_nghe_luu_tru.strip()
-            if clt and clt.lower() == p.cong_nghe.strip().lower():
+            if clt == KHONG_NEU:
                 clt = ""
             ra.append(SizingExtension(
                 ten_phan_he=p.ten_phan_he.strip(),
@@ -562,15 +559,41 @@ def uoc_tinh_luot_goi(rules: RuleSet | None = None, *, chi_nhom: list[str] | Non
 
 
 # ------------------------------------------------------------- lược đồ cố định
-class PhanHeNhanDien(BaseModel):
-    ten_phan_he: str = Field(description="Tên phân hệ đúng như tài liệu gọi")
-    cong_nghe: str = Field(description="MariaDB / Redis / Kafka / K8s… Rỗng nếu không nêu")
-    cong_nghe_luu_tru: str = Field(description="SSD / SAS / NAS… Rỗng nếu không nêu")
-    muc: str = Field(description="Số mục chứa phân hệ, ví dụ 'IV.2'. Rỗng nếu không có")
+def _lop_phan_he() -> type[BaseModel]:
+    """Lược đồ nhận diện phân hệ, với `cong_nghe_luu_tru` là **Literal**.
+
+    Khai `str` cho trường này đã hỏng đúng hai lần trên tài liệu thật: lần đầu model
+    chép nguyên `cong_nghe` sang ("MariaDB Database" làm công nghệ *lưu trữ*), lần sau
+    nó điền cả tiêu đề mục ("Mục III - Định cỡ cụm máy chủ cho Database"). Cả hai lần
+    giá trị đều khác rỗng, nên **mọi phân hệ đều chạy thêm một vòng scope
+    `phan_he_x_cong_nghe_luu_tru`** trên một trường vô nghĩa.
+
+    Đây đúng bài học 1.2 lặp lại: liệt kê giá trị trong `description` là không đủ.
+    Danh sách lấy từ tham số `loai_o` trong `rules.yaml` (NT3), không tự nghĩ.
+    """
+    loai_o = tham_so_cua_bo_quy_tac().get("loai_o")
+    opts = tuple(loai_o.options if loai_o else ()) + (KHONG_NEU,)
+    return create_model(
+        "PhanHeNhanDien",
+        ten_phan_he=(str, Field(description="Tên phân hệ đúng như tài liệu gọi")),
+        cong_nghe=(str, Field(
+            description="MariaDB / Redis / Kafka / K8s… Rỗng nếu không nêu")),
+        cong_nghe_luu_tru=(Literal[opts],  # type: ignore[valid-type]
+                           Field(description=(
+                               "Loại ổ lưu trữ của phân hệ, chọn đúng một trong: "
+                               + ", ".join(o for o in opts if o != KHONG_NEU)
+                               + f". Chọn {KHONG_NEU} nếu tài liệu không nêu — "
+                                 "KHÔNG chép tên công nghệ hay tiêu đề mục vào đây."))),
+        muc=(str, Field(
+            description="Số mục chứa phân hệ, ví dụ 'IV.2'. Rỗng nếu không có")),
+    )
+
+
+PhanHeNhanDien = _lop_phan_he()
 
 
 class DanhSachPhanHe(BaseModel):
-    phan_he: list[PhanHeNhanDien]
+    phan_he: list[PhanHeNhanDien]      # type: ignore[valid-type]
 
 
 class ThongTinChung(BaseModel):

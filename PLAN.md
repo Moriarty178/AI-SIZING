@@ -574,9 +574,23 @@
       **(4) Cột nguồn hiện trong `note`** (*"lấy từ cột «CPU (Cint)» của bảng #29"*) để
       người đọc tự thấy khi con số đúng thật nhưng trả lời **nhầm câu hỏi** — loại lỗi
       không cổng tự động nào phân biệt được, nên phải để người nhìn.
-      → ⬜ **Chưa đo lại trên tài liệu thật** — cần chạy lại `try_c3_on_dossier.py`.
-      Con số phải nhìn là **`lấy từ ô bảng`** (càng cao càng tốt) so với
-      **`cột không có thật`** + **`giá trị không nằm trong cột khai`**.
+      → 📏 **Lượt chạy 2 (2026-09-04 18:07) — chạy bằng code TRƯỚC hướng A**, nên chỉ
+      đo được phần chạy song song: **53 lượt · 155s** (lượt 1: 68 lượt · 579s) →
+      **nhanh 3,7 lần**. Phát lại các cổng hiện tại trên chính kết quả đó: **loại
+      52/197 giá trị (26%)** — 19 không phải giá trị · 27 không có trong câu đã neo ·
+      6 ngoài khoảng hợp lệ.
+      → ✅ **`cong_nghe_luu_tru` thành `Literal`** lấy danh sách từ tham số `loai_o`
+      trong `rules.yaml` (NT3). Khai `str` đã hỏng **hai lần** trên tài liệu thật: lượt 1
+      model chép nguyên `cong_nghe` sang ("MariaDB Database" làm công nghệ *lưu trữ*),
+      lượt 2 điền cả tiêu đề mục (*"Mục III - Định cỡ cụm máy chủ cho Database"*). Cả hai
+      lần giá trị đều **khác rỗng**, nên **mọi phân hệ đều chạy thêm một vòng scope
+      `phan_he_x_cong_nghe_luu_tru`** trên một trường vô nghĩa. Đúng bài học 1.2 lặp lại.
+      → 📌 **Model liên tục tự nghĩ ra cách nói "không có"** cho trường số: `kho_neu`
+      (lượt 1), `khoong_ghi_trong_tai_lieu` (lượt 2). Không liệt kê từng biến thể —
+      cổng *"chuỗi phải chứa chữ số"* bắt được cả hai một cách tổng quát.
+      → ⬜ **Chưa đo lại trên tài liệu thật SAU hướng A** — cần chạy lại
+      `try_c3_on_dossier.py`. Con số phải nhìn là **`lấy từ ô bảng`** (càng cao càng tốt)
+      so với **`cột không có thật`** + **`giá trị không nằm trong cột khai`**.
       → ⚠️ **1.7 tick `[x]` là cho phần CODE. Chất lượng trích xuất CHƯA đạt**; đừng coi
       C3 là dùng được cho tới khi có hướng xử lý (a)(b) ở trên.
 - [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**
