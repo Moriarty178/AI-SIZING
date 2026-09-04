@@ -128,3 +128,12 @@ def test_ho_so_thang_thu_tu_khong_phan_biet_hoa_thuong():
     """Sắp xếp phân biệt hoa/thường là cái bẫy đã đưa VAPS lên đầu."""
     ds = sorted(["cap moi BCCS3", "Cấp mới VAPS", "cap bo sung campaign"], key=str.lower)
     assert ds[0] == "cap bo sung campaign"
+
+
+def test_ho_so_nhan_nhieu_ten_ngan_cach_bang_phay():
+    """Đo recall cả tập dev tốn 6–11 giờ, nên cách dùng thật là chạy một MẪU."""
+    from eval.run_eval import chon_ho_so
+    tat_ca = ["cap moi BCCS3 111", "cap moi CMP 222", "cap moi Mykid 333"]
+    assert chon_ho_so(tat_ca, tat_ca, ho_so="bccs3, mykid") == [
+        "cap moi BCCS3 111", "cap moi Mykid 333"]
+    assert chon_ho_so(tat_ca, tat_ca, ho_so="cmp") == ["cap moi CMP 222"]
