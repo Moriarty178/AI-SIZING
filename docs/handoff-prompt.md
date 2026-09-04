@@ -128,7 +128,7 @@ chung cho cả C3 và C4; để trong một trong hai sẽ tạo phụ thuộc c
 `rules.yaml`**) · `try_c1_on_dossiers.py` (chạy C1 trên toàn bộ hồ sơ) ·
 `check_section_match.py` (đối chiếu số mục C1 ↔ PNX) · `parse_pnx.py` ·
 `suggest_rule_refs.py` · `finalize_labels.py` · `probe_llm_endpoint.py` ·
-`smoke_llm.py` (**chưa chạy** — xem mục 5).
+`smoke_llm.py` (**đã chạy lần 1** — xem mục 5).
 
 ## 4. VIỆC KẾ TIẾP — mục 1.7, C3 trích trường bằng structured output
 
@@ -155,9 +155,17 @@ và ra ~124 finding "thiếu thông tin".
 context (context 200k–1M, rất thoáng) mà vì `scope: phan_he` — mỗi phân hệ là một lượt
 chấm riêng, nên trích riêng thì ánh xạ `scope_key` mới đúng và `location` mới trỏ chuẩn.
 
-**Phần BỊ CHẶN:** đo độ chính xác của C3 cần model, mà `smoke_llm.py` **tôi chưa chạy**
-(xem mục 5). Phần viết code, schema và test bằng transport giả thì **làm được ngay**.
-Đừng chờ tôi mới bắt đầu.
+**Ba điều lần chạy `smoke_llm.py` 2026-09-04 đã dạy, phải áp vào C3** (chi tiết:
+`docs/1.2-ket-qua-smoke-llm.md`):
+1. **Mọi trường enum phải là `Literal`, không phải `str`.** `str` không sinh ràng buộc
+   `enum` trong JSON Schema; model trả cụm tiếng Việt tự do, hợp lược đồ nhưng vô dụng.
+2. **Không ánh xạ mờ chuỗi tự do sang enum** — cùng một đoạn, hai lần chạy cho hai
+   chuỗi khác nhau. Không khớp sau khi hết retry ⟹ `None` + "thiếu thông tin" (NT4).
+3. **Model đọc đúng số tiếng Việt** (`"12.000"` → 12000, 4/4). Vẫn phải qua
+   `numbers.py` — NT1 nói code quyết định — nhưng rủi ro thấp hơn lo ngại.
+
+**Phần còn BỊ CHẶN:** đo độ chính xác của C3 trên tập DEV cần model. Phần viết code,
+schema và test bằng transport giả thì **làm được ngay**. Đừng chờ tôi mới bắt đầu.
 
 **Gợi ý thứ tự:** (a) schema trích xuất theo nhóm tham số, (b) prompt + few-shot lấy từ
 tài liệu thật trong `danh_sach_sizings_da_duyet/`, (c) test offline bằng `FakeClient`
@@ -189,8 +197,12 @@ Kết quả đầy đủ: `docs/0.10-ket-qua-xac-minh-endpoint.md`.
 - ⬜ **Chưa chốt model chính cho C3.** Tạm dùng `claude-opus-4-6` (sạch format nhất);
   **không dùng `gpt-oss-120b`** cho trích xuất (2/2 lần nhầm trường). Chốt sau khi
   chạy eval thật ở 1.13.
-- ⬜ **`scripts/smoke_llm.py` chưa chạy** — tôi đang ở mạng ngoài, sẽ chạy trong mạng
-  công ty và gửi kết quả. **Không chặn** các mục thuần code.
+- ✅ **`scripts/smoke_llm.py` đã chạy lần 1** (2026-09-04, `claude-opus-4-6`) →
+  `docs/1.2-ket-qua-smoke-llm.md`. Client nói chuyện được với gateway, `json_schema`
+  được nhận, 1 lời gọi mỗi lượt trích ~8,7s, **đọc số tiếng Việt đúng 4/4**.
+  ⬜ **Cần lần chạy 2**: lược đồ thử lần 1 khai `loai_sizing` là `str` nên không có
+  ràng buộc `enum` — không kết luận được gateway có ép schema hay không. Đã sửa sang
+  `Literal`. Chỉ `lần thử TB > 1.00` mới là bằng chứng "không ép".
   Script đã sửa 2026-09-04 để **tự in một khối Markdown dán về được** (và lưu
   `docs/1.2-ket-qua-smoke-llm.md`), gồm ba con số `probe_llm_endpoint.py` không lấy
   được: **số lần thử trung bình của `extract()`** (quyết định chi phí thật của C3),
