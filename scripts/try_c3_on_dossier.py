@@ -21,7 +21,7 @@ import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.extraction.extractor import Extractor
+from src.extraction.extractor import Extractor, uoc_tinh_luot_goi
 from src.ingestion.docx_reader import read_docx
 from src.llm.client import LLMClient, LLMError
 from src.validators.quantitative import QuantitativeValidator
@@ -34,6 +34,8 @@ def main() -> int:
     ap.add_argument("--nhom", default="KPI,CPU,RAM",
                     help="lọc nhóm quy tắc, phân tách bằng dấu phẩy; rỗng = tất cả")
     ap.add_argument("--model", default=None)
+    ap.add_argument("--uoc-tinh", action="store_true",
+                    help="chỉ in ước lượng số lời gọi rồi thoát, không gọi model")
     a = ap.parse_args()
 
     doc = read_docx(a.docx)
@@ -42,6 +44,16 @@ def main() -> int:
     for w in doc.warnings:
         print(f"  ⚠ {w}")
 
+    # In ước lượng TRƯỚC khi gọi model. Không có nó thì người chạy ngồi nhìn màn hình
+    # đứng im vài phút và tưởng script treo — đã xảy ra thật (2026-09-04).
+    nhom0 = [x.strip() for x in a.nhom.split(",") if x.strip()] or None
+    for n in (1, 3, 5):
+        u = uoc_tinh_luot_goi(chi_nhom=nhom0, so_phan_he=n)
+        print(f"  ước lượng nếu {n} phân hệ: {u['tong']} lượt gọi "
+              f"(~{u['tong'] * 5 / 60:.1f} phút ở 5s/lượt)")
+    if a.uoc_tinh:
+        return 0
+
     try:
         client = LLMClient()
     except (FileNotFoundError, LLMError) as e:
@@ -49,10 +61,15 @@ def main() -> int:
         return 2
 
     chi_nhom = [x.strip() for x in a.nhom.split(",") if x.strip()] or None
-    ex = Extractor(client, model=a.model)
+
+    def tien_do(i: int, tong: int, nhan: str) -> None:
+        print(f"  C3 {i}/{tong} · {nhan}", flush=True)
+
+    ex = Extractor(client, model=a.model, on_tien_do=tien_do)
     t0 = time.time()
     core = ex.run(doc, chi_nhom=chi_nhom)
     giay = time.time() - t0
+    print()
 
     print(f"\nC3: {ex.tk.tom_tat()}")
     print(f"    {giay:.0f}s · hệ thống: {core.ten_he_thong!r} · "

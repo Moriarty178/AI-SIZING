@@ -53,6 +53,14 @@ class KetQuaEval:
     ho_so: list[KetQuaHoSo] = field(default_factory=list)
     tap: str = "dev"
     canh_bao: list[str] = field(default_factory=list)
+    # Bộ lọc đã dùng khi chạy. PHẢI ghi vào báo cáo: một lượt chạy lọc nhóm cho recall
+    # thấp hơn hẳn, và nếu báo cáo không nói vì sao thì sẽ có người trích con số đó
+    # như thể là recall thật.
+    bo_loc: dict = field(default_factory=dict)
+
+    @property
+    def da_loc(self) -> bool:
+        return any(v for v in self.bo_loc.values())
 
     @property
     def nhan_co_rule(self) -> int:
@@ -151,6 +159,10 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
          "3. **Nhãn chưa qua kiểm định độc lập** — gợi ý và phán quyết cùng do một tác "
          "nhân AI (`docs/0.7-nhan-vang-tu-pnx.md` mục 6).",
          ""]
+    if kq.da_loc:
+        d[1:1] = ["", "> ⚠️ **LƯỢT CHẠY NÀY CÓ LỌC — con số dưới KHÔNG so sánh được với "
+                  "một lượt chạy đầy đủ và KHÔNG được trích như recall thật.** Bộ lọc: "
+                  + " · ".join(f"`{k}` = {v}" for k, v in kq.bo_loc.items() if v), ""]
     if kq.canh_bao:
         d += ["## Cảnh báo khi chạy", ""] + [f"- {c}" for c in kq.canh_bao] + [""]
 
