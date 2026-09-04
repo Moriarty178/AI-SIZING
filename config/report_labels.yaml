@@ -1,0 +1,97 @@
+# Nhãn hiển thị cho báo cáo C7 — DỮ LIỆU, không phải code (tinh thần NT3).
+#
+# Người nghiệp vụ sửa được tên phần, tên mức độ, câu cố vấn mở đầu và THỨ TỰ
+# checklist mà không cần đụng vào Python. Bộ nạp (`src/reporting/report.py`) chỉ
+# đọc file này; nếu thiếu khoá nào thì dùng giá trị mặc định an toàn trong code.
+
+# Câu mở đầu bắt buộc: nói rõ đây là công cụ CỐ VẤN, người thẩm định quyết định cuối.
+disclaimer: >-
+  Đây là công cụ CỐ VẤN, giúp người xin cấp tài nguyên tự kiểm bản định cỡ trước
+  khi nộp. Công cụ KHÔNG tự phê duyệt hay từ chối — người thẩm định vẫn là người
+  quyết định cuối cùng. Mọi phát hiện dưới đây là gợi ý cần người đọc kiểm chứng lại,
+  không phải kết luận.
+
+# Ghi chú khi báo cáo chạy trên dữ liệu Vòng 1 dựng tay (C5 mục 1.12 chưa có).
+demo_note: >-
+  Dữ liệu Vòng 1 trong báo cáo này được DỰNG TAY để minh hoạ vì thành phần kiểm
+  định tính (C5, mục 1.12) chưa được xây. KHÔNG dùng làm kết quả thật.
+
+# Xếp ưu tiên: mức độ nào hiện trước. Mã không nằm trong danh sách bị đẩy xuống cuối.
+severity_order: [critical, major, minor, info]
+severity_labels:
+  critical: "Nghiêm trọng"
+  major: "Quan trọng"
+  minor: "Nhẹ"
+  info: "Thông tin"
+
+category_labels:
+  thieu_muc: "Thiếu thành phần"
+  thieu_thong_tin: "Thiếu thông tin"
+  sai_cong_thuc: "Sai công thức"
+  vuot_nguong: "Vượt ngưỡng"
+  khong_kiem_chung_duoc: "Chưa kiểm chứng được"
+  khong_nhat_quan: "Không nhất quán"
+
+# Nhóm finding Vòng 1 coi là "trượt" -> chặn finding Vòng 2 của cùng mục.
+# CỐ Ý không gồm `khong_kiem_chung_duoc`: không biết KHÔNG đồng nghĩa với thiếu —
+# một số liệu lưỡng nghĩa hay ảnh chưa đọc được vẫn có thể là phần đã viết đủ.
+vong1_categories_truot: [thieu_muc, thieu_thong_tin]
+
+# Tách Vòng 2 làm hai để tài liệu rỗng không sinh ra một biển "thiếu thông tin"
+# nhấn chìm phần có ý nghĩa.
+vong2_chua_dat: [vuot_nguong, sai_cong_thuc, khong_nhat_quan]
+vong2_chua_kiem_duoc: [thieu_thong_tin, khong_kiem_chung_duoc]
+
+# Ba phần checklist, nhận diện theo tiền tố mã. Vòng 1 trình bày theo I -> II -> III.
+checklist_parts:
+  - id: "I"
+    ten: "Checklist SR/ITBrain"
+    prefixes: ["CL-1."]
+  - id: "II"
+    ten: "Checklist tổng quan"
+    prefixes: ["CL-2."]
+  - id: "III"
+    ten: "Checklist chi tiết theo phân hệ"
+    prefixes: ["CL-3."]
+
+# Thứ tự checklist ĐẦY ĐỦ (nguồn: docs/rules/rules-checklist-flat.md, 3 bảng I/II/III).
+# Trong phần III, khối chung CL-3.x.N đứng TRƯỚC 3 mục riêng của Database. Đây là thứ
+# tự người thẩm định đọc và chấm checklist, nên báo cáo bám đúng nó.
+checklist_order:
+  - CL-1.1
+  - CL-1.2
+  - CL-2.1
+  - CL-2.2
+  - CL-2.3
+  - CL-2.4
+  - CL-2.5
+  - CL-2.6
+  - CL-2.7
+  - CL-2.8
+  - CL-2.9
+  - CL-2.10
+  - CL-2.10a
+  - CL-2.11
+  - CL-3.x.1
+  - CL-3.x.2
+  - CL-3.x.3
+  - CL-3.x.4
+  - CL-3.x.5
+  - CL-3.x.6
+  - CL-3.x.7
+  - CL-3.x.8
+  - CL-3.x.9
+  - CL-3.x.10
+  - CL-3.x.11
+  - CL-3.x.12
+  - CL-3.x.13
+  - CL-3.x.14
+  - CL-3.x.15
+  - CL-3.x.16
+  - CL-3.x.17
+  - CL-3.x.18
+  - CL-3.x.19
+  - CL-3.x.20
+  - CL-3.2.4
+  - CL-3.2.7a
+  - CL-3.2.19

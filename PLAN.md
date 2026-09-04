@@ -9,13 +9,16 @@
 
 | GĐ | Tên | Tiến độ | Trạng thái |
 |----|-----|---------|------------|
-| 0 | Chuẩn bị tri thức & dữ liệu | 10 / 13 (còn 0.9 thời gian/vòng, 0.10, 0.12) | 🟢 Đủ để sang GĐ 1 |
-| 1 | MVP chỉ xử lý text | 0 / 17 | ⬜ Chưa bắt đầu |
+| 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
+| 1 | MVP chỉ xử lý text | 9 / 17 | 🟡 Đang làm — 1.7 tiếp theo |
 | 2 | Đa phương thức & tái sử dụng | 0 / 14 | ⬜ Chưa bắt đầu |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
 
-**Đang tập trung:** Giai đoạn 0 đã đủ điều kiện sang **Giai đoạn 1** — `config/rules.yaml` **151 quy tắc**, `data/eval_set.json` **475 nhãn**, `data/eval_split.json` đã chia dev/test. Việc kế tiếp theo thứ tự: **1.1** khởi tạo dự án (`uv`, cấu trúc thư mục), **1.2** kết nối vLLM, **1.3** C1 đọc `.docx`. Song song, việc của người: (a) kiểm độc lập một lát cắt `eval_sheet_mau_kiem_daduyet.csv`; (b) 0.10 xác minh hạ tầng; (c) tìm cách đo false positive vì bản đã ký không sạch.
+**Đang tập trung (2026-09-04):** Giai đoạn 1 đã xong **9/17** mục (1.1–1.6, 1.8, 1.9, 1.10) — nền tảng, C1, chuẩn hoá số/đơn vị, schema, bộ nạp quy tắc, C4 định lượng, C7 báo cáo Markdown; **88 unit test** chạy offline. Việc kế tiếp theo thứ tự: **1.7** C3 trích xuất (phần đo độ chính xác chờ `smoke_llm.py`), rồi 1.11 (RAG) · 1.12 (C5 — nguồn finding Vòng 1 cho C7). Song song, việc của người: (a) kiểm độc lập một lát cắt `eval_sheet_mau_kiem_daduyet.csv`; (b) chạy `scripts/smoke_llm.py` trong mạng công ty; (c) duyệt 8 mục `lookup:` cho `rules.yaml` và quy tắc "kiểm hợp lý"; (d) tìm cách đo false positive vì bản đã ký không sạch.
+
+> **Bàn giao sang phiên chat mới: `docs/handoff-prompt.md`** (cập nhật 2026-09-04) —
+> chép nguyên phần sau dấu `---` vào ô chat của phiên mới.
 
 > **Tiến độ (2026-08-26):** 0.1–0.4 **đã xong cho cả bốn nguồn**. 10 quy tắc phát hiện
 > sót khi rà độ phủ (R101–R110) nay đều có công thức hoặc tiêu chí:
@@ -272,19 +275,31 @@
       2. **Bản `.docx`** cho VAPS, MNP — hiện chỉ có PDF (D8); cả hai đang nằm trong
          tập dev/test nên GĐ 1 sẽ thiếu 2 hồ sơ chạy thật.
       3. Thêm hồ sơ cho **C6** (2.6/2.7) — kho bản tương tự càng nhiều càng tốt.
-- [ ] 🟡 0.10 — Xác minh hạ tầng: model vision, endpoint embedding, context window, rate limit
-      → ✅ **Công cụ đã sẵn (2026-09-03):** `scripts/probe_llm_endpoint.py` — 9 phép thử
-      A–I (models · chat · structured output 3 cách · embedding · vision · context ·
-      rate limit), **chỉ dùng thư viện chuẩn**, không cần cài gì; đọc `config/settings.yaml`
-      (copy từ `settings.example.yaml`, đã vào `.gitignore`) và khóa từ biến môi trường
-      `SIZING_COPILOT_API_KEY`. Xuất `docs/0.10-ket-qua-xac-minh-endpoint.md`, không ghi khóa.
-      → ⛔ **CHƯA CHẠY ĐƯỢC:** người dùng đang ở mạng ngoài, không với tới endpoint nội
-      bộ. **Phải chạy từ máy trong mạng công ty** (copy `scripts/probe_llm_endpoint.py` +
-      `config/settings.example.yaml` là đủ). Kết quả quyết định 1.7 (structured output),
-      1.11 (embedding), 2.3 (vision), 1.3 (cắt tài liệu theo context).
-      → Phương án thay thế đã chốt trước theo từng kết quả (xem nhật ký quyết định):
-      structured output không có → prompt JSON + validate + retry; embedding không có →
-      BGE-M3 cục bộ trên CPU; vision không có → C2 xuống cấp OCR-only theo NT4.
+- [x] 0.10 — Xác minh hạ tầng — **XONG 2026-09-03.**
+      **→ `docs/0.10-ket-qua-xac-minh-endpoint.md`** (bảng tự sinh + phần chốt viết tay).
+      Dò bằng `scripts/probe_llm_endpoint.py`, 9 phép thử, chạy từ máy trong mạng công ty.
+      → ✅ **Endpoint KHÔNG phải cụm vLLM tự host** mà là **gateway OpenAI-compatible nội
+      bộ** phục vụ 6 model (Claude opus-4-6 / sonnet-4-5 / haiku-4-5, gpt-oss-120b,
+      Qwen2.5-Coder-7B). Kiến trúc không đổi; nhưng **thôi gọi là "vLLM"** để không ai kỳ
+      vọng `guided_json` / `max_model_len`.
+      → ⚠️ **Phép thử D (`guided_json`) ĐẠT là DƯƠNG TÍNH GIẢ**: output bọc trong fence
+      ```` ```json ````, mà guided decoding thật thì token đầu bắt buộc là `{` — tức tham
+      số được nhận nhưng **bỏ qua**. Không có bảo đảm ràng buộc văn phạm ở máy chủ.
+      **⟹ Client LUÔN validate + retry**, `response_format` chỉ là tối ưu hoá.
+      → ⚠️ **Bẫy `max_tokens`**: model trả kèm `reasoning_content`; đặt 200 làm `content`
+      **rỗng mà vẫn HTTP 200**, không ném lỗi. Client phải để `max_tokens ≥ 2000` và coi
+      `content` rỗng là LỖI.
+      → ✅ **Vision CÓ** (haiku nhận ảnh, trả lời đúng) → **C2 không phải xuống cấp
+      OCR-only**; 2.3 giữ nguyên phạm vi.
+      → ❌ **Embedding KHÔNG có** (`/v1/embeddings` 404/400) → **BGE-M3 chạy cục bộ**
+      (`sentence-transformers`, CPU đủ cho kho nhỏ). Ảnh hưởng 1.11, C5, C6.
+      → ✅ **Context 200k–1M** → 1.3 không cần chunk gắt; vẫn cắt theo mục/bảng vì
+      `scope: phan_he`, không phải vì giới hạn ngữ cảnh.
+      → ✅ **Rate limit thoáng** (0/10 lần 429, TB 1.8s) → GĐ 1 chưa cần hàng đợi (3.2);
+      giữ retry (2.11).
+      → ⬜ **Chưa chốt model chính cho C3** — phụ lục so sánh chỉ 1 đoạn × 2 lần, không đủ
+      căn cứ. Chốt sau khi chạy eval thật (1.13) trên tập dev. Tạm dùng `claude-opus-4-6`
+      (sạch format nhất); **không dùng `gpt-oss-120b`** cho trích xuất (2/2 lần nhầm trường).
 - [x] 0.11 — Chốt **Copilot đọc bản Word nào** — **CHỐT 2026-09-03: bản người dùng
       tự viết.** Không còn giả định, đã có 7 hồ sơ thật làm bằng chứng.
       → Bằng chứng: tên file do người đặt tay (`PL07_Sizing_Mybox_update_20251803_
@@ -331,30 +346,145 @@
 > Chạy đầu-cuối trên text + bảng, TẠM BỎ QUA hình ảnh. Chứng minh giá trị sớm.
 
 ### Tuần 1 — Nền tảng & bóc tách
-- [ ] 1.1 — Khởi tạo dự án, cấu trúc thư mục (docs Phụ lục B), Git, `uv`
-- [ ] 1.2 — Kết nối thử vLLM: chạy `scripts/probe_llm_endpoint.py` từ máy trong mạng,
-      **chốt cách structured output** (C `response_format` → D `guided_json` → E prompt +
-      validate) rồi mới viết `src/llm/`. Mọi lời gọi chỉ qua `base_url` + khóa trong biến
-      môi trường — không hard-code, không phụ thuộc tính năng riêng của vLLM ngoài những
-      gì phép thử đã ĐẠT.
-- [ ] 1.3 — C1: đọc `.docx` (text, heading, bảng), giữ vị trí phần tử
-- [ ] 1.4 — Module chuẩn hóa đơn vị & số liệu + unit test riêng
-- [ ] 🔴 1.5 — ~~Chạy C1 trên cả 30 bản lịch sử~~ **BỊ CHẶN bởi 0.13** — không còn bản gốc
+- [x] 1.1 — Khởi tạo dự án, cấu trúc thư mục — **XONG 2026-09-03.**
+      → ✅ `pyproject.toml` (hatchling, Python ≥3.11). Phụ thuộc lõi tối thiểu:
+      `openai` · `pydantic` · `pyyaml` · `python-docx` · `asteval` (KHÔNG `eval()`).
+      Nhóm tuỳ chọn tách riêng: `rag` (sentence-transformers + qdrant), `ocr`, `api`,
+      `ui`, `dev` — GĐ 1 chỉ cần phần lõi.
+      → ✅ Cấu trúc theo Phụ lục B: `src/{ingestion,vision,extraction,validators,
+      retrieval,reporting,llm}` · `eval/reports` · `api` · `ui` · `tests` ·
+      `data/{historical,knowledge_base}`.
+      → ⚠️ **Máy này chưa có `uv`**; đã cài phụ thuộc bằng `pip` vào Python 3.12 (pyenv).
+      `pyproject.toml` viết chuẩn nên `uv sync` dùng được ngay khi có `uv`.
+- [x] 1.2 — Client LLM + kiểm structured output — **XONG 2026-09-03** (phần offline).
+      **→ `src/llm/client.py`**, hiện thực đúng ba bài học của 0.10:
+      (a) **luôn** strip fence ```` ```json ```` rồi **luôn** validate bằng chính model
+      Pydantic — `response_format` chỉ là tối ưu hoá, không phải bảo đảm;
+      (b) `max_tokens` mặc định **4000** và **`content` rỗng ném `LLMError`**, không coi
+      là kết quả hợp lệ; (c) retry ≤3, mỗi lần **nhắc lại lỗi validate** cho model tự sửa;
+      hết lượt thì ném `ExtractionFailed` để tầng trên tạo finding "thiếu thông tin" —
+      **không bịa giá trị** (NT4).
+      → ✅ **11 unit test, chạy hoàn toàn OFFLINE** (`tests/test_llm_client.py`) bằng
+      transport giả. Đều là hồi quy cho lỗi THẬT quan sát ở 0.10, không phải test cho vui.
+      → ⬜ **CHỜ NGƯỜI DÙNG — chạy `scripts/smoke_llm.py` từ máy trong mạng công ty**
+      (người dùng đang ở mạng ngoài, xác nhận 2026-09-03 sẽ chạy và gửi kết quả sau).
+      Xác nhận client thật nói chuyện được với gateway; đã kiểm sẵn đường lỗi (báo rõ
+      khi thiếu `settings.yaml` / thiếu khóa). **Không chặn 1.3–1.4** vì hai mục đó
+      thuần code, không gọi model.
+- [x] 1.3 — C1: đọc `.docx` (text, heading, bảng), giữ vị trí — **XONG 2026-09-03.**
+      **→ `src/ingestion/docx_reader.py` + `src/ingestion/numbering.py`.**
+      → ✅ **Chạy sạch 48/48 bản sizing thật**: 6.178 phần tử · 870 bảng · 767 ảnh
+      (`scripts/try_c1_on_dossiers.py`). Ảnh KHÔNG bị bỏ im lặng — ghi thành phần tử
+      `image` kèm vị trí để C2 dùng và để NT4 cảnh báo.
+      → ✅ **Suy được số trang cho 45/48 (94%)** từ `w:lastRenderedPageBreak` /
+      ngắt trang thủ công. 3 file không có dấu nào → `page=None` **và nói rõ trong
+      `warnings`**, không đoán bừa là trang 1 (NT4).
+      → ✅ **Nhận ra đề mục 47/48** (ban đầu chỉ 20/48). Ba lỗi phải sửa, đều lộ ra
+      nhờ chạy trên tài liệu thật chứ không phải unit test:
+      **(a)** Số mục là **đánh số tự động của Word** (`w:numPr`), không nằm trong
+      text — phải đọc `numbering.xml` để dựng lại. Cấp 1 của các bản này là **số
+      La Mã**, đoán bừa số Ả Rập sẽ lệch với mọi trích dẫn trong PNX.
+      **(b)** Tài liệu dùng **numId riêng cho mỗi chương** ở cấp 2 nên Word hiện
+      "1." lặp lại dưới mọi chương → hai mục khác nhau trùng `section`. Phải ghép
+      theo **cấp heading** thành đường dẫn đầy đủ (`III.4.1`), đúng dạng PNX trích.
+      **(c)** Có bản gán **"Heading 1" cho MỌI đề mục** kể cả mục con → khi text đã
+      ghi rõ số thì tin con số hơn style; La Mã = cấp chương, Ả Rập = cấp dưới.
+      → ✅ **Đối chiếu với PNX** (`scripts/check_section_match.py`): **11/17 (65%)**
+      số mục người thẩm định trích dẫn tìm thấy đúng trong tài liệu. 6 ca trượt
+      **không phải lỗi C1**: 4 do **lệch phiên bản** (campaign chỉ còn bản v3, không
+      còn mục IV.1.1–IV.1.3 mà PNX nhận xét — vấn đề đã ghi ở `0.7` mục 4), 1 do
+      Vtag **không đánh số đề mục** (C1 cố ý không bịa số), 1 còn lại chưa rõ.
+      → ✅ **12 unit test offline** (`tests/test_docx_reader.py`), tổng 23 test qua.
+      → ⬜ `tuanha3.docx` (thư mục Data Security) không nhận ra đề mục nào — liên
+      quan **D11**, file này có vẻ không phải bản sizing.
+- [x] 1.4 — Module chuẩn hóa đơn vị & số liệu — **XONG 2026-09-03.**
+      **→ `config/units.yaml`** (bảng đơn vị là DỮ LIỆU, NT3) +
+      **`src/normalization/{numbers,units,sanity}.py`** · **30 unit test**, tổng 53 test qua.
+      → ✅ **Cạm bẫy trung tâm: "1.500" là 1500 hay 1,5?** Dấu chấm vừa là phân nhóm
+      nghìn (kiểu Việt) vừa là dấu thập phân (kiểu Anh), tài liệu thật dùng lẫn cả hai.
+      Đọc sai một lần lệch **1000 lần**. Cách xử lý theo NT4: suy theo quy ước, còn
+      lưỡng nghĩa thì trả `ambiguous=True` **kèm cả hai cách đọc** để C4 xuất cảnh báo
+      "không kiểm chứng được", KHÔNG lặng lẽ chọn một cách rồi tính tiếp.
+      Thử trên tài liệu thật: **234 đại lượng / 12 bản, 13% lưỡng nghĩa** — đều lưỡng
+      nghĩa thật (`6991.744 GB`, `17,284 TPS`).
+      → ✅ **Dung lượng dùng cơ sở 1024, băng thông dùng 1000.** Đúng lỗi PNX từng bắt:
+      *"Đổi từ GB ra TB phải chia 1024 chứ không phải 1000"*.
+      → ✅ **`KB/s` (byte) ≠ `kb/s` (bit) — chênh đúng 8 lần**, chỉ chữ B hoa/thường
+      phân biệt được. Nhóm băng thông so khớp **có phân biệt hoa thường**; viết mập mờ
+      (`KBPS`) thì đánh dấu lưỡng nghĩa. Hạ hết về chữ thường là lặng lẽ sai 8 lần.
+      → ✅ **Đơn vị không khai hệ số thì KHÔNG quy đổi được, không mặc định bằng 1.**
+      Lỗi này test bắt được: `convert(1,"vcpu","cint")` từng âm thầm trả `1.0`, tức coi
+      1 vCPU = 1 Cint — lặng lẽ ghi đè `CPU-03`/`CPU-09`, vi phạm NT3. CCU↔user cũng vậy.
+      → ✅ **Lưới kiểm hợp lý** (`sanity.py`) bắt được ca thật *"3.000.000 TB cho 1.080
+      người dùng"*; ngưỡng nằm trong `units.yaml` để người nghiệp vụ chỉnh (NT3), mọi
+      cảnh báo kèm `computed_evidence` (NT2). Phục vụ **khoảng trống** *"kiểm hợp lý
+      đơn vị số liệu đầu vào"* — **chưa** thành quy tắc trong `rules.yaml`, cần bạn duyệt.
+      → ⚠️ **Lệch Phụ lục B**: thêm thư mục `src/normalization/` (Phụ lục B không có).
+      Lý do: dùng chung cho cả C3 và C4, để trong một trong hai sẽ tạo phụ thuộc chéo.
+- [x] 1.5 — Chạy C1 trên toàn bộ bản lịch sử — **XONG 2026-09-03, hết bị chặn.**
+      → Đã chạy trên **47 bản sizing thật** (nhiều hơn mốc 30 ban đầu):
+      `scripts/try_c1_on_dossiers.py`. Kết quả ở mục 1.3.
 
 ### Tuần 2 — Trích xuất & kiểm tra định lượng
-- [ ] 1.6 — Định nghĩa schema Pydantic (`SizingCore` + `SizingExtension`)
+- [x] 1.6 — Schema Pydantic `SizingCore` + `SizingExtension` — **XONG 2026-09-03.**
+      **→ `src/extraction/schema.py`** + `src/reporting/finding.py` (lược đồ Finding).
+      → ✅ **KHÔNG khai cứng 203 trường.** 151 quy tắc tham chiếu **203 tên tham số
+      khác nhau**, phần lớn dùng đúng một lần. Khai hết thành thuộc tính sẽ tạo một
+      lớp khổng lồ phải sửa mỗi lần thêm quy tắc — trái NT3, vì thêm quy tắc lẽ ra chỉ
+      phải sửa `rules.yaml`. Dùng **túi tham số có xuất xứ** (`params: dict[str,
+      ExtractedValue]`), khoá đúng bằng tên trong `inputs`.
+      → ✅ Mỗi giá trị mang `location`/`raw` (NT2 cần dẫn nguồn) và `ambiguous` (nối
+      với 1.4). **`value=None` nghĩa là KHÔNG TÌM THẤY**, không bao giờ thay bằng giá
+      trị mặc định phỏng đoán.
+      → ✅ `scope_keys()` sinh đúng lượt chấm cho `he_thong` / `phan_he` /
+      `phan_he_x_cong_nghe_luu_tru`; `get()` ưu tiên phân hệ rồi lùi về cấp tài liệu.
 - [ ] 🔴 1.7 — C3: trích trường bằng structured output.
       Phần **đo độ chính xác** BỊ CHẶN bởi 0.13 (không có tập phát triển)
-- [ ] 1.8 — Bộ nạp & diễn giải `rules.yaml`
-- [ ] 1.9 — C4: thực thi quy tắc định lượng bằng code; unit test cho từng công thức
-- [ ] 1.10 — C7 bản đơn giản: xuất báo cáo Markdown
-      → **Trình bày theo hai vòng thẩm định**, Vòng 1 trước, Vòng 2 sau:
-      Vòng 1 xếp theo thứ tự checklist (I → II → III) để người thẩm định đọc báo cáo
-      và chấm checklist theo cùng một mạch; Vòng 2 là chi tiết tính toán.
-      → **BẮT BUỘC: chặn finding Vòng 2 của mục đã trượt Vòng 1**, thay bằng
-      "chưa đánh giá được — thiếu thông tin". Báo "công thức CPU sai" cho người chưa
-      viết phần CPU là vô nghĩa và làm mất niềm tin (rủi ro R6).
-      → Finding có thêm `checklist_ref` bên cạnh `rule_ref`, và nhãn vòng (1 hay 2).
+- [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**
+      **→ `src/validators/rules_loader.py`.** Nạp 151 quy tắc + 46 hằng số, kiểm bất
+      biến (mã trùng, `see_also` trỏ vào mã không có thật), lọc theo loại/vòng/scope.
+      → ✅ **Không im lặng bỏ qua quy tắc nào**: `blocked()` trả về quy tắc không chạy
+      được **kèm LÝ DO**. Im lặng bỏ qua là cách âm thầm làm hụt recall.
+      → ✅ **90/101 quy tắc định lượng chạy được.** Ban đầu chỉ 81 — vì tiêu chí chặn
+      quá thô: `role: lookup` đang gánh **hai vai** trong `rules.yaml`, (a) khoá suy ra
+      hằng số Guideline (`loai_o` → `iops_toi_da_loai_o`, cần bảng) và (b) **cờ điều
+      kiện** dùng trong `applies_when` (`co_duong_ra_public`, `co_kiem_thu_hieu_nang`,
+      **không** cần bảng). Gộp hai vai chặn nhầm 9 quy tắc vốn chạy được.
+- [x] 1.9 — C4 thực thi quy tắc định lượng bằng code — **XONG 2026-09-03.**
+      **→ `src/validators/quantitative.py`.** Thuần code, không gọi LLM (NT1).
+      Biểu thức đánh giá bằng **`asteval`**, không bao giờ `eval()` — quy tắc là dữ
+      liệu người nghiệp vụ sửa được nên phải coi như đầu vào không tin cậy (có test
+      chứng minh không chạy được lệnh hệ thống).
+      → ✅ Bốn đường xuống cấp theo NT4, **không đường nào đoán giá trị**:
+      thiếu đầu vào → `thieu_thong_tin` · đầu vào lưỡng nghĩa (từ 1.4) →
+      `khong_kiem_chung_duoc` · bảng tra chưa số hoá → `khong_kiem_chung_duoc` nêu rõ
+      thiếu bảng nào · biểu thức lỗi → báo lỗi, không nuốt.
+      → ✅ `check` cho bất đẳng thức, `formula`+`compare_with`+`tolerance` cho tính lại
+      — đúng quyết định 2026-08-26. Mọi finding vi phạm đều có `computed_evidence`
+      (NT2), chấm đúng số lượt theo `scope` của quy tắc.
+      → ✅ Chạy thử trên tài liệu rỗng: 151 lượt chấm → **124 finding đều có căn cứ**,
+      toàn nhóm "thiếu thông tin" — đúng hành vi mong muốn.
+      → ✅ **24 unit test** (1.6+1.8+1.9), tổng **77 test** qua, dùng bộ quy tắc THẬT.
+- [x] 1.10 — C7 bản đơn giản: xuất báo cáo Markdown — **XONG 2026-09-04.**
+      **→ `src/reporting/report.py`** + **`config/report_labels.yaml`** (nhãn hiển thị
+      là DỮ LIỆU, NT3) · **11 unit test** (`tests/test_report.py`), tổng **88 test** qua.
+      Thuần code, chạy offline. `scripts/demo_report.py` in báo cáo mẫu (đánh dấu demo).
+      → ✅ **Trình bày hai vòng, Vòng 1 trước:** Vòng 1 xếp theo thứ tự checklist
+      I → II → III (khối chung `CL-3.x.N` trước 3 mục riêng Database), lấy từ danh sách
+      `checklist_order` trong config. Vòng 2 tách **"chưa đạt"** (`vuot_nguong`,
+      `sai_cong_thuc`, `khong_nhat_quan`) khỏi **"chưa kiểm được"** (`thieu_thong_tin`,
+      `khong_kiem_chung_duoc`) — nếu không, tài liệu rỗng ra ~100 dòng "thiếu thông tin"
+      nhấn chìm phần có ý nghĩa (đã kiểm bằng demo: 1 chưa đạt / 101 chưa kiểm được).
+      → ✅ **Luật chặn Vòng 2** nối qua `checklist_ref`: mục trượt Vòng 1 (chỉ nhóm
+      `thieu_muc`/`thieu_thong_tin`; `khong_kiem_chung_duoc` CỐ Ý **không** chặn vì
+      "không biết" ≠ "thiếu") thì mọi finding Vòng 2 cùng mục bị dời sang phần "Tạm
+      hoãn". Khớp phạm vi đúng: trượt `he_thong` chặn tất cả; trượt phân hệ "App" chặn
+      cả "App" lẫn "App/SSD". Demo xác nhận fail `CL-2.9` cấp hệ thống chặn đúng `EVD-10`.
+      → ✅ **NT2 + gom/khử trùng:** lọc finding không căn cứ và **ĐẾM** (không im lặng);
+      khử trùng theo `(rule_ref, scope_key, category, finding)` và đếm số gộp; xếp ưu
+      tiên theo `severity`. Báo cáo mở đầu bằng câu nói rõ **đây là công cụ cố vấn**.
+      → ⚠️ Nguồn finding Vòng 1 là **C5 (mục 1.12) chưa có** — C7 nhận `Finding` làm đầu
+      vào, demo dựng Vòng 1 bằng tay và cờ `is_demo=True` in cảnh báo demo trong báo cáo.
 
 ### Tuần 3 — Kiểm tra định tính & giao diện thử
 - [ ] 1.11 — Dựng RAG: chia nhỏ tài liệu tiêu chí, sinh embedding, nạp Qdrant
@@ -505,4 +635,22 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-03 | **`data/eval_set.json` là sản phẩm 0.7 dù nhãn do AI gán và tự kiểm** — với hạn chế ghi rõ trong `meta` | Tiêu chí hoàn thành GĐ 0 đòi "đã có `data/eval_set.json`". Chờ người gán tay 500 nhãn là không khả thi (người dùng đã quyết). Đổi lại, mọi số recall về sau **phải kèm** câu *"nhãn gán bằng luật + kiểm mẫu bởi cùng tác nhân, chưa kiểm định độc lập"* cho tới khi có người nghiệp vụ soát một lát cắt | Giả định *"bản đã ký thì sạch"* bị bằng chứng bác: bản c360 có khối chữ ký nhưng bảng "Tổng hợp đề xuất" vẫn ghi `CPU >= 143 Cint 2017`, đúng chỗ PNX bảo bỏ `>=`, và vẫn thiếu "Mô hình logic". Nếu coi bản đã ký là sạch thì Copilot bắt đúng lỗi này lại bị tính thành báo động giả — sai lệch chỉ số theo hướng nguy hiểm nhất |
 | 2026-09-03 | **Dùng `base_url` + API key của model công ty (vLLM) — KHÔNG ảnh hưởng kiến trúc; chỉ ba năng lực chưa kiểm là rủi ro** | Đó chính là giả định gốc của kế hoạch (SDK `openai` trỏ `base_url`). Nhưng structured output, embedding và vision đều **chưa được xác minh trên cụm thật**, và structured output bị coi là đương nhiên dù không phải bản vLLM nào cũng bật. Viết `scripts/probe_llm_endpoint.py` (stdlib) để 0.10 thành phép đo thay vì câu hỏi treo; chốt sẵn phương án thay thế cho từng năng lực thiếu để 1.7/1.11/2.3 không xây trên cát |
 | 2026-09-03 | **Mã LLM phải trung lập với nhà cung cấp OpenAI-compatible** — chỉ dựa vào những gì phép thử 0.10 ĐẠT | Người dùng phát triển từ laptop ở mạng ngoài, không với tới endpoint nội bộ. Nếu cần một endpoint thay thế để phát triển (tự chọn, cấu hình riêng, không commit), việc chuyển về cụm công ty phải là **đổi `settings.yaml`**, không đổi code. Vì vậy đường dự phòng E (prompt JSON + validate + retry) phải tồn tại trong 1.7 bất kể cụm có guided decoding hay không |
-| _(chờ)_ | 10 điểm mơ hồ/mâu thuẫn trong công thức code hiện hành | Xem `docs/0.1-danh-sach-quy-tac.md` mục C. Cần người thẩm định xác nhận trước khi số hóa vào `rules.yaml` |
+| 2026-09-03 | **Endpoint là GATEWAY OpenAI-compatible nội bộ, không phải cụm vLLM tự host — thôi dùng chữ "vLLM" trong tài liệu** | Dò thật (`0.10`) thấy 6 model: Claude opus-4-6/sonnet-4-5/haiku-4-5, gpt-oss-120b, Qwen2.5-Coder-7B. Kiến trúc không đổi (vẫn SDK `openai` + `base_url` + khóa qua biến môi trường), nhưng gọi sai tên khiến người ta kỳ vọng tính năng riêng của vLLM (`guided_json`, `max_model_len`) — chính là cái bẫy đã sập ở phép thử D |
+| 2026-09-03 | **KHÔNG tin structured output của máy chủ: client LUÔN validate + retry** | Phép thử `guided_json` báo ĐẠT nhưng output **bọc trong fence ```json** — guided decoding thật ràng buộc văn phạm nên token đầu bắt buộc là `{`, không thể có fence. Tức tham số được nhận nhưng **bỏ qua**; model chỉ tình cờ trả JSON vì prompt yêu cầu. Một mẫu không phân biệt được `response_format` là thật hay cũng chỉ là model tuân lệnh. Đường an toàn duy nhất: strip fence → validate bằng chính model Pydantic → retry ≤3 → thất bại thì trả `None` + finding "thiếu thông tin", KHÔNG bịa |
+| 2026-09-03 | **`max_tokens` mặc định ≥ 2000, và `content` rỗng phải coi là LỖI** | Model trả kèm `reasoning_content`; đặt `max_tokens=200` làm `content` rỗng **mà vẫn HTTP 200**, không ném exception. Đây là lỗi im lặng — nếu client coi chuỗi rỗng là kết quả hợp lệ thì C3 sẽ âm thầm trích ra rỗng cho cả tài liệu |
+| 2026-09-03 | **Vision CÓ trên cụm → C2 giữ nguyên phạm vi, không xuống cấp OCR-only** | Model Claude trên gateway nhận ảnh qua `image_url` (đã thử, trả lời đúng). Phương án dự phòng OCR-only ở `ke-hoach-trien-khai.md:638` **không phải kích hoạt**. Củng cố kết luận 0.11 rằng vision là nhu cầu có thật |
+| 2026-09-03 | **Embedding KHÔNG có trên cụm → BGE-M3 chạy cục bộ** | `/v1/embeddings` trả 404 với model chat, 400 "does not support Embeddings API" với gpt-oss. Kho cần nhúng rất nhỏ (151 quy tắc + Guideline 44 trang + 26 bản sizing) nên CPU đủ, không cần xin hạ tầng dựng thêm. Qdrant giữ nguyên |
+| 2026-09-03 | **C1 dựng lại số mục từ `numbering.xml` và ghép theo cấp heading, thay vì lấy nguyên chuỗi Word hiển thị** | Chạy thật trên 48 bản sizing: chỉ 20/48 nhận ra đề mục nếu chỉ đọc text, vì số mục là đánh số TỰ ĐỘNG nên không nằm trong `paragraph.text`. Thêm nữa tài liệu dùng numId riêng cho mỗi chương ở cấp 2 nên Word hiện "1." lặp lại dưới mọi chương — lấy nguyên chuỗi đó thì hai mục khác nhau trùng `section` và finding không neo được. Ghép theo cấp heading ra `III.4.1`, đúng dạng người thẩm định trích trong PNX ("Mục IV.1.5"). Sau sửa: **47/48** |
+| 2026-09-03 | **Khi text đã ghi rõ số mục thì tin CON SỐ hơn Heading style** | Có bản gán "Heading 1" cho mọi đề mục kể cả mục con ("1. Thông tin hệ thống" nằm dưới chương "I."), nên tin style sẽ đặt mục con ngang hàng chương. Quy ước ổn định trong mọi bản sizing thật: **số La Mã là cấp chương, số Ả Rập là cấp dưới** |
+| 2026-09-03 | **C1 KHÔNG bịa số trang và KHÔNG bịa số mục khi không suy được** | 3/48 file không có dấu ngắt trang nào ⇒ `page=None` kèm cảnh báo, thay vì mặc định trang 1; Vtag không đánh số đề mục ⇒ để trống `section` thay vì tự đánh số. Số trang/số mục sai còn tệ hơn không có, vì người thẩm định dùng chúng để mở tài liệu đối chiếu (cùng lý do đã thống nhất số trang Guideline ở 2026-08-26) |
+| 2026-09-03 | **Số lưỡng nghĩa ("1.500") được đánh dấu `ambiguous` kèm CẢ HAI cách đọc, không tự chọn một** | Dấu chấm vừa là phân nhóm nghìn kiểu Việt vừa là dấu thập phân kiểu Anh, và tài liệu sizing thật dùng lẫn cả hai — có khi trong cùng một bảng. Chọn thầm một cách là rủi ro lệch **1000 lần**, đúng loại lỗi làm mất niềm tin ngay. Theo NT4: trả cả hai, để C4 xuất cảnh báo "không kiểm chứng được". Đo trên tài liệu thật: 13% đại lượng rơi vào diện này |
+| 2026-09-03 | **Đơn vị không khai hệ số thì KHÔNG quy đổi được — bỏ mặc định 1.0** | Unit test bắt được: `convert(1,"vcpu","cint")` âm thầm trả `1.0`, tức coi 1 vCPU = 1 Cint và **lặng lẽ ghi đè `CPU-03`/`CPU-09`** (tỷ lệ thật phụ thuộc đời CPU và mức overcommit) — vi phạm NT3. CCU↔user cũng bị 1:1 trong khi tỷ lệ đồng thời là dữ liệu đầu vào từng hệ thống. Nay các đơn vị đó nhận diện được nhưng quy đổi thì báo lỗi |
+| 2026-09-03 | **Nhóm băng thông so khớp CÓ phân biệt hoa/thường** | `KB/s` (kilobyte) và `kb/s` (kilobit) chênh **đúng 8 lần** và chỉ chữ B hoa/thường phân biệt được; hạ hết về chữ thường là sai 8 lần mà không có dấu hiệu gì. Viết mập mờ (`KBPS`) thì đánh dấu lưỡng nghĩa thay vì đoán |
+| 2026-09-03 | **Thêm `src/normalization/` — lệch Phụ lục B, có chủ ý** | Chuẩn hóa đơn vị/số liệu dùng chung cho cả C3 (trích xuất) lẫn C4 (kiểm định lượng); đặt vào một trong hai sẽ tạo phụ thuộc chéo giữa hai thành phần vốn phải độc lập |
+| 2026-09-03 | **Schema trích xuất dùng TÚI THAM SỐ có xuất xứ, không khai cứng 203 trường** | 151 quy tắc tham chiếu 203 tên tham số, phần lớn dùng đúng một lần (`write_penalty_khai`, `dung_luong_1_tape_gb`…). Khai hết thành thuộc tính Pydantic sẽ tạo lớp khổng lồ phải sửa mỗi lần thêm quy tắc — trái NT3, vì thêm quy tắc lẽ ra chỉ phải sửa `rules.yaml`. Mỗi giá trị vẫn mang `location`/`raw` để thoả NT2, và `value=None` nghĩa là KHÔNG TÌM THẤY chứ không phải 0 |
+| 2026-09-03 | **`role: lookup` trong `rules.yaml` đang gánh HAI vai khác nhau** | (a) khoá suy ra hằng số Guideline không có trong tài liệu (`loai_o` → `iops_toi_da_loai_o`) — cần bảng tra; (b) cờ bật/tắt quy tắc dùng trong `applies_when` (`co_duong_ra_public`, `co_kiem_thu_hieu_nang`) — chỉ là giá trị trích từ tài liệu, không cần bảng. Bộ nạp coi chung một vai thì chặn nhầm **9 quy tắc vốn chạy được** (81→90). Phân biệt bằng: khoá có xuất hiện trong `applies_when` hay không |
+| 2026-09-03 | ⚠️ **8 quy tắc KHÔNG chạy được vì bảng tra chỉ nằm trong `note` dạng văn xuôi** — chưa vá, cần người dùng duyệt | `STO-02/03/09/13` (IOPS theo loại ổ, write penalty theo RAID), `CPU-10`, `BAK-07` (thế hệ LTO), `LAN-02`, `RCK-01` (RU theo loại thiết bị). Bảng đang viết kiểu *"NL-SAS 100 · SAS 10k 140 · SSD từ 5000"* trong `note`, máy không đọc được. **Chép bảng vào Python sẽ vi phạm NT3**, nên C4 chỉ đánh dấu `khong_kiem_chung_duoc` kèm lý do và đề nghị bổ sung mục `lookup:` vào `rules.yaml`. Sửa `rules.yaml` là việc cần duyệt |
+| 2026-09-03 | **C4 báo LÝ DO cho mọi quy tắc không chạy được, không im lặng bỏ qua** | Một quy tắc bị bỏ qua âm thầm sẽ làm hụt recall mà không ai biết vì sao — nguy hiểm hơn một finding sai, vì nó không để lại dấu vết nào để lần ra |
+| 2026-09-04 | **C7 (1.10): nhãn hiển thị + thứ tự checklist là DỮ LIỆU trong `config/report_labels.yaml`, không hard-code** | Tinh thần NT3: người nghiệp vụ sửa được tên phần/mức độ và **thứ tự checklist** (`checklist_order`, 37 mã, khối chung `CL-3.x.N` trước 3 mục riêng Database) mà không đụng Python. Code chỉ nạp; thiếu khoá thì lùi về `_FALLBACK` an toàn để báo cáo không vỡ |
+| 2026-09-04 | **C7 tách Vòng 2 thành "chưa đạt" và "chưa kiểm được"; `khong_kiem_chung_duoc` ở Vòng 1 KHÔNG chặn Vòng 2** | Không tách thì tài liệu rỗng ra ~100 dòng "thiếu thông tin" nhấn chìm phần có ý nghĩa (đã kiểm bằng `demo_report.py`). Chỉ `thieu_muc`/`thieu_thong_tin` ở Vòng 1 mới chặn Vòng 2 — "không biết" (số lưỡng nghĩa, ảnh chưa đọc) ≠ "thiếu", coi như thiếu sẽ chặn oan các kiểm tra vốn chạy được |
+| 2026-09-04 | **Luật chặn Vòng 2 khớp phạm vi phân cấp**: trượt `he_thong` chặn mọi `scope_key`; trượt phân hệ "App" chặn cả "App" và "App/SSD" | Đúng mô hình `scope` đã chốt 2026-08-25 (`he_thong` / `phan_he` / `phan_he_x_cong_nghe_luu_tru`). Nếu chỉ khớp `scope_key` bằng nhau thì fail Vòng 1 ở phân hệ sẽ bỏ sót các kiểm Vòng 2 ở cấp công nghệ lưu trữ của chính phân hệ đó |
