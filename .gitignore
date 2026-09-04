@@ -17,3 +17,6 @@ config/settings.yaml
 
 # Mẫu Word sinh lại được bằng scripts/make_word_template.py — không commit bản sinh
 data/knowledge_base/mau-sizing-chuan.docx
+
+# Kết quả 1.17 sinh lại được bằng scripts/fill_checklist.py — không commit
+docs/checklist/
