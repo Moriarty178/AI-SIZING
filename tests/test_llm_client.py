@@ -94,3 +94,43 @@ def test_phan_hoi_rong_la_LOI_khong_phai_ket_qua_hop_le():
                     LLMError("phản hồi rỗng")])
     with pytest.raises(ExtractionFailed):
         c.extract(Sizing, [{"role": "user", "content": "x"}], max_retries=3)
+
+
+# --- chẩn đoán cho smoke test: số lần thử và đường schema đã dùng ----------
+def test_ghi_lai_so_lan_thu_de_bao_cao_noi_duoc_chi_phi_that():
+    """Nếu lần nào cũng phải thử lại thì C3 tốn gấp 2-3 lời gọi — phải đo được."""
+    c = FakeClient(['{"ten_he_thong": "MNP"}',                # thiếu so_ccu
+                    '{"ten_he_thong": "MNP", "so_ccu": 300}'])
+    c.extract(Sizing, [{"role": "user", "content": "x"}])
+    assert c.last_attempts == 2
+
+    c2 = FakeClient(['{"ten_he_thong": "MNP", "so_ccu": 300}'])
+    c2.extract(Sizing, [{"role": "user", "content": "x"}])
+    assert c2.last_attempts == 1
+
+
+def test_gateway_tu_choi_response_format_thi_lui_ve_prompt_VA_GHI_LAI():
+    """Gateway trả 400 cho tham số lạ — không được coi là hỏng, nhưng phải báo.
+
+    Trước đây chỉ bắt `TypeError`, mà SDK ném lỗi HTTP chứ không phải TypeError,
+    nên ca này sẽ vỡ ra ngoài thành traceback khó hiểu ngay trong mạng công ty.
+    """
+    from openai import BadRequestError
+
+    # Dựng ngoại lệ KHÔNG qua `__init__` của SDK: nó đòi một đối tượng response
+    # httpx thật, mà tên module đó còn đổi giữa các bản openai (`httpx` ->
+    # `httpx2` ở 3.7). Test này nói về LOẠI ngoại lệ, không về cách SDK dựng nó.
+    loi = BadRequestError.__new__(BadRequestError)
+    Exception.__init__(loi, "unknown parameter: response_format")
+
+    class TuChoiSchema(FakeClient):
+        def chat(self, messages, *, model=None, max_tokens=4000, **extra):
+            if "response_format" in extra:
+                raise loi
+            return super().chat(messages, model=model, max_tokens=max_tokens)
+
+    c = TuChoiSchema(['{"ten_he_thong": "MNP", "so_ccu": 300}'])
+    out = c.extract(Sizing, [{"role": "user", "content": "x"}])
+    assert out.so_ccu == 300
+    assert c.last_schema_path == "prompt"
+    assert "response_format" in c.last_schema_error
