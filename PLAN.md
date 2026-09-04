@@ -10,7 +10,7 @@
 | GĐ | Tên | Tiến độ | Trạng thái |
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
-| 1 | MVP chỉ xử lý text | 11 / 17 | 🟡 Đang làm — 1.11 (RAG) cần cài phụ thuộc |
+| 1 | MVP chỉ xử lý text | 12 / 17 | 🟡 Đang làm — chờ số recall thật (1.13) |
 | 2 | Đa phương thức & tái sử dụng | 0 / 14 | ⬜ Chưa bắt đầu |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
@@ -592,16 +592,41 @@
       thứ C7 cần nhất.
       → ⬜ **CHƯA đo trên tài liệu thật** (cần model). Con số phải nhìn là
       **`trích dẫn không neo được`**, cùng loại rủi ro với C3.
-- [ ] 🔴 1.13 — ~~Eval harness~~ **BỊ CHẶN bởi 0.13** — chưa có eval set
-      → nhãn neo theo vị trí **trong web app**, bản sizing là **file Word rời** →
-      phải so khớp qua ánh xạ mục Word ↔ tab web, không so khớp trực tiếp.
-      Xem `docs/0.7-nguon-nhan-vang.md`.
+- [ ] 🟡 1.13 — Eval harness — **HẾT BỊ CHẶN. Phần code XONG 2026-09-04, chờ chạy thật.**
+      **→ `eval/matching.py`** (thuần code, so khớp + tính recall) **+ `eval/run_eval.py`**
+      (chạy thật, cần model) · **9 unit test**.
+      → ⚠️ **Chốt chặn cũ đã LỖI THỜI**: dòng "BỊ CHẶN bởi 0.13 — nhãn neo theo vị trí
+      trong web app" viết trên tiền đề **DB web app đã đổ**. Nay `data/eval_set.json` có
+      **475 nhãn** từ PNX, `meta.scoring_note` định nghĩa rõ cách tính trúng, mỗi nhãn có
+      `dossier` + `rule_ref`. Không còn phải ánh xạ mục Word ↔ tab web.
+      → ✅ **Hai mẫu số tách rời**, lấy nguyên từ `scoring_note`, không tự nghĩ:
+      *so với bộ quy tắc hiện có* (469 nhãn có `rule_ref`) và *so với mọi yêu cầu*
+      (475 nhãn, gồm `khoang_trong` + `khong_neo_duoc`). Con số thứ hai luôn thấp hơn và
+      **nó mới là con số nói với người dùng**.
+      → ✅ **Hồ sơ chạy hỏng VẪN tính vào mẫu số** — bỏ ra sẽ làm recall đẹp lên giả tạo.
+      → ✅ Báo cáo **luôn kèm 3 hạn chế** (có test): recall hào phóng vì 397 nhãn nhận
+      gợi ý máy dư mã · **không đo được false positive** · nhãn chưa kiểm định độc lập.
+      Finding không khớp nhãn được liệt kê để soi nhưng **cấm gọi là false positive**.
+      → ⚠️ **Thiên lệch PHIÊN BẢN chưa gỡ được**: PNX nhận xét về bản TRƯỚC khi sửa, mà
+      nhiều hồ sơ giữ nhiều bản `.docx` (PNM 5 bản, APIGW-Meta 3). Chạy trên bản đã sửa
+      thì lỗi đã vá → **recall thấp giả tạo**. Ghép `pnx_file` ↔ phiên bản là mục còn nợ
+      từ 0.7 mục 5; hiện script **liệt kê mọi bản và ghi rõ bản nào đã dùng**.
+      → ✅ Tập TEST đòi cờ `--toi-hieu-rui-ro` mới chạy được, để không ai lỡ tay làm rò rỉ.
+      → ⬜ **Chưa có số recall thật** — cần model. Đây là con số quyết định tiêu chí hoàn
+      thành Giai đoạn 1.
 - [ ] 1.14 — Giao diện Streamlit: tải file → xem báo cáo
 - [ ] 1.15 — Demo nội bộ 2–3 đồng nghiệp, thu phản hồi
-- [ ] 1.16 — Mẫu Word chuẩn — **KHÔNG còn bị chặn**. Trước đây phải chờ Phụ lục 01;
-      nay **sinh thẳng từ 57 mục checklist**, vốn đã là danh mục đề mục bắt buộc,
-      đúng thứ tự và phân cấp. Không cần LLM, không phụ thuộc thành phần nào.
-      Cách rẻ nhất để đỡ người viết ngay từ khâu tạo, đồng thời kéo rủi ro R4 xuống.
+- [x] 1.16 — Mẫu Word chuẩn — **XONG 2026-09-04.**
+      **→ `src/reporting/mau_word.py` + `scripts/make_word_template.py`** · **8 unit test**.
+      Sinh thẳng từ **57 mục checklist** (checklist vốn đã là danh mục đề mục bắt buộc,
+      đúng thứ tự và phân cấp — chính là thứ Phụ lục 01 lẽ ra cung cấp). Không cần LLM.
+      → ✅ **Tiêu chí đạt của từng mục chép NGUYÊN VĂN vào mẫu** làm lời nhắc, nên người
+      viết thấy đúng câu người thẩm định sẽ dùng để chấm.
+      → ✅ **Khối 20 mục của phần III lặp cho MỌI phân hệ**, không chỉ Application và
+      Database — `--phan-he Redis,Kafka` sinh thêm bản sao đúng số phân hệ thật.
+      → ✅ **Tự kiểm bằng chính C1**: mẫu sinh ra được `read_docx` đọc lại, **204 phần tử
+      · 60 số mục nhận ra**. Mẫu ta phát ra mà C1 không đọc được thì vô nghĩa.
+      → ✅ Vá 3 lỗi nguồn Excel lúc đọc (ô A42, dòng 18, dòng 50), **không sửa file gốc**.
 - [ ] 1.17 — **Điền hộ cột C của checklist.** Đọc file Word, với mỗi mục trong 57
       mục xác định nó nằm ở trang/mục nào, xuất bản checklist đã điền sẵn cột
       "Tham chiếu theo tài liệu sizing", đánh dấu rõ mục **không tìm thấy**.
@@ -754,6 +779,9 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-03 | **`role: lookup` trong `rules.yaml` đang gánh HAI vai khác nhau** | (a) khoá suy ra hằng số Guideline không có trong tài liệu (`loai_o` → `iops_toi_da_loai_o`) — cần bảng tra; (b) cờ bật/tắt quy tắc dùng trong `applies_when` (`co_duong_ra_public`, `co_kiem_thu_hieu_nang`) — chỉ là giá trị trích từ tài liệu, không cần bảng. Bộ nạp coi chung một vai thì chặn nhầm **9 quy tắc vốn chạy được** (81→90). Phân biệt bằng: khoá có xuất hiện trong `applies_when` hay không |
 | 2026-09-03 | ⚠️ **8 quy tắc KHÔNG chạy được vì bảng tra chỉ nằm trong `note` dạng văn xuôi** — chưa vá, cần người dùng duyệt | `STO-02/03/09/13` (IOPS theo loại ổ, write penalty theo RAID), `CPU-10`, `BAK-07` (thế hệ LTO), `LAN-02`, `RCK-01` (RU theo loại thiết bị). Bảng đang viết kiểu *"NL-SAS 100 · SAS 10k 140 · SSD từ 5000"* trong `note`, máy không đọc được. **Chép bảng vào Python sẽ vi phạm NT3**, nên C4 chỉ đánh dấu `khong_kiem_chung_duoc` kèm lý do và đề nghị bổ sung mục `lookup:` vào `rules.yaml`. Sửa `rules.yaml` là việc cần duyệt |
 | 2026-09-03 | **C4 báo LÝ DO cho mọi quy tắc không chạy được, không im lặng bỏ qua** | Một quy tắc bị bỏ qua âm thầm sẽ làm hụt recall mà không ai biết vì sao — nguy hiểm hơn một finding sai, vì nó không để lại dấu vết nào để lần ra |
+| 2026-09-04 | **Điều phối `src/pipeline.py`: C5 chạy SAU C3 và cần kết quả C3** | Không phải vì nội dung mà vì `applies_when`: 21/50 quy tắc định tính chỉ áp dụng trong một số trường hợp, điều kiện tính từ tham số C3 trích ra. Chạy C5 trước sẽ khiến 4 quy tắc `MTH` cùng nổ trên mọi tài liệu |
+| 2026-09-04 | **Cảnh báo NT4 về ảnh đặt ở pipeline, không ở C1** | Giai đoạn 1 cố ý bỏ qua ảnh (C2 thuộc GĐ 2), nhưng "bỏ qua" không được phép có nghĩa là IM LẶNG: 767 ảnh trên 47 bản thật và PNX liên tục nhận xét về ảnh sở cứ. Cảnh báo có `computed_evidence` do code đếm nên vẫn thoả NT2 dù không gắn được mã quy tắc nào |
+| 2026-09-04 | **Eval (1.13): hồ sơ chạy hỏng VẪN tính vào mẫu số; finding không khớp nhãn KHÔNG được gọi là false positive** | Bỏ hồ sơ hỏng ra khỏi mẫu số làm recall đẹp lên giả tạo. Và PNX chỉ ghi những điều người thẩm định CHỌN nhận xét, không phải mọi lỗi có trong tài liệu — cộng thêm bản đã ký không sạch, nên phần "không khớp" chỉ để soi |
 | 2026-09-04 | **C5 (1.12) làm TRƯỚC 1.11 vì C5 không cần RAG** | Cả 50 quy tắc định tính đã có `criteria` + `source_doc` trong `rules.yaml`, nên căn cứ NT2 nằm sẵn trong dữ liệu. RAG chỉ để lấy thêm ngữ cảnh. Cộng thêm: 1.11 cần `sentence-transformers` (kéo torch ~2GB) chưa cài, còn C5 cấp đúng thứ C7 đang thiếu — nguồn finding Vòng 1 |
 | 2026-09-04 | **C5: "không đạt" KHÔNG bị đòi trích dẫn tài liệu; nhưng trích dẫn có mà neo không được thì HUỶ kết luận** | Căn cứ bất đối xứng: phía quy tắc luôn có (`rules.yaml`), phía tài liệu thì cái THIẾU không trích dẫn được. Đòi trích dẫn cho ca thiếu sẽ làm C5 bỏ sót đúng loại lỗi Vòng 1 sinh ra để bắt. Ngược lại, dẫn một đoạn không có thật là dấu hiệu bịa, không phải bằng chứng |
 | 2026-09-04 | **C3 (1.7): model trả NGUYÊN VĂN, code mới quyết định con số** | *"1.500"* là 1500 hay 1,5 là quyết định dưới sự mơ hồ; 1.4 đã dựng thang suy luận có cờ `ambiguous` cho đúng việc đó. Để model trả thẳng số là đi vòng qua thang ấy và âm thầm chọn một cách đọc — sai một lần lệch 1000 lần (NT1). Đổi lại còn được `raw` cho NT2 |
