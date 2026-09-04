@@ -497,3 +497,27 @@ def test_khoang_phan_he_chan_lay_so_cua_phan_he_khac():
     assert el is None and "không bảng nào" in vi_sao
     el2, _ = ex.o_trong_cot(doc, "RAM (GB)", "500", khoang=(20, 100))
     assert el2 is not None
+
+
+def test_cong_nghe_luu_tru_la_ENUM_lay_tu_rules_yaml():
+    """Khai `str` đã hỏng hai lần trên tài liệu thật: lần đầu model chép nguyên
+    `cong_nghe` sang, lần sau điền cả tiêu đề mục "Mục III - Định cỡ cụm máy chủ…".
+    Cả hai lần đều khác rỗng nên MỌI phân hệ chạy thêm một vòng scope vô nghĩa."""
+    import json
+    from src.extraction.extractor import PhanHeNhanDien
+    from src.extraction.plan import tham_so_cua_bo_quy_tac
+    sch = PhanHeNhanDien.model_json_schema()["properties"]["cong_nghe_luu_tru"]
+    assert set(sch["enum"]) == set(tham_so_cua_bo_quy_tac()["loai_o"].options) | {"khong_neu"}
+    assert "Mục III" not in json.dumps(sch, ensure_ascii=False)
+
+
+def test_khong_neu_cho_cong_nghe_luu_tru_thi_KHONG_chay_them_scope():
+    from src.extraction.extractor import DanhSachPhanHe
+    doc = _doc("Phân hệ Database dùng MariaDB.")
+    llm = FakeLLM({"DanhSachPhanHe": {"phan_he": [{
+        "ten_phan_he": "Database", "cong_nghe": "MariaDB",
+        "cong_nghe_luu_tru": "khong_neu", "muc": "III"}]}})
+    ph = Extractor(llm).nhan_dien_phan_he(doc)
+    assert ph[0].cong_nghe_luu_tru is None
+    from src.extraction.schema import SizingCore
+    assert SizingCore(phan_he=ph).scope_keys("phan_he_x_cong_nghe_luu_tru") == []
