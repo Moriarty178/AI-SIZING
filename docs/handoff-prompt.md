@@ -6,14 +6,14 @@
 >
 > Cập nhật lại file này mỗi khi bàn giao.
 > **Lần cập nhật gần nhất: 2026-09-04** — kết thúc **Giai đoạn 0** (26 hồ sơ thật,
-> 475 nhãn, endpoint đã dò) và **8/17 mục Giai đoạn 1** (1.1–1.6, 1.8, 1.9).
-> Việc kế tiếp: **1.10** (C7 báo cáo Markdown) rồi **1.7** (C3 trích xuất).
+> 475 nhãn, endpoint đã dò) và **9/17 mục Giai đoạn 1** (1.1–1.6, 1.8–1.10).
+> Việc kế tiếp: **1.7** (C3 trích xuất). Commit gần nhất `cfbb309 phase 1 - TĐ: 9/17`.
 > Bản bàn giao trước (2026-08-26, lúc còn chờ hồ sơ) đã bị thay hoàn toàn.
 
 ---
 
 Dự án **Sizing Copilot**. Giai đoạn 0 đã **xong**; Giai đoạn 1 đang làm dở
-(**8/17 mục**). Việc kế tiếp là **mục 1.10** trong `PLAN.md`. Đọc hết phần dưới
+(**9/17 mục**). Việc kế tiếp là **mục 1.7** trong `PLAN.md`. Đọc hết phần dưới
 trước khi làm gì.
 
 ## 0. Dự án là gì, và ranh giới không được vượt
@@ -38,7 +38,7 @@ và hỏi tôi.
 | 2 | `src/reporting/finding.py` | Toàn bộ (60 dòng) | Lược đồ `Finding` — đầu ra duy nhất của mọi thành phần kiểm |
 | 3 | `src/validators/rules_loader.py` | Toàn bộ (~210 dòng) | Cách `rules.yaml` được diễn giải; `khong_danh_gia_duoc()` |
 | 4 | `src/validators/quantitative.py` | Toàn bộ (~255 dòng) | C4 — mẫu mực cho mọi thành phần kiểm về sau |
-| 5 | `docs/rules/rules-checklist-flat.md` | **Mục "Hệ quả cho báo cáo (C7)"** + 3 bảng I/II/III cuối file | Thứ tự checklist + luật chặn Vòng 2 — chính là mục 1.10 |
+| 5 | `src/reporting/report.py` | `chan_vong2()` + `xu_ly()` | C7 đã có; 1.12 phải sinh finding Vòng 1 đúng dạng nó chờ |
 | 6 | `docs/0.10-ket-qua-xac-minh-endpoint.md` | Phần chốt | Endpoint thật làm được gì / không làm được gì |
 
 Đọc thêm **khi cần**, không đọc trước: `docs/ke-hoach-trien-khai.md` (bối cảnh đầy đủ,
@@ -55,18 +55,21 @@ có sẵn nhãn, giả định đó đã đổ. Giữ lại cho tương lai, đ�
 | GĐ | Tiến độ | Trạng thái |
 |----|---------|------------|
 | 0 — Chuẩn bị tri thức & dữ liệu | 11 / 13 | 🟢 Đủ để sang GĐ 1 (còn 0.9 thời gian mỗi vòng, 0.12 tài liệu) |
-| 1 — MVP chỉ xử lý text | **8 / 17** | 🟡 Đang làm — **1.10 rồi 1.7** |
+| 1 — MVP chỉ xử lý text | **9 / 17** | 🟡 Đang làm — **1.7 tiếp theo** |
 | 2 · 3 · 4 | 0 | ⬜ Chưa bắt đầu |
 
 **Đã xong ở Giai đoạn 1:** 1.1 (khởi tạo) · 1.2 (client LLM, phần offline) · 1.3 (C1
 đọc docx) · 1.4 (chuẩn hoá số/đơn vị) · 1.5 (chạy C1 trên toàn bộ hồ sơ) · 1.6 (schema)
-· 1.8 (bộ nạp quy tắc) · 1.9 (C4 định lượng).
+· 1.8 (bộ nạp quy tắc) · 1.9 (C4 định lượng) · **1.10 (C7 báo cáo Markdown)**.
 
-**Còn lại:** **1.7** (C3 trích xuất) · **1.10** (C7 báo cáo) · 1.11 (RAG) · 1.12 (C5
-định tính) · 1.13 (eval harness) · 1.14 (Streamlit) · 1.15 (demo) · 1.16 (mẫu Word) ·
-1.17 (điền hộ cột C checklist).
+**Còn lại:** **1.7** (C3 trích xuất) · 1.11 (RAG) · 1.12 (C5 định tính) · 1.13 (eval
+harness) · 1.14 (Streamlit) · 1.15 (demo) · 1.16 (mẫu Word) · 1.17 (điền hộ cột C).
 
-**77 unit test đang qua, chạy hoàn toàn offline.** `python -m pytest -q`.
+**90 unit test đang qua, chạy hoàn toàn offline.** `python -m pytest -q`.
+
+⚠️ **C7 (1.10) ĐÃ CÓ — đừng viết lại.** `src/reporting/report.py` (428 dòng) +
+`config/report_labels.yaml` + `tests/test_report.py` (11 test) + `scripts/demo_report.py`.
+Luật chặn Vòng 2, thứ tự checklist, khử trùng, cổng NT2 đều đã hiện thực và có test.
 
 ### Bộ quy tắc `config/rules.yaml`
 
@@ -115,6 +118,8 @@ LangGraph.
 | `src/reporting/finding.py` | `Finding` + `co_can_cu()` + `loc_bo_khong_can_cu()` | Cổng NT2 nằm ở đây |
 | `src/validators/rules_loader.py` | `Rule`, `RuleSet`, `runnable()`, `blocked()` | `khong_danh_gia_duoc()` trả **chuỗi lý do**, không phải bool |
 | `src/validators/quantitative.py` | C4 — thuần code, `asteval` | 4 đường xuống cấp NT4, không đường nào đoán giá trị |
+| `src/reporting/report.py` | C7 — gom, khử trùng, xếp ưu tiên, in Markdown | **Chặn finding Vòng 2 của mục trượt Vòng 1**; `khong_kiem_chung_duoc` CỐ Ý không chặn ("không biết" ≠ "thiếu") |
+| `config/report_labels.yaml` | Nhãn hiển thị + `checklist_order` — **dữ liệu**, NT3 | Thứ tự I→II→III sửa được không cần đụng Python |
 
 **Thư mục `src/normalization/` lệch Phụ lục B** (Phụ lục B không có nó). Lý do: dùng
 chung cho cả C3 và C4; để trong một trong hai sẽ tạo phụ thuộc chéo.
@@ -125,47 +130,42 @@ chung cho cả C3 và C4; để trong một trong hai sẽ tạo phụ thuộc c
 `suggest_rule_refs.py` · `finalize_labels.py` · `probe_llm_endpoint.py` ·
 `smoke_llm.py` (**chưa chạy** — xem mục 5).
 
-## 4. VIỆC KẾ TIẾP — mục 1.10, C7 báo cáo Markdown
+## 4. VIỆC KẾ TIẾP — mục 1.7, C3 trích trường bằng structured output
 
-Đây là việc phiên mới bắt tay vào. **Thuần code, không cần mạng, không cần model.**
+Đây là mục cuối còn dở của "Tuần 2" và là **mảnh còn thiếu để chạy được đầu-cuối**:
+C1 đã đọc được `.docx`, C4 đã chấm được quy tắc, C7 đã in được báo cáo — nhưng **chưa
+có gì đổ dữ liệu từ tài liệu vào `SizingCore`**. Không có C3 thì C4 chấm tài liệu rỗng
+và ra ~124 finding "thiếu thông tin".
 
-**Yêu cầu trong `PLAN.md`:**
+**Việc là:** đọc `DocxDocument` (C1) → gọi `LLMClient.extract()` với schema Pydantic →
+điền `SizingCore.params` / `SizingExtension.params`, mỗi giá trị kèm `location`,
+`raw`, `element_index`, và `ambiguous` lấy từ tầng chuẩn hoá 1.4.
 
-1. Trình bày **hai vòng**: Vòng 1 trước, Vòng 2 sau.
-2. **Vòng 1 xếp theo thứ tự checklist I → II → III** để người thẩm định đọc báo cáo và
-   chấm checklist theo cùng một mạch. Mã `CL-1.x` → `CL-2.x` → `CL-3.x`; trong phần III,
-   khối chung `CL-3.x.N` đứng trước 3 mục riêng của Database (`CL-3.2.4`, `CL-3.2.7a`,
-   `CL-3.2.19`).
-3. **BẮT BUỘC — chặn finding Vòng 2 của mục đã trượt Vòng 1**, thay bằng một dòng
-   *"chưa đánh giá được — thiếu thông tin"*. Nối qua `checklist_ref`.
-   *Lý do:* nói *"công thức CPU của bạn sai"* với người **chưa viết phần CPU** là vô
-   nghĩa và làm mất niềm tin (rủi ro R6). Đây là **quyết định đã chốt**, không bàn lại.
-4. C7 còn phải: **gom, khử trùng, xếp ưu tiên** (theo `severity`), và **lọc bỏ finding
-   không có căn cứ** (NT2) — nhưng **đếm số bị lọc**, không im lặng.
+**Ràng buộc phải giữ:**
+- **NT1** — LLM chỉ **trích con số**, tuyệt đối không tính, không so ngưỡng, không
+  phán "giá trị này có hợp lý không". Mọi phép tính là của C4.
+- **Một nhiệm vụ một lời gọi** — không gộp trích xuất với thẩm định.
+- **Không tự điền mặc định** cho trường thiếu → để `None`, C4 sẽ sinh finding
+  "thiếu thông tin". Đây là cạm bẫy ghi rõ trong `CLAUDE.md`.
+- Số đọc ra phải đi qua `src/normalization/numbers.py`, **không** để LLM tự chuẩn hoá
+  "1.500" — đó chính là chỗ lệch 1000 lần.
+- Nhiệt độ 0–0.2.
 
-**Gợi ý thiết kế** (chưa chốt, phiên mới tự quyết trong khuôn NT):
-- Nguồn "mục nào trượt Vòng 1": finding có `vong == 1` và `category` ∈
-  {`thieu_muc`, `thieu_thong_tin`}. `khong_kiem_chung_duoc` ở Vòng 1 **không** nên chặn
-  — không biết là thiếu thì không được coi như thiếu.
-- Khớp phạm vi: mục Vòng 1 `scope: he_thong` trượt ⇒ chặn mọi `scope_key`; mục
-  `scope: phan_he` trượt ở "App" ⇒ chặn `scope_key` "App" và "App/SSD".
-- Nên tách Vòng 2 thành **"chưa đạt"** (`vuot_nguong`, `sai_cong_thuc`,
-  `khong_nhat_quan`) và **"chưa kiểm được"** (`thieu_thong_tin`,
-  `khong_kiem_chung_duoc`) — nếu không, tài liệu rỗng sẽ ra 124 dòng "thiếu thông tin"
-  nhấn chìm phần có ý nghĩa.
-- Nhãn hiển thị tiếng Việt (tên phần I/II/III, tên mức độ, tên nhóm) nên để **trong
-  file cấu hình** chứ không hard-code — tinh thần NT3.
-- Báo cáo phải mở đầu bằng câu nói rõ **đây là công cụ cố vấn**, người thẩm định quyết
-  định cuối cùng.
-- Cần unit test cho: luật chặn hoạt động · thứ tự checklist đúng · khử trùng · finding
-  thiếu căn cứ bị lọc và **được đếm**.
+**Chia theo phân hệ, không nhét cả tài liệu vào một lời gọi.** Không phải vì giới hạn
+context (context 200k–1M, rất thoáng) mà vì `scope: phan_he` — mỗi phân hệ là một lượt
+chấm riêng, nên trích riêng thì ánh xạ `scope_key` mới đúng và `location` mới trỏ chuẩn.
 
-**Trở ngại thật:** nguồn finding Vòng 1 là **C5 (mục 1.12) chưa có**. Đừng vì thế mà
-tự viết một bộ kiểm Vòng 1 tạm trong C7 — làm thế là lấn việc 1.12. C7 nhận `Finding`
-làm đầu vào; demo thì dựng dữ liệu tay và **ghi rõ là demo**.
+**Phần BỊ CHẶN:** đo độ chính xác của C3 cần model, mà `smoke_llm.py` **tôi chưa chạy**
+(xem mục 5). Phần viết code, schema và test bằng transport giả thì **làm được ngay**.
+Đừng chờ tôi mới bắt đầu.
 
-**Sau 1.10 là 1.7 (C3).** Phần **đo độ chính xác của 1.7 cần model**, nên chỉ viết được
-phần khung cho tới khi tôi gửi kết quả `smoke_llm.py`.
+**Gợi ý thứ tự:** (a) schema trích xuất theo nhóm tham số, (b) prompt + few-shot lấy từ
+tài liệu thật trong `danh_sach_sizings_da_duyet/`, (c) test offline bằng `FakeClient`
+kiểu `tests/test_llm_client.py`, (d) chạy thật trên **tập DEV** khi có model.
+⚠️ **Không đụng tập TEST.**
+
+**Sau 1.7:** 1.12 (C5 định tính) đáng làm sớm hơn 1.11, vì C7 đang thiếu **nguồn finding
+Vòng 1** — luật chặn Vòng 2 đã viết xong nhưng chưa có gì nuôi nó ngoài dữ liệu demo.
 
 ## 5. Hạ tầng LLM — kết quả dò thật (0.10)
 
@@ -191,6 +191,12 @@ Kết quả đầy đủ: `docs/0.10-ket-qua-xac-minh-endpoint.md`.
   chạy eval thật ở 1.13.
 - ⬜ **`scripts/smoke_llm.py` chưa chạy** — tôi đang ở mạng ngoài, sẽ chạy trong mạng
   công ty và gửi kết quả. **Không chặn** các mục thuần code.
+  Script đã sửa 2026-09-04 để **tự in một khối Markdown dán về được** (và lưu
+  `docs/1.2-ket-qua-smoke-llm.md`), gồm ba con số `probe_llm_endpoint.py` không lấy
+  được: **số lần thử trung bình của `extract()`** (quyết định chi phí thật của C3),
+  **đường schema đã dùng** (`json_schema` hay lùi về prompt thuần), và **model nào
+  trích đúng số tiếng Việt** — có đoạn bẫy "12.000" ⇒ 12000. Nhận nhiều model làm
+  tham số dòng lệnh để chốt luôn câu hỏi treo "model chính cho C3".
 
 ## 6. Quyết định ĐÃ CHỐT — đừng bàn lại
 

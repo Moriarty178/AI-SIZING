@@ -26,6 +26,12 @@ import yaml
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
+try:  # gateway từ chối tham số lạ bằng HTTP 400, KHÔNG phải TypeError của SDK
+    from openai import BadRequestError as _BadRequest
+    _PARAM_REJECTED: tuple[type[BaseException], ...] = (TypeError, _BadRequest)
+except ImportError:                                   # pragma: no cover
+    _PARAM_REJECTED = (TypeError,)
+
 T = TypeVar("T", bound=BaseModel)
 
 KEY_ENV = "SIZING_COPILOT_API_KEY"
@@ -117,20 +123,35 @@ class LLMClient:
         json_schema = schema.model_json_schema()
         convo = list(messages)
         last_err, last_raw = "", ""
+        # Chẩn đoán cho `scripts/smoke_llm.py` và cho C3 về sau. Số lần thử là con
+        # số quyết định chi phí thật của 1.7: nếu gateway bỏ qua schema và lần nào
+        # cũng phải thử lại 2–3 lượt thì mỗi tài liệu tốn gấp ba số lời gọi.
+        self.last_attempts = 0
+        self.last_schema_path = "json_schema"   # json_schema | prompt
+        self.last_schema_error = ""
 
         for attempt in range(1, max_retries + 1):
+            self.last_attempts = attempt
             try:
-                raw = self.chat(
-                    convo, model=model, max_tokens=max_tokens,
-                    response_format={
-                        "type": "json_schema",
-                        "json_schema": {"name": schema.__name__, "strict": True,
-                                        "schema": json_schema},
-                    },
-                )
-            except TypeError:
-                # gateway không nhận response_format -> đi đường prompt thuần
-                raw = self.chat(convo, model=model, max_tokens=max_tokens)
+                if self.last_schema_path == "json_schema":
+                    try:
+                        raw = self.chat(
+                            convo, model=model, max_tokens=max_tokens,
+                            response_format={
+                                "type": "json_schema",
+                                "json_schema": {"name": schema.__name__,
+                                                "strict": True, "schema": json_schema},
+                            },
+                        )
+                    except _PARAM_REJECTED as e:
+                        # Gateway không nhận `response_format`. Không phải lỗi chí
+                        # mạng — chỉ mất phần tối ưu hoá. Đi tiếp bằng prompt thuần
+                        # và GHI LẠI, vì báo cáo phải nói rõ đã đi đường nào.
+                        self.last_schema_path = "prompt"
+                        self.last_schema_error = f"{type(e).__name__}: {e}"[:200]
+                        raw = self.chat(convo, model=model, max_tokens=max_tokens)
+                else:
+                    raw = self.chat(convo, model=model, max_tokens=max_tokens)
             except LLMError as e:
                 last_err, last_raw = str(e), ""
                 continue
