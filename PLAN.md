@@ -356,7 +356,7 @@
       `data/{historical,knowledge_base}`.
       → ⚠️ **Máy này chưa có `uv`**; đã cài phụ thuộc bằng `pip` vào Python 3.12 (pyenv).
       `pyproject.toml` viết chuẩn nên `uv sync` dùng được ngay khi có `uv`.
-- [x] 1.2 — Client LLM + kiểm structured output — **XONG 2026-09-03** (phần offline).
+- [x] 1.2 — Client LLM + kiểm structured output — **XONG 2026-09-03**, đã chạy thật 2026-09-04.
       **→ `src/llm/client.py`**, hiện thực đúng ba bài học của 0.10:
       (a) **luôn** strip fence ```` ```json ```` rồi **luôn** validate bằng chính model
       Pydantic — `response_format` chỉ là tối ưu hoá, không phải bảo đảm;
@@ -366,11 +366,26 @@
       **không bịa giá trị** (NT4).
       → ✅ **11 unit test, chạy hoàn toàn OFFLINE** (`tests/test_llm_client.py`) bằng
       transport giả. Đều là hồi quy cho lỗi THẬT quan sát ở 0.10, không phải test cho vui.
-      → ⬜ **CHỜ NGƯỜI DÙNG — chạy `scripts/smoke_llm.py` từ máy trong mạng công ty**
-      (người dùng đang ở mạng ngoài, xác nhận 2026-09-03 sẽ chạy và gửi kết quả sau).
-      Xác nhận client thật nói chuyện được với gateway; đã kiểm sẵn đường lỗi (báo rõ
-      khi thiếu `settings.yaml` / thiếu khóa). **Không chặn 1.3–1.4** vì hai mục đó
-      thuần code, không gọi model.
+      → ✅ **Đã chạy thật 2026-09-04** (`claude-opus-4-6`, mạng công ty) —
+      **`docs/1.2-ket-qua-smoke-llm.md`**. Client nói chuyện được với gateway;
+      `response_format: json_schema` **được nhận** (không phải lùi về prompt thuần);
+      1 lời gọi mỗi lượt trích, ~8,7s; chat 2,3s.
+      → ✅ **Đọc số tiếng Việt ĐẠT 4/4** — cạm bẫy trung tâm của 1.4: `"3.500"` → 3500
+      và **`"12.000"` → 12000** (không phải 12), mỗi đoạn 2/2 lần. Không vì thế bỏ
+      `numbers.py`: NT1 nói code quyết định, không phải model.
+      → ⚠️ **Bảng báo "0/4 trích đúng" là lỗi lược đồ THỬ, không phải lỗi model.**
+      `loai_sizing` khai `str` nên JSON Schema **không có ràng buộc `enum`**; model trả
+      `"định cỡ mới"` — đúng nghĩa, hợp lược đồ, chỉ không phải token mong đợi. Lược đồ
+      thật ở `src/extraction/schema.py` vốn dùng `Literal`, tức **smoke test yếu hơn
+      thứ nó phải kiểm**. Đã sửa sang `Literal`; cần **chạy lần 2**.
+      → ⚠️ **Giá trị enum không ràng buộc thì KHÔNG ổn định**: cùng một đoạn, hai lần
+      chạy cho hai chuỗi khác nhau. ⟹ C3 **không được** ánh xạ mờ chuỗi tự do sang enum;
+      không khớp sau khi hết lượt retry thì để `None` + finding "thiếu thông tin" (NT4).
+      → ⬜ **Còn treo: gateway có THỰC SỰ ép `enum` không.** Chỉ vế `lần thử TB > 1.00`
+      mới là bằng chứng "không ép"; `= 1.00` không phân biệt được "ép thật" với "model
+      tự tuân" — đúng bất đối xứng đã đọc sai một lần ở phép thử D của 0.10.
+      → ⬜ Mới thử 1 model nên **vẫn chưa chốt model chính cho C3**; lần 2 nên truyền
+      nhiều model một lượt.
 - [x] 1.3 — C1: đọc `.docx` (text, heading, bảng), giữ vị trí — **XONG 2026-09-03.**
       **→ `src/ingestion/docx_reader.py` + `src/ingestion/numbering.py`.**
       → ✅ **Chạy sạch 48/48 bản sizing thật**: 6.178 phần tử · 870 bảng · 767 ảnh

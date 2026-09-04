@@ -32,6 +32,7 @@ import pathlib
 import statistics
 import sys
 import time
+from typing import Literal
 
 # chạy được bằng `python scripts/smoke_llm.py` từ gốc repo mà không cần cài gói
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -41,11 +42,23 @@ from pydantic import BaseModel, Field
 from src.llm.client import KEY_ENV, ExtractionFailed, LLMClient, LLMError
 
 
+# `loai_sizing` phải là Literal, KHÔNG phải `str`. Lần chạy 2026-09-04 dùng `str` và
+# kết quả vô nghĩa: `str` không sinh ràng buộc `enum` trong JSON Schema, nên model trả
+# một cụm tiếng Việt tự do — đúng nghĩa, hợp lược đồ, nhưng không phải token nào cả.
+# Lược đồ thật ở `src/extraction/schema.py` vốn dùng Literal, tức smoke test khi đó
+# YẾU HƠN thứ nó phải kiểm, và bỏ lỡ phép thử quyết định.
+#
+# Ghi chú này để NGOÀI docstring có chủ ý: Pydantic đưa docstring của class vào
+# `description` của JSON Schema, tức nó sẽ được gửi cho model. Nhắc lại câu trả lời
+# sai của lần trước ngay trong lược đồ là tự làm nhiễm phép thử.
 class SizingTrichThu(BaseModel):
     """Bản thu nhỏ của SizingCore (1.6) — đủ để chứng minh ép schema chạy."""
+
     ten_he_thong: str = Field(description="Tên hệ thống")
     so_ccu: int = Field(description="Số người dùng đồng thời")
-    loai_sizing: str = Field(description="cap_moi | bo_sung | nang_cap")
+    loai_sizing: Literal["cap_moi", "bo_sung", "nang_cap", "ung_cuu"] = Field(
+        description="cap_moi = định cỡ mới · bo_sung = cấp thêm cho hệ đang chạy "
+                    "· nang_cap = nâng cấp · ung_cuu = ứng cứu khẩn cấp")
 
 
 # Hai đoạn thử. Đoạn 2 mang đúng cạm bẫy của 1.4: dấu chấm trong "12.000" là phân
@@ -128,6 +141,13 @@ def bang_bao_cao(ket_qua: list[dict], base_url: str) -> str:
          f"- Thời điểm: {time.strftime('%Y-%m-%d %H:%M')}",
          f"- `base_url`: `{base_url}`",
          f"- Mỗi đoạn chạy {SO_LAN} lần; đoạn 2 là **bẫy dấu chấm** (12.000 ⇒ 12000)",
+         f"- Lược đồ gửi đi có ràng buộc `enum` cho `loai_sizing`: "
+         f"**{'có' if 'enum' in str(SizingTrichThu.model_json_schema()) else 'KHÔNG'}**",
+         "",
+         "> **Đọc cột «Lần thử TB»:** > 1.00 **chứng minh** gateway KHÔNG ép `enum` "
+         "(nó đã sinh giá trị ngoài danh sách rồi mới bị retry sửa). = 1.00 thì "
+         "KHÔNG phân biệt được «ép thật» với «model tự tuân» — nhưng về chi phí C3 "
+         "là như nhau: 1 lời gọi mỗi lần trích.",
          "",
          "| Model | Chat | Trích đúng | Lần thử TB | Đường schema | Độ trễ TB |",
          "|---|---|---|---|---|---|"]
