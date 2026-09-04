@@ -31,7 +31,9 @@ phải phép tính nghiệp vụ; và khi không quy đổi được thì để 
 from __future__ import annotations
 
 import re
+import threading
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -48,6 +50,8 @@ from .schema import ExtractedValue, SizingCore, SizingExtension
 
 KHONG_NEU = "khong_neu"
 MAX_KY_TU_NGU_CANH = 60_000     # ngữ cảnh 200k–1M token (0.10) nên không cần cắt gắt
+# Dưới ngưỡng này thì mục quá hẹp để tin — lùi về toàn tài liệu.
+MIN_KY_TU_NGU_CANH_HEP = 400
 
 
 # ---------------------------------------------------------------- lược đồ --
@@ -126,7 +130,8 @@ class ThongKe:
 class Extractor:
     def __init__(self, client: LLMClient | None = None, *, rules: RuleSet | None = None,
                  units: Units | None = None, model: str | None = None,
-                 on_tien_do: Callable[[int, int, str], None] | None = None):
+                 on_tien_do: Callable[[int, int, str], None] | None = None,
+                 song_song: int = 1):
         self.client = client or LLMClient()
         self.rules = rules
         self.units = units or load_units()
@@ -134,6 +139,13 @@ class Extractor:
         # Không có tiến trình thì một lượt chạy 31–95 lời gọi × ~5s trông y hệt TREO.
         # Đã làm người dùng tưởng script chết (2026-09-04).
         self.on_tien_do = on_tien_do
+        # Chi phí thật đo được: ~40s mỗi lượt gọi, và token ĐẦU RA chi phối (18 trường
+        # × 2 chuỗi mỗi lượt), nên cắt ngữ cảnh không cứu được thời gian. Một bản 13
+        # phân hệ tốn hàng trăm lượt ⇒ chạy tuần tự là hàng giờ. Rate limit đo ở 0.10
+        # rất thoáng (0/10 lần 429) nên gọi song song được; mặc định giữ thấp vì 0.10
+        # chỉ đo TUẦN TỰ, chưa đo đồng thời.
+        self.song_song = max(1, int(song_song))
+        self._khoa = threading.Lock()
         self.tk = ThongKe()
 
     def _bao(self, tong: int, nhan: str) -> None:
@@ -244,30 +256,42 @@ class Extractor:
     def trich_nhom(self, doc: DocxDocument, nhom: NhomTrich, dich: SizingCore | SizingExtension,
                    *, section: str = "", ten_phan_he: str = "") -> None:
         lop = luoc_do_nhom(nhom)
-        self.tk.luot_goi += 1
-        self.tk.truong_hoi += len(nhom.tham_so)
+        with self._khoa:
+            self.tk.luot_goi += 1
+            self.tk.truong_hoi += len(nhom.tham_so)
         pham_vi = f" của phân hệ «{ten_phan_he}»" if ten_phan_he else " ở cấp toàn hệ thống"
+        # Ngữ cảnh HẸP theo mục của phân hệ. Vừa rẻ vừa chính xác hơn: hỏi về phân hệ
+        # Database mà đưa cả 13 phân hệ vào ngữ cảnh là mời model lấy nhầm số của phân
+        # hệ khác. Mục quá hẹp (tài liệu viết rải, hoặc C1 không nhận ra số mục) thì lùi
+        # về toàn tài liệu — thà chậm còn hơn trích thiếu.
+        nc = self.ngu_canh(doc, section)
+        if section and len(nc) < MIN_KY_TU_NGU_CANH_HEP:
+            nc = self.ngu_canh(doc)
         try:
             kq = self.client.extract(lop, [
                 {"role": "system", "content": HE_THONG},
                 {"role": "user", "content":
                     f"Trích các thông tin sau{pham_vi} từ tài liệu định cỡ dưới đây.\n"
-                    f"{NHAC_NHO}\n\n=== TÀI LIỆU ===\n{self.ngu_canh(doc, section)}"},
+                    f"{NHAC_NHO}\n\n=== TÀI LIỆU ===\n{nc}"},
             ], model=self.model)
         except (ExtractionFailed, LLMError) as e:
             # Hết lượt thử vẫn không ra JSON hợp lệ: KHÔNG bịa giá trị (NT4).
             # Để trống, C4 sẽ sinh finding "thiếu thông tin" cho từng tham số.
-            self.tk.luot_goi_hong += 1
-            self.tk.loi.append(f"{nhom.ten}: {e}")
+            with self._khoa:
+                self.tk.luot_goi_hong += 1
+                self.tk.loi.append(f"{nhom.ten}: {e}")
             return
 
-        for t in nhom.tham_so:
-            ev = self.dung_gia_tri(doc, t, getattr(kq, t.name))
-            if ev is not None and ev.value is not None:
-                dich.params[t.name] = ev
-                self.tk.truong_co_gia_tri += 1
-            elif ev is not None:
-                dich.params[t.name] = ev       # giữ note để báo cáo nói được vì sao
+        # Phần dưới chỉ tính toán, không gọi mạng — giữ khoá suốt cho gọn và an toàn
+        # khi chạy song song.
+        with self._khoa:
+            for t in nhom.tham_so:
+                ev = self.dung_gia_tri(doc, t, getattr(kq, t.name))
+                if ev is None:
+                    continue
+                dich.params[t.name] = ev       # giữ cả note để báo cáo nói được vì sao
+                if ev.value is not None:
+                    self.tk.truong_co_gia_tri += 1
 
     # ------------------------------------------------------ nhận diện phân hệ
     def nhan_dien_phan_he(self, doc: DocxDocument) -> list[SizingExtension]:
@@ -295,7 +319,8 @@ class Extractor:
                 ten_phan_he=p.ten_phan_he.strip(),
                 cong_nghe=p.cong_nghe.strip() or None,
                 cong_nghe_luu_tru=p.cong_nghe_luu_tru.strip() or None,
-                location=el.location if el else ""))
+                location=el.location if el else "",
+                muc=el.section if el else ""))
         return ra
 
     # ------------------------------------------------------ cấp tài liệu ----
@@ -348,18 +373,30 @@ class Extractor:
 
         tong += sum(len(nhom_ph) + (len(nhom_cn) if ph.cong_nghe_luu_tru else 0)
                     for ph in core.phan_he)
-        for nhom in nhom_ht:
-            self._bao(tong, nhom.ten)
-            self.trich_nhom(doc, nhom, core)
-
+        viec: list[tuple] = [(nhom, core, "", "", nhom.ten) for nhom in nhom_ht]
         for ph in core.phan_he:
             for sc, ds in (("phan_he", nhom_ph), ("phan_he_x_cong_nghe_luu_tru", nhom_cn)):
                 if sc == "phan_he_x_cong_nghe_luu_tru" and not ph.cong_nghe_luu_tru:
                     continue
-                for nhom in ds:
-                    self._bao(tong, f"{ph.ten_phan_he}/{nhom.ten}")
-                    self.trich_nhom(doc, nhom, ph, ten_phan_he=ph.ten_phan_he)
+                viec += [(nhom, ph, ph.muc, ph.ten_phan_he,
+                          f"{ph.ten_phan_he}/{nhom.ten}") for nhom in ds]
+
+        self._chay(doc, viec, tong)
         return core
+
+    def _chay(self, doc: DocxDocument, viec: list[tuple], tong: int) -> None:
+        if self.song_song <= 1:
+            for nhom, dich, muc, ten, nhan in viec:
+                self._bao(tong, nhan)
+                self.trich_nhom(doc, nhom, dich, section=muc, ten_phan_he=ten)
+            return
+        with ThreadPoolExecutor(max_workers=self.song_song) as pool:
+            fut = {pool.submit(self.trich_nhom, doc, nhom, dich, section=muc,
+                               ten_phan_he=ten): nhan
+                   for nhom, dich, muc, ten, nhan in viec}
+            for f in as_completed(fut):
+                self._bao(tong, fut[f])
+                f.result()                     # lỗi lạ phải nổ ra, không nuốt
 
 
 def uoc_tinh_luot_goi(rules: RuleSet | None = None, *, chi_nhom: list[str] | None = None,

@@ -22,6 +22,11 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from src.extraction.extractor import Extractor, uoc_tinh_luot_goi
+
+# Đo thật trên mạng công ty 2026-09-04: ~40s mỗi lượt, KHÔNG phải 5s như smoke test.
+# Chênh vì smoke test chỉ có 3 trường, còn một lượt trích thật có tới 18 trường × 2
+# chuỗi — token ĐẦU RA mới là thứ chi phối.
+GIAY_MOI_LUOT = 40
 from src.ingestion.docx_reader import read_docx
 from src.llm.client import LLMClient, LLMError
 from src.validators.quantitative import QuantitativeValidator
@@ -34,6 +39,10 @@ def main() -> int:
     ap.add_argument("--nhom", default="KPI,CPU,RAM",
                     help="lọc nhóm quy tắc, phân tách bằng dấu phẩy; rỗng = tất cả")
     ap.add_argument("--model", default=None)
+    ap.add_argument("--song-song", type=int, default=6,
+                    help="số lời gọi chạy đồng thời (rate limit ở 0.10 rất thoáng)")
+    ap.add_argument("--phan-he", type=int, default=0,
+                    help="số phân hệ dự kiến, chỉ dùng cho --uoc-tinh")
     ap.add_argument("--uoc-tinh", action="store_true",
                     help="chỉ in ước lượng số lời gọi rồi thoát, không gọi model")
     a = ap.parse_args()
@@ -47,10 +56,12 @@ def main() -> int:
     # In ước lượng TRƯỚC khi gọi model. Không có nó thì người chạy ngồi nhìn màn hình
     # đứng im vài phút và tưởng script treo — đã xảy ra thật (2026-09-04).
     nhom0 = [x.strip() for x in a.nhom.split(",") if x.strip()] or None
-    for n in (1, 3, 5):
+    for n in ([a.phan_he] if a.phan_he else (1, 5, 13)):
         u = uoc_tinh_luot_goi(chi_nhom=nhom0, so_phan_he=n)
-        print(f"  ước lượng nếu {n} phân hệ: {u['tong']} lượt gọi "
-              f"(~{u['tong'] * 5 / 60:.1f} phút ở 5s/lượt)")
+        print(f"  ước lượng nếu {n} phân hệ: {u['tong']} lượt gọi · "
+              f"~{u['tong'] * GIAY_MOI_LUOT / 60:.0f} phút tuần tự · "
+              f"~{u['tong'] * GIAY_MOI_LUOT / 60 / a.song_song:.0f} phút với "
+              f"{a.song_song} luồng")
     if a.uoc_tinh:
         return 0
 
@@ -65,7 +76,8 @@ def main() -> int:
     def tien_do(i: int, tong: int, nhan: str) -> None:
         print(f"  C3 {i}/{tong} · {nhan}", flush=True)
 
-    ex = Extractor(client, model=a.model, on_tien_do=tien_do)
+    ex = Extractor(client, model=a.model, on_tien_do=tien_do,
+                   song_song=a.song_song)
     t0 = time.time()
     core = ex.run(doc, chi_nhom=chi_nhom)
     giay = time.time() - t0

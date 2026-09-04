@@ -236,3 +236,24 @@ def test_C5_cap_nguon_finding_vong1_va_C7_CHAN_dung_finding_vong2(rules):
     rep = xu_ly(f_vong1 + f_vong2, load_labels())
     bi_chan = {f.rule_ref for f in rep.vong2_tam_hoan}
     assert "EVD-10" in bi_chan, "finding Vòng 2 của mục đã trượt Vòng 1 phải bị chặn"
+
+
+def test_C5_chay_song_song_giu_dung_ket_qua_va_bo_dem(rules):
+    """`x += 1` trên thuộc tính int KHÔNG nguyên tử — mất một lượt đếm là mất một
+    dòng chẩn đoán, nên ThongKeDT có khoá riêng."""
+    doc = _doc("Không có bảng tổng hợp cấu hình.")
+    core = SizingCore(phan_he=[SizingExtension(ten_phan_he=f"PH{i}") for i in range(8)])
+
+    def chay(n):
+        v = QualitativeValidator(FakeLLM(_nx("khong_dat", ly_do="thiếu")),
+                                 rules=rules, song_song=n)
+        outs = v.run(doc, core, chi_vong=1, chi_ma=["EVD"])
+        return outs, v.tk
+
+    a_out, a_tk = chay(1)
+    b_out, b_tk = chay(4)
+    assert len(a_out) == len(b_out) > 8
+    assert a_tk.luot_goi == b_tk.luot_goi
+    assert a_tk.khong_dat == b_tk.khong_dat
+    assert {(o.rule_id, o.scope_key) for o in a_out} == {(o.rule_id, o.scope_key)
+                                                        for o in b_out}

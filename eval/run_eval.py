@@ -25,6 +25,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from eval.matching import bang_markdown, doi_chieu, nap_nhan
 from src.extraction.extractor import uoc_tinh_luot_goi
+
+GIAY_MOI_LUOT = 40      # đo thật 2026-09-04, xem scripts/try_c3_on_dossier.py
 from src.ingestion.filenames import find_sizing_docs
 from src.llm.client import LLMClient, LLMError
 from src.pipeline import chay
@@ -51,6 +53,10 @@ def main() -> int:
                     help="bắt buộc khi --tap test")
     ap.add_argument("--nhom-dinh-tinh", default=None,
                     help="lọc nhóm cho C5; mặc định DÙNG CHUNG --nhom")
+    ap.add_argument("--song-song", type=int, default=6,
+                    help="số lời gọi chạy đồng thời")
+    ap.add_argument("--phan-he", type=int, default=5,
+                    help="số phân hệ giả định khi ước lượng")
     ap.add_argument("--uoc-tinh", action="store_true",
                     help="chỉ in ước lượng số lời gọi rồi thoát")
     a = ap.parse_args()
@@ -74,11 +80,14 @@ def main() -> int:
     # và vì chưa có tiến trình nên trông y hệt treo (2026-09-04).
     ma_dt = ([x.strip() for x in a.nhom_dinh_tinh.split(",") if x.strip()] or None
              if a.nhom_dinh_tinh is not None else chi_nhom)
-    u3 = uoc_tinh_luot_goi(rules, chi_nhom=chi_nhom, so_phan_he=3)["tong"]
-    u5 = uoc_tinh_luot_goi_dt(rules, 3, chi_vong=a.chi_vong, chi_ma=ma_dt)
-    print(f"ước lượng mỗi hồ sơ (giả định 3 phân hệ): C3 {u3} + C5 {u5} = "
-          f"{u3 + u5} lượt gọi (~{(u3 + u5) * 5 / 60:.1f} phút) · "
-          f"cả {len(ds)} hồ sơ ~{(u3 + u5) * 5 * len(ds) / 60:.0f} phút")
+    n = a.phan_he
+    u3 = uoc_tinh_luot_goi(rules, chi_nhom=chi_nhom, so_phan_he=n)["tong"]
+    u5 = uoc_tinh_luot_goi_dt(rules, n, chi_vong=a.chi_vong, chi_ma=ma_dt)
+    phut = (u3 + u5) * GIAY_MOI_LUOT / 60 / max(1, a.song_song)
+    print(f"ước lượng mỗi hồ sơ (giả định {n} phân hệ): C3 {u3} + C5 {u5} = "
+          f"{u3 + u5} lượt gọi · ~{phut:.0f} phút với {a.song_song} luồng · "
+          f"cả {len(ds)} hồ sơ ~{phut * len(ds) / 60:.1f} giờ")
+    print("  (BCCS3 thật có 13 phân hệ — con số trên rất nhạy với tham số này)")
     if a.uoc_tinh:
         return 0
 
@@ -114,7 +123,7 @@ def main() -> int:
         try:
             kq = chay(str(bans[0]), client=client, rules=rules, model=a.model,
                       chi_nhom=chi_nhom, chi_vong=a.chi_vong, chi_ma_dt=ma_dt,
-                      on_tien_do=tien_do)
+                      on_tien_do=tien_do, song_song=a.song_song)
         except Exception as e:                      # một hồ sơ hỏng không dừng cả lượt
             canh_bao.append(f"`{dossier}`: lỗi khi chạy — {type(e).__name__}: {e}")
             print(f"LỖI {type(e).__name__}")
