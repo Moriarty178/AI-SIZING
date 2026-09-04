@@ -30,6 +30,7 @@ GIAY_MOI_LUOT = 40      # đo thật 2026-09-04, xem scripts/try_c3_on_dossier.p
 from src.ingestion.filenames import find_sizing_docs
 from src.llm.client import LLMClient, LLMError
 from src.pipeline import chay
+from src.version import in_phien_ban
 from src.validators.qualitative import uoc_tinh_luot_goi_dt
 from src.validators.rules_loader import load_rules
 
@@ -85,6 +86,7 @@ def main() -> int:
               "Thêm --toi-hieu-rui-ro nếu thật sự muốn.")
         return 2
 
+    in_phien_ban()
     labels = nap_nhan(a.tap)
     ds = sorted({l["dossier"] for l in labels}, key=str.lower)
 
