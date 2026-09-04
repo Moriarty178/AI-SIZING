@@ -670,8 +670,17 @@
       trong không gian nhỏ hơn), **`lượt gọi hỏng`** (kỳ vọng 0: lược đồ nay chỉ 3–4
       trường enum ngắn). Và vẫn phải **soi tay** các giá trị sống sót — hai lượt vừa rồi
       cho thấy thống kê tổng KHÔNG phát hiện được ca "đúng số, sai câu hỏi".
-      → ⚠️ **1.7 tick `[x]` là cho phần CODE. Chất lượng trích xuất CHƯA đạt**; đừng coi
-      C3 là dùng được cho tới khi có hướng xử lý (a)(b) ở trên.
+      → 🔒 **CHỐT 2026-09-04: dừng lặp ở v6.** Bốn vòng trong một ngày đều đuổi cùng một
+      triệu chứng, và mẫu số 617 là con số vô nghĩa — đo cả 47 bản thì tài liệu **trung vị
+      chỉ có 23 cột số liệu**, BCCS3 (65 cột) là ca giàu nhất nhì. Nghiệm thu C3 từ nay
+      **soi tay các giá trị lấy được** (v6 sinh tối đa vài chục), không dùng tỷ lệ trường.
+      → 🔒 **Vai trò C3 với Vòng 2 đã đổi:** sản phẩm chính là **danh sách tham số Guideline
+      đòi mà hồ sơ chưa nêu**, không phải bảng tham số đã điền. 101 quy tắc định lượng dùng
+      191 tham số riêng biệt, 58/101 cần ≥3 tham số cùng lúc — đối chiếu 23 cột/hồ sơ thì
+      kể cả C3 hoàn hảo, phần lớn quy tắc Vòng 2 vẫn thiếu đầu vào **vì hồ sơ không nêu**.
+      `thieu_thong_tin` (`severity=major`, đã có ở C4) chính là giá trị cố vấn.
+      → ⚠️ **1.7 tick `[x]` là cho phần CODE.** C3 dùng được ở mức: lấy đúng vài chục con
+      số có thật trong bảng, và nói rõ phần còn lại là thiếu. KHÔNG kỳ vọng hơn.
 - [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**
       **→ `src/validators/rules_loader.py`.** Nạp 151 quy tắc + 46 hằng số, kiểm bất
       biến (mã trùng, `see_also` trỏ vào mã không có thật), lọc theo loại/vòng/scope.
@@ -800,6 +809,17 @@
       để test được — 4 test.
       ⚠️ Hồ sơ thiếu `.docx` **vẫn nằm trong mẫu số của lượt chạy ĐẦY ĐỦ**; chỉ bị bỏ
       qua khi người dùng giới hạn để chạy thử.
+      → 🔒 **CHỐT 2026-09-04 — cách đo: MẪU 5 hồ sơ, không chạy toàn tập.** Ước lượng đo
+      thật: cả tập dev tốn **6,5 giờ** (5 phân hệ) đến **11 giờ** (10 phân hệ) gọi model.
+      Năm hồ sơ nhiều nhãn nhất — GSCG 23096 (47 nhãn), Data Security 18476 (45),
+      Vtag (38), Mybox 38327 (31), PBH 4.0 20043 (30) — gộp **191/475 nhãn = 40%** với
+      ~2 giờ máy. `--ho-so` nay nhận nhiều tên ngăn cách bằng dấu phẩy (1 test).
+      → 📌 **Bài học chọn mẫu:** cả ngày 04-09 đo trên **BCCS3, hồ sơ chỉ có 8 nhãn** —
+      gần thấp nhất trong 23 hồ sơ có nhãn. Nó giàu SỐ LIỆU (65 cột, nhiều nhất nhì) nên
+      hợp để soi C3, nhưng **không nói được gì về recall**. Chọn hồ sơ theo mục đích đo.
+      → ⚠️ **29/475 nhãn (6%) vĩnh viễn không với tới được**: `cap moi MNP 32034` (20 nhãn)
+      và `Cấp mới hệ thống VAPS` (9 nhãn) không có bản `.docx` nào. Giữ trong mẫu số, và
+      mọi báo cáo recall phải nói ra.
       → ⬜ **Chưa có số recall thật** — cần model. Đây là con số quyết định tiêu chí hoàn
       thành Giai đoạn 1.
 - [ ] 1.14 — Giao diện Streamlit: tải file → xem báo cáo
@@ -928,6 +948,11 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-03 | **0.11 chốt: Copilot đọc bản Word NGƯỜI DÙNG TỰ VIẾT** | 7 hồ sơ thật không có hồ sơ nào do web app sinh: tên file đặt tay kèm handle cá nhân, bảng "Thông tin hệ thống" số dòng khác nhau giữa các hồ sơ, ảnh chụp dán tay bị thẩm định phàn nàn *"ảnh bị mờ"*, `>=` gõ tay. Hệ quả: rủi ro R4 cao đúng dự liệu, và **C2/vision là nhu cầu có thật ngay từ đầu** chứ không phải việc để dành GĐ 2 |
 | 2026-09-03 | **0.8 chia tập theo ĐẦU MỐI YÊU CẦU, không theo người thẩm định** | Cả 7 hồ sơ lô 1 cùng một người thẩm định (Khanhnd23) nên trục đó không chia được; 7 đầu mối yêu cầu thì khác nhau. Vẫn hoãn 0.8 tới khi đủ hồ sơ — chia 2/3–1/3 trên 4 hồ sơ dùng được là vô nghĩa thống kê |
 | 2026-09-03 | **Khử trùng giữa các phiên bản PNX phải GIỮ số lần lặp trong cùng một bảng** | Trong một bảng lần 1 của Vtag, *"Công thức tính không đúng"* xuất hiện **5 lần ở 5 dòng** — cùng một lỗi nêu cho **5 phân hệ khác nhau**, tức 5 finding riêng biệt (đúng `scope: phan_he` đã chốt 2026-08-25). Khử trùng theo văn bản đơn thuần gộp 5 thành 1 và **làm hụt mẫu số recall** — hỏng ngang với việc thổi mẫu số bằng `anchor`. Quy tắc: trong nhóm `(hồ sơ, lần, nội dung)` lấy số lần lặp của phiên bản báo nhiều nhất |
+| 2026-09-04 | **Dừng vòng lặp cải tiến C3. v6 là chốt cuối; nghiệm thu bằng SOI TAY giá trị lấy được, không bằng tỷ lệ trường** | Bốn vòng v3→v6 trong một ngày, mỗi vòng một lượt chạy 4–10 phút, đều đuổi theo cùng một triệu chứng. Mẫu số 617 trường là con số vô nghĩa: tài liệu **trung vị chỉ có 23 cột số liệu** (đo cả 47 bản), BCCS3 với 65 cột là ca giàu nhất nhì — nên "32/617" không đo chất lượng trích xuất mà đo độ lệch giữa bộ quy tắc và tài liệu thật. v6 chặn điền bừa bằng cấu trúc nên không còn đòn bẩy nào rẻ hơn để kéo tiếp |
+| 2026-09-04 | **Sản phẩm chính của C3 đối với Vòng 2 là danh sách THAM SỐ CÒN THIẾU, không phải bảng tham số đã điền** | 101 quy tắc định lượng dùng **191 tham số riêng biệt**; tham số phổ biến nhất chỉ xuất hiện ở **5** quy tắc; **58/101 quy tắc cần ≥3 tham số cùng lúc**. Đối chiếu với 23 cột số liệu mỗi hồ sơ: kể cả C3 hoàn hảo, phần lớn quy tắc Vòng 2 vẫn thiếu đầu vào — **vì hồ sơ không nêu**, không phải vì trích xuất kém. `thieu_thong_tin` (đã có, `severity=major`) chính là giá trị cố vấn, không phải thất bại. Không đầu tư thêm vào C3 để "tăng độ phủ" |
+| 2026-09-04 | **Ưu tiên C5 định tính + Vòng 1 trước C4 định lượng** | Phân tích 475 nhãn vàng: **102 (21%) chỉ bắt được bằng quy tắc định lượng**, **175 chỉ bằng định tính**, **192 bằng cả hai** ⇒ **367/475 (77%) không cần một con số nào**. Recall của GĐ 1 nằm ở C5, không ở C3/C4 |
+| 2026-09-04 | **Không chạy eval toàn tập; đo trên MẪU 5 hồ sơ nhiều nhãn nhất** | Ước lượng đo thật: cả tập dev tốn **6,5–11 giờ** gọi model. Năm hồ sơ GSCG (47 nhãn), Data Security (45), Vtag (38), Mybox (31), PBH 4.0 (30) gộp lại **191/475 nhãn = 40%** với ~2 giờ máy. Kèm bài học chọn mẫu: **BCCS3 — bản đã đốt cả ngày — chỉ có 8 nhãn**, gần thấp nhất; nó giàu SỐ nhưng nghèo NHÃN. `--ho-so` nay nhận nhiều tên |
+| 2026-09-04 | **29/475 nhãn (6%) là không bao giờ với tới được** | `cap moi MNP 32034` (20 nhãn) và `Cấp mới hệ thống VAPS` (9 nhãn) không có bản `.docx` nào. Giữ trong mẫu số và **nói rõ** trong mọi báo cáo recall — bỏ ra là làm đẹp số một cách giả tạo |
 | 2026-09-03 | **Khóa so sánh khi khử trùng bỏ mọi ký tự không phải chữ/số** | PNX bản sau chép lại bản trước nhưng sửa hình thức: thêm `- ` đầu dòng, đổi khoảng trắng trong danh sách số (`226;12.6;25.1…` → `226; 12.6; 25.1;…`), thêm dấu chấm cuối. So theo từ thì 16 nhãn của Vtag bị coi nhầm là nhãn mới. **Văn bản nhãn lưu lại vẫn giữ nguyên vẹn** — chỉ khóa so sánh mới chuẩn hóa (NT2) |
 | 2026-09-03 | **Hợp nhất (union) mọi phiên bản PNX, không chọn "bản đầy đủ nhất"** | Giả định *"bản sau là tập cha của bản trước"* không đứng vững: GSCG v3 có lần 1–3 còn v4 chỉ có lần 1–2. Chọn một bản sẽ âm thầm mất nhãn. Hợp nhất rồi khử trùng thì không bao giờ mất |
 | 2026-09-03 | **Bảng metadata hồ sơ để script TỰ SINH (`docs/0.6-bang-metadata.md`), không chép tay** | 26 hồ sơ × 9 cột là quá nhiều để chép tay mà không sai, và mỗi lô mới lại phải chép lại. Tách phần tự sinh khỏi phần phân tích viết tay giữ được cả tính chính xác lẫn chỗ để ghi nhận xét |

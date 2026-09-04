@@ -53,7 +53,12 @@ def chon_ho_so(tat_ca: list[str], co_docx: list[str], *, chi: int = 0,
     lần nào.
     """
     if ho_so:
-        return [d for d in tat_ca if ho_so.lower() in d.lower()]
+        # Nhận NHIỀU hồ sơ, ngăn cách bằng dấu phẩy. Đo recall trên cả tập dev tốn
+        # 6–11 giờ gọi model (đo 2026-09-04), nên cách dùng thực tế là lấy một MẪU
+        # vài hồ sơ. Không có chỗ này thì phải chạy tay từng hồ sơ rồi tự cộng — và
+        # cộng tay hai mẫu số khác nhau là đúng lỗi `meta.scoring_note` cảnh báo.
+        khoa = [k.strip().lower() for k in ho_so.split(",") if k.strip()]
+        return [d for d in tat_ca if any(k in d.lower() for k in khoa)]
     if chi:
         return co_docx[:chi]
     return tat_ca
@@ -67,7 +72,8 @@ def main() -> int:
     ap.add_argument("--chi-vong", type=int, default=None)
     ap.add_argument("--chi", type=int, default=0,
                     help="chỉ chạy N hồ sơ ĐẦU TIÊN CÓ .docx")
-    ap.add_argument("--ho-so", default="", help="chạy đúng một hồ sơ, khớp theo tên")
+    ap.add_argument("--ho-so", default="",
+                    help="chạy các hồ sơ khớp tên, ngăn cách bằng dấu phẩy")
     ap.add_argument("--model", default=None)
     ap.add_argument("--toi-hieu-rui-ro", action="store_true",
                     help="bắt buộc khi --tap test")
