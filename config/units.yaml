@@ -1,0 +1,141 @@
+# Quy tắc chuẩn hóa đơn vị — DỮ LIỆU, không phải code (NT3).
+# Người nghiệp vụ sửa được file này mà không cần lập trình viên.
+
+# --------------------------------------------------------------------------
+# Cách đọc số trong tài liệu tiếng Việt.
+#
+# Cạm bẫy lớn nhất của cả module: "1.500" là MỘT NGHÌN NĂM TRĂM (dấu chấm phân
+# nhóm nghìn, kiểu Việt) hay MỘT PHẨY NĂM (dấu chấm thập phân, kiểu Anh)? Sai
+# một lần là lệch 1000 lần. Tài liệu sizing thật dùng lẫn cả hai kiểu, đôi khi
+# trong cùng một bảng.
+#
+# Nguyên tắc: đoán theo quy ước dưới đây, nhưng khi vẫn còn LƯỠNG NGHĨA thì
+# đánh dấu `ambiguous` để C4 xuất cảnh báo "không kiểm chứng được" (NT4), TUYỆT
+# ĐỐI không im lặng chọn một cách rồi tính tiếp.
+# --------------------------------------------------------------------------
+so:
+  kieu_mac_dinh: vi          # vi = 1.234,56  ·  en = 1,234.56
+  # Nhóm đúng 3 chữ số sau dấu phân cách thì coi là phân nhóm nghìn.
+  do_dai_nhom_nghin: 3
+
+# --------------------------------------------------------------------------
+# Nhóm đơn vị. Mỗi nhóm quy về một đơn vị gốc.
+#
+# `co_so` là cơ sở luỹ thừa của tiền tố K/M/G/T/P trong nhóm đó:
+#   - dung lượng lưu trữ dùng 1024 — PNX bắt lỗi thật:
+#     "Đổi từ GB ra TB phải chia 1024 chứ không phải 1000"
+#   - băng thông dùng 1000 (quy ước viễn thông: 1 Gbps = 10^9 bit/s)
+# Trộn hai cơ sở này là nguồn lệch ~10% rất khó thấy.
+# --------------------------------------------------------------------------
+nhom:
+
+  dung_luong:
+    don_vi_goc: byte
+    co_so: 1024
+    tien_to: {"": 0, k: 1, m: 2, g: 3, t: 4, p: 5}
+    ten:
+      byte: ["byte", "bytes", "b"]
+      kbyte: ["kb", "kbyte", "kilobyte"]
+      mbyte: ["mb", "mbyte", "megabyte"]
+      gbyte: ["gb", "gbyte", "gigabyte"]
+      tbyte: ["tb", "tbyte", "terabyte"]
+      pbyte: ["pb", "pbyte", "petabyte"]
+
+  bang_thong:
+    don_vi_goc: bps
+    co_so: 1000
+    # "KB/s" (byte) khác "kb/s" (bit) ĐÚNG 8 LẦN, và chỉ chữ B hoa/thường phân
+    # biệt được. Hạ hết về chữ thường là lặng lẽ sai 8 lần — nên nhóm này so
+    # khớp CÓ phân biệt hoa thường; viết mập mờ thì đánh dấu ambiguous (NT4).
+    phan_biet_hoa_thuong: true
+    ten_hoa_thuong:
+      kbyte_s: ["KB/s", "KBps", "KByte/s", "KB/giây"]
+      mbyte_s: ["MB/s", "MBps", "MByte/s", "MB/giây"]
+      gbyte_s: ["GB/s", "GBps", "GByte/s"]
+      byte_s:  ["B/s", "Byte/s", "byte/s", "bytes/s"]
+      kbps: ["kb/s", "kbps", "Kbps", "kbit/s", "Kb/s"]
+      mbps: ["mb/s", "mbps", "Mbps", "mbit/s", "Mb/s"]
+      gbps: ["gb/s", "gbps", "Gbps", "gbit/s", "Gb/s"]
+      bps:  ["bps", "bit/s"]
+    ten:
+      bps:  ["bps", "bit/s"]
+      kbps: ["kbps", "kbit/s"]
+      mbps: ["mbps", "mbit/s"]
+      gbps: ["gbps", "gbit/s"]
+      byte_s:  ["byte/s", "bytes/s"]
+      kbyte_s: ["kbyte/s"]
+      mbyte_s: ["mbyte/s"]
+      gbyte_s: ["gbyte/s"]
+    he_so:
+      bps: 1
+      kbps: 1000
+      mbps: 1000000
+      gbps: 1000000000
+      byte_s: 8
+      kbyte_s: 8000
+      mbyte_s: 8000000
+      gbyte_s: 8000000000
+
+  thoi_gian:
+    don_vi_goc: giay
+    ten:
+      giay:  ["giây", "giay", "s", "sec", "second"]
+      phut:  ["phút", "phut", "min", "minute"]
+      gio:   ["giờ", "gio", "h", "hour"]
+      ngay:  ["ngày", "ngay", "day"]
+      tuan:  ["tuần", "tuan", "week"]
+      thang: ["tháng", "thang", "month"]
+      nam:   ["năm", "nam", "year"]
+    he_so:
+      giay: 1
+      phut: 60
+      gio: 3600
+      ngay: 86400
+      tuan: 604800
+      thang: 2592000      # 30 ngày — quy ước, đủ dùng cho định cỡ
+      nam: 31536000       # 365 ngày
+
+  thong_luong_giao_dich:
+    don_vi_goc: tps
+    ten:
+      tps: ["tps", "giao dịch/giây", "gd/s", "trans/s"]
+      rps: ["rps", "request/giây", "req/s", "requests/s"]
+      tpm: ["tpm", "giao dịch/phút"]
+      tph: ["tph", "giao dịch/giờ"]
+    he_so:
+      tps: 1
+      rps: 1
+      tpm: 0.016666666666666666
+      tph: 0.0002777777777777778
+
+  cpu:
+    don_vi_goc: cint
+    ten:
+      cint: ["cint", "cint2017", "cint 2017", "cint_rated", "spec", "specrate"]
+      vcpu: ["vcpu", "vcore", "core", "lõi", "loi", "cpu"]
+    # KHÔNG đặt hệ số quy đổi vcpu <-> cint ở đây: tỷ lệ phụ thuộc đời CPU và
+    # mức overcommit, đã có quy tắc riêng trong rules.yaml (CPU-03, CPU-09).
+    # Đặt một con số cứng ở đây sẽ lặng lẽ ghi đè quy tắc — vi phạm NT3.
+    he_so:
+      cint: 1
+
+  nguoi_dung:
+    don_vi_goc: ccu
+    ten:
+      ccu:  ["ccu", "người dùng đồng thời", "nguoi dung dong thoi", "concurrent user"]
+      user: ["user", "người dùng", "nguoi dung", "thuê bao", "thue bao", "subscriber"]
+    # CCU và tổng user KHÔNG quy đổi cho nhau được — tỷ lệ đồng thời là dữ liệu
+    # đầu vào của từng hệ thống, phải lấy từ tài liệu, không giả định.
+    he_so:
+      ccu: 1
+
+# --------------------------------------------------------------------------
+# Ngưỡng kiểm tính hợp lý — phục vụ khoảng trống "kiểm hợp lý đơn vị số liệu
+# đầu vào" (ca thật: khai "3.000.000 TB cho 1.080 người dùng" = 2,7 PB/người).
+# Đây KHÔNG phải quy tắc thẩm định; chỉ là lưới chặn lỗi đơn vị thô thiển.
+# --------------------------------------------------------------------------
+hop_ly:
+  dung_luong_moi_nguoi_dung:
+    canh_bao_tren_gb: 1024      # >1 TB/người dùng là rất bất thường
+  tps_moi_nguoi_dung:
+    canh_bao_tren: 10           # >10 TPS/người dùng đồng thời là bất thường
