@@ -28,6 +28,7 @@ from src.extraction.extractor import Extractor, uoc_tinh_luot_goi
 # chuỗi — token ĐẦU RA mới là thứ chi phối.
 GIAY_MOI_LUOT = 40
 from src.ingestion.docx_reader import read_docx
+from src.version import PHIEN_BAN_C3, commit_hien_tai, in_phien_ban
 from src.llm.client import LLMClient, LLMError
 from src.validators.quantitative import QuantitativeValidator
 
@@ -47,6 +48,7 @@ def main() -> int:
                     help="chỉ in ước lượng số lời gọi rồi thoát, không gọi model")
     a = ap.parse_args()
 
+    in_phien_ban()
     doc = read_docx(a.docx)
     print(f"C1: {len(doc.elements)} phần tử · {len(doc.tables())} bảng · "
           f"{len(doc.images())} ảnh · trang: {doc.page_source}")
@@ -102,6 +104,7 @@ def main() -> int:
     ra.parent.mkdir(parents=True, exist_ok=True)
     ra.write_text(json.dumps({
         "docx": a.docx, "nhom": chi_nhom, "model": a.model, "giay": round(giay),
+        "phien_ban": PHIEN_BAN_C3, "commit": commit_hien_tai(),
         "thong_ke": ex.tk.__dict__, "c4": dem,
         "sizing": core.model_dump(),
     }, ensure_ascii=False, indent=2), encoding="utf-8")

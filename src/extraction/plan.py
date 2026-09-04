@@ -26,7 +26,10 @@ from ..validators.rules_loader import RuleSet, load_rules
 
 # Số trường tối đa trong MỘT lời gọi. Nhóm `STO` có 55 tham số — nhét cả vào một lược
 # đồ vừa làm model loãng chú ý vừa khiến một lỗi validate huỷ cả 55 trường.
-MAX_TRUONG_MOI_LUOT = 18
+# Giảm 18 -> 12 sau lượt chạy thật 2026-09-04 18:37: một lượt 18 trường sinh tới 54
+# chuỗi và có nhóm hỏng cả 3 lần thử vì hết ngân sách token đầu ra. Nhóm nhỏ hơn cũng
+# giảm thiệt hại khi một lượt hỏng.
+MAX_TRUONG_MOI_LUOT = 12
 
 KIEU_BOOL = "đúng/sai"
 

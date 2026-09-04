@@ -55,6 +55,14 @@ MAX_KY_TU_NGU_CANH = 60_000     # ngữ cảnh 200k–1M token (0.10) nên khôn
 # Dưới ngưỡng này thì mục quá hẹp để tin — lùi về toàn tài liệu.
 MIN_KY_TU_NGU_CANH_HEP = 400
 
+# Ngân sách token ĐẦU RA, tính theo số trường thay vì để một hằng số cứng.
+# Lượt chạy thật 2026-09-04 18:37: nhóm `KPI/he_thong` **hỏng cả 3 lần thử** với
+# `finish_reason=length, max_tokens=4000`. Một lượt 18 trường phải sinh tới 54 chuỗi
+# (giá trị + câu chứa + tiêu đề cột), nên 4000 token là không đủ — mà mặc định 4000 vốn
+# đặt ra ở 0.10 cho một lời gọi 3 trường.
+TOKEN_NEN = 1200
+TOKEN_MOI_TRUONG = 280
+
 
 # ---------------------------------------------------------------- lược đồ --
 class GiaTriSo(BaseModel):
@@ -414,7 +422,8 @@ class Extractor:
                 {"role": "user", "content":
                     f"Trích các thông tin sau{pham_vi} từ tài liệu định cỡ dưới đây.\n"
                     f"{NHAC_NHO}\n\n=== TÀI LIỆU ===\n{nc}"},
-            ], model=self.model)
+            ], model=self.model,
+                max_tokens=TOKEN_NEN + TOKEN_MOI_TRUONG * len(nhom.tham_so))
         except (ExtractionFailed, LLMError) as e:
             # Hết lượt thử vẫn không ra JSON hợp lệ: KHÔNG bịa giá trị (NT4).
             # Để trống, C4 sẽ sinh finding "thiếu thông tin" cho từng tham số.

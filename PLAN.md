@@ -588,9 +588,24 @@
       → 📌 **Model liên tục tự nghĩ ra cách nói "không có"** cho trường số: `kho_neu`
       (lượt 1), `khoong_ghi_trong_tai_lieu` (lượt 2). Không liệt kê từng biến thể —
       cổng *"chuỗi phải chứa chữ số"* bắt được cả hai một cách tổng quát.
+      → 🔧 **Lượt chạy 3 (18:37) — vẫn bằng mã CŨ, lần thứ ba liên tiếp.** Ba lượt chạy
+      thật đã bị đốt vì `git pull` chưa ăn mà **không có dấu hiệu nào trên màn hình**;
+      chỉ phát hiện được khi đọc kỹ file kết quả (thiếu bộ đếm mới, `cong_nghe_luu_tru`
+      lại chép nguyên `cong_nghe`). ⟹ Thêm **`src/version.py`**: mọi script chạy thật
+      **IN phiên bản + commit + cờ "có sửa cục bộ"** TRƯỚC khi gọi model, và ghi cả vào
+      file kết quả JSON.
+      → 🔴 **Lỗi thật lượt 3: hết ngân sách token đầu ra.** Nhóm `KPI/he_thong` **hỏng cả
+      3 lần thử** với `finish_reason=length, max_tokens=4000`. Một lượt 18 trường phải
+      sinh tới **54 chuỗi** (giá trị + câu chứa + tiêu đề cột), trong khi mặc định 4000
+      đặt ra ở 0.10 là cho lời gọi **3 trường**. Sửa: ngân sách tính theo số trường
+      (`1200 + 280 × số trường`) và **giảm nhóm từ 18 xuống 12 trường** — nhóm nhỏ cũng
+      giảm thiệt hại khi một lượt hỏng.
+      → 📏 Sau khi giảm nhóm: BCCS3 13 phân hệ còn **81 lượt** (trước 223) ≈ **9 phút**
+      với 6 luồng.
       → ⬜ **Chưa đo lại trên tài liệu thật SAU hướng A** — cần chạy lại
-      `try_c3_on_dossier.py`. Con số phải nhìn là **`lấy từ ô bảng`** (càng cao càng tốt)
-      so với **`cột không có thật`** + **`giá trị không nằm trong cột khai`**.
+      `try_c3_on_dossier.py`. Kiểm bằng mắt: dòng đầu phải in `C3-v4`. Con số phải nhìn là
+      **`lấy từ ô bảng`** (càng cao càng tốt) so với **`cột không có thật`** +
+      **`giá trị không nằm trong cột khai`**.
       → ⚠️ **1.7 tick `[x]` là cho phần CODE. Chất lượng trích xuất CHƯA đạt**; đừng coi
       C3 là dùng được cho tới khi có hướng xử lý (a)(b) ở trên.
 - [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**
