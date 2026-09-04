@@ -39,6 +39,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, create_model
 
+from ..ingestion.anchor import chuan_hoa as _chuan
 from ..ingestion.anchor import neo as _neo_doc
 from ..ingestion.docx_reader import DocxDocument, Element
 from ..llm.client import ExtractionFailed, LLMClient, LLMError
@@ -103,6 +104,21 @@ def luoc_do_nhom(nhom: NhomTrich) -> type[BaseModel]:
     return create_model(f"Trich{nhom.ma_nhom}{nhom.phan}", **truong)
 
 
+def _co_ve_la_gia_tri(raw: str, cau_hinh: dict) -> bool:
+    """Chuỗi model trả về có trông như MỘT GIÁ TRỊ, hay là cả một câu?
+
+    Lần chạy thật đầu tiên (2026-09-04) cho thấy model hay trả nguyên một ô bảng hoặc
+    cả câu vào `gia_tri_nguyen_van`, ví dụ *"Tài nguyên CPU/RAM của 1 node database …
+    | 48 | 500 |"*. `parse_number` bắt được số ĐẦU TIÊN trong đó — ra `1` từ "1 node" —
+    và đưa cho C4 một con số hoàn toàn bịa mà không cờ nào bật lên.
+    """
+    r = (raw or "").strip()
+    if not r or len(r) > int(cau_hinh.get("dai_toi_da", 30)):
+        return False
+    vt = next((i for i, c in enumerate(r) if c.isdigit()), -1)
+    return 0 <= vt <= int(cau_hinh.get("chu_so_dau_toi_da", 6))
+
+
 # ------------------------------------------------------------------ neo ----
 @dataclass
 class ThongKe:
@@ -116,6 +132,9 @@ class ThongKe:
     khong_doc_duoc_so: int = 0
     khong_quy_doi_duoc: int = 0
     luong_nghia: int = 0
+    khong_phai_gia_tri: int = 0     # model trả cả một CÂU thay vì một giá trị
+    ngoai_khoang_hop_le: int = 0    # 500% cho một trường đơn vị `%`
+    gia_tri_khong_co_trong_cau: int = 0
     loi: list[str] = field(default_factory=list)
 
     def tom_tat(self) -> str:
@@ -124,7 +143,10 @@ class ThongKe:
                 f"{self.khong_neo_duoc} không neo được · "
                 f"{self.khong_doc_duoc_so} không đọc được số · "
                 f"{self.khong_quy_doi_duoc} không quy đổi được · "
-                f"{self.luong_nghia} lưỡng nghĩa")
+                f"{self.luong_nghia} lưỡng nghĩa · "
+                f"{self.khong_phai_gia_tri} không phải giá trị · "
+                f"{self.ngoai_khoang_hop_le} ngoài khoảng hợp lệ · "
+                f"{self.gia_tri_khong_co_trong_cau} giá trị không có trong câu")
 
 
 class Extractor:
@@ -200,6 +222,16 @@ class Extractor:
         # `máy`, `core`, `points`, `hệ số`, `%`) — chúng là đơn vị đếm, không quy đổi
         # và cũng không cần. Đó là lý do `UnknownUnit` ở đây là chuyện bình thường,
         # khác hẳn ca "biết đơn vị nhưng khác nhóm" ngay dưới.
+        khoang = self.units.khoang_hop_le(t.unit) if t.unit else None
+        if khoang and not (khoang[0] <= float(ev.value) <= khoang[1]):
+            # 500 cho một trường đơn vị `%`. Con số đó CÓ THẬT trong tài liệu nên cổng
+            # neo không chặn được — nó chỉ thuộc về trường khác.
+            self.tk.ngoai_khoang_hop_le += 1
+            ev.value = None
+            ev.note = (f"{pn.value:g} nằm ngoài khoảng hợp lệ "
+                       f"[{khoang[0]:g}, {khoang[1]:g}] của đơn vị {t.unit}")
+            return ev
+
         if not (t.unit and q):
             return ev
         try:
@@ -230,14 +262,31 @@ class Extractor:
         gia_tri_enum = getattr(o, "gia_tri", None)
         raw = tho if tho is not None else (gia_tri_enum or "")
 
-        if not raw or raw == KHONG_NEU:
+        if not raw or raw.startswith(KHONG_NEU[:4]):
+            # `khong_neu` và cả biến thể gõ sai (`kho_neu`) — model tự nghĩ ra cách nói
+            # "không có" cho trường số, dù lược đồ chỉ cho phép chuỗi rỗng.
             return None                       # tài liệu không nêu -> để C4 báo thiếu
+
+        if t.kieu == "so" and not _co_ve_la_gia_tri(raw, self.units.chuoi_gia_tri):
+            self.tk.khong_phai_gia_tri += 1
+            return None
 
         el, cach = self.neo(doc, cau, raw)
         if el is None:
             # Không tìm lại được trong tài liệu ⇒ không có căn cứ (NT2). Bỏ.
             self.tk.khong_neo_duoc += 1
             return None
+
+        # Neo được CÂU thôi thì chưa đủ. Lần chạy thật cho thấy model ghép một câu có
+        # thật của phân hệ này với một con số lấy từ bảng của phân hệ KHÁC — ví dụ
+        # Firewall nhận `kich_thuoc_ban_ghi_byte = 500` neo vào bảng Database. Giá trị
+        # phải có mặt ngay trong phần tử đã neo.
+        if t.kieu == "so" and _chuan(raw) not in _chuan(el.text):
+            el2, _ = _neo_doc(doc, raw)
+            if el2 is None:
+                self.tk.gia_tri_khong_co_trong_cau += 1
+                return None
+            el, cach = el2, "giá trị"
 
         ev = ExtractedValue(raw=raw, location=el.location, element_index=el.index,
                             confidence="cao" if cach == "câu" else "vua")
@@ -315,10 +364,17 @@ class Extractor:
             if not p.ten_phan_he.strip():
                 continue
             el, _ = self.neo(doc, p.muc, p.ten_phan_he)
+            # Model hay chép nguyên `cong_nghe` sang `cong_nghe_luu_tru` ("MariaDB
+            # Database" làm công nghệ LƯU TRỮ). Hậu quả không chỉ là sai nhãn: mọi phân
+            # hệ khi đó đều chạy thêm một vòng `phan_he_x_cong_nghe_luu_tru`, nhân đôi
+            # chi phí cho một trường vô nghĩa.
+            clt = p.cong_nghe_luu_tru.strip()
+            if clt and clt.lower() == p.cong_nghe.strip().lower():
+                clt = ""
             ra.append(SizingExtension(
                 ten_phan_he=p.ten_phan_he.strip(),
                 cong_nghe=p.cong_nghe.strip() or None,
-                cong_nghe_luu_tru=p.cong_nghe_luu_tru.strip() or None,
+                cong_nghe_luu_tru=clt or None,
                 location=el.location if el else "",
                 muc=el.section if el else ""))
         return ra

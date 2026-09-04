@@ -49,6 +49,16 @@ class Quantity:
 
 
 class Units:
+    def khoang_hop_le(self, unit: str) -> tuple[float, float] | None:
+        """Khoảng giá trị chấp nhận được của một đơn vị, hoặc None nếu không khai."""
+        k = ((self.cfg.get("gia_tri_hop_le") or {}).get("theo_don_vi") or {})
+        v = k.get(unit)
+        return (float(v[0]), float(v[1])) if v else None
+
+    @property
+    def chuoi_gia_tri(self) -> dict:
+        return ((self.cfg.get("gia_tri_hop_le") or {}).get("chuoi_gia_tri") or {})
+
     def __init__(self, cfg: dict):
         self.cfg = cfg
         self.so = cfg.get("so", {})

@@ -339,3 +339,82 @@ def test_muc_qua_hep_thi_LUI_VE_toan_tai_lieu_chu_khong_trich_thieu():
     # mục III.1 chỉ ~50 ký tự, dưới ngưỡng -> phải lùi về toàn văn, vẫn trích được
     Extractor(llm).trich_nhom(doc, _nhom(t), core, section="III.1")
     assert core.params["cpu_95th"].value == 92
+
+
+# ===================== hồi quy từ lần chạy THẬT 2026-09-04 ==================
+# Ba ca dưới đều lấy nguyên văn từ docs/smoke/c3-20260904-1621.json — C3 đã nhận
+# những giá trị này và đưa thẳng cho C4.
+
+def test_model_tra_ca_MOT_CAU_thay_vi_gia_tri_thi_BI_LOAI():
+    """Ca thật: raw = "Tài nguyên CPU/RAM của 1 node database … | 48 | 500 |" →
+    parse_number bắt "1" từ "1 node" và C4 nhận `spec2006 = 1.0` hoàn toàn bịa."""
+    from src.extraction.schema import SizingCore
+    cau = ("Tài nguyên CPU/RAM của 1 node database BCCS 3.0 tại thị trường có "
+           "4 triệu thuê bao. Cần tối thiểu 3 node để đảm bảo HA. | 48 | 500 | ")
+    doc = _doc(cau)
+    t = ThamSo(name="spec2006", kieu="so", unit="points")
+    llm = FakeLLM({"TrichTEST1": {"spec2006": {
+        "gia_tri_nguyen_van": cau, "cau_chua": cau}}})
+    core = SizingCore()
+    ex = Extractor(llm)
+    ex.trich_nhom(doc, _nhom(t), core)
+    assert "spec2006" not in core.params
+    assert ex.tk.khong_phai_gia_tri == 1
+
+
+def test_gia_tri_KHONG_CO_trong_cau_da_neo_thi_BI_LOAI():
+    """Ca thật: phân hệ Firewall nhận `kich_thuoc_ban_ghi_byte = 500`, neo vào bảng
+    của phân hệ Database. Câu có thật, con số có thật — nhưng thuộc về chỗ khác."""
+    from src.extraction.schema import SizingCore
+    doc = _doc("Cấu hình firewall theo thiết kế chuẩn của đơn vị.")
+    t = ThamSo(name="kich_thuoc_ban_ghi_byte", kieu="so", unit="byte")
+    llm = FakeLLM({"TrichTEST1": {"kich_thuoc_ban_ghi_byte": {
+        "gia_tri_nguyen_van": "500",
+        "cau_chua": "Cấu hình firewall theo thiết kế chuẩn của đơn vị."}}})
+    core = SizingCore()
+    ex = Extractor(llm)
+    ex.trich_nhom(doc, _nhom(t), core)
+    assert "kich_thuoc_ban_ghi_byte" not in core.params
+    assert ex.tk.gia_tri_khong_co_trong_cau == 1
+
+
+def test_gia_tri_ngoai_khoang_hop_le_cua_don_vi_thi_KHONG_dua_cho_C4():
+    """Ca thật: `datanode_95th = 500` với đơn vị `%`. Con số 500 CÓ THẬT trong tài
+    liệu nên cổng neo không chặn được — nó chỉ thuộc về trường khác."""
+    from src.extraction.schema import SizingCore
+    doc = _doc("Dung lượng RAM 500 GB cho mỗi node.")
+    t = ThamSo(name="datanode_95th", kieu="so", unit="%")
+    llm = FakeLLM({"TrichTEST1": {"datanode_95th": {
+        "gia_tri_nguyen_van": "500", "cau_chua": "Dung lượng RAM 500 GB cho mỗi node."}}})
+    core = SizingCore()
+    ex = Extractor(llm)
+    ex.trich_nhom(doc, _nhom(t), core)
+    assert core.params["datanode_95th"].value is None
+    assert "ngoài khoảng hợp lệ" in core.params["datanode_95th"].note
+    assert ex.tk.ngoai_khoang_hop_le == 1
+
+
+def test_phan_tram_trong_khoang_van_duoc_nhan():
+    from src.extraction.schema import SizingCore
+    doc = _doc("Tải CPU đỉnh đạt 48%.")
+    t = ThamSo(name="cpu_95th", kieu="so", unit="%")
+    llm = FakeLLM({"TrichTEST1": {"cpu_95th": {
+        "gia_tri_nguyen_van": "48", "cau_chua": "Tải CPU đỉnh đạt 48%."}}})
+    core = SizingCore()
+    Extractor(llm).trich_nhom(doc, _nhom(t), core)
+    assert core.params["cpu_95th"].value == 48
+
+
+def test_model_tu_nghi_ra_kho_neu_cho_truong_so_thi_coi_la_THIEU():
+    """Ca thật: model trả chuỗi `kho_neu` (gõ sai của `khong_neu`) cho 8 trường số,
+    dù lược đồ `GiaTriSo` chỉ cho phép chuỗi rỗng."""
+    from src.extraction.schema import SizingCore
+    doc = _doc("Cụm Kafka gồm 3 broker.")
+    t = ThamSo(name="so_cpu_vat_ly", kieu="so", unit="CPU")
+    llm = FakeLLM({"TrichTEST1": {"so_cpu_vat_ly": {
+        "gia_tri_nguyen_van": "kho_neu", "cau_chua": "Cụm Kafka gồm 3 broker."}}})
+    core = SizingCore()
+    ex = Extractor(llm)
+    ex.trich_nhom(doc, _nhom(t), core)
+    assert "so_cpu_vat_ly" not in core.params
+    assert ex.tk.khong_doc_duoc_so == 0        # không phải lỗi đọc số, là "không nêu"

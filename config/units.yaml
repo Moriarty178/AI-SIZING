@@ -139,3 +139,20 @@ hop_ly:
     canh_bao_tren_gb: 1024      # >1 TB/người dùng là rất bất thường
   tps_moi_nguoi_dung:
     canh_bao_tren: 10           # >10 TPS/người dùng đồng thời là bất thường
+
+# --------------------------------------------------------------------------
+# Lưới chặn giá trị vô lý do C3 trích ra. Thêm 2026-09-04 sau lần chạy thật đầu
+# tiên: model trả `datanode_95th = 500%`, `cpu_95th = 240%` — nó bắt được MỘT con
+# số gần đó rồi gán bừa, và cổng neo cũ không chặn được vì con số ĐÓ CÓ THẬT trong
+# tài liệu, chỉ là thuộc về trường khác.
+# --------------------------------------------------------------------------
+gia_tri_hop_le:
+  # Đơn vị -> [nhỏ nhất, lớn nhất]. Ngoài khoảng thì KHÔNG nhận, ghi rõ lý do.
+  theo_don_vi:
+    "%": [0, 100]
+    "tỷ lệ 0–1": [0, 1]
+    "hệ số": [0, 100]
+  # Chuỗi model trả về phải TRÔNG như một giá trị, không phải một câu.
+  chuoi_gia_tri:
+    dai_toi_da: 30            # "1.500 GB" dài 8 ký tự; một câu thì dài hơn nhiều
+    chu_so_dau_toi_da: 6      # số phải nằm gần đầu chuỗi
