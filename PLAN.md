@@ -612,6 +612,19 @@
       thì lỗi đã vá → **recall thấp giả tạo**. Ghép `pnx_file` ↔ phiên bản là mục còn nợ
       từ 0.7 mục 5; hiện script **liệt kê mọi bản và ghi rõ bản nào đã dùng**.
       → ✅ Tập TEST đòi cờ `--toi-hieu-rui-ro` mới chạy được, để không ai lỡ tay làm rò rỉ.
+      → ✅ **Báo cáo GHI RÕ bộ lọc đã dùng** kèm cảnh báo *"không được trích như recall
+      thật"* (có test). Cần vì `--nhom KPI,CPU` cho **C5 = 0 lượt** — không quy tắc định
+      tính nào thuộc hai nhóm đó — nên recall thấp hẳn mà báo cáo không nói vì sao.
+      → 🔧 **Sửa sau lần chạy thử đầu của người dùng trong mạng công ty (2026-09-04):**
+      (a) **thiếu tiến trình** — `Extractor.run()` và `QualitativeValidator.run()` chạy
+      hàng chục lượt gọi × ~5s mà **không in gì**, nhìn y hệt TREO. Nay cả hai nhận
+      `on_tien_do`, pipeline gắn nhãn giai đoạn C3/C5, script in mỗi lượt một dòng.
+      (b) **`--nhom` chỉ cắt C3, không cắt C5** — `--nhom KPI,CPU` cắt C3 còn 15 lượt
+      nhưng C5 vẫn chạy đủ 84, tức ~99 lượt ≈ **8 phút mỗi hồ sơ** trong khi người chạy
+      tưởng đang chạy rẻ. Nay `--nhom` áp cho cả hai; `--nhom-dinh-tinh` để tách khi cần.
+      (c) **`--uoc-tinh`** in trước số lời gọi dự kiến rồi thoát, **không cần
+      `settings.yaml`**. Đo được: cả tập dev không lọc ≈ **147 lượt/hồ sơ ≈ 172 phút**;
+      `--chi-vong 1 --nhom KPI` ≈ 10 phút.
       → ⬜ **Chưa có số recall thật** — cần model. Đây là con số quyết định tiêu chí hoàn
       thành Giai đoạn 1.
 - [ ] 1.14 — Giao diện Streamlit: tải file → xem báo cáo
