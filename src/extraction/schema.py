@@ -55,9 +55,12 @@ class SizingExtension(BaseModel):
     module: str | None = None           # khớp `applies_to_module` của quy tắc
     cong_nghe_luu_tru: str | None = None  # cho `scope: phan_he_x_cong_nghe_luu_tru`
     location: str = ""
-    # Số mục chứa phân hệ, do C1 gán. C3 dùng nó để CẮT NGỮ CẢNH khi hỏi về phân hệ
-    # này — vừa rẻ hơn, vừa tránh model lấy nhầm số liệu của phân hệ khác.
+    # Số mục chứa phân hệ, do C1 gán.
     muc: str = ""
+    # Vị trí phần tử nơi phân hệ được nhắc tới. C3 cắt ngữ cảnh theo KHOẢNG phần tử
+    # giữa phân hệ này và phân hệ kế tiếp — cắt theo `muc` không đủ: ở BCCS3 cả 13
+    # phân hệ đều nằm trong mục III, nên cắt theo mục không tách được gì.
+    element_index: int | None = None
     params: dict[str, ExtractedValue] = Field(default_factory=dict)
 
     @property
