@@ -98,7 +98,7 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
          model: str | None = None, chi_nhom: list[str] | None = None,
          chi_vong: int | None = None, chi_ma_dt: list[str] | None = None,
          bo_qua_dinh_tinh: bool = False, bo_qua_trich_xuat: bool = False,
-         on_tien_do=None) -> KetQuaChay:
+         on_tien_do=None, song_song: int = 1) -> KetQuaChay:
     """Chạy trọn pipeline trên một file `.docx`.
 
     `chi_nhom` / `chi_vong` để giới hạn chi phí khi thử: một tài liệu 5 phân hệ tốn
@@ -115,7 +115,7 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
 
     if not bo_qua_trich_xuat:
         c3 = Extractor(client or LLMClient(), rules=rs, model=model,
-                       on_tien_do=_bao("C3", on_tien_do))
+                       on_tien_do=_bao("C3", on_tien_do), song_song=song_song)
         core = c3.run(doc, chi_nhom=chi_nhom)
         tk["c3"] = dict(c3.tk.__dict__)
 
@@ -125,7 +125,8 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
     kq_dt: list[RuleOutcome] = []
     if not bo_qua_dinh_tinh:
         c5 = QualitativeValidator(client or LLMClient(), rules=rs, model=model,
-                                  on_tien_do=_bao("C5", on_tien_do))
+                                  on_tien_do=_bao("C5", on_tien_do),
+                                  song_song=song_song)
         kq_dt = c5.run(doc, core, chi_vong=chi_vong, chi_ma=chi_ma_dt)
         findings += [o.finding for o in kq_dt if o.finding is not None]
         tk["c5"] = dict(c5.tk.__dict__)

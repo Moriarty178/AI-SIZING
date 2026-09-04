@@ -284,3 +284,58 @@ def test_model_chep_ca_tien_to_vi_tri_thi_van_neo_duoc():
     ex.trich_nhom(doc, _nhom(t), core)
     assert core.params["cpu_95th"].value == 92
     assert ex.tk.khong_neo_duoc == 0
+
+
+def test_chay_song_song_cho_KET_QUA_GIONG_HET_chay_tuan_tu():
+    """Chạy tuần tự một bản 13 phân hệ mất hàng giờ (đo thật ~40s/lượt), nên phải
+    song song — nhưng chỉ khi kết quả không đổi và bộ đếm không hụt."""
+    from src.extraction.schema import SizingCore, SizingExtension
+
+    doc = _doc("Tải CPU đỉnh phân hệ App đạt 92%.", "Tải CPU đỉnh phân hệ DB đạt 50%.")
+    t = ThamSo(name="cpu_95th", kieu="so", unit="%")
+    dap_an = {"TrichTEST1": {"cpu_95th": {
+        "gia_tri_nguyen_van": "92%", "cau_chua": "Tải CPU đỉnh phân hệ App đạt 92%."}}}
+
+    def chay(song_song):
+        core = SizingCore(phan_he=[SizingExtension(ten_phan_he=f"PH{i}")
+                                   for i in range(6)])
+        ex = Extractor(FakeLLM(dict(dap_an)), song_song=song_song)
+        for ph in core.phan_he:
+            pass
+        for ph in core.phan_he:
+            ex.trich_nhom(doc, _nhom(t), ph, ten_phan_he=ph.ten_phan_he)
+        return core, ex.tk
+
+    a_core, a_tk = chay(1)
+    b_core, b_tk = chay(4)
+    assert [ph.params["cpu_95th"].value for ph in a_core.phan_he] == [92] * 6
+    assert a_tk.luot_goi == b_tk.luot_goi == 6
+    assert a_tk.truong_co_gia_tri == b_tk.truong_co_gia_tri == 6
+
+
+def test_ngu_canh_cat_theo_muc_cua_phan_he():
+    """Hỏi về phân hệ Database mà đưa cả 13 phân hệ vào ngữ cảnh là mời model lấy
+    nhầm số của phân hệ khác."""
+    from src.ingestion.docx_reader import DocxDocument, Element
+    els = [Element(index=0, kind="paragraph", text="A" * 500, page=1, section="III.1"),
+           Element(index=1, kind="paragraph", text="B" * 500, page=2, section="III.2")]
+    doc = DocxDocument(path="g.docx", elements=els, page_source="rendered")
+    ex = Extractor(FakeLLM({}))
+    assert "A" * 100 in ex.ngu_canh(doc, "III.1")
+    assert "B" * 100 not in ex.ngu_canh(doc, "III.1")
+
+
+def test_muc_qua_hep_thi_LUI_VE_toan_tai_lieu_chu_khong_trich_thieu():
+    from src.ingestion.docx_reader import DocxDocument, Element
+    from src.extraction.schema import SizingCore
+    els = [Element(index=0, kind="paragraph", text="Tải CPU đỉnh đạt 92%.",
+                   page=1, section="III.1"),
+           Element(index=1, kind="paragraph", text="C" * 900, page=2, section="III.2")]
+    doc = DocxDocument(path="g.docx", elements=els, page_source="rendered")
+    t = ThamSo(name="cpu_95th", kieu="so", unit="%")
+    llm = FakeLLM({"TrichTEST1": {"cpu_95th": {
+        "gia_tri_nguyen_van": "92%", "cau_chua": "Tải CPU đỉnh đạt 92%."}}})
+    core = SizingCore()
+    # mục III.1 chỉ ~50 ký tự, dưới ngưỡng -> phải lùi về toàn văn, vẫn trích được
+    Extractor(llm).trich_nhom(doc, _nhom(t), core, section="III.1")
+    assert core.params["cpu_95th"].value == 92

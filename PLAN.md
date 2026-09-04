@@ -502,8 +502,28 @@
       một lỗi validate không huỷ cả 55 trường của nhóm `STO`.
       → 📏 Ngữ cảnh: bản lớn nhất trong 47 bản thật là **37k ký tự**, trần đặt 60k →
       **không bản nào bị cắt**. Trần là lưới an toàn, không phải ràng buộc đang siết.
-      → ⬜ **CHƯA ĐO trên tài liệu thật** — cần model, chạy bằng
-      `scripts/try_c3_on_dossier.py` trong mạng công ty. Con số phải nhìn đầu tiên là
+      → 🔧 **Ba sai lầm lộ ra ở lần chạy thật đầu tiên (2026-09-04), đã sửa:**
+      (a) **Chi phí đo sai 8 lần.** Ước lượng cũ lấy 5s/lượt từ smoke test, thực tế
+      **~40s/lượt**: smoke test chỉ có 3 trường, còn một lượt trích thật có 18 trường ×
+      2 chuỗi — **token ĐẦU RA mới chi phối**, không phải ngữ cảnh.
+      (b) **Giả định 3 phân hệ là sai với tài liệu thật.** BCCS3 có **13 phân hệ**
+      (Database, Maxscale, 3 nhóm k8s, GoldenGate…), nên 18 lượt dự kiến hoá ra 223.
+      Ước lượng nay chạy theo 1/5/13 phân hệ và nói rõ độ nhạy.
+      (c) **`run()` KHÔNG truyền `section` dù `trich_nhom` có nhận** — cả 68 lượt đều
+      gửi lại toàn bộ tài liệu để hỏi về MỘT phân hệ. Không chỉ tốn: hỏi về phân hệ
+      Database mà đưa cả 13 phân hệ vào ngữ cảnh là **mời model lấy nhầm số của phân hệ
+      khác**. Nay cắt theo mục của phân hệ, có lưới an toàn lùi về toàn văn khi mục quá
+      hẹp (<400 ký tự) — thà chậm còn hơn trích thiếu.
+      → ✅ **Chạy song song** (`song_song`, mặc định 6 ở script): C3 và C5 đều dùng
+      `ThreadPoolExecutor`. `ThongKeDT` có **khoá riêng** vì `x += 1` trên thuộc tính
+      int không nguyên tử — mất một lượt đếm là mất một dòng chẩn đoán. **Có test chứng
+      minh song song cho kết quả và bộ đếm y hệt tuần tự.**
+      ⚠️ Rate limit ở 0.10 chỉ đo **tuần tự** (0/10 lần 429), chưa đo đồng thời — nên
+      mặc định giữ thấp.
+      → 📏 **Ước lượng thật (6 luồng)**: BCCS3 13 phân hệ **223 lượt ≈ 25 phút**
+      (149 phút nếu tuần tự). Cả tập dev không lọc ≈ **5,6 giờ**; `--chi-vong 1` với 8
+      luồng ≈ **2,9 giờ**.
+      → ⬜ **CHƯA ĐO trên tài liệu thật** — cần model. Con số phải nhìn đầu tiên là
       **`không neo được`**: trên dữ liệu giả bằng 0, trên tài liệu thật chưa ai biết, và
       nó quyết định cổng chống bịa dùng được hay phải nới.
       → ⬜ Đo **độ chính xác** vẫn thuộc 1.13 (eval harness trên tập DEV).

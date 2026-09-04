@@ -29,7 +29,9 @@ dùng còn chưa viết tới (rủi ro R6).
 """
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -60,6 +62,9 @@ class NhanXetDinhTinh(BaseModel):
 
 @dataclass
 class ThongKeDT:
+    """Bộ đếm chẩn đoán. Có khoá riêng vì C5 chạy song song — `x += 1` trên thuộc
+    tính int KHÔNG nguyên tử, và mất một lượt đếm là mất một dòng chẩn đoán."""
+
     luot_goi: int = 0
     luot_goi_hong: int = 0
     dat: int = 0
@@ -68,6 +73,16 @@ class ThongKeDT:
     khong_ap_dung: int = 0
     trich_dan_bia: int = 0
     loi: list[str] = field(default_factory=list)
+
+    _khoa: threading.Lock = field(default_factory=threading.Lock, repr=False)
+
+    def tang(self, ten: str, n: int = 1) -> None:
+        with self._khoa:
+            setattr(self, ten, getattr(self, ten) + n)
+
+    def them_loi(self, s: str) -> None:
+        with self._khoa:
+            self.loi.append(s)
 
     def tom_tat(self) -> str:
         return (f"{self.luot_goi} lượt gọi ({self.luot_goi_hong} hỏng) · "
@@ -80,11 +95,13 @@ class ThongKeDT:
 class QualitativeValidator:
     def __init__(self, client: LLMClient | None = None, *, rules: RuleSet | None = None,
                  model: str | None = None,
-                 on_tien_do: Callable[[int, int, str], None] | None = None):
+                 on_tien_do: Callable[[int, int, str], None] | None = None,
+                 song_song: int = 1):
         self.client = client or LLMClient()
         self.rules = rules or load_rules()
         self.model = model
         self.on_tien_do = on_tien_do      # không có tiến trình thì trông y hệt treo
+        self.song_song = max(1, int(song_song))
         self.tk = ThongKeDT()
 
     # ------------------------------------------------------------------
@@ -155,11 +172,11 @@ class QualitativeValidator:
                 return RuleOutcome(rule.id, scope_key, "khong_danh_gia_duoc", None,
                                    f"lỗi `applies_when`: {err}")
             if not val:
-                self.tk.khong_ap_dung += 1
+                self.tk.tang("khong_ap_dung")
                 return RuleOutcome(rule.id, scope_key, "khong_ap_dung")
 
         # --- hỏi model -------------------------------------------------
-        self.tk.luot_goi += 1
+        self.tk.tang("luot_goi")
         try:
             nx = self.client.extract(NhanXetDinhTinh, [
                 {"role": "system", "content": HE_THONG},
@@ -168,8 +185,8 @@ class QualitativeValidator:
                     f"=== TÀI LIỆU ===\n{self.ngu_canh(doc)}"},
             ], model=self.model)
         except (ExtractionFailed, LLMError) as e:
-            self.tk.luot_goi_hong += 1
-            self.tk.loi.append(f"{rule.id}#{scope_key}: {e}")
+            self.tk.tang("luot_goi_hong")
+            self.tk.them_loi(f"{rule.id}#{scope_key}: {e}")
             f = self._finding(
                 rule, scope_key, category="khong_kiem_chung_duoc",
                 text=f"Chưa kiểm được {rule.id} ({rule.name}) vì lỗi gọi mô hình.",
@@ -186,20 +203,20 @@ class QualitativeValidator:
             else (None, -1)
         trich_bia = bool(nx.trich_dan_tai_lieu.strip()) and el is None
         if trich_bia:
-            self.tk.trich_dan_bia += 1
+            self.tk.tang("trich_dan_bia")
 
         if nx.ket_luan == "dat":
             # Kết luận ĐẠT không sinh finding, nên trích dẫn bịa ở đây vô hại — chỉ
             # ghi nhận để đếm. Không hạ cấp, vì hạ cấp một ca đạt thành "không xác
             # định" chỉ làm báo cáo dài thêm mà không thêm thông tin.
-            self.tk.dat += 1
+            self.tk.tang("dat")
             return RuleOutcome(rule.id, scope_key, "dat", None,
                                el.location if el else "")
 
         if nx.ket_luan == "khong_dat" and trich_bia:
             # Model dẫn một đoạn KHÔNG có trong tài liệu để kết luận không đạt ⇒ nó
             # đang bịa. Không tin kết luận đó.
-            self.tk.khong_xac_dinh += 1
+            self.tk.tang("khong_xac_dinh")
             f = self._finding(
                 rule, scope_key, category="khong_kiem_chung_duoc",
                 text=f"Chưa kết luận được {rule.id} ({rule.name}): đoạn được dẫn làm "
@@ -212,7 +229,7 @@ class QualitativeValidator:
             # Vòng 1 = thành phần bắt buộc không có -> `thieu_muc`, đúng nhóm mà luật
             # chặn của C7 dựa vào. Vòng 2 = có mục nhưng nội dung chưa đạt tiêu chí.
             cat = "thieu_muc" if rule.round == 1 else "thieu_thong_tin"
-            self.tk.khong_dat += 1
+            self.tk.tang("khong_dat")
             f = self._finding(
                 rule, scope_key, category=cat, text=nx.ly_do.strip() or rule.name,
                 location=el.location if el else "",
@@ -220,7 +237,7 @@ class QualitativeValidator:
                 confidence="cao" if el is not None else "vua")
             return RuleOutcome(rule.id, scope_key, "vi_pham", f)
 
-        self.tk.khong_xac_dinh += 1
+        self.tk.tang("khong_xac_dinh")
         f = self._finding(
             rule, scope_key, category="khong_kiem_chung_duoc",
             text=f"Chưa kết luận được {rule.id} ({rule.name}): "
@@ -241,19 +258,33 @@ class QualitativeValidator:
         tong = sum(len(core.scope_keys(r.scope)) if r.scope != "he_thong" else 1
                    for r in ds)
         out: list[RuleOutcome] = []
-        i = 0
+        viec: list[tuple] = []
         for rule in ds:
             try:
                 keys = core.scope_keys(rule.scope)
             except ValueError as e:
                 out.append(RuleOutcome(rule.id, "", "khong_danh_gia_duoc", None, str(e)))
                 continue
-            for key in keys:
-                i += 1
-                if self.on_tien_do:
-                    self.on_tien_do(i, tong, f"{rule.id}{'/' + key if key else ''}")
+            viec += [(rule, k) for k in keys]
+
+        if self.song_song <= 1:
+            for i, (rule, key) in enumerate(viec, 1):
+                self._bao(i, tong, rule, key)
                 out.append(self.check_rule(rule, doc, core, key))
+            return out
+
+        with ThreadPoolExecutor(max_workers=self.song_song) as pool:
+            fut = {pool.submit(self.check_rule, rule, doc, core, key): (rule, key)
+                   for rule, key in viec}
+            for i, f in enumerate(as_completed(fut), 1):
+                rule, key = fut[f]
+                self._bao(i, tong, rule, key)
+                out.append(f.result())
         return out
+
+    def _bao(self, i: int, tong: int, rule: Rule, key: str) -> None:
+        if self.on_tien_do:
+            self.on_tien_do(i, tong, f"{rule.id}{'/' + key if key else ''}")
 
 
     def findings(self, doc: DocxDocument, core: SizingCore, **kw) -> list[Finding]:
