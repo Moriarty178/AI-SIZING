@@ -98,6 +98,20 @@ uv run streamlit run ui/app.py         # giao diện thử
 uv run uvicorn api.main:app --reload   # API
 ```
 
+### Chạy được KHI KHÔNG có model
+
+Model tự dựng chỉ với tới được từ máy trong mạng nội bộ. Hai việc dưới đây không gọi
+model nên chạy ở đâu cũng được — và chúng cho kết quả lặp lại y hệt giữa hai lần chạy:
+
+```bash
+python scripts/fill_checklist.py "<bản-sizing.docx>"   # điền cột tham chiếu checklist
+python scripts/make_word_template.py                   # sinh mẫu Word chuẩn
+streamlit run ui/app.py                                # 2/3 chế độ vẫn dùng được
+```
+
+Danh sách đầy đủ việc cần người làm, chia theo môi trường:
+[`docs/viec-cua-nguoi-va-moi-truong.md`](docs/viec-cua-nguoi-va-moi-truong.md).
+
 ## Ghi chú
 
 Công cụ nội bộ. Toàn bộ xử lý dùng LLM self-hosted, không gửi dữ liệu ra ngoài.

@@ -10,12 +10,15 @@
 | GĐ | Tên | Tiến độ | Trạng thái |
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
-| 1 | MVP chỉ xử lý text | 13 / 17 | 🟡 Đang làm — chờ số recall thật (1.13) |
+| 1 | MVP chỉ xử lý text | 14 / 17 | 🟡 Đang làm — chờ số recall thật (1.13) |
 | 2 | Đa phương thức & tái sử dụng | 0 / 14 | ⬜ Chưa bắt đầu |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
 
 **Đang tập trung (2026-09-04):** Giai đoạn 1 đã xong **9/17** mục (1.1–1.6, 1.8, 1.9, 1.10) — nền tảng, C1, chuẩn hoá số/đơn vị, schema, bộ nạp quy tắc, C4 định lượng, C7 báo cáo Markdown; **88 unit test** chạy offline. Việc kế tiếp theo thứ tự: **1.7** C3 trích xuất (phần đo độ chính xác chờ `smoke_llm.py`), rồi 1.11 (RAG) · 1.12 (C5 — nguồn finding Vòng 1 cho C7). Song song, việc của người: (a) kiểm độc lập một lát cắt `eval_sheet_mau_kiem_daduyet.csv`; (b) chạy `scripts/smoke_llm.py` trong mạng công ty; (c) duyệt 8 mục `lookup:` cho `rules.yaml` và quy tắc "kiểm hợp lý"; (d) tìm cách đo false positive vì bản đã ký không sạch.
+
+> **Việc cần người làm, chia theo môi trường (laptop / máy trong mạng nội bộ):
+> `docs/viec-cua-nguoi-va-moi-truong.md`** — cập nhật 2026-09-04.
 
 > **Bàn giao sang phiên chat mới: `docs/handoff-prompt.md`** (cập nhật 2026-09-04) —
 > chép nguyên phần sau dấu `---` vào ô chat của phiên mới.
@@ -822,7 +825,25 @@
       mọi báo cáo recall phải nói ra.
       → ⬜ **Chưa có số recall thật** — cần model. Đây là con số quyết định tiêu chí hoàn
       thành Giai đoạn 1.
-- [ ] 1.14 — Giao diện Streamlit: tải file → xem báo cáo
+- [x] 1.14 — Giao diện Streamlit: tải file → xem báo cáo — **XONG 2026-09-04.**
+      **→ `ui/app.py`** (chỉ vẽ) **+ `src/giao_dien.py`** (mọi thứ quyết định hành vi,
+      tách ra để test được mà không cần cài Streamlit) · **14 test**, trong đó 2 test
+      chạy THẬT trang bằng `streamlit.testing.v1.AppTest` (tự bỏ qua nếu máy chưa cài).
+      → ✅ **Ba chế độ, hai trong số đó KHÔNG cần model** — đây là quyết định thiết kế
+      chính, đến từ ràng buộc hai môi trường: *Đọc tài liệu (C1)* và *Điền checklist
+      (1.17)* chạy ở đâu cũng được; *Thẩm định đầy đủ (C3→C7)* chỉ chạy trong mạng nội
+      bộ. Thiếu model thì chế độ thứ ba **tự ẩn kèm dòng giải thích**, không nổ traceback
+      — `kiem_model()` bắt cả `Exception` lạ vì giao diện phải hiện được trong mọi ca.
+      → ✅ **In ước lượng chi phí TRƯỚC khi cho bấm chạy**, cảnh báo riêng khi lượt chạy
+      quá 10 phút. Ngày 04-09 đã mất vài lượt vì bấm rồi ngồi chờ mù. Số bảng đọc thẳng
+      từ tài liệu nên chính xác; số phân hệ để người dùng chỉnh và **ghi rõ là giả định**.
+      → ✅ **Tiến độ từng lượt gọi** qua `on_tien_do` của pipeline.
+      → 🔒 **`.streamlit/config.toml` ép nghe trên `localhost` và tắt gửi thống kê.**
+      Mặc định Streamlit lắng nghe MỌI card mạng — lần chạy thử đầu nó in ra
+      `External URL: http://1.53.203.54:8899`, tức trang đang chứa hồ sơ vừa tải lên mở
+      được từ ngoài. Không hợp với công cụ xử lý hồ sơ định cỡ nội bộ.
+      → 📌 Tên tệp tải lên **giữ nguyên** khi ghi ra đĩa: nó mang mã PYC và tên hệ thống,
+      và còn hiện lại trong báo cáo.
 - [ ] 1.15 — Demo nội bộ 2–3 đồng nghiệp, thu phản hồi
 - [x] 1.16 — Mẫu Word chuẩn — **XONG 2026-09-04.**
       **→ `src/reporting/mau_word.py` + `scripts/make_word_template.py`** · **8 unit test**.
