@@ -34,6 +34,13 @@ from .validators.rules_loader import RuleSet, load_rules
 MAX_VI_TRI_LIET_KE = 5      # cảnh báo ảnh chỉ nêu vài vị trí đầu, không đổ cả 767 dòng
 
 
+def _bao(giai_doan: str, hook):
+    """Gắn tên giai đoạn vào tiến trình của từng thành phần."""
+    if hook is None:
+        return None
+    return lambda i, tong, nhan: hook(giai_doan, i, tong, nhan)
+
+
 @dataclass
 class KetQuaChay:
     doc: DocxDocument
@@ -89,8 +96,9 @@ def canh_bao_nt4(doc: DocxDocument) -> list[Finding]:
 
 def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = None,
          model: str | None = None, chi_nhom: list[str] | None = None,
-         chi_vong: int | None = None, bo_qua_dinh_tinh: bool = False,
-         bo_qua_trich_xuat: bool = False) -> KetQuaChay:
+         chi_vong: int | None = None, chi_ma_dt: list[str] | None = None,
+         bo_qua_dinh_tinh: bool = False, bo_qua_trich_xuat: bool = False,
+         on_tien_do=None) -> KetQuaChay:
     """Chạy trọn pipeline trên một file `.docx`.
 
     `chi_nhom` / `chi_vong` để giới hạn chi phí khi thử: một tài liệu 5 phân hệ tốn
@@ -106,7 +114,8 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
                 "c1_anh": len(doc.images()), "c1_trang": doc.page_source}
 
     if not bo_qua_trich_xuat:
-        c3 = Extractor(client or LLMClient(), rules=rs, model=model)
+        c3 = Extractor(client or LLMClient(), rules=rs, model=model,
+                       on_tien_do=_bao("C3", on_tien_do))
         core = c3.run(doc, chi_nhom=chi_nhom)
         tk["c3"] = dict(c3.tk.__dict__)
 
@@ -115,8 +124,9 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
 
     kq_dt: list[RuleOutcome] = []
     if not bo_qua_dinh_tinh:
-        c5 = QualitativeValidator(client or LLMClient(), rules=rs, model=model)
-        kq_dt = c5.run(doc, core, chi_vong=chi_vong)
+        c5 = QualitativeValidator(client or LLMClient(), rules=rs, model=model,
+                                  on_tien_do=_bao("C5", on_tien_do))
+        kq_dt = c5.run(doc, core, chi_vong=chi_vong, chi_ma=chi_ma_dt)
         findings += [o.finding for o in kq_dt if o.finding is not None]
         tk["c5"] = dict(c5.tk.__dict__)
 

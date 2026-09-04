@@ -24,9 +24,11 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from eval.matching import bang_markdown, doi_chieu, nap_nhan
+from src.extraction.extractor import uoc_tinh_luot_goi
 from src.ingestion.filenames import find_sizing_docs
 from src.llm.client import LLMClient, LLMError
 from src.pipeline import chay
+from src.validators.qualitative import uoc_tinh_luot_goi_dt
 from src.validators.rules_loader import load_rules
 
 GOC_HO_SO = "danh_sach_sizings_da_duyet"
@@ -47,6 +49,10 @@ def main() -> int:
     ap.add_argument("--model", default=None)
     ap.add_argument("--toi-hieu-rui-ro", action="store_true",
                     help="bắt buộc khi --tap test")
+    ap.add_argument("--nhom-dinh-tinh", default=None,
+                    help="lọc nhóm cho C5; mặc định DÙNG CHUNG --nhom")
+    ap.add_argument("--uoc-tinh", action="store_true",
+                    help="chỉ in ước lượng số lời gọi rồi thoát")
     a = ap.parse_args()
 
     if a.tap == "test" and not a.toi_hieu_rui_ro:
@@ -61,17 +67,33 @@ def main() -> int:
         labels = [l for l in labels if l["dossier"] in set(ds)]
     print(f"tập {a.tap}: {len(ds)} hồ sơ · {len(labels)} nhãn")
 
+    rules = load_rules()
+    chi_nhom = [x.strip() for x in a.nhom.split(",") if x.strip()] or None
+    # `--nhom` PHẢI giới hạn cả C5, không chỉ C3. Trước đây nó chỉ cắt C3 nên
+    # `--nhom KPI,CPU` vẫn chạy đủ 84 lượt định tính — người chạy tưởng rẻ mà không rẻ,
+    # và vì chưa có tiến trình nên trông y hệt treo (2026-09-04).
+    ma_dt = ([x.strip() for x in a.nhom_dinh_tinh.split(",") if x.strip()] or None
+             if a.nhom_dinh_tinh is not None else chi_nhom)
+    u3 = uoc_tinh_luot_goi(rules, chi_nhom=chi_nhom, so_phan_he=3)["tong"]
+    u5 = uoc_tinh_luot_goi_dt(rules, 3, chi_vong=a.chi_vong, chi_ma=ma_dt)
+    print(f"ước lượng mỗi hồ sơ (giả định 3 phân hệ): C3 {u3} + C5 {u5} = "
+          f"{u3 + u5} lượt gọi (~{(u3 + u5) * 5 / 60:.1f} phút) · "
+          f"cả {len(ds)} hồ sơ ~{(u3 + u5) * 5 * len(ds) / 60:.0f} phút")
+    if a.uoc_tinh:
+        return 0
+
     try:
         client = LLMClient()
     except (FileNotFoundError, LLMError) as e:
         print(f"Chưa chạy được: {e}")
         return 2
 
-    rules = load_rules()
-    chi_nhom = [x.strip() for x in a.nhom.split(",") if x.strip()] or None
     theo_ho_so: dict[str, list] = {}
     da_dung: dict[str, str] = {}
     canh_bao: list[str] = []
+
+    def tien_do(giai_doan: str, i: int, tong: int, nhan: str) -> None:
+        print(f"    {giai_doan} {i}/{tong} · {nhan}", flush=True)
 
     for i, dossier in enumerate(ds, 1):
         bans = tim_ban(dossier)
@@ -87,11 +109,12 @@ def main() -> int:
                 ", ".join(f"`{b.name}`" for b in bans))
         da_dung[dossier] = bans[0].name
 
-        print(f"[{i}/{len(ds)}] {dossier} → {bans[0].name[:50]} ...", end=" ", flush=True)
+        print(f"[{i}/{len(ds)}] {dossier} → {bans[0].name[:50]}", flush=True)
         t0 = time.time()
         try:
             kq = chay(str(bans[0]), client=client, rules=rules, model=a.model,
-                      chi_nhom=chi_nhom, chi_vong=a.chi_vong)
+                      chi_nhom=chi_nhom, chi_vong=a.chi_vong, chi_ma_dt=ma_dt,
+                      on_tien_do=tien_do)
         except Exception as e:                      # một hồ sơ hỏng không dừng cả lượt
             canh_bao.append(f"`{dossier}`: lỗi khi chạy — {type(e).__name__}: {e}")
             print(f"LỖI {type(e).__name__}")
@@ -101,6 +124,9 @@ def main() -> int:
 
     ev = doi_chieu(theo_ho_so, labels, tap=a.tap, file_da_dung=da_dung)
     ev.canh_bao = canh_bao
+    ev.bo_loc = {"nhom C3": ",".join(chi_nhom) if chi_nhom else "",
+                 "nhom C5": ",".join(ma_dt) if ma_dt else "",
+                 "chi_vong": a.chi_vong or "", "chi N ho so": a.chi or ""}
     meta = json.load(open("data/eval_set.json", encoding="utf-8"))["meta"]
     bao_cao = bang_markdown(ev, meta=meta)
 

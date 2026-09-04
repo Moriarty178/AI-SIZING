@@ -31,6 +31,7 @@ phải phép tính nghiệp vụ; và khi không quy đổi được thì để 
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -124,12 +125,20 @@ class ThongKe:
 
 class Extractor:
     def __init__(self, client: LLMClient | None = None, *, rules: RuleSet | None = None,
-                 units: Units | None = None, model: str | None = None):
+                 units: Units | None = None, model: str | None = None,
+                 on_tien_do: Callable[[int, int, str], None] | None = None):
         self.client = client or LLMClient()
         self.rules = rules
         self.units = units or load_units()
         self.model = model
+        # Không có tiến trình thì một lượt chạy 31–95 lời gọi × ~5s trông y hệt TREO.
+        # Đã làm người dùng tưởng script chết (2026-09-04).
+        self.on_tien_do = on_tien_do
         self.tk = ThongKe()
+
+    def _bao(self, tong: int, nhan: str) -> None:
+        if self.on_tien_do:
+            self.on_tien_do(self.tk.luot_goi, tong, nhan)
 
     # -------------------------------------------------------------- ngữ cảnh
     def ngu_canh(self, doc: DocxDocument, section: str = "") -> str:
@@ -325,20 +334,43 @@ class Extractor:
 
     # ------------------------------------------------------------------ run
     def run(self, doc: DocxDocument, *, chi_nhom: list[str] | None = None) -> SizingCore:
+        nhom_ht = ke_hoach_trich(self.rules, scope="he_thong", chi_nhom=chi_nhom)
+        nhom_ph = ke_hoach_trich(self.rules, scope="phan_he", chi_nhom=chi_nhom)
+        nhom_cn = ke_hoach_trich(self.rules, scope="phan_he_x_cong_nghe_luu_tru",
+                                 chi_nhom=chi_nhom)
+        tong = 2 + len(nhom_ht)          # chưa biết số phân hệ, cập nhật sau khi dò
+
         core = SizingCore()
+        self._bao(tong, "thông tin chung")
         self.trich_cap_tai_lieu(doc, core)
+        self._bao(tong, "nhận diện phân hệ")
         core.phan_he = self.nhan_dien_phan_he(doc)
 
-        for nhom in ke_hoach_trich(self.rules, scope="he_thong", chi_nhom=chi_nhom):
+        tong += sum(len(nhom_ph) + (len(nhom_cn) if ph.cong_nghe_luu_tru else 0)
+                    for ph in core.phan_he)
+        for nhom in nhom_ht:
+            self._bao(tong, nhom.ten)
             self.trich_nhom(doc, nhom, core)
 
         for ph in core.phan_he:
-            for sc in ("phan_he", "phan_he_x_cong_nghe_luu_tru"):
+            for sc, ds in (("phan_he", nhom_ph), ("phan_he_x_cong_nghe_luu_tru", nhom_cn)):
                 if sc == "phan_he_x_cong_nghe_luu_tru" and not ph.cong_nghe_luu_tru:
                     continue
-                for nhom in ke_hoach_trich(self.rules, scope=sc, chi_nhom=chi_nhom):
+                for nhom in ds:
+                    self._bao(tong, f"{ph.ten_phan_he}/{nhom.ten}")
                     self.trich_nhom(doc, nhom, ph, ten_phan_he=ph.ten_phan_he)
         return core
+
+
+def uoc_tinh_luot_goi(rules: RuleSet | None = None, *, chi_nhom: list[str] | None = None,
+                      so_phan_he: int = 3, co_luu_tru: bool = True) -> dict:
+    """Ước lượng số lời gọi TRƯỚC khi chạy — để không ai bấm rồi ngồi chờ mù."""
+    ht = len(ke_hoach_trich(rules, scope="he_thong", chi_nhom=chi_nhom))
+    ph = len(ke_hoach_trich(rules, scope="phan_he", chi_nhom=chi_nhom))
+    cn = len(ke_hoach_trich(rules, scope="phan_he_x_cong_nghe_luu_tru", chi_nhom=chi_nhom))
+    tong = 2 + ht + so_phan_he * (ph + (cn if co_luu_tru else 0))
+    return {"he_thong": ht, "moi_phan_he": ph + (cn if co_luu_tru else 0),
+            "so_phan_he_gia_dinh": so_phan_he, "tong": tong}
 
 
 # ------------------------------------------------------------- lược đồ cố định

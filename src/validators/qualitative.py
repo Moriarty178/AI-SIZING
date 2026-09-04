@@ -29,6 +29,7 @@ dùng còn chưa viết tới (rủi ro R6).
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -78,10 +79,12 @@ class ThongKeDT:
 
 class QualitativeValidator:
     def __init__(self, client: LLMClient | None = None, *, rules: RuleSet | None = None,
-                 model: str | None = None):
+                 model: str | None = None,
+                 on_tien_do: Callable[[int, int, str], None] | None = None):
         self.client = client or LLMClient()
         self.rules = rules or load_rules()
         self.model = model
+        self.on_tien_do = on_tien_do      # không có tiến trình thì trông y hệt treo
         self.tk = ThongKeDT()
 
     # ------------------------------------------------------------------
@@ -232,23 +235,43 @@ class QualitativeValidator:
             chi_ma: list[str] | None = None) -> list[RuleOutcome]:
         """Chấm quy tắc định tính. `chi_vong=1` chạy riêng Vòng 1 — rẻ, và đó chính là
         thứ C7 cần để biết mục nào trượt."""
+        ds = [r for r in self.rules.select(type="qualitative", round=chi_vong,
+                                           enabled=True)
+              if not chi_ma or r.id.split("-")[0] in chi_ma]
+        tong = sum(len(core.scope_keys(r.scope)) if r.scope != "he_thong" else 1
+                   for r in ds)
         out: list[RuleOutcome] = []
-        for rule in self.rules.select(type="qualitative", round=chi_vong, enabled=True):
-            if chi_ma and rule.id.split("-")[0] not in chi_ma:
-                continue
+        i = 0
+        for rule in ds:
             try:
                 keys = core.scope_keys(rule.scope)
             except ValueError as e:
                 out.append(RuleOutcome(rule.id, "", "khong_danh_gia_duoc", None, str(e)))
                 continue
             for key in keys:
+                i += 1
+                if self.on_tien_do:
+                    self.on_tien_do(i, tong, f"{rule.id}{'/' + key if key else ''}")
                 out.append(self.check_rule(rule, doc, core, key))
         return out
+
 
     def findings(self, doc: DocxDocument, core: SizingCore, **kw) -> list[Finding]:
         """Chỉ finding có căn cứ (NT2)."""
         return [o.finding for o in self.run(doc, core, **kw)
                 if o.finding is not None and o.finding.co_can_cu()]
+
+
+def uoc_tinh_luot_goi_dt(rules: RuleSet, so_phan_he: int = 3, *,
+                         chi_vong: int | None = None,
+                         chi_ma: list[str] | None = None) -> int:
+    """Ước lượng lời gọi của C5 TRƯỚC khi chạy. `applies_when` có thể cắt bớt."""
+    n = 0
+    for r in rules.select(type="qualitative", round=chi_vong, enabled=True):
+        if chi_ma and r.id.split("-")[0] not in chi_ma:
+            continue
+        n += 1 if r.scope == "he_thong" else so_phan_he
+    return n
 
 
 HE_THONG = (

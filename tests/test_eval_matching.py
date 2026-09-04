@@ -82,3 +82,20 @@ def test_mau_so_tren_eval_set_that_khop_voi_meta():
     tat_ca = nap_nhan("tat_ca")
     assert len(tat_ca) == 475
     assert sum(1 for l in tat_ca if l.get("rule_ref")) == 469
+
+
+def test_luot_chay_CO_LOC_phai_noi_ro_trong_bao_cao():
+    """`--nhom KPI,CPU` cho C5 = 0 lượt (không quy tắc định tính nào thuộc hai nhóm
+    đó), nên recall thấp hẳn. Báo cáo không nói thì sẽ có người trích như recall thật."""
+    kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
+    kq.bo_loc = {"nhom C3": "KPI,CPU", "nhom C5": "KPI,CPU", "chi_vong": ""}
+    bc = bang_markdown(kq)
+    assert kq.da_loc
+    assert "KHÔNG được trích như recall thật" in bc
+    assert "KPI,CPU" in bc
+
+
+def test_khong_loc_thi_khong_co_canh_bao_thua():
+    kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
+    assert not kq.da_loc
+    assert "KHÔNG được trích như recall thật" not in bang_markdown(kq)
