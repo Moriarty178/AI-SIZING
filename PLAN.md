@@ -526,7 +526,42 @@
       → ⬜ **CHƯA ĐO trên tài liệu thật** — cần model. Con số phải nhìn đầu tiên là
       **`không neo được`**: trên dữ liệu giả bằng 0, trên tài liệu thật chưa ai biết, và
       nó quyết định cổng chống bịa dùng được hay phải nới.
-      → ⬜ Đo **độ chính xác** vẫn thuộc 1.13 (eval harness trên tập DEV).
+      → 🔴 **ĐÃ ĐO TRÊN TÀI LIỆU THẬT (2026-09-04) — CHẤT LƯỢNG CHƯA DÙNG ĐƯỢC.**
+      BCCS3: 68 lượt gọi · 579s (6 luồng) · **164/669 trường có giá trị** ·
+      **64 không neo được**. Nhưng phần *nhận được* mới là chỗ đáng lo:
+      **(a) Model gán cùng một ô bảng cho nhiều tham số khác nhau.** Bảng Database có
+      `CPU (Cint) = 48`, `RAM (GB) = 500`; C3 nhận `48` cho **cả bốn** `cpu_95th`,
+      `spec2017_khai`, `spec_1_cpu`, `spec_1_vcpu_khai`, và `500` cho **cả bốn**
+      `dung_luong_dung_gb`, `datanode_95th`, `ram_cau_hinh_gb`, `dung_luong_ram_gb`.
+      **(b) Lấy số của phân hệ KHÁC.** Phân hệ `Firewall` nhận
+      `kich_thuoc_ban_ghi_byte = 500` neo vào **bảng của Database**. Cắt ngữ cảnh theo
+      mục không cứu được vì C1 chỉ nhận ra **5 mục** (I, II, III, IV, 1) — **cả 13 phân
+      hệ đều nằm trong mục III**.
+      **(c) Giá trị vô lý mà cổng neo không chặn được**: `datanode_95th = 500%`,
+      `cpu_95th_ty_le = 80` cho trường "tỷ lệ 0–1". Con số CÓ THẬT trong tài liệu, chỉ
+      thuộc về trường khác.
+      **(d) Model trả cả một CÂU vào ô giá trị**: `spec2006 = "Tài nguyên CPU/RAM của
+      1 node database…"` → `parse_number` bắt `1` từ *"1 node"* ⇒ C4 nhận `spec2006 = 1`.
+      **(e) Model tự nghĩ ra `kho_neu`** (gõ sai của `khong_neu`) cho 8 trường số, dù
+      lược đồ `GiaTriSo` chỉ cho phép chuỗi rỗng.
+      → ✅ **Ba cổng mới, đo được hiệu quả**: chuỗi phải TRÔNG như một giá trị (dài
+      ≤30, chữ số nằm gần đầu) · giá trị phải có mặt **ngay trong phần tử đã neo**, không
+      chỉ trong tài liệu · giá trị phải nằm trong **khoảng hợp lệ của đơn vị**
+      (`gia_tri_hop_le` trong `units.yaml` — dữ liệu, NT3).
+      Chạy lại ba cổng trên chính kết quả thật: **loại 34/174 giá trị** (14 không phải
+      giá trị · 14 không có trong câu đã neo · 6 ngoài khoảng). 6 test hồi quy lấy
+      nguyên văn từ `docs/smoke/c3-20260904-1621.json`.
+      → ✅ Sửa `cong_nghe_luu_tru` bị chép nguyên từ `cong_nghe` ("MariaDB Database" làm
+      công nghệ **lưu trữ**) — không chỉ sai nhãn mà còn khiến **mọi** phân hệ chạy thêm
+      một vòng scope `phan_he_x_cong_nghe_luu_tru`, nhân đôi chi phí.
+      → 🔴 **CÒN LẠI ~140 giá trị mà ba cổng KHÔNG chặn được**, vì lỗi là **gán nhầm
+      tham số**: con số có thật, đúng khoảng, nằm đúng ô đã neo — chỉ là nó trả lời một
+      câu hỏi khác. Cổng dựa trên *căn cứ* không phân biệt được loại lỗi này.
+      → 🔴 **Nguyên nhân gốc:** C3 hỏi *"điền 18 tham số có tên này"* và model đáp lại
+      bằng cách **đi tìm 18 con số**, thay vì kiểm xem tài liệu có thật sự nêu tham số đó
+      không. Cần đổi cách hỏi — **chờ người dùng chốt hướng** (xem mục "Cần duyệt").
+      → ⚠️ **1.7 tick `[x]` là cho phần CODE. Chất lượng trích xuất CHƯA đạt**; đừng coi
+      C3 là dùng được cho tới khi có hướng xử lý (a)(b) ở trên.
 - [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**
       **→ `src/validators/rules_loader.py`.** Nạp 151 quy tắc + 46 hằng số, kiểm bất
       biến (mã trùng, `see_also` trỏ vào mã không có thật), lọc theo loại/vòng/scope.
