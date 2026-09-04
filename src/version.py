@@ -10,7 +10,9 @@ from __future__ import annotations
 import subprocess
 
 # Tăng số này mỗi khi đổi hành vi trích xuất, để người chạy đối chiếu được bằng mắt.
-PHIEN_BAN_C3 = "C3-v4 (bảng + cột + khoảng phân hệ + ngân sách token theo số trường)"
+# Lượt 19:07 chạy mã v5 nhưng chuỗi này vẫn ghi "C3-v4" vì tôi quên tăng — đúng thứ
+# module này sinh ra để chặn. Tăng cùng lúc với thay đổi hành vi, không để sau.
+PHIEN_BAN_C3 = "C3-v6 (hỏi theo CỘT bảng: mỗi cột một tham số)"
 
 
 def commit_hien_tai() -> str:

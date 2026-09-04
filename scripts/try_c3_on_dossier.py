@@ -21,7 +21,8 @@ import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.extraction.extractor import Extractor, uoc_tinh_luot_goi
+from src.extraction.extractor import (Extractor, so_bang_dung_duoc,
+                                      uoc_tinh_luot_goi)
 
 # Đo thật trên mạng công ty 2026-09-04: ~40s mỗi lượt, KHÔNG phải 5s như smoke test.
 # Chênh vì smoke test chỉ có 3 trường, còn một lượt trích thật có tới 18 trường × 2
@@ -59,7 +60,8 @@ def main() -> int:
     # đứng im vài phút và tưởng script treo — đã xảy ra thật (2026-09-04).
     nhom0 = [x.strip() for x in a.nhom.split(",") if x.strip()] or None
     for n in ([a.phan_he] if a.phan_he else (1, 5, 13)):
-        u = uoc_tinh_luot_goi(chi_nhom=nhom0, so_phan_he=n)
+        u = uoc_tinh_luot_goi(chi_nhom=nhom0, so_phan_he=n,
+                              so_bang=so_bang_dung_duoc(doc))
         print(f"  ước lượng nếu {n} phân hệ: {u['tong']} lượt gọi · "
               f"~{u['tong'] * GIAY_MOI_LUOT / 60:.0f} phút tuần tự · "
               f"~{u['tong'] * GIAY_MOI_LUOT / 60 / a.song_song:.0f} phút với "

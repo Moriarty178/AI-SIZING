@@ -1,0 +1,1235 @@
+{
+  "docx": "danh_sach_sizings_da_duyet/cap moi BCCS3_thị_trường_Lào 34221/Sizing_BCCS3_thị_trường_Lào_23072024.docx",
+  "nhom": [
+    "KPI",
+    "CPU",
+    "RAM"
+  ],
+  "model": null,
+  "giay": 260,
+  "phien_ban": "C3-v4 (bảng + cột + khoảng phân hệ + ngân sách token theo số trường)",
+  "commit": "32c3fa8",
+  "thong_ke": {
+    "luot_goi": 94,
+    "luot_goi_hong": 2,
+    "truong_hoi": 617,
+    "truong_co_gia_tri": 32,
+    "khong_neo_duoc": 73,
+    "khong_doc_duoc_so": 0,
+    "khong_quy_doi_duoc": 2,
+    "luong_nghia": 0,
+    "khong_phai_gia_tri": 31,
+    "ngoai_khoang_hop_le": 4,
+    "gia_tri_khong_co_trong_cau": 2,
+    "cot_khong_co_that": 17,
+    "gia_tri_khong_trong_cot": 0,
+    "o_bi_nhieu_tham_so": 66,
+    "lay_tu_bang": 52,
+    "loi": [
+      "CPU/phan_he phần 2/4: thất bại sau 3 lần thử: 1 validation error for TrichCPU2\n  Invalid JSON: EOF while parsing an object at line 5 column 3 [type=json_invalid, input_value='{\\n  \"cpu_may_chu\": {\\n ...K. Cần 15 node.\"\\n  }', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid",
+      "CPU/phan_he phần 2/4: thất bại sau 3 lần thử: phản hồi rỗng (finish_reason=length, max_tokens=6600) — thử tăng max_tokens"
+    ]
+  },
+  "c4": {
+    "khong_danh_gia_duoc": 697,
+    "dat": 3,
+    "khong_ap_dung": 3
+  },
+  "sizing": {
+    "ten_he_thong": "BCCS3.0",
+    "ma_pyc": null,
+    "muc_dich_sizing": null,
+    "loai_sizing": null,
+    "muc_do_quan_trong": null,
+    "dang_dinh_co": null,
+    "co_dc_dr": null,
+    "dau_moi_yeu_cau": "K.CNTT - VTT",
+    "don_vi_phat_trien": "K.CNTT - VTT",
+    "don_vi_dinh_co": "ĐVSD: Đ/c AnTV124 P.HT: Đ/c VinhTQ18",
+    "thoi_gian_cam_ket": "Hệ thống được xây dựng và triển khai mới trong năm 2025",
+    "params": {
+      "he_so_sai_so_khai": {
+        "value": 1.1,
+        "unit": "hệ số",
+        "raw": "1.1",
+        "location": "Mục 1",
+        "element_index": 4,
+        "ambiguous": false,
+        "note": "lấy từ cột «Nội dung» của bảng #4",
+        "confidence": "cao"
+      }
+    },
+    "phan_he": [
+      {
+        "ten_phan_he": "Database (cụm máy chủ Database)",
+        "cong_nghe": "MariaDB Database",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục II",
+        "muc": "II",
+        "element_index": 20,
+        "params": {
+          "co_ket_qua_2017": {
+            "value": false,
+            "unit": null,
+            "raw": "sai",
+            "location": "Mục 1",
+            "element_index": 4,
+            "ambiguous": false,
+            "note": "chỉ neo được theo giá trị, không tìm thấy nguyên văn câu model trích",
+            "confidence": "vua"
+          },
+          "cpu_may_chu": {
+            "value": "core",
+            "unit": null,
+            "raw": "core",
+            "location": "Mục II",
+            "element_index": 20,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "loai_he_thong": {
+            "value": "tinh_toan_hieu_nang_cao",
+            "unit": null,
+            "raw": "tinh_toan_hieu_nang_cao",
+            "location": "Mục II",
+            "element_index": 20,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "Maxscale (cân bằng tải giữa các node database)",
+        "cong_nghe": "Maxscale",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 35,
+        "params": {
+          "ram_su_dung_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "60",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #37; BỎ: ô này còn được 5 tham số khác nhận làm nguồn (tong_su_dung, tong_tai_nguyen_khai, datanode_95th, ram_cau_hinh_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_su_dung": {
+            "value": null,
+            "unit": "theo tài nguyên (SPEC / GB)",
+            "raw": "60",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #37; BỎ: ô này còn được 5 tham số khác nhận làm nguồn (ram_su_dung_gb, tong_tai_nguyen_khai, datanode_95th, ram_cau_hinh_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_tai_nguyen_khai": {
+            "value": null,
+            "unit": null,
+            "raw": "60",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #37; BỎ: ô này còn được 5 tham số khác nhận làm nguồn (ram_su_dung_gb, tong_su_dung, datanode_95th, ram_cau_hinh_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "chi_so_chon": {
+            "value": null,
+            "unit": null,
+            "raw": "cint_base",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (chi_so_dung_cho_loai_he) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "chi_so_dung_cho_loai_he": {
+            "value": null,
+            "unit": null,
+            "raw": "cint_base",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (chi_so_chon) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "chuan_spec": {
+            "value": "2006",
+            "unit": null,
+            "raw": "2006",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "cint_rated_1_cpu": {
+            "value": null,
+            "unit": "points",
+            "raw": "10",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 2 tham số khác nhận làm nguồn (core_danh_cho_hdh, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "core_danh_cho_hdh": {
+            "value": null,
+            "unit": "core",
+            "raw": "10",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 2 tham số khác nhận làm nguồn (cint_rated_1_cpu, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "cpu_95th_ty_le": {
+            "value": null,
+            "unit": "tỷ lệ 0–1",
+            "raw": "10",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "10 nằm ngoài khoảng hợp lệ [0, 1] của đơn vị tỷ lệ 0–1",
+            "confidence": "cao"
+          },
+          "cpu_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "10",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #37; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (cint_rated_1_cpu, core_danh_cho_hdh) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "datanode_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "60",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #37; BỎ: ô này còn được 5 tham số khác nhận làm nguồn (ram_su_dung_gb, tong_su_dung, tong_tai_nguyen_khai, ram_cau_hinh_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_cau_hinh_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "60",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #37; BỎ: ô này còn được 5 tham số khác nhận làm nguồn (ram_su_dung_gb, tong_su_dung, tong_tai_nguyen_khai, datanode_95th, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "dung_luong_ram_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "60",
+            "location": "Mục III",
+            "element_index": 37,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 5 tham số khác nhận làm nguồn (ram_su_dung_gb, tong_su_dung, tong_tai_nguyen_khai, datanode_95th, ram_cau_hinh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "K8s worker không mang tải EFK (Logging)",
+        "cong_nghe": "Kubernetes worker",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 43,
+        "params": {
+          "so_thread_1_core": {
+            "value": null,
+            "unit": "thread",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #45; BỎ: ô này còn được 7 tham số khác nhận làm nguồn (so_vcpu_khai, spec2006, spec2017_khai, spec_1_cpu, spec_1_vcpu_khai, tong_spec_thanh_phan, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "so_vcpu_khai": {
+            "value": null,
+            "unit": null,
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #45; BỎ: ô này còn được 7 tham số khác nhận làm nguồn (so_thread_1_core, spec2006, spec2017_khai, spec_1_cpu, spec_1_vcpu_khai, tong_spec_thanh_phan, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "spec2006": {
+            "value": null,
+            "unit": "points",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #45; BỎ: ô này còn được 7 tham số khác nhận làm nguồn (so_thread_1_core, so_vcpu_khai, spec2017_khai, spec_1_cpu, spec_1_vcpu_khai, tong_spec_thanh_phan, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "spec2017_khai": {
+            "value": null,
+            "unit": null,
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #45; BỎ: ô này còn được 7 tham số khác nhận làm nguồn (so_thread_1_core, so_vcpu_khai, spec2006, spec_1_cpu, spec_1_vcpu_khai, tong_spec_thanh_phan, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "spec_1_cpu": {
+            "value": null,
+            "unit": "points",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #45; BỎ: ô này còn được 7 tham số khác nhận làm nguồn (so_thread_1_core, so_vcpu_khai, spec2006, spec2017_khai, spec_1_vcpu_khai, tong_spec_thanh_phan, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "spec_1_vcpu_khai": {
+            "value": null,
+            "unit": null,
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #45; BỎ: ô này còn được 7 tham số khác nhận làm nguồn (so_thread_1_core, so_vcpu_khai, spec2006, spec2017_khai, spec_1_cpu, tong_spec_thanh_phan, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_spec_thanh_phan": {
+            "value": null,
+            "unit": "points",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #45; BỎ: ô này còn được 7 tham số khác nhận làm nguồn (so_thread_1_core, so_vcpu_khai, spec2006, spec2017_khai, spec_1_cpu, spec_1_vcpu_khai, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_vcpu_vat_ly": {
+            "value": 240.0,
+            "unit": "vCPU",
+            "raw": "240",
+            "location": "Mục III",
+            "element_index": 50,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU» của bảng #50",
+            "confidence": "cao"
+          },
+          "cpu_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #45; BỎ: ô này còn được 7 tham số khác nhận làm nguồn (so_thread_1_core, so_vcpu_khai, spec2006, spec2017_khai, spec_1_cpu, spec_1_vcpu_khai, tong_spec_thanh_phan) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "datanode_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "64",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #45; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (ram_cau_hinh_gb, ram_su_dung_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_cau_hinh_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "64",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #45; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (datanode_95th, ram_su_dung_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_su_dung_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "64",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #45; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (datanode_95th, ram_cau_hinh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_su_dung": {
+            "value": 15.0,
+            "unit": "theo tài nguyên (SPEC / GB)",
+            "raw": "15",
+            "location": "Mục III",
+            "element_index": 45,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "tong_tai_nguyen_khai": {
+            "value": 1.0,
+            "unit": "tbyte",
+            "raw": "1TB",
+            "location": "Mục III",
+            "element_index": 47,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "K8s worker có mang tải EFK (Logging)",
+        "cong_nghe": "Kubernetes worker",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 51,
+        "params": {
+          "cpu_may_chu": {
+            "value": "core",
+            "unit": null,
+            "raw": "core",
+            "location": "Mục III",
+            "element_index": 55,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "ram_su_dung_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "64",
+            "location": "Mục III",
+            "element_index": 53,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #53; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (ram_cau_hinh_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_su_dung": {
+            "value": 10.0,
+            "unit": "tbyte",
+            "raw": "10TB",
+            "location": "Mục III",
+            "element_index": 56,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "tong_tai_nguyen_khai": {
+            "value": 10.0,
+            "unit": null,
+            "raw": "10",
+            "location": "Mục III",
+            "element_index": 58,
+            "ambiguous": false,
+            "note": "lấy từ cột «Storage (TB)» của bảng #58",
+            "confidence": "cao"
+          },
+          "cpu_95th": {
+            "value": 16.0,
+            "unit": "%",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 53,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #53",
+            "confidence": "cao"
+          },
+          "datanode_95th": {
+            "value": 5.0,
+            "unit": "%",
+            "raw": "5",
+            "location": "Mục III",
+            "element_index": 53,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "ram_cau_hinh_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "64",
+            "location": "Mục III",
+            "element_index": 53,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #53; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (ram_su_dung_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "dung_luong_ram_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "64",
+            "location": "Mục III",
+            "element_index": 53,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #53; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (ram_su_dung_gb, ram_cau_hinh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "K8s master và k8s etcd",
+        "cong_nghe": "Kubernetes master / etcd",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 59,
+        "params": {
+          "ty_le_overcommit": {
+            "value": null,
+            "unit": "hệ số",
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #61; BỎ: ô này còn được 8 tham số khác nhận làm nguồn (tong_su_dung, cpu_95th, cpu_su_dung_khai, he_so_quy_doi, so_core_1_cpu, so_cpu_vat_ly, dung_luong_du_lieu_khai_gb, ty_le_overcommit_ram_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ty_le_overcommit_khai": {
+            "value": null,
+            "unit": "hệ số",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #61; BỎ: ô này còn được 6 tham số khác nhận làm nguồn (ram_su_dung_gb, datanode_95th, ram_cau_hinh_gb, ram_danh_cho_hdh_gb, ram_danh_cho_hypervisor_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "vcpu_broker_khai": {
+            "value": null,
+            "unit": "gbyte",
+            "raw": "60GB",
+            "location": "Mục III",
+            "element_index": 63,
+            "ambiguous": false,
+            "note": "đơn vị tài liệu (gbyte, nhóm dung_luong) khác nhóm đơn vị quy tắc dùng (vCPU, nhóm cpu)",
+            "confidence": "cao"
+          },
+          "vcpu_may_ao": {
+            "value": null,
+            "unit": "gbyte",
+            "raw": "360GB",
+            "location": "Mục III",
+            "element_index": 64,
+            "ambiguous": false,
+            "note": "đơn vị tài liệu (gbyte, nhóm dung_luong) khác nhóm đơn vị quy tắc dùng (vCPU, nhóm cpu)",
+            "confidence": "cao"
+          },
+          "vm_hieu_nang_cao": {
+            "value": false,
+            "unit": null,
+            "raw": "sai",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "ram_su_dung_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #61; BỎ: ô này còn được 6 tham số khác nhận làm nguồn (ty_le_overcommit_khai, datanode_95th, ram_cau_hinh_gb, ram_danh_cho_hdh_gb, ram_danh_cho_hypervisor_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_su_dung": {
+            "value": null,
+            "unit": "theo tài nguyên (SPEC / GB)",
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #61; BỎ: ô này còn được 8 tham số khác nhận làm nguồn (ty_le_overcommit, cpu_95th, cpu_su_dung_khai, he_so_quy_doi, so_core_1_cpu, so_cpu_vat_ly, dung_luong_du_lieu_khai_gb, ty_le_overcommit_ram_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_tai_nguyen_khai": {
+            "value": null,
+            "unit": "gbyte",
+            "raw": "60GB",
+            "location": "Mục III",
+            "element_index": 63,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (kich_thuoc_ban_ghi_byte) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "cpu_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #61; BỎ: ô này còn được 8 tham số khác nhận làm nguồn (ty_le_overcommit, tong_su_dung, cpu_su_dung_khai, he_so_quy_doi, so_core_1_cpu, so_cpu_vat_ly, dung_luong_du_lieu_khai_gb, ty_le_overcommit_ram_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "datanode_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #61; BỎ: ô này còn được 6 tham số khác nhận làm nguồn (ty_le_overcommit_khai, ram_su_dung_gb, ram_cau_hinh_gb, ram_danh_cho_hdh_gb, ram_danh_cho_hypervisor_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_cau_hinh_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #61; BỎ: ô này còn được 6 tham số khác nhận làm nguồn (ty_le_overcommit_khai, ram_su_dung_gb, datanode_95th, ram_danh_cho_hdh_gb, ram_danh_cho_hypervisor_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "cpu_may_chu": {
+            "value": "core",
+            "unit": null,
+            "raw": "core",
+            "location": "Mục III",
+            "element_index": 63,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "cpu_su_dung_khai": {
+            "value": null,
+            "unit": null,
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 8 tham số khác nhận làm nguồn (ty_le_overcommit, tong_su_dung, cpu_95th, he_so_quy_doi, so_core_1_cpu, so_cpu_vat_ly, dung_luong_du_lieu_khai_gb, ty_le_overcommit_ram_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "he_so_quy_doi": {
+            "value": null,
+            "unit": "hệ số",
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 8 tham số khác nhận làm nguồn (ty_le_overcommit, tong_su_dung, cpu_95th, cpu_su_dung_khai, so_core_1_cpu, so_cpu_vat_ly, dung_luong_du_lieu_khai_gb, ty_le_overcommit_ram_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_danh_cho_hdh_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 6 tham số khác nhận làm nguồn (ty_le_overcommit_khai, ram_su_dung_gb, datanode_95th, ram_cau_hinh_gb, ram_danh_cho_hypervisor_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_danh_cho_hypervisor_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 6 tham số khác nhận làm nguồn (ty_le_overcommit_khai, ram_su_dung_gb, datanode_95th, ram_cau_hinh_gb, ram_danh_cho_hdh_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "so_core_1_cpu": {
+            "value": null,
+            "unit": "core",
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 8 tham số khác nhận làm nguồn (ty_le_overcommit, tong_su_dung, cpu_95th, cpu_su_dung_khai, he_so_quy_doi, so_cpu_vat_ly, dung_luong_du_lieu_khai_gb, ty_le_overcommit_ram_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "so_cpu_vat_ly": {
+            "value": null,
+            "unit": "CPU",
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 8 tham số khác nhận làm nguồn (ty_le_overcommit, tong_su_dung, cpu_95th, cpu_su_dung_khai, he_so_quy_doi, so_core_1_cpu, dung_luong_du_lieu_khai_gb, ty_le_overcommit_ram_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "dung_luong_du_lieu_khai_gb": {
+            "value": null,
+            "unit": null,
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #61; BỎ: ô này còn được 8 tham số khác nhận làm nguồn (ty_le_overcommit, tong_su_dung, cpu_95th, cpu_su_dung_khai, he_so_quy_doi, so_core_1_cpu, so_cpu_vat_ly, ty_le_overcommit_ram_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "dung_luong_ram_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #61; BỎ: ô này còn được 6 tham số khác nhận làm nguồn (ty_le_overcommit_khai, ram_su_dung_gb, datanode_95th, ram_cau_hinh_gb, ram_danh_cho_hdh_gb, ram_danh_cho_hypervisor_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "kich_thuoc_ban_ghi_byte": {
+            "value": null,
+            "unit": "byte",
+            "raw": "60GB",
+            "location": "Mục III",
+            "element_index": 63,
+            "ambiguous": false,
+            "note": "quy đổi 60 gbyte → 6.44245e+10 byte; BỎ: ô này còn được 1 tham số khác nhận làm nguồn (tong_tai_nguyen_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_95th_ty_le": {
+            "value": null,
+            "unit": "gbyte",
+            "raw": "360GB",
+            "location": "Mục III",
+            "element_index": 64,
+            "ambiguous": false,
+            "note": "360 nằm ngoài khoảng hợp lệ [0, 1] của đơn vị tỷ lệ 0–1",
+            "confidence": "cao"
+          },
+          "ram_su_dung_khai_gb": {
+            "value": 3.0,
+            "unit": null,
+            "raw": "3 node master và 3 node etcd",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "so_key": {
+            "value": 6.0,
+            "unit": "key",
+            "raw": "6",
+            "location": "Mục III",
+            "element_index": 66,
+            "ambiguous": false,
+            "note": "lấy từ cột «N» của bảng #66",
+            "confidence": "cao"
+          },
+          "ty_le_overcommit_ram_khai": {
+            "value": null,
+            "unit": "hệ số",
+            "raw": "4",
+            "location": "Mục III",
+            "element_index": 61,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU» của bảng #61; BỎ: ô này còn được 8 tham số khác nhận làm nguồn (ty_le_overcommit, tong_su_dung, cpu_95th, cpu_su_dung_khai, he_so_quy_doi, so_core_1_cpu, so_cpu_vat_ly, dung_luong_du_lieu_khai_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "Các module vệ tinh, monitor",
+        "cong_nghe": "Birt report, VSA, Oracle GoldenGate MONyog, MariaDB",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 67,
+        "params": {
+          "vm_hieu_nang_cao": {
+            "value": false,
+            "unit": null,
+            "raw": "sai",
+            "location": "Mục 1",
+            "element_index": 4,
+            "ambiguous": false,
+            "note": "chỉ neo được theo giá trị, không tìm thấy nguyên văn câu model trích",
+            "confidence": "vua"
+          },
+          "dung_luong_ram_gb": {
+            "value": 256.0,
+            "unit": "GB",
+            "raw": "256",
+            "location": "Mục III",
+            "element_index": 77,
+            "ambiguous": false,
+            "note": "chỉ neo được theo giá trị, không tìm thấy nguyên văn câu model trích",
+            "confidence": "vua"
+          },
+          "tong_su_dung": {
+            "value": 6.0,
+            "unit": "tbyte",
+            "raw": "6TB",
+            "location": "Mục III",
+            "element_index": 72,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "Công cụ đồng bộ dữ liệu Oracle GoldenGate (và Downstream)",
+        "cong_nghe": "Oracle GoldenGate",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 69,
+        "params": {
+          "chi_so_chon": {
+            "value": null,
+            "unit": null,
+            "raw": "cint_base",
+            "location": "Mục III",
+            "element_index": 75,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (chi_so_dung_cho_loai_he) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "chi_so_dung_cho_loai_he": {
+            "value": null,
+            "unit": null,
+            "raw": "cint_base",
+            "location": "Mục III",
+            "element_index": 75,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (chi_so_chon) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "chuan_spec": {
+            "value": "2006",
+            "unit": null,
+            "raw": "2006",
+            "location": "Mục III",
+            "element_index": 28,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "cint_rated_1_cpu": {
+            "value": null,
+            "unit": "points",
+            "raw": "20",
+            "location": "Mục III",
+            "element_index": 77,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #77; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (cpu_su_dung_khai, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "cpu_may_chu": {
+            "value": "core",
+            "unit": null,
+            "raw": "core",
+            "location": "Mục III",
+            "element_index": 28,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "cpu_su_dung_khai": {
+            "value": null,
+            "unit": null,
+            "raw": "20",
+            "location": "Mục III",
+            "element_index": 77,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 2 tham số khác nhận làm nguồn (cint_rated_1_cpu, cpu_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "he_so_quy_doi": {
+            "value": null,
+            "unit": "hệ số",
+            "raw": "256",
+            "location": "Mục III",
+            "element_index": 77,
+            "ambiguous": false,
+            "note": "256 nằm ngoài khoảng hợp lệ [0, 100] của đơn vị hệ số",
+            "confidence": "cao"
+          },
+          "loai_he_thong": {
+            "value": "tinh_toan_hieu_nang_cao",
+            "unit": null,
+            "raw": "tinh_toan_hieu_nang_cao",
+            "location": "Mục III",
+            "element_index": 75,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "ram_danh_cho_hdh_gb": {
+            "value": null,
+            "unit": "gbyte",
+            "raw": "500GB",
+            "location": "Mục III",
+            "element_index": 79,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (dung_luong_du_lieu_khai_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_danh_cho_hypervisor_gb": {
+            "value": null,
+            "unit": "gbyte",
+            "raw": "1TB",
+            "location": "Mục III",
+            "element_index": 80,
+            "ambiguous": false,
+            "note": "quy đổi 1 tbyte → 1024 gbyte; BỎ: ô này còn được 1 tham số khác nhận làm nguồn (tong_su_dung) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "so_cpu_vat_ly": {
+            "value": null,
+            "unit": "CPU",
+            "raw": "512",
+            "location": "Mục III",
+            "element_index": 82,
+            "ambiguous": false,
+            "note": "chỉ neo được theo giá trị, không tìm thấy nguyên văn câu model trích; BỎ: ô này còn được 1 tham số khác nhận làm nguồn (ram_cau_hinh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "cpu_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "20",
+            "location": "Mục III",
+            "element_index": 77,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #77; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (cint_rated_1_cpu, cpu_su_dung_khai) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "datanode_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "256",
+            "location": "Mục III",
+            "element_index": 77,
+            "ambiguous": false,
+            "note": "256 nằm ngoài khoảng hợp lệ [0, 100] của đơn vị %",
+            "confidence": "cao"
+          },
+          "ram_cau_hinh_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "512",
+            "location": "Mục III",
+            "element_index": 82,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM» của bảng #82; BỎ: ô này còn được 1 tham số khác nhận làm nguồn (so_cpu_vat_ly) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "dung_luong_du_lieu_khai_gb": {
+            "value": null,
+            "unit": "gbyte",
+            "raw": "500GB",
+            "location": "Mục III",
+            "element_index": 79,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (ram_danh_cho_hdh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "dung_luong_ram_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "256",
+            "location": "Mục III",
+            "element_index": 77,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #77; BỎ: ô này còn được 1 tham số khác nhận làm nguồn (ram_su_dung_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_su_dung_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "256",
+            "location": "Mục III",
+            "element_index": 77,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #77; BỎ: ô này còn được 1 tham số khác nhận làm nguồn (dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_su_dung": {
+            "value": null,
+            "unit": "tbyte",
+            "raw": "1TB",
+            "location": "Mục III",
+            "element_index": 80,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (ram_danh_cho_hypervisor_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "2 cụm Kafka cho ứng dụng và đồng bộ",
+        "cong_nghe": "Kafka",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 83,
+        "params": {
+          "cpu_95th": {
+            "value": 6.0,
+            "unit": "%",
+            "raw": "6",
+            "location": "Mục III",
+            "element_index": 85,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #85",
+            "confidence": "cao"
+          },
+          "datanode_95th": {
+            "value": 10.0,
+            "unit": "%",
+            "raw": "10",
+            "location": "Mục III",
+            "element_index": 85,
+            "ambiguous": false,
+            "note": "lấy từ cột «Nội dung» của bảng #85",
+            "confidence": "cao"
+          },
+          "ram_cau_hinh_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 85,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #85; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (dung_luong_ram_gb, ram_su_dung_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "dung_luong_du_lieu_khai_gb": {
+            "value": 200.0,
+            "unit": "gbyte",
+            "raw": "200GB",
+            "location": "Mục III",
+            "element_index": 87,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "dung_luong_ram_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 85,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #85; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (ram_cau_hinh_gb, ram_su_dung_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_su_dung_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "8",
+            "location": "Mục III",
+            "element_index": 85,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #85; BỎ: ô này còn được 2 tham số khác nhận làm nguồn (ram_cau_hinh_gb, dung_luong_ram_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_su_dung": {
+            "value": 2.0,
+            "unit": "tbyte",
+            "raw": "2TB",
+            "location": "Mục III",
+            "element_index": 88,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "tong_tai_nguyen_khai": {
+            "value": 2.0,
+            "unit": null,
+            "raw": "2",
+            "location": "Mục III",
+            "element_index": 90,
+            "ambiguous": false,
+            "note": "lấy từ cột «Storage (TB)» của bảng #90",
+            "confidence": "cao"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "DBIN và FTP",
+        "cong_nghe": "DBIN, FTP",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 91,
+        "params": {
+          "ram_su_dung_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 93,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #93; BỎ: ô này còn được 4 tham số khác nhận làm nguồn (dung_luong_ram_gb, cpu_95th, datanode_95th, ram_cau_hinh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "tong_tai_nguyen_khai": {
+            "value": 4.0,
+            "unit": "tbyte",
+            "raw": "4TB",
+            "location": "Mục III",
+            "element_index": 96,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "dung_luong_ram_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 93,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #93; BỎ: ô này còn được 4 tham số khác nhận làm nguồn (ram_su_dung_gb, cpu_95th, datanode_95th, ram_cau_hinh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "cpu_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 93,
+            "ambiguous": false,
+            "note": "lấy từ cột «CPU (Cint)» của bảng #93; BỎ: ô này còn được 4 tham số khác nhận làm nguồn (ram_su_dung_gb, dung_luong_ram_gb, datanode_95th, ram_cau_hinh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "datanode_95th": {
+            "value": null,
+            "unit": "%",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 93,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #93; BỎ: ô này còn được 4 tham số khác nhận làm nguồn (ram_su_dung_gb, dung_luong_ram_gb, cpu_95th, ram_cau_hinh_gb) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "ram_cau_hinh_gb": {
+            "value": null,
+            "unit": "GB",
+            "raw": "16",
+            "location": "Mục III",
+            "element_index": 93,
+            "ambiguous": false,
+            "note": "lấy từ cột «RAM (GB)» của bảng #93; BỎ: ô này còn được 4 tham số khác nhận làm nguồn (ram_su_dung_gb, dung_luong_ram_gb, cpu_95th, datanode_95th) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "Firewall",
+        "cong_nghe": "Firewall",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 105,
+        "params": {
+          "chi_so_chon": {
+            "value": null,
+            "unit": null,
+            "raw": "cint_base",
+            "location": "Mục III",
+            "element_index": 106,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (chi_so_dung_cho_loai_he) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "chi_so_dung_cho_loai_he": {
+            "value": null,
+            "unit": null,
+            "raw": "cint_base",
+            "location": "Mục III",
+            "element_index": 106,
+            "ambiguous": false,
+            "note": "BỎ: ô này còn được 1 tham số khác nhận làm nguồn (chi_so_chon) — không có căn cứ để chọn tham số nào đúng",
+            "confidence": "thap"
+          },
+          "chuan_spec": {
+            "value": "2017",
+            "unit": null,
+            "raw": "2017",
+            "location": "Mục III",
+            "element_index": 106,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "cpu_may_chu": {
+            "value": "core",
+            "unit": null,
+            "raw": "core",
+            "location": "Mục III",
+            "element_index": 106,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          },
+          "loai_he_thong": {
+            "value": "thong_thuong",
+            "unit": null,
+            "raw": "thong_thuong",
+            "location": "Mục III",
+            "element_index": 106,
+            "ambiguous": false,
+            "note": "",
+            "confidence": "cao"
+          }
+        }
+      },
+      {
+        "ten_phan_he": "Switch truy nhập",
+        "cong_nghe": "Switch truy nhập",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 99,
+        "params": {}
+      },
+      {
+        "ten_phan_he": "Switch quản trị MGT",
+        "cong_nghe": "Switch quản trị MGT",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 101,
+        "params": {}
+      },
+      {
+        "ten_phan_he": "Rack",
+        "cong_nghe": "Rack",
+        "module": null,
+        "cong_nghe_luu_tru": null,
+        "location": "Mục III",
+        "muc": "III",
+        "element_index": 103,
+        "params": {}
+      }
+    ]
+  }
+}

@@ -26,18 +26,27 @@ def chuan_hoa(s: str) -> str:
     return re.sub(r"\s+", " ", _TIEN_TO_VI_TRI.sub("", s or "").strip().lower())
 
 
-def neo(doc: DocxDocument, *khoa: str) -> tuple[Element | None, int]:
+def neo(doc: DocxDocument, *khoa: str,
+        khoang: tuple[int, int] | None = None) -> tuple[Element | None, int]:
     """Tìm phần tử chứa một trong các khoá, theo đúng thứ tự ưu tiên truyền vào.
 
     Trả `(phần tử, chỉ số khoá đã khớp)`; `(None, -1)` nếu không khoá nào có thật.
     Thứ tự quan trọng: khoá đầu thường là nguyên văn câu (bằng chứng mạnh), khoá sau
     là bản rút gọn (bằng chứng yếu hơn) — bên gọi dùng chỉ số để hạ độ tin cậy.
+
+    `khoang` giới hạn vùng tìm về `[đầu, cuối)` theo `Element.index`. Không giới hạn thì
+    một giá trị hỏi cho phân hệ này neo được vào phần tử của phân hệ khác: lượt chạy
+    19:07 có 6/32 giá trị neo ra ngoài phân hệ đang hỏi — GoldenGate (#69–83) lấy
+    `chuan_spec` ở #28, «Các module vệ tinh» (#67–69) lấy `dung_luong_ram_gb` ở #77.
+    Chính là thứ `khoang_phan_he` sinh ra để chặn, nhưng đường neo lại bỏ qua nó.
     """
+    els = ([e for e in doc.elements if khoang[0] <= e.index < khoang[1]]
+           if khoang else doc.elements)
     for i, k in enumerate(khoa):
         kk = chuan_hoa(k)
         if len(kk) < DAI_TOI_THIEU:
             continue
-        for e in doc.elements:
+        for e in els:
             if kk in chuan_hoa(e.text):
                 return e, i
     return None, -1
