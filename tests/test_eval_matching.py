@@ -99,3 +99,32 @@ def test_khong_loc_thi_khong_co_canh_bao_thua():
     kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
     assert not kq.da_loc
     assert "KHÔNG được trích như recall thật" not in bang_markdown(kq)
+
+
+# --- chọn hồ sơ để chạy thử ------------------------------------------------
+def test_chi_N_bo_qua_ho_so_khong_co_docx():
+    """`--chi 1` từng rơi trúng "Cấp mới hệ thống VAPS" — hồ sơ duy nhất chỉ có PDF,
+    sắp đầu bảng vì `C` hoa đứng trước `c` thường — nên cả lượt không gọi model lần nào."""
+    from eval.run_eval import chon_ho_so
+    tat_ca = ["Cấp mới hệ thống VAPS", "cap moi BCCS3", "cap bo sung campaign"]
+    co_docx = ["cap bo sung campaign", "cap moi BCCS3"]
+    assert chon_ho_so(tat_ca, co_docx, chi=1) == ["cap bo sung campaign"]
+
+
+def test_chay_day_du_thi_GIU_ho_so_khong_co_docx_trong_mau_so():
+    from eval.run_eval import chon_ho_so
+    tat_ca = ["Cấp mới hệ thống VAPS", "cap moi BCCS3"]
+    assert chon_ho_so(tat_ca, ["cap moi BCCS3"]) == tat_ca
+
+
+def test_chon_dich_danh_mot_ho_so_theo_ten():
+    from eval.run_eval import chon_ho_so
+    tat_ca = ["cap moi BCCS3_thị_trường_Lào 34221", "cap moi c360 58872"]
+    assert chon_ho_so(tat_ca, tat_ca, ho_so="bccs3") == [tat_ca[0]]
+    assert chon_ho_so(tat_ca, tat_ca, ho_so="khong-co") == []
+
+
+def test_ho_so_thang_thu_tu_khong_phan_biet_hoa_thuong():
+    """Sắp xếp phân biệt hoa/thường là cái bẫy đã đưa VAPS lên đầu."""
+    ds = sorted(["cap moi BCCS3", "Cấp mới VAPS", "cap bo sung campaign"], key=str.lower)
+    assert ds[0] == "cap bo sung campaign"

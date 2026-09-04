@@ -41,13 +41,32 @@ def tim_ban(dossier: str) -> list[pathlib.Path]:
     return sorted(find_sizing_docs(str(thu_muc))) if thu_muc.exists() else []
 
 
+def chon_ho_so(tat_ca: list[str], co_docx: list[str], *, chi: int = 0,
+               ho_so: str = "") -> list[str]:
+    """Chọn hồ sơ để chạy. Tách riêng vì đây là chỗ đã âm thầm đốt một lượt chạy.
+
+    Hồ sơ không có `.docx` vẫn nằm trong mẫu số của lượt chạy ĐẦY ĐỦ — bỏ ra là làm
+    recall đẹp lên giả tạo. Nhưng khi người dùng giới hạn để chạy THỬ thì chọn chúng là
+    vô nghĩa: `--chi 1` từng rơi trúng "Cấp mới hệ thống VAPS" (hồ sơ duy nhất chỉ có
+    PDF, sắp đầu bảng vì `C` hoa đứng trước `c` thường), nên cả lượt không gọi model
+    lần nào.
+    """
+    if ho_so:
+        return [d for d in tat_ca if ho_so.lower() in d.lower()]
+    if chi:
+        return co_docx[:chi]
+    return tat_ca
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
     ap.add_argument("--tap", default="dev", choices=["dev", "test", "tat_ca"])
     ap.add_argument("--nhom", default="", help="lọc nhóm quy tắc cho C3, vd KPI,CPU")
     ap.add_argument("--chi-vong", type=int, default=None)
-    ap.add_argument("--chi", type=int, default=0, help="chỉ chạy N hồ sơ đầu")
+    ap.add_argument("--chi", type=int, default=0,
+                    help="chỉ chạy N hồ sơ ĐẦU TIÊN CÓ .docx")
+    ap.add_argument("--ho-so", default="", help="chạy đúng một hồ sơ, khớp theo tên")
     ap.add_argument("--model", default=None)
     ap.add_argument("--toi-hieu-rui-ro", action="store_true",
                     help="bắt buộc khi --tap test")
@@ -67,11 +86,28 @@ def main() -> int:
         return 2
 
     labels = nap_nhan(a.tap)
-    ds = sorted({l["dossier"] for l in labels})
-    if a.chi:
-        ds = ds[:a.chi]
+    ds = sorted({l["dossier"] for l in labels}, key=str.lower)
+
+    # Hồ sơ không có `.docx` vẫn phải nằm trong mẫu số của một lượt chạy ĐẦY ĐỦ (bỏ ra
+    # là làm recall đẹp lên giả tạo). Nhưng khi người dùng giới hạn để chạy THỬ thì
+    # chọn chúng là vô nghĩa: `--chi 1` từng rơi trúng "Cấp mới hệ thống VAPS" — hồ sơ
+    # duy nhất chỉ có PDF — nên cả lượt chạy không gọi model lần nào (2026-09-04).
+    co_docx = [d for d in ds if tim_ban(d)]
+    khong_docx = [d for d in ds if d not in co_docx]
+    if khong_docx:
+        print(f"  ⚠ {len(khong_docx)} hồ sơ không có .docx: "
+              + ", ".join(khong_docx))
+
+    tat_ca = ds
+    ds = chon_ho_so(ds, co_docx, chi=a.chi, ho_so=a.ho_so)
+    if not ds:
+        print(f"Không hồ sơ nào khớp {a.ho_so!r}. Có: " + " | ".join(tat_ca))
+        return 2
+    if a.ho_so or a.chi:
         labels = [l for l in labels if l["dossier"] in set(ds)]
     print(f"tập {a.tap}: {len(ds)} hồ sơ · {len(labels)} nhãn")
+    if a.ho_so or a.chi:
+        print("  chạy: " + " | ".join(ds))
 
     rules = load_rules()
     chi_nhom = [x.strip() for x in a.nhom.split(",") if x.strip()] or None
@@ -135,7 +171,8 @@ def main() -> int:
     ev.canh_bao = canh_bao
     ev.bo_loc = {"nhom C3": ",".join(chi_nhom) if chi_nhom else "",
                  "nhom C5": ",".join(ma_dt) if ma_dt else "",
-                 "chi_vong": a.chi_vong or "", "chi N ho so": a.chi or ""}
+                 "chi_vong": a.chi_vong or "", "chi N ho so": a.chi or "",
+                 "ho so": a.ho_so or "", "song song": a.song_song}
     meta = json.load(open("data/eval_set.json", encoding="utf-8"))["meta"]
     bao_cao = bang_markdown(ev, meta=meta)
 

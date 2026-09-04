@@ -645,6 +645,16 @@
       (c) **`--uoc-tinh`** in trước số lời gọi dự kiến rồi thoát, **không cần
       `settings.yaml`**. Đo được: cả tập dev không lọc ≈ **147 lượt/hồ sơ ≈ 172 phút**;
       `--chi-vong 1 --nhom KPI` ≈ 10 phút.
+      → 🔧 **Sửa sau lượt chạy thử thứ hai (2026-09-04): `--chi 1` đốt một lượt chạy
+      vào hồ sơ không chạy được.** Nó lấy hồ sơ đầu theo thứ tự chữ cái, ra đúng
+      *"Cấp mới hệ thống VAPS"* — hồ sơ **duy nhất trong tập dev chỉ có PDF** (D8) — và
+      nó đứng đầu bảng vì `C` hoa sắp trước `c` thường. Cả lượt **không gọi model lần
+      nào**, báo cáo ra recall 0% vô nghĩa. Nay `--chi N` chỉ chọn hồ sơ **có `.docx`**,
+      thêm `--ho-so <tên>` để chỉ đích danh, sắp xếp không phân biệt hoa thường, và in
+      cảnh báo danh sách hồ sơ thiếu `.docx` ngay từ đầu. Hàm `chon_ho_so()` tách riêng
+      để test được — 4 test.
+      ⚠️ Hồ sơ thiếu `.docx` **vẫn nằm trong mẫu số của lượt chạy ĐẦY ĐỦ**; chỉ bị bỏ
+      qua khi người dùng giới hạn để chạy thử.
       → ⬜ **Chưa có số recall thật** — cần model. Đây là con số quyết định tiêu chí hoàn
       thành Giai đoạn 1.
 - [ ] 1.14 — Giao diện Streamlit: tải file → xem báo cáo
