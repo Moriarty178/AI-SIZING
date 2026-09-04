@@ -202,7 +202,11 @@ def main() -> int:
         print("DỪNG: báo cáo chứa khóa API — không in ra.")
         return 3
 
-    out = pathlib.Path("docs/1.2-ket-qua-smoke-llm.md")
+    # Ghi theo mốc thời gian, KHÔNG ghi đè một file cố định: lần chạy 2 đã xoá mất
+    # kết quả thô của lần 1 (may là đã commit). Phần ĐÁNH GIÁ do người viết nằm ở
+    # `docs/1.2-ket-qua-smoke-llm.md` — máy không được đụng vào.
+    out = pathlib.Path("docs/smoke") / f"smoke-{time.strftime('%Y%m%d-%H%M')}.md"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(bao_cao + "\n", encoding="utf-8")
 
     print("\n" + "=" * 70)

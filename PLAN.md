@@ -10,7 +10,7 @@
 | GĐ | Tên | Tiến độ | Trạng thái |
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
-| 1 | MVP chỉ xử lý text | 9 / 17 | 🟡 Đang làm — 1.7 tiếp theo |
+| 1 | MVP chỉ xử lý text | 11 / 17 | 🟡 Đang làm — 1.11 (RAG) cần cài phụ thuộc |
 | 2 | Đa phương thức & tái sử dụng | 0 / 14 | ⬜ Chưa bắt đầu |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
@@ -381,11 +381,24 @@
       → ⚠️ **Giá trị enum không ràng buộc thì KHÔNG ổn định**: cùng một đoạn, hai lần
       chạy cho hai chuỗi khác nhau. ⟹ C3 **không được** ánh xạ mờ chuỗi tự do sang enum;
       không khớp sau khi hết lượt retry thì để `None` + finding "thiếu thông tin" (NT4).
-      → ⬜ **Còn treo: gateway có THỰC SỰ ép `enum` không.** Chỉ vế `lần thử TB > 1.00`
-      mới là bằng chứng "không ép"; `= 1.00` không phân biệt được "ép thật" với "model
-      tự tuân" — đúng bất đối xứng đã đọc sai một lần ở phép thử D của 0.10.
-      → ⬜ Mới thử 1 model nên **vẫn chưa chốt model chính cho C3**; lần 2 nên truyền
-      nhiều model một lượt.
+      → ✅ **Lần chạy 2 (2026-09-04, `temperature 0.0`, 3 model): 1.2 XONG HẲN.**
+      sonnet-4-5 · opus-4-6 · haiku-4-5 đều chạy; `json_schema` được nhận, **1 lời gọi
+      mỗi lượt trích** (~4,5–5,0s), chat 0,4–1,4s. **Đọc số đúng 12/12** ở cả 3 model.
+      → ✅ **`Literal` đổi hành vi model**: lần 1 (`str`, không `enum`) trả chuỗi tự do;
+      lần 2 **12/12 giá trị đều trong enum**, không lượt nào retry.
+      → ⬜ **Không chứng minh được gateway ép schema phía máy chủ** — `lần thử = 1.00`
+      không phân biệt "máy chủ ép" với "model tự tuân" (đúng bất đối xứng đã đọc sai ở
+      phép thử D của 0.10). **Nhưng câu hỏi này thành vô hại**: `client.py` vốn LUÔN
+      validate + retry bất kể máy chủ thế nào, nên cả hai thế giới đều đã xử lý.
+      **Không còn chặn 1.7.**
+      → ⚠️ **KHÔNG chốt được model chính cho C3.** Thứ hạng 4/4 > 3/4 > 2/4 là **n=4 mỗi
+      model**, và **cả 3 lượt trượt nằm trên đúng một câu mơ hồ** — bảng đang đo "model
+      xử lý một câu mơ hồ thế nào", không đo chất lượng trích xuất. Độ trễ gần như nhau
+      nên không có lập luận tốc độ. Giữ `claude-opus-4-6` mặc định tạm, **chốt ở 1.13**
+      trên tập DEV. (Cùng loại kết luận vội đã mắc với thang `confidence` ở 0.7.)
+      → ⚠️ **`temperature 0.0` KHÔNG cho kết quả lặp lại được**: opus chạy cùng một đoạn
+      hai lần ra hai kết quả khác nhau. ⟹ **1.13 không được chạy một lượt rồi chốt số** —
+      phải lặp hoặc báo kèm biên độ dao động.
 - [x] 1.3 — C1: đọc `.docx` (text, heading, bảng), giữ vị trí — **XONG 2026-09-03.**
       **→ `src/ingestion/docx_reader.py` + `src/ingestion/numbering.py`.**
       → ✅ **Chạy sạch 48/48 bản sizing thật**: 6.178 phần tử · 870 bảng · 767 ảnh
@@ -453,8 +466,47 @@
       trị mặc định phỏng đoán.
       → ✅ `scope_keys()` sinh đúng lượt chấm cho `he_thong` / `phan_he` /
       `phan_he_x_cong_nghe_luu_tru`; `get()` ưu tiên phân hệ rồi lùi về cấp tài liệu.
-- [ ] 🔴 1.7 — C3: trích trường bằng structured output.
-      Phần **đo độ chính xác** BỊ CHẶN bởi 0.13 (không có tập phát triển)
+- [x] 1.7 — C3: trích trường bằng structured output — **XONG 2026-09-04** (phần code).
+      **→ `src/extraction/plan.py` + `src/extraction/extractor.py`** · **19 unit test**
+      (`tests/test_extraction.py`), tổng **109 test** qua, chạy offline bằng transport giả.
+      → ✅ **Danh sách trường phải trích SUY TỪ `rules.yaml`, không hard-code** (NT3):
+      **237 tham số** đọc ra từ `inputs` + `compare_with`. Thêm quy tắc mới thì C3 tự
+      biết phải trích thêm gì, không phải sửa Python.
+      → ✅ **Phát hiện: `unit` trong `rules.yaml` đang gánh HAI VAI** — vừa là đơn vị đo
+      (`GB`, `IOPS`, `%`) vừa là **kiểu dữ liệu** (`đúng/sai` = boolean với 28 tham số;
+      `ao_hoa | vat_ly | bare_metal` = enum với 17 tham số). Không tách thì C3 sẽ hỏi
+      model *"IOPS của `co_duong_ra_public` là bao nhiêu"*. Tách ngay tại chỗ đọc dữ
+      liệu, không rải `if` khắp nơi. Còn lại **192 tham số kiểu số**.
+      → ✅ **Model trả NGUYÊN VĂN, code mới ra số.** Không nhận `85.0` mà nhận `"85%"`,
+      rồi `numbers.py` quyết định. Lý do: *"1.500"* là 1500 hay 1,5 là **quyết định dưới
+      sự mơ hồ**, mà 1.4 đã dựng cả thang suy luận có cờ `ambiguous` cho đúng việc đó —
+      để model trả thẳng số là đi vòng qua thang ấy và âm thầm chọn một cách đọc. 1.2 đo
+      được model đọc đúng 12/12 nhưng 12 mẫu không phải căn cứ để giao việc (NT1).
+      Đổi lại còn được `raw` — thứ NT2 cần để dẫn nguồn.
+      → ✅ **Cổng chống bịa: trích dẫn phải NEO ĐƯỢC vào tài liệu.** Model trả kèm câu
+      chứa giá trị; code tìm lại câu đó trong `DocxDocument`, **không thấy thì bỏ giá
+      trị** và đếm vào `khong_neo_duoc`. Một con số không tìm lại được trong văn bản thì
+      không có căn cứ (NT2) và finding dựng trên nó sẽ dẫn người dùng tới chỗ không tồn
+      tại. Kiểm trên tài liệu thật: câu có thật → neo được · câu bịa → bị loại.
+      → ✅ **Enum chỉ lấy khi tài liệu NÊU RÕ** — mọi enum có giá trị hợp lệ `khong_neu`,
+      và `loai_sizing` còn phải neo được câu dẫn mới nhận. Trực tiếp từ phép đo 1.2
+      (nêu rõ 6/6 đúng · phải suy ra 3/6 và ba model phân kỳ).
+      → ✅ **Quy đổi về đúng đơn vị quy tắc dùng**: `"1,5 TB"` cho tham số khai `GB` →
+      **1536**, không phải 1,5. Khác NHÓM đơn vị (khai `GB`, tài liệu ghi `Mbps`) →
+      `value=None` + lý do, KHÔNG đưa số sai đơn vị cho C4 (NT4).
+      → ✅ Tự bắt một lỗi mình gây ra: ngữ cảnh gửi model có tiền tố `[Mục IV.1, trang 8]`,
+      model hay chép cả tiền tố vào câu trích → tự làm hỏng cổng neo của chính mình.
+      Đã cắt tiền tố trước khi so, có test hồi quy.
+      → 📏 **Chi phí đo được**: 31 lượt gọi cho tài liệu 1 phân hệ · 63 với 3 phân hệ ·
+      95 với 5 phân hệ (~2,6–7,9 phút ở 5s/lượt). Nhóm to cắt nhỏ ≤18 trường/lượt để
+      một lỗi validate không huỷ cả 55 trường của nhóm `STO`.
+      → 📏 Ngữ cảnh: bản lớn nhất trong 47 bản thật là **37k ký tự**, trần đặt 60k →
+      **không bản nào bị cắt**. Trần là lưới an toàn, không phải ràng buộc đang siết.
+      → ⬜ **CHƯA ĐO trên tài liệu thật** — cần model, chạy bằng
+      `scripts/try_c3_on_dossier.py` trong mạng công ty. Con số phải nhìn đầu tiên là
+      **`không neo được`**: trên dữ liệu giả bằng 0, trên tài liệu thật chưa ai biết, và
+      nó quyết định cổng chống bịa dùng được hay phải nới.
+      → ⬜ Đo **độ chính xác** vẫn thuộc 1.13 (eval harness trên tập DEV).
 - [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**
       **→ `src/validators/rules_loader.py`.** Nạp 151 quy tắc + 46 hằng số, kiểm bất
       biến (mã trùng, `see_also` trỏ vào mã không có thật), lọc theo loại/vòng/scope.
@@ -503,7 +555,43 @@
 
 ### Tuần 3 — Kiểm tra định tính & giao diện thử
 - [ ] 1.11 — Dựng RAG: chia nhỏ tài liệu tiêu chí, sinh embedding, nạp Qdrant
-- [ ] 1.12 — C5: kiểm định tính, BẮT BUỘC trích dẫn quy tắc
+- [x] 1.12 — C5: kiểm định tính, BẮT BUỘC trích dẫn quy tắc — **XONG 2026-09-04.**
+      **→ `src/validators/qualitative.py`** · **17 unit test** (`tests/test_qualitative.py`),
+      tổng **126 test** qua, chạy offline bằng transport giả, dùng bộ quy tắc THẬT.
+      → ✅ **Làm TRƯỚC 1.11 vì C5 KHÔNG cần RAG.** Khảo sát khi bắt đầu: cả **50 quy tắc
+      định tính đã có sẵn `criteria`** (thế nào là đạt) và **`source_doc`** (trích dẫn kèm
+      số trang) trong `rules.yaml`, **30 quy tắc có `examples` với ca pass/fail**. Căn cứ
+      NT2 nằm sẵn trong dữ liệu; RAG là để lấy THÊM ngữ cảnh, không phải điều kiện tiên
+      quyết. (1.11 còn đang vướng: `sentence-transformers` + `qdrant-client` chưa cài.)
+      → ✅ **Ví dụ pass/fail làm few-shot, lấy thẳng từ `rules.yaml`** — không tự viết ví
+      dụ trong code (NT3), nên ví dụ không trôi khỏi quy tắc khi quy tắc đổi.
+      → ✅ **Căn cứ BẤT ĐỐI XỨNG, có chủ ý.** Phía quy tắc luôn có, lấy từ `rules.yaml`
+      (`rule_quote` = `criteria`, `source_doc`) — **model không được tự nghĩ ra tiêu chí**.
+      Phía tài liệu thì model trích và code phải neo lại được. Nhưng **"không đạt" thường
+      là do THIẾU, mà cái thiếu thì không trích dẫn được** — nên C5 KHÔNG đòi trích dẫn
+      tài liệu cho kết luận không đạt (`rule_ref` + `rule_quote` đã đủ NT2). Đòi trích dẫn
+      cho ca thiếu sẽ làm C5 bỏ sót đúng loại lỗi mà Vòng 1 sinh ra để bắt.
+      → ✅ **Ngược lại: model đưa trích dẫn mà code KHÔNG neo được ⇒ huỷ kết luận**, hạ
+      xuống "không xác định" (`confidence: thap`). Dẫn một đoạn không có trong tài liệu là
+      dấu hiệu bịa, không phải bằng chứng.
+      → ✅ **`applies_when` do CODE quyết định, không hỏi model** — dùng chung
+      **`src/validators/expressions.py`** (tách ra từ `quantitative.py`, vì 21/50 quy tắc
+      định tính cũng có `applies_when`; chép đôi sẽ tạo hai bản dễ trôi khỏi nhau).
+      Thiếu đầu vào để biết quy tắc có áp dụng hay không thì **báo "không đánh giá được",
+      KHÔNG đoán là có áp dụng** — đoán sai sẽ cảnh báo về phần người dùng chưa viết tới
+      (rủi ro R6). Ca này còn **không tốn lời gọi model nào**.
+      → ✅ **Vòng 1 trượt sinh đúng nhóm `thieu_muc`** — chính là nhóm luật chặn của C7
+      dựa vào. **Có test mạch thật C5 → C7**: `EVD-16` (Vòng 1, `CL-2.9`) trượt thì
+      finding `EVD-10` (Vòng 2, cùng `CL-2.9`) bị dời sang phần "Tạm hoãn". Đây là lý do
+      1.12 đáng làm sớm: C7 viết xong luật chặn từ 1.10 nhưng tới giờ **chưa có gì nuôi nó
+      ngoài dữ liệu demo**.
+      → ✅ **Cổng neo dùng chung** `src/ingestion/anchor.py` (tách từ C3) — cả C3 và C5
+      đều phải trả lời cùng một câu: *đoạn này có thật trong tài liệu không?*
+      → 📏 **Chi phí**: 48 lượt gọi cho tài liệu 1 phân hệ · 84 với 3 · 120 với 5.
+      **Riêng Vòng 1 chỉ 18 / 36 / 54 lượt** (`run(chi_vong=1)`) — rẻ hơn nhiều và đúng
+      thứ C7 cần nhất.
+      → ⬜ **CHƯA đo trên tài liệu thật** (cần model). Con số phải nhìn là
+      **`trích dẫn không neo được`**, cùng loại rủi ro với C3.
 - [ ] 🔴 1.13 — ~~Eval harness~~ **BỊ CHẶN bởi 0.13** — chưa có eval set
       → nhãn neo theo vị trí **trong web app**, bản sizing là **file Word rời** →
       phải so khớp qua ánh xạ mục Word ↔ tab web, không so khớp trực tiếp.
@@ -666,6 +754,12 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-03 | **`role: lookup` trong `rules.yaml` đang gánh HAI vai khác nhau** | (a) khoá suy ra hằng số Guideline không có trong tài liệu (`loai_o` → `iops_toi_da_loai_o`) — cần bảng tra; (b) cờ bật/tắt quy tắc dùng trong `applies_when` (`co_duong_ra_public`, `co_kiem_thu_hieu_nang`) — chỉ là giá trị trích từ tài liệu, không cần bảng. Bộ nạp coi chung một vai thì chặn nhầm **9 quy tắc vốn chạy được** (81→90). Phân biệt bằng: khoá có xuất hiện trong `applies_when` hay không |
 | 2026-09-03 | ⚠️ **8 quy tắc KHÔNG chạy được vì bảng tra chỉ nằm trong `note` dạng văn xuôi** — chưa vá, cần người dùng duyệt | `STO-02/03/09/13` (IOPS theo loại ổ, write penalty theo RAID), `CPU-10`, `BAK-07` (thế hệ LTO), `LAN-02`, `RCK-01` (RU theo loại thiết bị). Bảng đang viết kiểu *"NL-SAS 100 · SAS 10k 140 · SSD từ 5000"* trong `note`, máy không đọc được. **Chép bảng vào Python sẽ vi phạm NT3**, nên C4 chỉ đánh dấu `khong_kiem_chung_duoc` kèm lý do và đề nghị bổ sung mục `lookup:` vào `rules.yaml`. Sửa `rules.yaml` là việc cần duyệt |
 | 2026-09-03 | **C4 báo LÝ DO cho mọi quy tắc không chạy được, không im lặng bỏ qua** | Một quy tắc bị bỏ qua âm thầm sẽ làm hụt recall mà không ai biết vì sao — nguy hiểm hơn một finding sai, vì nó không để lại dấu vết nào để lần ra |
+| 2026-09-04 | **C5 (1.12) làm TRƯỚC 1.11 vì C5 không cần RAG** | Cả 50 quy tắc định tính đã có `criteria` + `source_doc` trong `rules.yaml`, nên căn cứ NT2 nằm sẵn trong dữ liệu. RAG chỉ để lấy thêm ngữ cảnh. Cộng thêm: 1.11 cần `sentence-transformers` (kéo torch ~2GB) chưa cài, còn C5 cấp đúng thứ C7 đang thiếu — nguồn finding Vòng 1 |
+| 2026-09-04 | **C5: "không đạt" KHÔNG bị đòi trích dẫn tài liệu; nhưng trích dẫn có mà neo không được thì HUỶ kết luận** | Căn cứ bất đối xứng: phía quy tắc luôn có (`rules.yaml`), phía tài liệu thì cái THIẾU không trích dẫn được. Đòi trích dẫn cho ca thiếu sẽ làm C5 bỏ sót đúng loại lỗi Vòng 1 sinh ra để bắt. Ngược lại, dẫn một đoạn không có thật là dấu hiệu bịa, không phải bằng chứng |
+| 2026-09-04 | **C3 (1.7): model trả NGUYÊN VĂN, code mới quyết định con số** | *"1.500"* là 1500 hay 1,5 là quyết định dưới sự mơ hồ; 1.4 đã dựng thang suy luận có cờ `ambiguous` cho đúng việc đó. Để model trả thẳng số là đi vòng qua thang ấy và âm thầm chọn một cách đọc — sai một lần lệch 1000 lần (NT1). Đổi lại còn được `raw` cho NT2 |
+| 2026-09-04 | **C3 (1.7): giá trị không NEO được vào tài liệu thì BỎ, không dùng** | Cổng chống bịa. Số không tìm lại được trong văn bản thì không có căn cứ (NT2), và finding dựng trên nó dẫn người dùng tới chỗ không tồn tại. Thà thiếu còn hơn sai — đúng thứ tự ưu tiên "chính xác hơn độ phủ" |
+| 2026-09-04 | **C3 (1.7): danh sách 237 trường phải trích SUY TỪ `rules.yaml`, không hard-code** | NT3: thêm quy tắc lẽ ra chỉ phải sửa `rules.yaml`. Kèm phát hiện `unit` đang gánh hai vai (đơn vị đo ↔ kiểu dữ liệu: 28 bool, 17 enum, 192 số) — không tách thì C3 hỏi model những câu vô nghĩa |
+| 2026-09-04 | **C3 (1.7): `loai_sizing` và mọi enum có `applies_when` phụ thuộc CHỈ lấy khi tài liệu nêu tường minh; mơ hồ ⟹ `None` + finding `PRC-11`, không suy diễn** | Đo thật ở 1.2: khi mục đích sizing được nêu rõ, cả 3 model đúng **6/6**; khi phải suy ra thì chỉ **3/6** và ba model phân kỳ. `loai_sizing` quyết định `applies_when` của `MTH-01..04`, nên đọc sai làm **chạy nhầm cả nhóm quy tắc phương pháp** cho toàn tài liệu — không phải hỏng một finding. Xác nhận độc lập rằng `PRC-11` (thêm 2026-09-03) bảo vệ đúng chỗ dễ sai nhất |
 | 2026-09-04 | **C7 (1.10): nhãn hiển thị + thứ tự checklist là DỮ LIỆU trong `config/report_labels.yaml`, không hard-code** | Tinh thần NT3: người nghiệp vụ sửa được tên phần/mức độ và **thứ tự checklist** (`checklist_order`, 37 mã, khối chung `CL-3.x.N` trước 3 mục riêng Database) mà không đụng Python. Code chỉ nạp; thiếu khoá thì lùi về `_FALLBACK` an toàn để báo cáo không vỡ |
 | 2026-09-04 | **C7 tách Vòng 2 thành "chưa đạt" và "chưa kiểm được"; `khong_kiem_chung_duoc` ở Vòng 1 KHÔNG chặn Vòng 2** | Không tách thì tài liệu rỗng ra ~100 dòng "thiếu thông tin" nhấn chìm phần có ý nghĩa (đã kiểm bằng `demo_report.py`). Chỉ `thieu_muc`/`thieu_thong_tin` ở Vòng 1 mới chặn Vòng 2 — "không biết" (số lưỡng nghĩa, ảnh chưa đọc) ≠ "thiếu", coi như thiếu sẽ chặn oan các kiểm tra vốn chạy được |
 | 2026-09-04 | **Luật chặn Vòng 2 khớp phạm vi phân cấp**: trượt `he_thong` chặn mọi `scope_key`; trượt phân hệ "App" chặn cả "App" và "App/SSD" | Đúng mô hình `scope` đã chốt 2026-08-25 (`he_thong` / `phan_he` / `phan_he_x_cong_nghe_luu_tru`). Nếu chỉ khớp `scope_key` bằng nhau thì fail Vòng 1 ở phân hệ sẽ bỏ sót các kiểm Vòng 2 ở cấp công nghệ lưu trữ của chính phân hệ đó |

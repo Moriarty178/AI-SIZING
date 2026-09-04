@@ -17,21 +17,12 @@ Bốn tình huống và cách xử lý, đều theo NT4 (xuống cấp có kiể
 """
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-
-from asteval import Interpreter
 
 from ..extraction.schema import ExtractedValue, SizingCore
 from ..reporting.finding import Finding
+from .expressions import SAFE_FUNCS, danh_gia, thu_thap
 from .rules_loader import Rule, RuleSet, load_rules
-
-# Hàm số học cho phép trong biểu thức. Cố ý hẹp: quy tắc chỉ cần tính toán,
-# không cần đọc file hay gọi hàm hệ thống.
-SAFE_FUNCS = {
-    "min": min, "max": max, "abs": abs, "round": round, "pow": pow,
-    "ceil": math.ceil, "floor": math.floor, "sqrt": math.sqrt, "sum": sum,
-}
 
 
 @dataclass
@@ -50,54 +41,14 @@ class QuantitativeValidator:
         self.rules = rules or load_rules()
 
     # ------------------------------------------------------------------
-    def _interp(self) -> Interpreter:
-        # `asteval` mặc định cho phép nhiều thứ; siết về đúng số học cần dùng.
-        a = Interpreter(usersyms=dict(SAFE_FUNCS), no_print=True, no_import=True,
-                        no_delete=True, no_raise=True)
-        return a
-
+    # Hai hàm dưới chỉ còn là vỏ mỏng quanh `expressions` — dùng chung với C5, vì
+    # 21/50 quy tắc định tính cũng có `applies_when`.
     def _eval(self, expr: str, env: dict) -> tuple[object, str]:
-        """(giá trị, lỗi). Không ném exception ra ngoài — lỗi thành finding."""
-        a = self._interp()
-        for k, v in env.items():
-            a.symtable[k] = v
-        try:
-            val = a(expr)
-        except Exception as e:               # pragma: no cover - asteval nuốt phần lớn
-            return None, f"{type(e).__name__}: {e}"
-        if a.error:
-            return None, "; ".join(str(e.get_error()[1]) for e in a.error)[:200]
-        return val, ""
+        return danh_gia(expr, env)
 
-    # ------------------------------------------------------------------
     def _collect(self, rule: Rule, doc: SizingCore, scope_key: str
                  ) -> tuple[dict, list[str], list[ExtractedValue]]:
-        """(môi trường biến, tên đầu vào thiếu, đầu vào lưỡng nghĩa)."""
-        env: dict = dict(self.rules.globals)
-        missing: list[str] = []
-        ambiguous: list[ExtractedValue] = []
-
-        for inp in rule.inputs:
-            ev = doc.get(inp.name, scope_key)
-            if ev is None or ev.missing:
-                if inp.default is not None:
-                    env[inp.name] = inp.default
-                elif inp.required:
-                    missing.append(inp.name)
-                continue
-            env[inp.name] = ev.value
-            if ev.ambiguous:
-                ambiguous.append(ev)
-
-        if rule.compare_with:
-            ev = doc.get(rule.compare_with, scope_key)
-            if ev is None or ev.missing:
-                missing.append(rule.compare_with)
-            else:
-                env[rule.compare_with] = ev.value
-                if ev.ambiguous:
-                    ambiguous.append(ev)
-        return env, missing, ambiguous
+        return thu_thap(rule, doc, scope_key, self.rules.globals)
 
     def _location(self, rule: Rule, doc: SizingCore, scope_key: str) -> str:
         for inp in rule.inputs:
