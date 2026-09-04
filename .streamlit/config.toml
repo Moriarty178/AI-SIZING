@@ -1,0 +1,17 @@
+# Cấu hình Streamlit cho giao diện thử (1.14).
+#
+# Hai mặc định của Streamlit KHÔNG hợp với công cụ này, cả hai đều liên quan tới việc
+# nó xử lý hồ sơ định cỡ nội bộ của đơn vị:
+#
+# 1. Streamlit mặc định lắng nghe trên MỌI card mạng. Lần chạy thử đầu (2026-09-04) nó
+#    in ra "External URL: http://1.53.203.54:8899" — tức bất kỳ ai trong cùng mạng, và
+#    tuỳ cấu hình NAT là cả bên ngoài, đều mở được trang đang chứa hồ sơ vừa tải lên.
+#    Buộc về `localhost`: đây là công cụ chạy trên máy cá nhân, không phải dịch vụ.
+# 2. Streamlit mặc định gửi thống kê sử dụng ra ngoài. Tắt.
+
+[server]
+address = "localhost"
+headless = true
+
+[browser]
+gatherUsageStats = false
