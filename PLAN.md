@@ -559,7 +559,24 @@
       câu hỏi khác. Cổng dựa trên *căn cứ* không phân biệt được loại lỗi này.
       → 🔴 **Nguyên nhân gốc:** C3 hỏi *"điền 18 tham số có tên này"* và model đáp lại
       bằng cách **đi tìm 18 con số**, thay vì kiểm xem tài liệu có thật sự nêu tham số đó
-      không. Cần đổi cách hỏi — **chờ người dùng chốt hướng** (xem mục "Cần duyệt").
+      không.
+      → ✅ **HƯỚNG A đã chốt và triển khai 2026-09-04 — hỏi theo BẢNG.**
+      **(1) Bảng vẽ lại thành lưới, giữ hàng tiêu đề.** C1 giữ `rows` cho **21/21 bảng**
+      của BCCS3 nhưng C3 chỉ gửi `e.text` đã làm phẳng — tức **vứt đúng thứ cho biết con
+      số nào là gì**. Bảng Database ghi rõ `CPU (Cint) | RAM (GB)`; mất cấu trúc đó thì
+      `48` và `500` thành hai con số trần. Ngữ cảnh chỉ phình 7% (9.135 → 9.775 ký tự).
+      **(2) Model chỉ NÓI con số ở cột nào, CODE tự đọc ô.** Thêm trường `tieu_de_cot`;
+      code tìm bảng có cột đó rồi kiểm giá trị có nằm đúng cột không. Model không đặt
+      được một con số vào cột nó không thuộc về, và **không tự gõ ra con số nào**.
+      **(3) Cắt ngữ cảnh theo KHOẢNG PHẦN TỬ giữa hai phân hệ**, không theo `section`.
+      Cắt theo mục vô dụng ở đây: cả 13 phân hệ đều nằm trong mục III, nên `Firewall`
+      vẫn nhìn thấy bảng của `Database`.
+      **(4) Cột nguồn hiện trong `note`** (*"lấy từ cột «CPU (Cint)» của bảng #29"*) để
+      người đọc tự thấy khi con số đúng thật nhưng trả lời **nhầm câu hỏi** — loại lỗi
+      không cổng tự động nào phân biệt được, nên phải để người nhìn.
+      → ⬜ **Chưa đo lại trên tài liệu thật** — cần chạy lại `try_c3_on_dossier.py`.
+      Con số phải nhìn là **`lấy từ ô bảng`** (càng cao càng tốt) so với
+      **`cột không có thật`** + **`giá trị không nằm trong cột khai`**.
       → ⚠️ **1.7 tick `[x]` là cho phần CODE. Chất lượng trích xuất CHƯA đạt**; đừng coi
       C3 là dùng được cho tới khi có hướng xử lý (a)(b) ở trên.
 - [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**

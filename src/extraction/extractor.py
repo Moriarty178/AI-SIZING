@@ -59,10 +59,18 @@ MIN_KY_TU_NGU_CANH_HEP = 400
 class GiaTriSo(BaseModel):
     gia_tri_nguyen_van: str = Field(
         description="Nguyên văn giá trị trong tài liệu, GIỮ NGUYÊN dấu chấm/phẩy và "
-                    "đơn vị, ví dụ '1.500 GB'. Chuỗi rỗng nếu tài liệu không nêu.")
+                    "đơn vị, ví dụ '1.500 GB'. CHỈ giá trị, không kèm câu chữ. "
+                    "Chuỗi rỗng nếu tài liệu không nêu.")
     cau_chua: str = Field(
         description="Nguyên văn câu hoặc dòng bảng chứa giá trị, chép đúng từng chữ. "
                     "Chuỗi rỗng nếu tài liệu không nêu.")
+    # Mặc định rỗng: giá trị lấy từ ĐOẠN VĂN vốn không có tiêu đề cột, nên bắt model
+    # phải phát ra chuỗi rỗng cho mọi ca đó chỉ tốn token vô ích.
+    tieu_de_cot: str = Field(
+        default="",
+        description="Nếu giá trị lấy từ BẢNG: tiêu đề cột chứa nó, chép NGUYÊN VĂN từ "
+                    "hàng tiêu đề (ví dụ 'CPU (Cint)', 'RAM (GB)'). Rỗng nếu giá trị "
+                    "nằm trong đoạn văn chứ không phải bảng.")
 
 
 class GiaTriBool(BaseModel):
@@ -135,6 +143,9 @@ class ThongKe:
     khong_phai_gia_tri: int = 0     # model trả cả một CÂU thay vì một giá trị
     ngoai_khoang_hop_le: int = 0    # 500% cho một trường đơn vị `%`
     gia_tri_khong_co_trong_cau: int = 0
+    cot_khong_co_that: int = 0      # model khai tiêu đề cột không tồn tại
+    gia_tri_khong_trong_cot: int = 0  # giá trị không nằm trong cột model khai
+    lay_tu_bang: int = 0            # lấy được đúng ô bảng — ca đáng tin nhất
     loi: list[str] = field(default_factory=list)
 
     def tom_tat(self) -> str:
@@ -146,7 +157,10 @@ class ThongKe:
                 f"{self.luong_nghia} lưỡng nghĩa · "
                 f"{self.khong_phai_gia_tri} không phải giá trị · "
                 f"{self.ngoai_khoang_hop_le} ngoài khoảng hợp lệ · "
-                f"{self.gia_tri_khong_co_trong_cau} giá trị không có trong câu")
+                f"{self.gia_tri_khong_co_trong_cau} giá trị không có trong câu · "
+                f"{self.lay_tu_bang} lấy từ ô bảng · "
+                f"{self.cot_khong_co_that} cột không có thật · "
+                f"{self.gia_tri_khong_trong_cot} giá trị không nằm trong cột khai")
 
 
 class Extractor:
@@ -175,11 +189,40 @@ class Extractor:
             self.on_tien_do(self.tk.luot_goi, tong, nhan)
 
     # -------------------------------------------------------------- ngữ cảnh
-    def ngu_canh(self, doc: DocxDocument, section: str = "") -> str:
+    def _ve_phan_tu(self, e: Element) -> str:
+        """Bảng vẽ lại thành LƯỚI, giữ hàng tiêu đề.
+
+        C1 giữ `rows` cho cả 21/21 bảng của BCCS3, nhưng C3 trước đây chỉ gửi `e.text`
+        đã làm phẳng — tức vứt đúng thứ cho biết con số nào là gì. Bảng Database ghi rõ
+        `CPU (Cint) | RAM (GB)`; mất cấu trúc đó thì `48` và `500` thành hai con số
+        trần, và model gán chúng cho bất kỳ tham số nào được hỏi.
+        """
+        if e.kind == "table" and e.rows:
+            dong = [" | ".join(o or "" for o in h) for h in e.rows]
+            return (f"[BẢNG #{e.index} · {e.location}]\n"
+                    + "\n".join(f"  | {d} |" for d in dong))
+        return f"[{e.location}] {e.text}"
+
+    def ngu_canh(self, doc: DocxDocument, section: str = "",
+                 khoang: tuple[int, int] | None = None) -> str:
         els = doc.by_section(section) if section else doc.elements
-        dong = [f"[{e.location}] {e.text}" for e in els if e.text]
-        s = "\n".join(dong)
-        return s[:MAX_KY_TU_NGU_CANH]
+        if khoang:
+            els = [e for e in els if khoang[0] <= e.index < khoang[1]]
+        dong = [self._ve_phan_tu(e) for e in els if e.text or e.rows]
+        return "\n".join(dong)[:MAX_KY_TU_NGU_CANH]
+
+    def khoang_phan_he(self, core: SizingCore, ph: SizingExtension,
+                       het: int) -> tuple[int, int] | None:
+        """Khoảng phần tử thuộc về một phân hệ: từ chỗ nó được nhắc tới đến phân hệ kế.
+
+        Cắt theo `section` không đủ — ở BCCS3 cả 13 phân hệ nằm trong mục III, nên
+        `Firewall` vẫn nhìn thấy bảng của `Database` và lấy nhầm số của nó.
+        """
+        if ph.element_index is None:
+            return None
+        sau = sorted(x.element_index for x in core.phan_he
+                     if x.element_index is not None and x.element_index > ph.element_index)
+        return (ph.element_index, sau[0] if sau else het)
 
     # ------------------------------------------------------------------ neo
     def neo(self, doc: DocxDocument, cau: str, gia_tri: str
@@ -187,6 +230,33 @@ class Extractor:
         """Tìm lại câu model trích trong tài liệu. (phần tử, cách neo)."""
         el, i = _neo_doc(doc, cau, gia_tri)
         return el, ("câu", "giá trị")[i] if i >= 0 else ""
+
+    def o_trong_cot(self, doc: DocxDocument, tieu_de: str, raw: str,
+                    khoang: tuple[int, int] | None = None
+                    ) -> tuple[Element | None, str]:
+        """Tìm bảng có cột `tieu_de` và chứa `raw` trong đúng cột đó.
+
+        Trả `(phần tử bảng, lý do hỏng)`. Đây là đường tin cậy nhất: model chỉ NÓI
+        con số nằm ở cột nào, còn code tự đọc ô — nên model không đặt được một con số
+        vào một cột nó không thuộc về.
+        """
+        td, gt = _chuan(tieu_de), _chuan(raw)
+        thay_cot = False
+        for e in doc.elements:
+            if e.kind != "table" or not e.rows or len(e.rows) < 2:
+                continue
+            if khoang and not (khoang[0] <= e.index < khoang[1]):
+                continue
+            dau = [_chuan(o or "") for o in e.rows[0]]
+            cot = next((i for i, h in enumerate(dau) if h and (h == td or td in h)), None)
+            if cot is None:
+                continue
+            thay_cot = True
+            for hang in e.rows[1:]:
+                if cot < len(hang) and gt and gt in _chuan(hang[cot] or ""):
+                    return e, ""
+        return None, ("giá trị không nằm trong cột đã khai" if thay_cot
+                      else "không bảng nào có cột đó")
 
     # ------------------------------------------------------- dựng giá trị --
     def _so(self, t: ThamSo, raw: str, ev: ExtractedValue) -> ExtractedValue | None:
@@ -254,8 +324,8 @@ class Extractor:
                 ev.note, f"quy đổi {pn.value:g} {q.unit} → {ev.value:g} {dv_qt}") if x)
         return ev
 
-    def dung_gia_tri(self, doc: DocxDocument, t: ThamSo, o: BaseModel
-                     ) -> ExtractedValue | None:
+    def dung_gia_tri(self, doc: DocxDocument, t: ThamSo, o: BaseModel,
+                     khoang: tuple[int, int] | None = None) -> ExtractedValue | None:
         """Một trường model trả về → `ExtractedValue`, hoặc None nếu không dùng được."""
         cau = getattr(o, "cau_chua", "") or ""
         tho = getattr(o, "gia_tri_nguyen_van", None)
@@ -270,6 +340,26 @@ class Extractor:
         if t.kieu == "so" and not _co_ve_la_gia_tri(raw, self.units.chuoi_gia_tri):
             self.tk.khong_phai_gia_tri += 1
             return None
+
+        # Đường BẢNG đi trước: số liệu trong hồ sơ thật nằm trong bảng (BCCS3 có 21
+        # bảng), và ở đó ta kiểm được con số có đúng cột hay không.
+        cot = (getattr(o, "tieu_de_cot", "") or "").strip()
+        if t.kieu == "so" and cot:
+            el, vi_sao = self.o_trong_cot(doc, cot, raw, khoang)
+            if el is None:
+                if vi_sao.startswith("không bảng"):
+                    self.tk.cot_khong_co_that += 1
+                else:
+                    self.tk.gia_tri_khong_trong_cot += 1
+                return None
+            self.tk.lay_tu_bang += 1
+            ev = ExtractedValue(raw=raw, location=el.location, element_index=el.index,
+                                confidence="cao",
+                                # Cột nguồn hiện trong báo cáo để người đọc tự thấy khi
+                                # con số đúng thật nhưng trả lời NHẦM câu hỏi — loại lỗi
+                                # mà không cổng tự động nào phân biệt được.
+                                note=f"lấy từ cột «{cot}» của bảng #{el.index}")
+            return self._so(t, raw, ev)
 
         el, cach = self.neo(doc, cau, raw)
         if el is None:
@@ -303,7 +393,8 @@ class Extractor:
 
     # ------------------------------------------------------------ một nhóm --
     def trich_nhom(self, doc: DocxDocument, nhom: NhomTrich, dich: SizingCore | SizingExtension,
-                   *, section: str = "", ten_phan_he: str = "") -> None:
+                   *, section: str = "", ten_phan_he: str = "",
+                   khoang: tuple[int, int] | None = None) -> None:
         lop = luoc_do_nhom(nhom)
         with self._khoa:
             self.tk.luot_goi += 1
@@ -313,8 +404,8 @@ class Extractor:
         # Database mà đưa cả 13 phân hệ vào ngữ cảnh là mời model lấy nhầm số của phân
         # hệ khác. Mục quá hẹp (tài liệu viết rải, hoặc C1 không nhận ra số mục) thì lùi
         # về toàn tài liệu — thà chậm còn hơn trích thiếu.
-        nc = self.ngu_canh(doc, section)
-        if section and len(nc) < MIN_KY_TU_NGU_CANH_HEP:
+        nc = self.ngu_canh(doc, section, khoang)
+        if (section or khoang) and len(nc) < MIN_KY_TU_NGU_CANH_HEP:
             nc = self.ngu_canh(doc)
         try:
             kq = self.client.extract(lop, [
@@ -335,7 +426,7 @@ class Extractor:
         # khi chạy song song.
         with self._khoa:
             for t in nhom.tham_so:
-                ev = self.dung_gia_tri(doc, t, getattr(kq, t.name))
+                ev = self.dung_gia_tri(doc, t, getattr(kq, t.name), khoang)
                 if ev is None:
                     continue
                 dich.params[t.name] = ev       # giữ cả note để báo cáo nói được vì sao
@@ -376,7 +467,8 @@ class Extractor:
                 cong_nghe=p.cong_nghe.strip() or None,
                 cong_nghe_luu_tru=clt or None,
                 location=el.location if el else "",
-                muc=el.section if el else ""))
+                muc=el.section if el else "",
+                element_index=el.index if el else None))
         return ra
 
     # ------------------------------------------------------ cấp tài liệu ----
@@ -429,12 +521,14 @@ class Extractor:
 
         tong += sum(len(nhom_ph) + (len(nhom_cn) if ph.cong_nghe_luu_tru else 0)
                     for ph in core.phan_he)
-        viec: list[tuple] = [(nhom, core, "", "", nhom.ten) for nhom in nhom_ht]
+        het = (max(e.index for e in doc.elements) + 1) if doc.elements else 0
+        viec: list[tuple] = [(nhom, core, "", "", None, nhom.ten) for nhom in nhom_ht]
         for ph in core.phan_he:
+            kh = self.khoang_phan_he(core, ph, het)
             for sc, ds in (("phan_he", nhom_ph), ("phan_he_x_cong_nghe_luu_tru", nhom_cn)):
                 if sc == "phan_he_x_cong_nghe_luu_tru" and not ph.cong_nghe_luu_tru:
                     continue
-                viec += [(nhom, ph, ph.muc, ph.ten_phan_he,
+                viec += [(nhom, ph, ph.muc, ph.ten_phan_he, kh,
                           f"{ph.ten_phan_he}/{nhom.ten}") for nhom in ds]
 
         self._chay(doc, viec, tong)
@@ -442,14 +536,15 @@ class Extractor:
 
     def _chay(self, doc: DocxDocument, viec: list[tuple], tong: int) -> None:
         if self.song_song <= 1:
-            for nhom, dich, muc, ten, nhan in viec:
+            for nhom, dich, muc, ten, kh, nhan in viec:
                 self._bao(tong, nhan)
-                self.trich_nhom(doc, nhom, dich, section=muc, ten_phan_he=ten)
+                self.trich_nhom(doc, nhom, dich, section=muc, ten_phan_he=ten,
+                                khoang=kh)
             return
         with ThreadPoolExecutor(max_workers=self.song_song) as pool:
             fut = {pool.submit(self.trich_nhom, doc, nhom, dich, section=muc,
-                               ten_phan_he=ten): nhan
-                   for nhom, dich, muc, ten, nhan in viec}
+                               ten_phan_he=ten, khoang=kh): nhan
+                   for nhom, dich, muc, ten, kh, nhan in viec}
             for f in as_completed(fut):
                 self._bao(tong, fut[f])
                 f.result()                     # lỗi lạ phải nổ ra, không nuốt
@@ -512,5 +607,11 @@ NHAC_NHO = (
     "- Trường nào tài liệu không nêu thì để chuỗi rỗng. TUYỆT ĐỐI không suy đoán, "
     "không lấy giá trị mặc định, không tính từ trường khác.\n"
     "- `cau_chua` phải là câu có THẬT trong tài liệu, chép đúng từng chữ; câu không "
-    "khớp tài liệu sẽ bị loại bỏ."
+    "khớp tài liệu sẽ bị loại.\n"
+    "- Số liệu thường nằm trong BẢNG, được vẽ dưới dạng lưới kèm hàng tiêu đề. Khi lấy "
+    "từ bảng, PHẢI ghi `tieu_de_cot` đúng nguyên văn tiêu đề cột. Giá trị không nằm "
+    "trong cột đó sẽ bị loại.\n"
+    "- Tiêu đề cột cho biết con số LÀ GÌ. Cột 'CPU (Cint)' là năng lực CPU tính bằng "
+    "Cint, KHÔNG phải phần trăm tải CPU. Không có cột nào đúng nghĩa tham số đang hỏi "
+    "thì để trống — phần lớn tham số sẽ để trống, đó là điều bình thường."
 )

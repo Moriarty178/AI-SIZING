@@ -418,3 +418,82 @@ def test_model_tu_nghi_ra_kho_neu_cho_truong_so_thi_coi_la_THIEU():
     ex.trich_nhom(doc, _nhom(t), core)
     assert "so_cpu_vat_ly" not in core.params
     assert ex.tk.khong_doc_duoc_so == 0        # không phải lỗi đọc số, là "không nêu"
+
+
+# ===================== hướng A: hỏi theo BẢNG ==============================
+def _doc_bang():
+    """Bảng thật của phân hệ Database trong BCCS3."""
+    from src.ingestion.docx_reader import DocxDocument, Element
+    rows = [["STT", "Nội dung", "CPU (Cint)", "RAM (GB)", "Ghi chú"],
+            ["1", "Tài nguyên CPU/RAM của 1 node database BCCS 3.0", "48", "500", ""]]
+    return DocxDocument(path="g.docx", page_source="rendered", elements=[
+        Element(index=29, kind="table", text=" | ".join(rows[0]) + "\n" + " | ".join(rows[1]),
+                rows=rows, page=4, section="III")])
+
+
+def _ev(gia_tri, cot="", cau=""):
+    return {"gia_tri_nguyen_van": gia_tri, "cau_chua": cau, "tieu_de_cot": cot}
+
+
+def test_bang_duoc_ve_lai_thanh_LUOI_giu_hang_tieu_de():
+    """C1 giữ `rows` cho 21/21 bảng của BCCS3 nhưng C3 từng chỉ gửi bản làm phẳng —
+    tức vứt đúng thứ cho biết con số nào là gì."""
+    nc = Extractor(FakeLLM({})).ngu_canh(_doc_bang())
+    assert "BẢNG #29" in nc
+    assert "| STT | Nội dung | CPU (Cint) | RAM (GB) | Ghi chú |" in nc
+
+
+def test_lay_dung_o_bang_thi_ghi_ro_COT_NGUON_trong_note():
+    """Model chỉ NÓI con số ở cột nào; code tự đọc ô. Cột nguồn hiện trong báo cáo để
+    người đọc tự thấy khi con số đúng thật nhưng trả lời nhầm câu hỏi."""
+    from src.extraction.schema import SizingCore
+    t = ThamSo(name="cint_rated_1_cpu", kieu="so", unit="points")
+    llm = FakeLLM({"TrichTEST1": {"cint_rated_1_cpu": _ev("48", cot="CPU (Cint)")}})
+    core = SizingCore()
+    ex = Extractor(llm)
+    ex.trich_nhom(_doc_bang(), _nhom(t), core)
+    ev = core.params["cint_rated_1_cpu"]
+    assert ev.value == 48 and ev.element_index == 29
+    assert "CPU (Cint)" in ev.note
+    assert ex.tk.lay_tu_bang == 1
+
+
+def test_khai_cot_KHONG_CO_THAT_thi_bi_loai():
+    from src.extraction.schema import SizingCore
+    t = ThamSo(name="cpu_95th", kieu="so", unit="%")
+    llm = FakeLLM({"TrichTEST1": {"cpu_95th": _ev("48", cot="Tải CPU 95th (%)")}})
+    core = SizingCore()
+    ex = Extractor(llm)
+    ex.trich_nhom(_doc_bang(), _nhom(t), core)
+    assert "cpu_95th" not in core.params
+    assert ex.tk.cot_khong_co_that == 1
+
+
+def test_gia_tri_khong_nam_trong_COT_da_khai_thi_bi_loai():
+    """Ca thật: `500` là RAM (GB) nhưng bị gán cho một tham số rồi khai cột CPU."""
+    from src.extraction.schema import SizingCore
+    t = ThamSo(name="cint_rated_1_cpu", kieu="so", unit="points")
+    llm = FakeLLM({"TrichTEST1": {"cint_rated_1_cpu": _ev("500", cot="CPU (Cint)")}})
+    core = SizingCore()
+    ex = Extractor(llm)
+    ex.trich_nhom(_doc_bang(), _nhom(t), core)
+    assert "cint_rated_1_cpu" not in core.params
+    assert ex.tk.gia_tri_khong_trong_cot == 1
+
+
+def test_khoang_phan_he_chan_lay_so_cua_phan_he_khac():
+    """Ca thật: `Firewall` lấy `kich_thuoc_ban_ghi_byte = 500` từ bảng của `Database`.
+    Cắt theo `section` không cứu được vì cả 13 phân hệ đều ở mục III."""
+    from src.extraction.schema import SizingCore, SizingExtension
+    doc = _doc_bang()
+    core = SizingCore(phan_he=[
+        SizingExtension(ten_phan_he="Database", muc="III", element_index=20),
+        SizingExtension(ten_phan_he="Firewall", muc="III", element_index=100)])
+    ex = Extractor(FakeLLM({}))
+    assert ex.khoang_phan_he(core, core.phan_he[0], 200) == (20, 100)
+    assert ex.khoang_phan_he(core, core.phan_he[1], 200) == (100, 200)
+    # bảng #29 thuộc Database, nằm NGOÀI khoảng của Firewall
+    el, vi_sao = ex.o_trong_cot(doc, "RAM (GB)", "500", khoang=(100, 200))
+    assert el is None and "không bảng nào" in vi_sao
+    el2, _ = ex.o_trong_cot(doc, "RAM (GB)", "500", khoang=(20, 100))
+    assert el2 is not None
