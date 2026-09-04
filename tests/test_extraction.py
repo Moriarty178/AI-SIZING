@@ -521,3 +521,55 @@ def test_khong_neu_cho_cong_nghe_luu_tru_thi_KHONG_chay_them_scope():
     assert ph[0].cong_nghe_luu_tru is None
     from src.extraction.schema import SizingCore
     assert SizingCore(phan_he=ph).scope_keys("phan_he_x_cong_nghe_luu_tru") == []
+
+
+# ============ v5: một ô một tham số + neo phân hệ theo số hiệu bảng =========
+def test_mot_O_bi_NHIEU_tham_so_cung_nhan_thi_BO_HET():
+    """Ca thật 2026-09-04 18:51: ô `#93 = 16` của DBIN/FTP được **9 tham số** cùng
+    nhận làm nguồn. Khi 9 tham số cùng trỏ một ô thì không có căn cứ chọn cái đúng —
+    giữ lại cái nào cũng là đoán."""
+    from src.extraction.schema import ExtractedValue, SizingExtension
+    ph = SizingExtension(ten_phan_he="DBIN và FTP")
+    for ten in ("cint_rated_1_cpu", "core_danh_cho_hdh", "cpu_95th", "datanode_95th"):
+        ph.params[ten] = ExtractedValue(value=16, raw="16", element_index=93,
+                                        location="Mục III")
+    ph.params["rieng"] = ExtractedValue(value=60, raw="60", element_index=95,
+                                        location="Mục III")
+    ex = Extractor(FakeLLM({}))
+    assert ex.loc_o_bi_nhieu_tham_so(ph) == 4
+    assert all(ph.params[t].value is None for t in
+               ("cint_rated_1_cpu", "core_danh_cho_hdh", "cpu_95th", "datanode_95th"))
+    assert "còn được 3 tham số khác nhận" in ph.params["cpu_95th"].note
+    assert ph.params["rieng"].value == 60          # ô chỉ một tham số nhận thì giữ
+
+
+def test_hai_tham_so_lay_tu_HAI_O_khac_nhau_thi_deu_giu():
+    from src.extraction.schema import ExtractedValue, SizingExtension
+    ph = SizingExtension(ten_phan_he="Maxscale")
+    ph.params["a"] = ExtractedValue(value=10, raw="10", element_index=37)
+    ph.params["b"] = ExtractedValue(value=60, raw="60", element_index=37)
+    assert Extractor(FakeLLM({})).loc_o_bi_nhieu_tham_so(ph) == 0
+    assert ph.params["a"].value == 10 and ph.params["b"].value == 60
+
+
+def test_neo_phan_he_theo_SO_HIEU_BANG_khi_ten_khong_khop_tai_lieu():
+    """Lượt 18:51 mất neo 3/10 phân hệ vì model trả tên mô tả dài không có nguyên văn
+    trong tài liệu — mất neo là mất luôn giới hạn khoảng."""
+    doc = _doc_bang()
+    llm = FakeLLM({"DanhSachPhanHe": {"phan_he": [{
+        "ten_phan_he": "Các module vệ tinh, monitor (Birt report, VSA, MariaDB)",
+        "cong_nghe": "", "cong_nghe_luu_tru": "khong_neu", "muc": "",
+        "bang_cau_hinh": 29}]}})
+    ph = Extractor(llm).nhan_dien_phan_he(doc)
+    assert len(ph) == 1
+    assert ph[0].element_index == 29        # neo được nhờ số hiệu bảng
+    assert ph[0].muc == "III"
+
+
+def test_so_hieu_bang_khong_co_that_thi_lui_ve_neo_theo_ten():
+    doc = _doc_bang()
+    llm = FakeLLM({"DanhSachPhanHe": {"phan_he": [{
+        "ten_phan_he": "node database", "cong_nghe": "", "muc": "",
+        "cong_nghe_luu_tru": "khong_neu", "bang_cau_hinh": 999}]}})
+    ph = Extractor(llm).nhan_dien_phan_he(doc)
+    assert ph[0].element_index == 29        # tìm thấy qua tên trong ô bảng
