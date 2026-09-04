@@ -25,8 +25,6 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from eval.matching import bang_markdown, doi_chieu, nap_nhan
 from src.extraction.extractor import uoc_tinh_luot_goi
-
-GIAY_MOI_LUOT = 40      # đo thật 2026-09-04, xem scripts/try_c3_on_dossier.py
 from src.ingestion.filenames import find_sizing_docs
 from src.llm.client import LLMClient, LLMError
 from src.pipeline import chay
@@ -35,6 +33,8 @@ from src.validators.qualitative import uoc_tinh_luot_goi_dt
 from src.validators.rules_loader import load_rules
 
 GOC_HO_SO = "danh_sach_sizings_da_duyet"
+GIAY_MOI_LUOT = 40      # đo thật 2026-09-04, xem scripts/try_c3_on_dossier.py
+BANG_GIA_DINH = 20      # đo trên BCCS3; chỉ dùng cho dòng ước lượng
 
 
 def tim_ban(dossier: str) -> list[pathlib.Path]:
@@ -119,13 +119,18 @@ def main() -> int:
     ma_dt = ([x.strip() for x in a.nhom_dinh_tinh.split(",") if x.strip()] or None
              if a.nhom_dinh_tinh is not None else chi_nhom)
     n = a.phan_he
-    u3 = uoc_tinh_luot_goi(rules, chi_nhom=chi_nhom, so_phan_he=n)["tong"]
+    # Ước lượng chạy TRƯỚC khi đọc hồ sơ nào, nên số bảng phải giả định. Lấy đúng con
+    # số đo được ở BCCS3 (20 bảng dùng được) và NÓI RÕ là giả định — đường cột của v6
+    # tốn một lượt mỗi bảng.
+    u3 = uoc_tinh_luot_goi(rules, chi_nhom=chi_nhom, so_phan_he=n,
+                           so_bang=BANG_GIA_DINH)["tong"]
     u5 = uoc_tinh_luot_goi_dt(rules, n, chi_vong=a.chi_vong, chi_ma=ma_dt)
     phut = (u3 + u5) * GIAY_MOI_LUOT / 60 / max(1, a.song_song)
     print(f"ước lượng mỗi hồ sơ (giả định {n} phân hệ): C3 {u3} + C5 {u5} = "
           f"{u3 + u5} lượt gọi · ~{phut:.0f} phút với {a.song_song} luồng · "
           f"cả {len(ds)} hồ sơ ~{phut * len(ds) / 60:.1f} giờ")
-    print("  (BCCS3 thật có 13 phân hệ — con số trên rất nhạy với tham số này)")
+    print(f"  (giả định {BANG_GIA_DINH} bảng dùng được; BCCS3 thật có 13 phân hệ "
+          f"— con số trên rất nhạy với hai tham số này)")
     if a.uoc_tinh:
         return 0
 

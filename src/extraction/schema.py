@@ -38,6 +38,11 @@ class ExtractedValue(BaseModel):
     raw: str = ""                       # nguyên văn trong tài liệu
     location: str = ""                  # "Mục IV.1.2, trang 8"
     element_index: int | None = None    # trỏ về Element của C1
+    # Toạ độ Ô trong bảng, dạng "r2c3" — chỉ có khi giá trị đi đường CỘT (C3 v6).
+    # Cần vì hai cột khác nhau của cùng một dòng hay có CÙNG con số (`CPU 16 | RAM 16`),
+    # nên nếu chỉ so `(phần tử, nguyên văn)` thì cổng một-ô-một-tham-số sẽ tưởng hai
+    # tham số hợp lệ đang tranh nhau một ô và bỏ oan cả hai.
+    o_nguon: str = ""
     ambiguous: bool = False             # từ tầng chuẩn hoá 1.4
     note: str = ""
     confidence: Confidence = "cao"

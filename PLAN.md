@@ -625,9 +625,51 @@
       khoảng, và phân hệ đó lại đi lấy số của chỗ khác — đúng thứ khoảng phân hệ sinh ra
       để chặn. Ngữ cảnh đã đánh số `[BẢNG #N]` nên hỏi thẳng số hiệu, kiểm được ngay.
       → 📏 Chi phí: BCCS3 10 phân hệ, lọc KPI/CPU/RAM → **83 lượt** (v4: 53), vì nhóm nhỏ hơn.
-      → ⬜ **Chưa đo lại v5 trên tài liệu thật.** Con số phải nhìn:
-      **`bỏ vì một ô bị nhiều tham số nhận`** (kỳ vọng cao — đó là 61% cũ bị chặn) và
-      **`lượt gọi hỏng`** (kỳ vọng về 0).
+      → 📊 **Đo v5 (19:07): cổng chặn đúng, và nó CHỨNG MINH chẩn đoán.** 94 lượt ·
+      **32/617 trường có giá trị** · **66 bỏ vì một ô bị nhiều tham số nhận** · 52 lấy
+      từ ô bảng · 73 không neo được · 2 lượt hỏng (vẫn `length`, `max_tokens=6600`).
+      Tức trong **98 giá trị** model đưa ra, **66 (67%)** là điền bừa — cao hơn cả ước
+      lượng 61% của v4.
+      → 🔴 **Soi 32 giá trị sống sót thì phần lớn vẫn không dùng được.** ~6 neo RA NGOÀI
+      phân hệ đang hỏi (`neo()` tìm toàn tài liệu, bỏ qua `khoang` mà chính nó sinh ra):
+      GoldenGate (#69–83) lấy `chuan_spec` ở #28. ~5–7 là "đúng số, sai câu hỏi":
+      `cpu_95th = 16 %` lấy từ cột «CPU (Cint)» (Cint là năng lực, không phải % tải),
+      `datanode_95th` và `he_so_sai_so_khai` lấy từ cột «Nội dung» (cột văn xuôi),
+      `ram_su_dung_khai_gb = 3` đọc từ *"3 node master và 3 node etcd"*.
+      → 🔬 **Đọc thẳng tài liệu mới thấy vì sao — và đây KHÔNG phải lỗi của model.**
+      Mỗi phân hệ BCCS3 có đúng hai bảng: `STT | Nội dung | CPU (Cint) | RAM (GB) | Ghi
+      chú` (1 dòng dữ liệu) và `N | CPU | RAM | Storage (TB)` (2 dòng). Tức **~4 con số
+      cho cả phân hệ**, trong khi lược đồ hỏi 98 tham số số học ở `scope: phan_he`. Bảo
+      một model điền 98 trường từ 4 con số thì nó rải 4 con số đó ra — hành vi hợp lý
+      trước một câu hỏi vô lý. **Ba vòng v3–v5 đều chữa triệu chứng.**
+      → ✅ **v6 — ĐẢO CHIỀU CÂU HỎI. `src/extraction/bang.py`.** Không hỏi *"tìm 8 tham
+      số này"* nữa mà hỏi từng BẢNG: *"mỗi CỘT của bảng chứa tham số nào?"*. Lược đồ có
+      **đúng một trường cho mỗi cột dữ liệu**, giá trị là tên tham số hoặc `khong_ro` ⇒
+      bảng 3 cột sinh tối đa 3 gán ghép. **Điền bừa trở thành bất khả về mặt cấu trúc,
+      không phải bị lọc sau.** Kèm theo, miễn phí: neo tuyệt đối (code tự định vị
+      `(bảng, dòng, cột)`, không còn khâu "tìm lại câu model trích" đã làm rơi 73 lượt),
+      NT1 giữ nguyên (code đọc ô rồi mới `parse_number`), và rẻ hơn hẳn.
+      → ✅ **v6 — cột văn xuôi không bao giờ được hỏi tới.** `cot_du_lieu()` chỉ giữ cột
+      mà **mọi** ô dữ liệu đều trông như một con số. Riêng điều đó loại cột «Nội dung»
+      và «Ghi chú» — hai nguồn giả đã lọt qua v5. Trên BCCS3: **20 bảng dùng được, 65
+      cột dữ liệu** — đó là TRẦN cứng của số giá trị, thay cho 617 câu hỏi của v5.
+      → ✅ **v6 — hai cổng còn lại.** (a) Hai cột cùng bảng nhận cùng một tham số ⇒ bỏ cả
+      hai. (b) Hai bảng cho hai con số khác nhau cho cùng tham số ⇒ bỏ cả hai (NT4).
+      Cổng một-ô-một-tham-số của v5 nay so theo **toạ độ ô** (`o_nguon`), vì `CPU 16 |
+      RAM 16` là hai cột hợp lệ trùng số chứ không phải hai tham số tranh một ô.
+      → ✅ **v6 — sửa rò rỉ chéo phân hệ**: `neo()` nhận `khoang`; `phan_vung_bang()`
+      chặn theo **cả khoảng phần tử lẫn mục gốc**, nên phân hệ cuối (Firewall, Mục III)
+      không nuốt bảng tổng hợp #111 ở Mục IV.
+      → 🔁 **Đường cũ vẫn còn, làm phương án lùi (NT4)**: tài liệu KHÔNG có bảng nào
+      dùng được thì cả ba kiểu tham số quay lại hỏi-theo-tham-số như v5.
+      → 📏 Chi phí: BCCS3 10 phân hệ, lọc KPI/CPU/RAM → **32 lượt** (v5: 94), gồm 20
+      bảng + 10 nhóm enum/bool + 2. Chạy khô offline khớp đúng ước lượng.
+      → ⬜ **Chưa đo v6 trên tài liệu thật.** Con số phải nhìn: **`cột gán được/cột hỏi`**
+      (v5 không có số tương đương; đây là tỷ lệ model nhận ra cột), **`cột trùng tham
+      số`** và **`mâu thuẫn giữa bảng`** (kỳ vọng thấp — nếu cao thì model vẫn đoán bừa
+      trong không gian nhỏ hơn), **`lượt gọi hỏng`** (kỳ vọng 0: lược đồ nay chỉ 3–4
+      trường enum ngắn). Và vẫn phải **soi tay** các giá trị sống sót — hai lượt vừa rồi
+      cho thấy thống kê tổng KHÔNG phát hiện được ca "đúng số, sai câu hỏi".
       → ⚠️ **1.7 tick `[x]` là cho phần CODE. Chất lượng trích xuất CHƯA đạt**; đừng coi
       C3 là dùng được cho tới khi có hướng xử lý (a)(b) ở trên.
 - [x] 1.8 — Bộ nạp & diễn giải `rules.yaml` — **XONG 2026-09-03.**

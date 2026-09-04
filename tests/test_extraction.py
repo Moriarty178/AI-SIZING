@@ -573,3 +573,30 @@ def test_so_hieu_bang_khong_co_that_thi_lui_ve_neo_theo_ten():
         "cong_nghe_luu_tru": "khong_neu", "bang_cau_hinh": 999}]}})
     ph = Extractor(llm).nhan_dien_phan_he(doc)
     assert ph[0].element_index == 29        # tìm thấy qua tên trong ô bảng
+
+
+def test_enum_khong_duoc_neo_ra_NGOAI_phan_he_dang_hoi():
+    """Hồi quy lượt chạy 19:07: 6/32 giá trị neo ra ngoài phân hệ đang hỏi.
+
+    GoldenGate (phần tử #69–83) nhận `chuan_spec` neo vào phần tử #28 của phân hệ
+    Database. `khoang_phan_he` sinh ra để chặn đúng việc đó, nhưng đường neo lại tìm
+    trên toàn tài liệu nên bỏ qua nó.
+    """
+    from src.extraction.schema import SizingCore, SizingExtension
+    els = [Element(index=0, kind="paragraph", text="Database dùng chuẩn SPEC 2006.",
+                   page=1, section="III"),
+           Element(index=9, kind="paragraph", text="GoldenGate: tài nguyên như trên.",
+                   page=2, section="III")]
+    doc = DocxDocument(path="g.docx", elements=els, page_source="rendered")
+    t = ThamSo(name="chuan_spec", kieu="enum", options=["2006", "2017"])
+    llm = FakeLLM({"TrichTEST1": {"chuan_spec": {
+        "gia_tri": "2006", "cau_chua": "Database dùng chuẩn SPEC 2006."}}})
+    ph = SizingExtension(ten_phan_he="GoldenGate", element_index=9)
+    Extractor(llm).trich_nhom(doc, _nhom(t), ph, ten_phan_he="GoldenGate",
+                              khoang=(9, 20))
+    assert "chuan_spec" not in ph.params        # câu đó thuộc phân hệ KHÁC
+
+    # cùng dữ liệu, không giới hạn khoảng -> vẫn nhận (đường cấp tài liệu)
+    core = SizingCore()
+    Extractor(llm).trich_nhom(doc, _nhom(t), core)
+    assert core.params["chuan_spec"].value == "2006"

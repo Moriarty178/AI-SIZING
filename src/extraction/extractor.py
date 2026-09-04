@@ -1,5 +1,12 @@
 """C3 (1.7) — trích trường từ bản sizing bằng structured output.
 
+⚠️ **Từ v6, tham số KIỂU SỐ không đi qua đây nữa.** Chúng đi `bang.py`: hỏi từng bảng
+*"mỗi cột là tham số nào?"* thay vì hỏi *"tìm 8 tham số này"*. Lý do đầy đủ ở đầu
+`bang.py` — tóm tắt: hỏi 98 tham số về một phân hệ chỉ có ~4 con số thì model rải 4 con
+số ấy ra, và lượt chạy 19:07 đo được **67% giá trị là điền bừa**. Module này còn lo
+enum/bool (thứ tài liệu nói bằng câu chữ), và làm phương án lùi cho tài liệu không có
+bảng nào dùng được.
+
 Ba quyết định thiết kế, mỗi cái đều bắt nguồn từ một ràng buộc hoặc một phép đo thật.
 
 **1. Model trả NGUYÊN VĂN, code mới ra số.**
@@ -35,6 +42,7 @@ import threading
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
+from functools import partial
 from typing import Literal
 
 from pydantic import BaseModel, Field, create_model
@@ -46,6 +54,8 @@ from ..llm.client import ExtractionFailed, LLMClient, LLMError
 from ..normalization.numbers import parse_number
 from ..normalization.units import UnknownUnit, Units, load_units
 from ..validators.rules_loader import RuleSet
+from .bang import (KHONG_RO, chu_giai, cot_du_lieu, luoc_do_bang, nhan_dong,
+                   phan_vung_bang, tham_so_so)
 from .plan import (NhomTrich, ThamSo, ke_hoach_trich,
                    tham_so_cua_bo_quy_tac)
 from .schema import ExtractedValue, SizingCore, SizingExtension
@@ -160,11 +170,24 @@ class ThongKe:
     gia_tri_khong_trong_cot: int = 0  # giá trị không nằm trong cột model khai
     o_bi_nhieu_tham_so: int = 0     # cùng một ô được nhiều tham số nhận làm nguồn
     lay_tu_bang: int = 0            # lấy được đúng ô bảng — ca đáng tin nhất
+    # --- đường CỘT (v6) ---
+    bang_hoi: int = 0               # số bảng đã đưa ra hỏi
+    cot_hoi: int = 0                # tổng số cột dữ liệu đã hỏi — TRẦN của số giá trị
+    cot_gan_duoc: int = 0           # cột được gán cho một tham số
+    cot_khong_ro: int = 0           # model tự nhận không cột nào ứng tham số nào
+    cot_trung_tham_so: int = 0      # ≥2 cột cùng bảng nhận cùng tham số ⇒ bỏ cả
+    bang_mat_dong: int = 0          # nhãn dòng model trả về không có trong bảng
+    mau_thuan_giua_bang: int = 0    # cùng tham số, hai bảng cho hai giá trị khác nhau
     loi: list[str] = field(default_factory=list)
 
     def tom_tat(self) -> str:
         return (f"{self.luot_goi} lượt gọi ({self.luot_goi_hong} hỏng) · "
                 f"{self.truong_co_gia_tri}/{self.truong_hoi} trường có giá trị · "
+                f"{self.bang_hoi} bảng · {self.cot_gan_duoc}/{self.cot_hoi} cột gán được · "
+                f"{self.cot_khong_ro} cột khong_ro · "
+                f"{self.cot_trung_tham_so} cột trùng tham số · "
+                f"{self.bang_mat_dong} mất dòng · "
+                f"{self.mau_thuan_giua_bang} mâu thuẫn giữa bảng · "
                 f"{self.khong_neo_duoc} không neo được · "
                 f"{self.khong_doc_duoc_so} không đọc được số · "
                 f"{self.khong_quy_doi_duoc} không quy đổi được · "
@@ -240,9 +263,10 @@ class Extractor:
         return (ph.element_index, sau[0] if sau else het)
 
     # ------------------------------------------------------------------ neo
-    def neo(self, doc: DocxDocument, *khoa: str) -> tuple[Element | None, str]:
+    def neo(self, doc: DocxDocument, *khoa: str,
+            khoang: tuple[int, int] | None = None) -> tuple[Element | None, str]:
         """Tìm lại đoạn model trích trong tài liệu. (phần tử, cách neo)."""
-        el, i = _neo_doc(doc, *khoa)
+        el, i = _neo_doc(doc, *khoa, khoang=khoang)
         if i < 0:
             return None, ""
         return el, ("câu", "giá trị")[i] if i < 2 else "khoá phụ"
@@ -377,7 +401,7 @@ class Extractor:
                                 note=f"lấy từ cột «{cot}» của bảng #{el.index}")
             return self._so(t, raw, ev)
 
-        el, cach = self.neo(doc, cau, raw)
+        el, cach = self.neo(doc, cau, raw, khoang=khoang)
         if el is None:
             # Không tìm lại được trong tài liệu ⇒ không có căn cứ (NT2). Bỏ.
             self.tk.khong_neo_duoc += 1
@@ -388,7 +412,7 @@ class Extractor:
         # Firewall nhận `kich_thuoc_ban_ghi_byte = 500` neo vào bảng Database. Giá trị
         # phải có mặt ngay trong phần tử đã neo.
         if t.kieu == "so" and _chuan(raw) not in _chuan(el.text):
-            el2, _ = _neo_doc(doc, raw)
+            el2, _ = _neo_doc(doc, raw, khoang=khoang)
             if el2 is None:
                 self.tk.gia_tri_khong_co_trong_cau += 1
                 return None
@@ -406,6 +430,126 @@ class Extractor:
         else:
             ev = self._so(t, raw, ev)          # type: ignore[assignment]
         return ev
+
+    # ------------------------------------------------------- đường CỘT (v6) --
+    def trich_bang(self, doc: DocxDocument, e: Element,
+                   dich: SizingCore | SizingExtension, ung_vien: list[ThamSo],
+                   khoang: tuple[int, int] | None = None) -> None:
+        """Hỏi MỘT BẢNG: mỗi cột dữ liệu ứng với tham số nào?
+
+        Lược đồ có đúng một trường cho mỗi cột, nên số giá trị sinh ra bị chặn cứng bởi
+        số cột — lý do đầy đủ ở `bang.py`. Model chỉ CHỌN TÊN; code định vị ô và đọc.
+        """
+        cot = cot_du_lieu(e)
+        if not cot or not ung_vien:
+            return
+        du_lieu = e.rows[1:]
+        nhan = nhan_dong(e)
+        chon_dong = len(du_lieu) > 1
+        lop = luoc_do_bang(e, cot, ung_vien, chon_dong)
+        with self._khoa:
+            self.tk.luot_goi += 1
+            self.tk.bang_hoi += 1
+            self.tk.cot_hoi += len(cot)
+            self.tk.truong_hoi += len(cot)
+
+        # Gửi kèm vùng văn bản quanh bảng: bảng `N | CPU | RAM | Storage` có dòng tổng
+        # và dòng cho MỘT node, phân biệt được hai dòng đó chỉ nhờ câu chữ bên cạnh.
+        quanh = self.ngu_canh(doc, khoang=khoang) if khoang else self._ve_phan_tu(e)
+        try:
+            kq = self.client.extract(lop, [
+                {"role": "system", "content": HE_THONG},
+                {"role": "user", "content":
+                    f"Dưới đây là một phần tài liệu định cỡ. Hãy đọc BẢNG #{e.index} và "
+                    f"cho biết mỗi CỘT của nó chứa tham số nào.\n"
+                    f"{NHAC_NHO_BANG}\n\n=== CÁC THAM SỐ CÓ THỂ CHỌN ===\n"
+                    f"{chu_giai(ung_vien)}\n\n=== TÀI LIỆU ===\n{quanh}\n\n"
+                    f"=== BẢNG #{e.index} CẦN PHÂN TÍCH ===\n{self._ve_phan_tu(e)}"},
+            ], model=self.model,
+                max_tokens=min(TOKEN_TOI_DA, TOKEN_NEN + TOKEN_MOI_TRUONG * len(cot)))
+        except (ExtractionFailed, LLMError) as ex:
+            with self._khoa:
+                self.tk.luot_goi_hong += 1
+                self.tk.loi.append(f"bảng #{e.index}: {ex}")
+            return
+
+        with self._khoa:
+            k = self._chon_dong(kq, nhan, len(du_lieu), chon_dong)
+            if k is None:
+                self.tk.bang_mat_dong += 1
+                return
+            hang = du_lieu[k]
+            nl = (hang[0] if hang else "").strip()
+            theo_ten: dict[str, list[tuple[int, str]]] = {}
+            for i, td in cot:
+                ten = getattr(kq, f"cot_{i}", KHONG_RO)
+                if ten == KHONG_RO:
+                    self.tk.cot_khong_ro += 1
+                    continue
+                theo_ten.setdefault(ten, []).append((i, td))
+
+            uv = {t.name: t for t in ung_vien}
+            for ten, ds in theo_ten.items():
+                if len(ds) > 1:
+                    # Hai cột khác nhau không thể cùng là một tham số. Không có căn cứ
+                    # chọn cột nào ⇒ bỏ cả — cùng nguyên tắc với cổng một-ô-một-tham-số.
+                    self.tk.cot_trung_tham_so += len(ds)
+                    continue
+                self.tk.cot_gan_duoc += 1
+                i, td = ds[0]
+                raw = (hang[i] if i < len(hang) else "").strip()
+                if not raw:
+                    continue
+                vt = f"bảng #{e.index}, cột «{td}»" + (f", dòng «{nl}»" if nl else "")
+                ev = self._so(uv[ten], raw, ExtractedValue(
+                    raw=raw, location=e.location, element_index=e.index,
+                    o_nguon=f"r{k}c{i}",
+                    confidence="cao", note=f"lấy từ {vt}"))
+                self._ghi_nhan(dich, ten, ev, vt)
+
+    @staticmethod
+    def _chon_dong(kq: BaseModel, nhan: list[str], so_dong: int,
+                   chon_dong: bool) -> int | None:
+        """Chỉ số dòng model chỉ tới; None nếu nhãn nó trả về không có trong bảng.
+
+        Trả CHỈ SỐ chứ không trả chính dòng đó: hai dòng có thể trùng nội dung, và toạ
+        độ ô (`o_nguon`) phải là toạ độ thật thì cổng một-ô-một-tham-số mới so đúng.
+        """
+        if not so_dong:
+            return None
+        if not chon_dong:
+            return 0
+        d = _chuan(getattr(kq, "dong", "") or "")
+        if not d:
+            return None
+        for k, n in enumerate(nhan[:so_dong]):
+            if _chuan(n) == d:
+                return k
+        for k, n in enumerate(nhan[:so_dong]):
+            if n and (_chuan(n) in d or d in _chuan(n)):
+                return k
+        return None
+
+    def _ghi_nhan(self, dich: SizingCore | SizingExtension, ten: str,
+                  ev: ExtractedValue, vt: str) -> None:
+        """Ghi một giá trị, xử lý ca hai bảng cùng khai một tham số."""
+        cu = dich.params.get(ten)
+        if cu is None or cu.value is None:
+            dich.params[ten] = ev
+            if ev.value is not None:
+                self.tk.truong_co_gia_tri += 1
+            return
+        if ev.value is None:
+            return                             # giá trị cũ tốt hơn, giữ nguyên
+        if cu.value == ev.value:
+            cu.note = "; ".join(x for x in (cu.note, f"xác nhận lại ở {vt}") if x)
+            return
+        # Hai bảng, hai con số, cùng một tham số. Không có căn cứ chọn ⇒ bỏ cả hai (NT4).
+        self.tk.mau_thuan_giua_bang += 1
+        self.tk.truong_co_gia_tri -= 1
+        cu.value, cu.confidence = None, "thap"
+        cu.note = "; ".join(x for x in (cu.note, (
+            f"BỎ: {vt} cho giá trị khác ({ev.raw}) cho cùng tham số")) if x)
 
     # ------------------------------------------- một ô, một tham số ---------
     def loc_o_bi_nhieu_tham_so(self, dich: SizingCore | SizingExtension) -> int:
@@ -425,7 +569,8 @@ class Extractor:
         for ten, ev in dich.params.items():
             if ev.value is None or ev.element_index is None or not ev.raw:
                 continue
-            theo_o.setdefault((ev.element_index, _chuan(ev.raw)), []).append(ten)
+            khoa = ev.o_nguon or _chuan(ev.raw)
+            theo_o.setdefault((ev.element_index, khoa), []).append(ten)
 
         bo = 0
         for _, ds in theo_o.items():
@@ -567,10 +712,16 @@ class Extractor:
 
     # ------------------------------------------------------------------ run
     def run(self, doc: DocxDocument, *, chi_nhom: list[str] | None = None) -> SizingCore:
-        nhom_ht = ke_hoach_trich(self.rules, scope="he_thong", chi_nhom=chi_nhom)
-        nhom_ph = ke_hoach_trich(self.rules, scope="phan_he", chi_nhom=chi_nhom)
+        # Tài liệu có bảng số liệu thì tham số KIỂU SỐ đi đường cột (v6, xem `bang.py`);
+        # đường hỏi-theo-tham-số chỉ còn lo enum/bool. Tài liệu KHÔNG có bảng nào dùng
+        # được thì lùi về cách cũ cho cả ba kiểu — thà kém chính xác còn hơn không trích
+        # được gì (NT4).
+        co_bang = any(cot_du_lieu(e) for e in doc.elements if e.kind == "table")
+        kieu = {"bool", "enum"} if co_bang else None
+        nhom_ht = ke_hoach_trich(self.rules, scope="he_thong", chi_nhom=chi_nhom, kieu=kieu)
+        nhom_ph = ke_hoach_trich(self.rules, scope="phan_he", chi_nhom=chi_nhom, kieu=kieu)
         nhom_cn = ke_hoach_trich(self.rules, scope="phan_he_x_cong_nghe_luu_tru",
-                                 chi_nhom=chi_nhom)
+                                 chi_nhom=chi_nhom, kieu=kieu)
         tong = 2 + len(nhom_ht)          # chưa biết số phân hệ, cập nhật sau khi dò
 
         core = SizingCore()
@@ -582,16 +733,37 @@ class Extractor:
         tong += sum(len(nhom_ph) + (len(nhom_cn) if ph.cong_nghe_luu_tru else 0)
                     for ph in core.phan_he)
         het = (max(e.index for e in doc.elements) + 1) if doc.elements else 0
-        viec: list[tuple] = [(nhom, core, "", "", None, nhom.ten) for nhom in nhom_ht]
+
+        # `viec` là danh sách (nhãn, việc-không-tham-số). Trước đây là tuple vị trí và
+        # đã một lần bị thêm phần tử vào giữa mà quên sửa chỗ giải nén.
+        viec: list[tuple[str, Callable[[], None]]] = [
+            (nhom.ten, partial(self.trich_nhom, doc, nhom, core)) for nhom in nhom_ht]
         for ph in core.phan_he:
             kh = self.khoang_phan_he(core, ph, het)
             for sc, ds in (("phan_he", nhom_ph), ("phan_he_x_cong_nghe_luu_tru", nhom_cn)):
                 if sc == "phan_he_x_cong_nghe_luu_tru" and not ph.cong_nghe_luu_tru:
                     continue
-                viec += [(nhom, ph, ph.muc, ph.ten_phan_he, kh,
-                          f"{ph.ten_phan_he}/{nhom.ten}") for nhom in ds]
+                viec += [(f"{ph.ten_phan_he}/{nhom.ten}",
+                          partial(self.trich_nhom, doc, nhom, ph, section=ph.muc,
+                                  ten_phan_he=ph.ten_phan_he, khoang=kh))
+                         for nhom in ds]
 
-        self._chay(doc, viec, tong)
+        if co_bang:
+            uv_ht = tham_so_so(self.rules, scope="he_thong", chi_nhom=chi_nhom)
+            uv_ph = tham_so_so(self.rules, scope="phan_he", chi_nhom=chi_nhom)
+            uv_cn = tham_so_so(self.rules, scope="phan_he_x_cong_nghe_luu_tru",
+                               chi_nhom=chi_nhom)
+            for e, ph, kh in phan_vung_bang(doc, core):
+                if not cot_du_lieu(e):
+                    continue
+                uv = uv_ht if ph is None else (
+                    uv_ph + (uv_cn if ph.cong_nghe_luu_tru else []))
+                nhan = f"bảng #{e.index}" + (f" · {ph.ten_phan_he}" if ph else "")
+                viec.append((nhan, partial(self.trich_bang, doc, e,
+                                           ph if ph is not None else core, uv, kh)))
+            tong = len(viec) + 2
+
+        self._chay(viec, tong)
 
         # Chạy SAU khi mọi nhóm đã xong: một ô có thể bị nhiều nhóm khác nhau cùng
         # nhận, nên không kiểm được trong phạm vi một lượt gọi.
@@ -602,31 +774,41 @@ class Extractor:
                 self.tk.truong_co_gia_tri -= n
         return core
 
-    def _chay(self, doc: DocxDocument, viec: list[tuple], tong: int) -> None:
+    def _chay(self, viec: list[tuple[str, Callable[[], None]]], tong: int) -> None:
         if self.song_song <= 1:
-            for nhom, dich, muc, ten, kh, nhan in viec:
+            for nhan, lam in viec:
                 self._bao(tong, nhan)
-                self.trich_nhom(doc, nhom, dich, section=muc, ten_phan_he=ten,
-                                khoang=kh)
+                lam()
             return
         with ThreadPoolExecutor(max_workers=self.song_song) as pool:
-            fut = {pool.submit(self.trich_nhom, doc, nhom, dich, section=muc,
-                               ten_phan_he=ten, khoang=kh): nhan
-                   for nhom, dich, muc, ten, kh, nhan in viec}
+            fut = {pool.submit(lam): nhan for nhan, lam in viec}
             for f in as_completed(fut):
                 self._bao(tong, fut[f])
                 f.result()                     # lỗi lạ phải nổ ra, không nuốt
 
 
+def so_bang_dung_duoc(doc: DocxDocument) -> int:
+    """Số bảng có ít nhất một cột số liệu — số lượt gọi của đường cột (v6)."""
+    return sum(1 for e in doc.elements if e.kind == "table" and cot_du_lieu(e))
+
+
 def uoc_tinh_luot_goi(rules: RuleSet | None = None, *, chi_nhom: list[str] | None = None,
-                      so_phan_he: int = 3, co_luu_tru: bool = True) -> dict:
-    """Ước lượng số lời gọi TRƯỚC khi chạy — để không ai bấm rồi ngồi chờ mù."""
-    ht = len(ke_hoach_trich(rules, scope="he_thong", chi_nhom=chi_nhom))
-    ph = len(ke_hoach_trich(rules, scope="phan_he", chi_nhom=chi_nhom))
-    cn = len(ke_hoach_trich(rules, scope="phan_he_x_cong_nghe_luu_tru", chi_nhom=chi_nhom))
-    tong = 2 + ht + so_phan_he * (ph + (cn if co_luu_tru else 0))
+                      so_phan_he: int = 3, co_luu_tru: bool = True,
+                      so_bang: int = 0) -> dict:
+    """Ước lượng số lời gọi TRƯỚC khi chạy — để không ai bấm rồi ngồi chờ mù.
+
+    `so_bang > 0` nghĩa là tài liệu đi đường cột: mỗi bảng một lượt, và đường hỏi-theo-
+    tham-số thu về còn enum/bool. Đó là lý do v6 rẻ hơn hẳn v5 (BCCS3: 20 bảng thay cho
+    ~80 lượt hỏi tham số số học).
+    """
+    kieu = {"bool", "enum"} if so_bang else None
+    ht = len(ke_hoach_trich(rules, scope="he_thong", chi_nhom=chi_nhom, kieu=kieu))
+    ph = len(ke_hoach_trich(rules, scope="phan_he", chi_nhom=chi_nhom, kieu=kieu))
+    cn = len(ke_hoach_trich(rules, scope="phan_he_x_cong_nghe_luu_tru",
+                            chi_nhom=chi_nhom, kieu=kieu))
+    tong = 2 + ht + so_phan_he * (ph + (cn if co_luu_tru else 0)) + so_bang
     return {"he_thong": ht, "moi_phan_he": ph + (cn if co_luu_tru else 0),
-            "so_phan_he_gia_dinh": so_phan_he, "tong": tong}
+            "so_phan_he_gia_dinh": so_phan_he, "bang": so_bang, "tong": tong}
 
 
 # ------------------------------------------------------------- lược đồ cố định
@@ -713,4 +895,17 @@ NHAC_NHO = (
     "- Tiêu đề cột cho biết con số LÀ GÌ. Cột 'CPU (Cint)' là năng lực CPU tính bằng "
     "Cint, KHÔNG phải phần trăm tải CPU. Không có cột nào đúng nghĩa tham số đang hỏi "
     "thì để trống — phần lớn tham số sẽ để trống, đó là điều bình thường."
+)
+
+NHAC_NHO_BANG = (
+    "Cách làm:\n"
+    "- Với MỖI cột, chọn tên tham số mà cột đó chứa, dựa vào TIÊU ĐỀ cột và nghĩa của "
+    "tham số trong danh sách bên dưới.\n"
+    f"- Tiêu đề cột phải ĐÚNG NGHĨA tham số, không chỉ liên quan: cột 'CPU (Cint)' là "
+    f"năng lực CPU đo bằng Cint, KHÔNG phải phần trăm tải CPU cũng KHÔNG phải số nhân. "
+    f"Không chắc thì chọn {KHONG_RO} — chọn sai tệ hơn nhiều so với bỏ trống.\n"
+    f"- Cột số thứ tự (STT) và cột đánh số dòng luôn là {KHONG_RO}.\n"
+    "- Mỗi tham số chỉ được gán cho NHIỀU NHẤT MỘT cột. Hai cột khác nhau thì là hai "
+    "tham số khác nhau.\n"
+    "- KHÔNG đọc giá trị, KHÔNG tính toán. Chỉ nói cột nào là tham số nào."
 )

@@ -116,17 +116,24 @@ def tham_so_cua_bo_quy_tac(rules: RuleSet | None = None) -> dict[str, ThamSo]:
 
 def ke_hoach_trich(rules: RuleSet | None = None, *, scope: str | None = None,
                    chi_nhom: list[str] | None = None,
+                   kieu: set[str] | None = None,
                    max_truong: int = MAX_TRUONG_MOI_LUOT) -> list[NhomTrich]:
     """Chia tham số thành các lượt gọi model.
 
     Gom theo **nhóm quy tắc đầu tiên dùng tham số** (`CPU-03` → nhóm `CPU`): tham số
     cùng nhóm thường nằm cùng một mục của tài liệu, nên một lượt gọi đọc một vùng văn
     bản — rẻ hơn và ít nhầm hơn là hỏi rải rác.
+
+    `kieu` lọc theo kiểu dữ liệu. Từ v6, tham số KIỂU SỐ không đi đường này nữa mà đi
+    `src/extraction/bang.py` (hỏi theo cột bảng); đường này còn phục vụ enum/bool —
+    những thứ tài liệu nói bằng câu chữ chứ không bằng ô bảng.
     """
     ts = tham_so_cua_bo_quy_tac(rules)
     theo_nhom: dict[tuple[str, str], list[ThamSo]] = {}
     for t in ts.values():
         if scope is not None and t.scope != scope:
+            continue
+        if kieu is not None and t.kieu not in kieu:
             continue
         ma = t.rule_ids[0].split("-")[0] if t.rule_ids else "KHAC"
         if chi_nhom and ma not in chi_nhom:
