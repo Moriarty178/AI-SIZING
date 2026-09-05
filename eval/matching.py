@@ -57,6 +57,10 @@ class KetQuaEval:
     # thấp hơn hẳn, và nếu báo cáo không nói vì sao thì sẽ có người trích con số đó
     # như thể là recall thật.
     bo_loc: dict = field(default_factory=dict)
+    # Lượt DIỄN TẬP bằng model giả. Phải nằm ngay TIÊU ĐỀ, không phải ở mục cảnh báo
+    # cuối: con số recall nằm ở đầu báo cáo, ai liếc qua hoặc chép phần đầu ra ngoài
+    # sẽ không thấy dấu đóng nếu nó ở dưới.
+    dien_tap: bool = False
 
     @property
     def da_loc(self) -> bool:
@@ -162,7 +166,10 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
 
 
 def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
-    d = [f"# Kết quả eval — tập `{kq.tap}`", "",
+    tieu_de = (f"# ⚠️ DIỄN TẬP (MODEL GIẢ) — tập `{kq.tap}`" if kq.dien_tap
+               else f"# Kết quả eval — tập `{kq.tap}`")
+    d = [tieu_de, ""]
+    d += [
          "| | Giá trị |", "|---|---:|",
          f"| Hồ sơ | {len(kq.ho_so)} |",
          f"| Nhãn (mọi yêu cầu) | {kq.nhan_tong} |",
@@ -189,6 +196,14 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
         d[1:1] = ["", "> ⚠️ **LƯỢT CHẠY NÀY CÓ LỌC — con số dưới KHÔNG so sánh được với "
                   "một lượt chạy đầy đủ và KHÔNG được trích như recall thật.** Bộ lọc: "
                   + " · ".join(f"`{k}` = {v}" for k, v in kq.bo_loc.items() if v), ""]
+    if kq.dien_tap:
+        # Chèn SAU khối `da_loc` để nổi lên trên cùng: dấu đóng phải nằm ngay dưới
+        # tiêu đề, không phải dưới bảng recall. Người liếc qua hoặc chép phần đầu
+        # báo cáo ra ngoài chỉ nhìn thấy vài dòng đầu.
+        d[1:1] = ["", "> **KHÔNG PHẢI KẾT QUẢ THẬT.** Lượt chạy này dùng model giả "
+                  "lập, mọi con số recall dưới đây là VÔ NGHĨA về mặt chất lượng. "
+                  "Mục đích duy nhất: xác nhận đường chạy không vỡ TRƯỚC khi tiêu "
+                  "giờ mạng nội bộ."]
     if kq.canh_bao:
         d += ["## Cảnh báo khi chạy", ""] + [f"- {c}" for c in kq.canh_bao] + [""]
 

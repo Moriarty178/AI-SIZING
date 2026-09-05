@@ -133,3 +133,14 @@ def test_bom_loi_dung_hai_che_do_hong_that():
     with pytest.raises(Exception, match="rỗng"):
         c.extract(NhanXetDinhTinh, [{"role": "user", "content": "x"}])
     assert c.tk.bom_rong == 1
+
+
+def test_dau_bao_cao_dien_tap_khac_HAN_bao_cao_that(chay_dien_tap):
+    """Rủi ro thật, phát hiện khi người dùng chạy diễn tập 2026-09-05: hai dòng đầu
+    của báo cáo diễn tập và báo cáo thật GIỐNG HỆT nhau, mà con số recall lại nằm
+    ngay đầu còn dấu "model giả" nằm tận mục cảnh báo cuối. Ai liếc qua hoặc chép
+    phần đầu ra ngoài sẽ tưởng là kết quả thật."""
+    _, bc = chay_dien_tap("--gia-lap", "--ho-so", HO_SO_MAU, "--song-song", "4")
+    dong = bc[0].read_text(encoding="utf-8").splitlines()
+    assert "DIỄN TẬP" in dong[0] and "MODEL GIẢ" in dong[0]
+    assert "KHÔNG PHẢI KẾT QUẢ THẬT" in "\n".join(dong[:5])

@@ -355,6 +355,7 @@ def main() -> int:
     ev = doi_chieu(theo_ho_so, labels, tap=a.tap, file_da_dung=da_dung,
                    findings_theo_vong=theo_vong_ho_so or None)
     ev.canh_bao = canh_bao
+    ev.dien_tap = bool(a.gia_lap)
     ev.bo_loc = {"nhom C3": ",".join(chi_nhom) if chi_nhom else "",
                  "nhom C5": ",".join(ma_dt) if ma_dt else "",
                  "chi_vong": a.chi_vong or "", "chi N ho so": a.chi or "",
