@@ -34,5 +34,23 @@ def is_sizing_doc(path: str | pathlib.Path) -> bool:
     return not NOT_SIZING.search(name)
 
 
+# Phiếu nhận xét của đơn vị thẩm định. KHÔNG phải: "Phản hồi PNX" (bên xin cấp viết
+# trả lời) và công văn xin PNX — hai thứ đó không mang mốc thời gian của một VÒNG
+# thẩm định, dùng nhầm sẽ làm lệch việc ghép vòng ↔ phiên bản tài liệu.
+PNX_DOC = re.compile(r"PNX", re.IGNORECASE)
+NOT_PNX = re.compile(r"phản\s*hồi|phan\s*hoi|cong\s*van|công\s*văn", re.IGNORECASE)
+
+
+def is_pnx_doc(path: str | pathlib.Path) -> bool:
+    name = pathlib.Path(path).name
+    if name.startswith("~$"):
+        return False
+    return bool(PNX_DOC.search(name)) and not NOT_PNX.search(name)
+
+
+def find_pnx_docs(root: str | pathlib.Path, suffix: str = ".docx") -> list[pathlib.Path]:
+    return sorted(p for p in pathlib.Path(root).rglob(f"*{suffix}") if is_pnx_doc(p))
+
+
 def find_sizing_docs(root: str | pathlib.Path, suffix: str = ".docx") -> list[pathlib.Path]:
     return sorted(p for p in pathlib.Path(root).rglob(f"*{suffix}") if is_sizing_doc(p))

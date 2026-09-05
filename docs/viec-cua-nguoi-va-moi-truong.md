@@ -75,6 +75,18 @@ tạo**. Đây là việc đọc tài liệu, không cần model.
 ```bash
 python scripts/make_word_template.py
 ```
+### A8. Xác nhận nhãn cho 40 ảnh mẫu (2.2) — *không chặn việc khác*
+
+```bash
+python scripts/danh_gia_phan_loai_anh.py            # in độ chính xác + hạn chế
+python scripts/danh_gia_phan_loai_anh.py --toan-bo  # thêm phân bố trên 776 ảnh (~3 phút)
+```
+
+`data/nhan_anh_mau.json` giữ 40 nhãn ảnh (console / dashboard / sơ đồ / ảnh văn bản).
+**Nhãn do tôi nhìn ảnh mà gán, chưa ai xác nhận** — cùng hạn chế đã ghi cho eval set.
+Nếu bạn thấy một nhãn sai thì sửa thẳng trường `loai` trong file rồi chạy lại script;
+độ chính xác hiện là **34/40 (85%), 92% khi máy dám kết luận**.
+
 
 ---
 
@@ -84,14 +96,25 @@ python scripts/make_word_template.py
 
 ```bash
 git pull
-py -m eval.run_eval --ho-so "GSCG,Data Security,Vtag,Mybox,PBH 4.0" --song-song 8 --uoc-tinh
-py -m eval.run_eval --ho-so "GSCG,Data Security,Vtag,Mybox,PBH 4.0" --song-song 8
+py -m eval.run_eval --ho-so "GSCG,Data Security,Vtag,PBH 4.0" --song-song 8 --uoc-tinh
+py -m eval.run_eval --ho-so "GSCG,Data Security,Vtag,PBH 4.0" --song-song 8
 ```
 
-- **~2 giờ máy**, chạy nền, không cần ngồi canh.
-- Năm hồ sơ này gộp **191/475 nhãn (40%)** — nhiều nhãn nhất trong 23 hồ sơ có nhãn.
+- **~1,1 giờ máy** (ước lượng in ra trước khi chạy), chạy nền, không cần ngồi canh.
+- Bốn hồ sơ này gộp **160/475 nhãn (34%)**.
+- ⚠️ **Đã bỏ `Mybox` khỏi lệnh**: nó nằm trong **tập TEST giữ kín**, nên lệnh cũ vẫn
+  chỉ chạy 4 hồ sơ (script tự lọc theo tập). Con số "5 hồ sơ / 191 nhãn" ghi trước đây
+  là **sai**. **Đừng** thêm `--tap test` để "chạy cho đủ 5" — làm thế là đốt tập giữ kín
+  vốn chỉ được dùng một lần ở mục 3.6.
 - Cả tập dev tốn **6,5–11 giờ**, nên **không chạy toàn tập**.
 - Kết quả ra `eval/reports/`. Đây là con số quyết định tiêu chí hoàn thành Giai đoạn 1.
+- Muốn gỡ nốt thiên lệch phiên bản thì thêm **`--moi-phien-ban`** (chạy đúng bản của
+  từng vòng nhận xét): đúng hơn nhưng **2,4 giờ** thay vì 1,1 giờ.
+- **Bị ngắt giữa chừng thì chạy lại kèm `--tiep-tuc`** — hồ sơ nào đã xong được lấy lại
+  từ `.cache/eval/`, không gọi model lần nữa. Kể cả không có cờ đó, **đệm lời gọi**
+  (2.12) cũng đã làm phần lớn lượt chạy lại gần như miễn phí. Muốn đo lại THẬT từ đầu
+  thì đặt `SIZING_COPILOT_KHONG_CACHE=1`.
+- Xem trước cách chọn phiên bản mà không cần model: `python scripts/ghep_phien_ban.py`.
 
 Khi đọc kết quả, nhớ: **29/475 nhãn (6%) vĩnh viễn không với tới được** vì `cap moi MNP
 32034` và `Cấp mới hệ thống VAPS` không có bản `.docx` nào. Chúng vẫn nằm trong mẫu số.
@@ -151,5 +174,7 @@ Bản đã ký **không sạch** (vẫn còn lỗi PNX từng nêu), nên không
 ## D. Việc tôi làm tiếp, không cần chờ ai
 
 - 1.15 — demo nội bộ (chờ B1 để có số thật mà trình bày).
-- Giai đoạn 2: C2 vision/OCR cho 767 ảnh, C6 truy hồi hồ sơ tương tự.
+- Giai đoạn 2: **2.1 + 2.2 đã xong 2026-09-04** (trích ảnh kèm ngữ cảnh, phân loại ảnh —
+  cả hai chạy offline). Còn **2.3** (vision + OCR) cần model, và **2.4/2.5**.
+- C6 truy hồi hồ sơ tương tự (cần `sentence-transformers`, xem **B4**).
 - Sửa 1.17 theo phản hồi ở **A1**.

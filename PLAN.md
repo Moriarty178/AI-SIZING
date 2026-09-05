@@ -11,7 +11,7 @@
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
 | 1 | MVP chỉ xử lý text | 14 / 17 | 🟡 Đang làm — chờ số recall thật (1.13) |
-| 2 | Đa phương thức & tái sử dụng | 0 / 14 | ⬜ Chưa bắt đầu |
+| 2 | Đa phương thức & tái sử dụng | 3,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.12 xong, 2.11 một nửa (đều offline) |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
 
@@ -784,10 +784,28 @@
       → ✅ Báo cáo **luôn kèm 3 hạn chế** (có test): recall hào phóng vì 397 nhãn nhận
       gợi ý máy dư mã · **không đo được false positive** · nhãn chưa kiểm định độc lập.
       Finding không khớp nhãn được liệt kê để soi nhưng **cấm gọi là false positive**.
-      → ⚠️ **Thiên lệch PHIÊN BẢN chưa gỡ được**: PNX nhận xét về bản TRƯỚC khi sửa, mà
-      nhiều hồ sơ giữ nhiều bản `.docx` (PNM 5 bản, APIGW-Meta 3). Chạy trên bản đã sửa
-      thì lỗi đã vá → **recall thấp giả tạo**. Ghép `pnx_file` ↔ phiên bản là mục còn nợ
-      từ 0.7 mục 5; hiện script **liệt kê mọi bản và ghi rõ bản nào đã dùng**.
+      → ✅ **Thiên lệch PHIÊN BẢN đã gỡ phần lớn — XONG 2026-09-05** (nợ 0.7 mục 5).
+      **→ `eval/phien_ban.py`** + **`scripts/ghep_phien_ban.py`** (offline) ghép
+      **vòng nhận xét ↔ phiên bản `.docx`**; `run_eval` không còn lấy bản đầu bảng chữ
+      cái. **11 unit test**, mỗi test là hồi quy cho MỘT hồ sơ thật.
+      → 📏 Đo trên 23 hồ sơ có nhãn: cách cũ sai ở **2 hồ sơ** — `Data Security VTT`
+      (21 nhãn vòng 1 chấm trên bản đã sửa; **hồ sơ này nằm trong mẫu đo recall**) và
+      `PNM 57012` (lấy bản v1.3 thay vì v1).
+      → 🔬 **Không luật đơn nào đủ**, cả ba đều đã thử và hỏng ở một hồ sơ khác nhau:
+      *"lấy bản cũ nhất"* vớ đúng tài liệu **callbot lạc vào thư mục PNM** · *"gom theo
+      họ tên file"* vứt mất bản vòng 2 của Data Security (đổi tên thành `DataSec`) ·
+      *"bản gần nhất trước ngày PNX"* kéo vòng 1 sang bản muộn ở VTracking vì **một
+      file PNX tích luỹ nhiều vòng nên `dcterms:modified` là ngày vòng CUỐI**. Bản chạy
+      dùng cả ba: từ khoá hệ thống lọc tài liệu lạ · ngày PNX làm **trần** · thứ tự ngày
+      sửa đánh số vòng.
+      → ✅ **`--moi-phien-ban`**: chạy đúng bản của TỪNG vòng, gỡ nốt phần còn lại. Không
+      để mặc định vì tốn thêm lượt gọi — đo trên mẫu 4 hồ sơ: **1,1 giờ → 2,4 giờ (2,2×)**.
+      → ⚠️ **Phần thiên lệch CÒN LẠI, không vá được bằng code: 60/475 nhãn** thuộc vòng
+      mà hồ sơ **không còn giữ bản tương ứng**. `run_eval` in ra con số này mỗi lượt chạy.
+      → ⚠️ **`Mybox` nằm trong tập TEST giữ kín**, nên lệnh đo recall từng ghi trong tài
+      liệu (`--ho-so "GSCG,Data Security,Vtag,Mybox,PBH 4.0"`) thực tế chỉ chạy **4 hồ sơ
+      / 160 nhãn**, không phải 191. Đã sửa lại tài liệu; **không được** thêm `--tap test`
+      để "chạy đủ 5" — làm thế là đốt tập giữ kín.
       → ✅ Tập TEST đòi cờ `--toi-hieu-rui-ro` mới chạy được, để không ai lỡ tay làm rò rỉ.
       → ✅ **Báo cáo GHI RÕ bộ lọc đã dùng** kèm cảnh báo *"không được trích như recall
       thật"* (có test). Cần vì `--nhom KPI,CPU` cho **C5 = 0 lượt** — không quy tắc định
@@ -905,8 +923,39 @@ chứng minh công cụ có giá trị hay không.
 ## GIAI ĐOẠN 2 — Đa phương thức & tái sử dụng  (2–3 tuần)
 
 ### Tuần 4 — Xử lý hình ảnh
-- [ ] 2.1 — Trích ảnh từ `.docx` kèm ngữ cảnh văn bản trước/sau
-- [ ] 2.2 — Phân loại ảnh (sơ đồ / biểu đồ-dashboard / khác)
+- [x] 2.1 — Trích ảnh từ `.docx` kèm ngữ cảnh văn bản trước/sau — **XONG 2026-09-04.**
+      → ✅ **`src/vision/anh.py`** + C1 nay giữ `anh_refs` (rId, cỡ hiển thị, kiểu neo)
+      và `rels`/`media`, nên mới lần ra được `word/media/imageN.png`. Chạy trên cả
+      47 bản: **776 ảnh**, 30 cảnh báo, **50 file media không đoạn nào tham chiếu tới**
+      (ảnh trong ô bảng / header-footer) — đã báo chứ không bỏ im (NT4).
+      → 📏 **Đo trước khi thiết kế**, và bốn phép đo lật ngược trực giác:
+      alt text 154/953 và nội dung là `IMG_256` / `cid:…` / đường dẫn máy người viết ·
+      tên file lúc dán ảnh **6/777 có nghĩa** (tín hiệu chết) ·
+      **caption chỉ 107/767 (14%)**, phần lớn nằm NGAY SAU ảnh ·
+      **đoạn văn liền trước ảnh phủ 762/767 (99%)** ⟹ ngữ cảnh chính là văn bản
+      xung quanh, không phải siêu dữ liệu của ảnh.
+      → ✅ 12 unit test, dựng .docx tổng hợp trong bộ nhớ, chạy offline.
+- [x] 2.2 — Phân loại ảnh — **XONG 2026-09-04.** ⚠️ **Bộ loại KHÁC với dòng kế hoạch cũ**
+      (*"sơ đồ / biểu đồ-dashboard / khác"*), vì đã soi tay 40 ảnh mẫu và thấy lớp đông
+      nhất không có tên trong đó.
+      → ✅ **`src/vision/phan_loai.py`** — 5 loại: `console` (ảnh chụp `top`/`free`/
+      `lscpu`/`kubectl`) · `dashboard` · `so_do` · `anh_van_ban` (ảnh chụp bảng, email,
+      trang SPEC) · `chua_ro`. Gộp `console` vào "khác" là vứt đi đúng lớp ảnh sở cứ
+      mà PNX hay nhận xét nhất.
+      → 📊 **Độ chính xác đo trên 40 nhãn tay (`data/nhan_anh_mau.json`): 34/40 = 85%;
+      92% khi máy dám kết luận** (3/40 trả `chua_ro`). `console` đúng **14/14**.
+      Phân bố toàn tập 776 ảnh: console 34,1% · dashboard 23,6% · **chưa rõ 23,1%** ·
+      ảnh văn bản 11,5% · sơ đồ 7,7%.
+      → 🔬 Tín hiệu: **pixel quyết định, chữ chỉ xác nhận.** Từ khoá ngữ cảnh đã đo là
+      KHÔNG tách được console ↔ dashboard (4/14 và 2/11) vì cả hai nằm dưới cùng đề mục
+      *"TÍNH TOÁN CẤU HÌNH PHẦN CỨNG"*. Mật độ dòng chữ tách sạch (console ≥15,8 lần
+      đổi/hàng · dashboard ≤11,0).
+      → ↩️ **Một vòng cải tiến đã thử và BỎ**: cho từ khoá `sơ đồ` tự quyết ở nhánh nền
+      sáng — vá được 2 sơ đồ nét phẳng nhưng kéo 4 ảnh chụp bảng sang `so_do`, chính
+      xác khi kết luận rơi **92% → 82%**. Đã có test hồi quy chặn.
+      → ✅ 11 unit test + `scripts/danh_gia_phan_loai_anh.py` (offline, in cả hạn chế).
+      → ⬜ **Cần người xác nhận nhãn**: 40 nhãn do một tác nhân AI nhìn ảnh mà gán, n
+      nhỏ cho 5 lớp — cùng hạn chế đã ghi cho eval set.
 - [ ] 2.3 — C2: vision + OCR, sinh mô tả và trích số
 - [ ] 2.4 — Cơ chế xuống cấp có kiểm soát: cảnh báo khi không kiểm chứng được (NT4)
 - [ ] 2.5 — Kiểm tra chéo: số trong ảnh biểu đồ vs số trong bảng sizing
@@ -921,8 +970,33 @@ chứng minh công cụ có giá trị hay không.
 
 ### Tuần 6 — Củng cố
 - [ ] 2.10 — Chuyển điều phối sang LangGraph nếu pipeline đã đủ phức tạp (không bắt buộc)
-- [ ] 2.11 — Xử lý lỗi & timeout khi gọi LLM; cơ chế retry
-- [ ] 2.12 — Cache kết quả trích xuất theo hash file
+- [~] 2.11 — Xử lý lỗi & timeout khi gọi LLM; cơ chế retry — **phần điểm dừng XONG 2026-09-05.**
+      → ✅ **`run_eval --tiep-tuc`**: ghi kết quả từng hồ sơ ra `.cache/eval/` NGAY khi
+      hồ sơ đó xong (ghi nguyên tử), nên lượt chạy 1–2,4 giờ bị ngắt không mất sạch.
+      → ✅ **Chữ ký lượt chạy** (tập · model · nhóm C3 · nhóm C5 · `chi_vong` ·
+      `moi_phien_ban`): chữ ký lệch thì **BỎ điểm dừng và chạy lại từ đầu**, không trộn
+      kết quả hai bộ lọc vào một báo cáo — trộn thì con số recall không ai lần lại được
+      là gì. **10 unit test.**
+      → ⬜ Còn lại của 2.11: timeout/retry ở tầng gọi (client đã retry ≤3 cho ca validate
+      hỏng, nhưng chưa có backoff cho lỗi mạng).
+- [x] 2.12 — Cache kết quả trích xuất — **XONG 2026-09-05.** ⚠️ **Đệm ở tầng LỜI GỌI,
+      không phải "theo hash file" như dòng kế hoạch cũ.**
+      → ✅ **`src/llm/cache.py`** + nối vào `LLMClient.chat()`, nên phủ **cả C3 lẫn C5**
+      bằng một cơ chế. Khoá = SHA-256 của (model · messages · temperature · max_tokens ·
+      mọi tham số phụ như `response_format`) — thiếu một thứ là đệm SAI. **14 unit test.**
+      → 🔬 Vì sao không đệm theo hash file: cái đắt là **lời gọi** (~40 giây), không phải
+      đọc `.docx` (mili giây, offline). Đệm theo lời gọi còn cứu được hai ca hay gặp hơn:
+      lượt chạy đứt giữa chừng, và **sửa một quy tắc trong `rules.yaml` rồi chạy lại** —
+      chỉ những lượt gọi có nội dung THAY ĐỔI mới phải gọi lại.
+      → ✅ **KHÔNG đệm lỗi.** Phản hồi rỗng vì `reasoning_content` ăn hết `max_tokens`
+      (bẫy đã làm hỏng 7/53 rồi 2/94 lượt gọi thật) phải gọi lại được — đệm nó là đóng
+      băng một lỗi tạm thời thành vĩnh viễn. Có test hồi quy.
+      → ✅ Tắt bằng `SIZING_COPILOT_KHONG_CACHE=1`; `run_eval` in số lượt trúng đệm và
+      thời gian tiết kiệm ước tính vào cả màn hình lẫn báo cáo.
+      → ⚠️ **Script ĐO ĐẠC phải tự tắt đệm hoặc nói rõ**: `smoke_llm.py` tắt hẳn (nó tồn
+      tại để xác nhận endpoint SỐNG và đo độ trễ — lấy trong đệm sẽ báo "gọi được" kèm
+      độ trễ bịa), `try_c3_on_dossier.py` in cảnh báo khi lượt chạy có lượt lấy từ đệm.
+      Cùng loại bẫy với *"ba lượt chạy bằng mã cũ vì `git pull` chưa ăn"* ngày 04-09.
 - [ ] 2.13 — Chạy lại eval set đầy đủ, so sánh với GĐ 1
 - [ ] 2.14 — C7 chịu được **bản nháp chưa hoàn chỉnh**: phân biệt "người dùng chưa
       viết tới" và "thiếu hẳn", để chạy kiểm nhiều lần trong lúc soạn mà không bị
@@ -1055,3 +1129,13 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-04 | **C7 (1.10): nhãn hiển thị + thứ tự checklist là DỮ LIỆU trong `config/report_labels.yaml`, không hard-code** | Tinh thần NT3: người nghiệp vụ sửa được tên phần/mức độ và **thứ tự checklist** (`checklist_order`, 37 mã, khối chung `CL-3.x.N` trước 3 mục riêng Database) mà không đụng Python. Code chỉ nạp; thiếu khoá thì lùi về `_FALLBACK` an toàn để báo cáo không vỡ |
 | 2026-09-04 | **C7 tách Vòng 2 thành "chưa đạt" và "chưa kiểm được"; `khong_kiem_chung_duoc` ở Vòng 1 KHÔNG chặn Vòng 2** | Không tách thì tài liệu rỗng ra ~100 dòng "thiếu thông tin" nhấn chìm phần có ý nghĩa (đã kiểm bằng `demo_report.py`). Chỉ `thieu_muc`/`thieu_thong_tin` ở Vòng 1 mới chặn Vòng 2 — "không biết" (số lưỡng nghĩa, ảnh chưa đọc) ≠ "thiếu", coi như thiếu sẽ chặn oan các kiểm tra vốn chạy được |
 | 2026-09-04 | **Luật chặn Vòng 2 khớp phạm vi phân cấp**: trượt `he_thong` chặn mọi `scope_key`; trượt phân hệ "App" chặn cả "App" và "App/SSD" | Đúng mô hình `scope` đã chốt 2026-08-25 (`he_thong` / `phan_he` / `phan_he_x_cong_nghe_luu_tru`). Nếu chỉ khớp `scope_key` bằng nhau thì fail Vòng 1 ở phân hệ sẽ bỏ sót các kiểm Vòng 2 ở cấp công nghệ lưu trữ của chính phân hệ đó |
+| 2026-09-04 | **C2/2.2 dùng 5 loại ảnh, không phải 3 như dòng kế hoạch cũ** — thêm `console` và `anh_van_ban` | Soi tay 40 ảnh mẫu: lớp đông nhất là **ảnh chụp terminal** (14/40, và 34,1% trên toàn bộ 776 ảnh) — `top`, `free`, `lscpu`, `kubectl`. Đó chính là ảnh sở cứ đo tải mà PNX hay nhận xét, và là loại chứa số đọc được nhiều nhất. Gộp nó vào "khác" là vứt đi đúng thứ C2 sinh ra để lấy |
+| 2026-09-04 | **C2/2.2: pixel quyết định, chữ chỉ xác nhận** | Đo trên 40 ảnh: từ khoá ngữ cảnh bắt được 4/14 console và 2/11 dashboard — vô dụng, vì cả hai loại đều nằm dưới cùng đề mục *"TÍNH TOÁN CẤU HÌNH PHẦN CỨNG"* (chúng là sở cứ cho cùng một phép tính). Ngược lại mật độ dòng chữ tách sạch không chồng lấn (console ≥15,8 lần đổi sáng/tối mỗi hàng quét · dashboard ≤11,0). Alt text và tên file lúc dán ảnh cũng đã đo là tín hiệu chết (154/953 có nội dung nhưng là `IMG_256`/`cid:`; 6/777 tên có nghĩa) |
+| 2026-09-04 | **C2/2.2: đã thử cho từ khoá `sơ đồ` tự quyết ở nhánh nền sáng rồi BỎ** | Vá được 2 sơ đồ nét phẳng ít màu nhưng kéo 4 ảnh chụp bảng sang `so_do`; độ chính xác khi dám kết luận rơi **92% → 82%**. Đúng như precision 9/16 của nhóm từ đó đã báo trước. Giữ nguyên luật cũ và **thêm test hồi quy** để không ai thử lại lần thứ hai — cùng loại bẫy với ba vòng chữa triệu chứng của C3 |
+| 2026-09-04 | **C2/2.2 trả `chua_ro` cho 23,1% ảnh thay vì đoán bừa** | NT4 và nguyên tắc "chính xác hơn độ phủ": 179/776 ảnh có tín hiệu mâu thuẫn (nền sáng mà màu không tách được sơ đồ khỏi ảnh chụp văn bản: 84 · nền tối mà mật độ chữ nằm giữa hai ngưỡng: 61 · nền không rõ tối/sáng: 34). 2.3 vẫn đọc được chúng bằng vision, chỉ là không được hỏi bằng câu chuyên cho từng loại |
+| 2026-09-05 | **Chọn phiên bản `.docx` cho eval bằng BA tín hiệu, không phải một** | Từ khoá hệ thống (loại tài liệu lạ trong thư mục) + ngày PNX làm **trần** (loại bản sửa sau thẩm định) + thứ tự ngày sửa (đánh số vòng). Từng luật đơn đều đã thử và hỏng ở một hồ sơ khác nhau: PNM (callbot lạc vào thư mục), Data Security (đổi tên nên gom họ vứt mất bản vòng 2), VTracking (một file PNX tích luỹ nhiều vòng ⟹ `dcterms:modified` là ngày vòng CUỐI, neo vòng 1 vào đó lại chọn bản muộn nhất) |
+| 2026-09-05 | **Mặc định vẫn chỉ chạy MỘT bản mỗi hồ sơ (bản vòng 1); `--moi-phien-ban` là tuỳ chọn** | 73% nhãn thuộc vòng 1. Chạy đúng bản cho từng vòng nhân chi phí lên 2,2× (1,1 → 2,4 giờ trên mẫu 4 hồ sơ) ở mức ~40 giây/lượt gọi. Đổi lại, `run_eval` **đếm và in ra** số nhãn vòng sau bị chấm trên bản vòng 1, nên thiên lệch còn lại là con số nhìn thấy được chứ không phải ẩn số |
+| 2026-09-05 | **Không dùng `dcterms:modified` để suy ra thứ tự khi nhiều bản CÙNG ngày** | GSCG có 3 bản cùng sửa 20/11/2024. Xếp thứ tự vòng giữa chúng chỉ còn dựa vào tên file — không có bằng chứng thời gian, nên module ghi cảnh báo thay vì im lặng chọn (NT4) |
+| 2026-09-05 | **Đệm lời gọi model ở tầng LỜI GỌI, không phải "theo hash file" như dòng kế hoạch 2.12** | Cái đắt là lời gọi (~40 giây), không phải đọc `.docx`. Khoá theo nội dung lời gọi phủ cả C3 lẫn C5 bằng một cơ chế, và cứu thêm hai ca hay gặp hơn: lượt chạy đứt giữa chừng, và sửa một quy tắc rồi chạy lại (chỉ lượt gọi có nội dung đổi mới phải gọi lại). Khoá phải gồm MỌI tham số đổi được kết quả — kể cả model và `response_format` |
+| 2026-09-05 | **KHÔNG bao giờ đệm lời gọi lỗi** | Phản hồi rỗng vì `reasoning_content` ăn hết `max_tokens` là lỗi TẠM THỜI, cần gọi lại. Đệm nó lại thành vĩnh viễn, và vì đệm nằm dưới cùng nên không tầng nào ở trên phát hiện được |
+| 2026-09-05 | **Điểm dừng của `run_eval` có CHỮ KÝ; chữ ký lệch thì bỏ, không trộn** | `--tiep-tuc` mà trộn kết quả của hai lượt chạy khác bộ lọc (khác model, khác `--nhom`) sẽ cho một con số recall không truy lại được nguồn. Thà chạy lại từ đầu và nói rõ lý do |

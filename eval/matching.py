@@ -94,11 +94,31 @@ def nap_nhan(tap: str = "dev", *, duong_dan: str = DUONG_DAN_EVAL,
     return [l for l in labels if l["dossier"] in ten]
 
 
+def _findings_cua_vong(theo_vong: dict[int, list], vong: int) -> list:
+    """Finding của đúng vòng; thiếu vòng đó thì lùi về vòng gần nhất ĐÃ CHẠY.
+
+    Lùi xuống chứ không lùi lên: bản của vòng trước là bản CHƯA sửa theo nhận xét
+    của vòng đó, nên nó vẫn còn lỗi — đoán theo hướng này an toàn hơn.
+    """
+    if vong in theo_vong:
+        return theo_vong[vong]
+    truoc = [v for v in theo_vong if v < vong]
+    return theo_vong[max(truoc)] if truoc else theo_vong[min(theo_vong)]
+
+
 def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
-              tap: str = "dev", file_da_dung: dict[str, str] | None = None
+              tap: str = "dev", file_da_dung: dict[str, str] | None = None,
+              findings_theo_vong: dict[str, dict[int, list]] | None = None
               ) -> KetQuaEval:
-    """So khớp theo `meta.scoring_note`. `findings_theo_ho_so`: hồ sơ → list[Finding]."""
+    """So khớp theo `meta.scoring_note`. `findings_theo_ho_so`: hồ sơ → list[Finding].
+
+    `findings_theo_vong` (tuỳ chọn): hồ sơ → {vòng: findings}. Khi có, nhãn của
+    vòng N được chấm trên finding của ĐÚNG bản mà PNX vòng N đã đọc — gỡ thiên
+    lệch phiên bản (hạn chế số 6). Không có thì mọi nhãn chấm chung một bản, và
+    `run_eval` phải nói ra số nhãn bị chấm sai bản.
+    """
     file_da_dung = file_da_dung or {}
+    findings_theo_vong = findings_theo_vong or {}
     theo_ho_so: dict[str, list[dict]] = {}
     for l in labels:
         theo_ho_so.setdefault(l["dossier"], []).append(l)
@@ -117,13 +137,19 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
             kq.ho_so.append(h)
             continue
 
+        theo_vong = findings_theo_vong.get(dossier) or {}
         ma_finding = {f.rule_ref for f in fs if f.rule_ref}
         ma_trung: set[str] = set()
         for l in ds:
             refs = set(l.get("rule_ref") or [])
             if not refs:
                 continue                      # khoang_trong / khong_neo_duoc
-            chung = refs & ma_finding
+            if theo_vong:
+                fs_l = _findings_cua_vong(theo_vong, int(l.get("lan_nhan_xet") or 1))
+                ma_l = {f.rule_ref for f in fs_l if f.rule_ref}
+            else:
+                ma_l = ma_finding
+            chung = refs & ma_l
             if chung:
                 h.trung += 1
                 h.trung_ids.append(l["label_id"])
