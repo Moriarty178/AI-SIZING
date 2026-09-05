@@ -7,7 +7,7 @@ câu chung cho mọi thứ.
 ## Năm loại này lấy từ đâu
 
 KHÔNG lấy từ suy đoán. Lấy từ **40 ảnh mẫu phân tầng theo hồ sơ, được xem tận
-mắt và gán nhãn tay** (`tests/du_lieu/nhan_anh_mau.json`). Phân bố đo được khác
+mắt và gán nhãn tay** (`data/nhan_anh_mau.json`). Phân bố đo được khác
 hẳn giả định ban đầu của PLAN mục 2.2 (*"sơ đồ / biểu đồ-dashboard / khác"*):
 
 | Loại | Mẫu | Vì sao tách riêng |
@@ -49,10 +49,12 @@ from __future__ import annotations
 
 import io
 import re
+import zipfile
 from dataclasses import dataclass, field
 from typing import Literal
 
-from .anh import Anh
+from ..ingestion.docx_reader import DocxDocument
+from .anh import Anh, trich_anh
 
 Loai = Literal["so_do", "console", "dashboard", "anh_van_ban", "chua_ro"]
 DoTin = Literal["cao", "vua", "thap"]
@@ -115,7 +117,10 @@ def do_dac_trung(data: bytes) -> DacTrungAnh | None:
 
     dt = DacTrungAnh()
     nho = im.resize((MAU_MEM, MAU_MEM))
-    px = list(nho.getdata())
+    # `tobytes()` chứ không `getdata()`: getdata bị bỏ ở Pillow 14, mà `pyproject`
+    # chỉ ghim `pillow>=10.0` nên bản mới sẽ vào đây mà không ai để ý.
+    tho = nho.tobytes()
+    px = [(tho[i], tho[i + 1], tho[i + 2]) for i in range(0, len(tho), 3)]
     n = len(px)
     lum = [(0.299 * r + 0.587 * g + 0.114 * b) / 255 for r, g, b in px]
     dt.sang = sum(lum) / n
@@ -235,3 +240,69 @@ def phan_loai(anh: Anh, data: bytes | None) -> KetQuaPhanLoai:
     if _co_tu_so_do(anh):
         kq.tin_hieu.append("ngữ cảnh có từ khoá sơ đồ/kiến trúc")
     return kq
+
+
+# ---------------------------------------------------------------------------
+# 2.4 — tóm tắt cho cảnh báo NT4 của pipeline
+# ---------------------------------------------------------------------------
+MAX_VI_TRI = 5          # cảnh báo chỉ nêu vài vị trí đầu, không đổ cả 58 dòng
+
+
+@dataclass
+class NhomAnh:
+    loai: Loai
+    so_luong: int = 0
+    vi_tri: list[str] = field(default_factory=list)
+
+
+@dataclass
+class TomTatAnh:
+    """Ảnh của một tài liệu, đã đếm theo loại. Đầu vào cho cảnh báo NT4."""
+
+    tong: int = 0
+    nhom: list[NhomAnh] = field(default_factory=list)
+    canh_bao: list[str] = field(default_factory=list)
+    da_phan_loai: bool = False      # False = không đo được pixel, chỉ có tổng số
+
+
+def tom_tat_anh(doc: DocxDocument) -> TomTatAnh:
+    """Đếm ảnh theo loại. THUẦN CODE, không gọi model — dùng được cả ở laptop.
+
+    Xuống cấp có kiểm soát (NT4): đọc được file thì phân loại; không đọc được
+    (thiếu Pillow, ảnh vector, file hỏng) thì vẫn trả TỔNG SỐ ảnh kèm lý do, chứ
+    không im lặng bỏ và cũng không đoán loại.
+    """
+    ra = TomTatAnh()
+    kq = trich_anh(doc)
+    ra.canh_bao = list(kq.canh_bao)
+    ra.tong = len(kq.anh)
+    if not kq.anh:
+        return ra
+
+    theo_loai: dict[str, NhomAnh] = {}
+    # Mở gói .docx MỘT lần cho cả tài liệu. `byte_anh` mở lại cho từng ảnh, mà một
+    # bản sizing thật có tới 58 ảnh.
+    try:
+        goi = zipfile.ZipFile(doc.path)
+    except (OSError, zipfile.BadZipFile) as e:
+        ra.canh_bao.append(f"không mở được file để đọc ảnh: {e}")
+        return ra
+    with goi:
+        ten_co = set(goi.namelist())
+        for a in kq.anh:
+            data = goi.read(a.duong_dan_media) if a.duong_dan_media in ten_co else None
+            r = phan_loai(a, data)
+            if r.loai != "chua_ro":
+                ra.da_phan_loai = True
+            n = theo_loai.setdefault(r.loai, NhomAnh(loai=r.loai))
+            n.so_luong += 1
+            if len(n.vi_tri) < MAX_VI_TRI:
+                n.vi_tri.append(a.location)
+
+    # Thứ tự trình bày: loại nào nhiều khả năng chứa SỐ ĐO nhất đứng trước, vì đó
+    # là phần người thẩm định hay đòi sở cứ nhất.
+    uu_tien = ["console", "dashboard", "anh_van_ban", "so_do", "chua_ro"]
+    ra.nhom = sorted(theo_loai.values(),
+                     key=lambda n: (uu_tien.index(n.loai) if n.loai in uu_tien
+                                    else len(uu_tien), -n.so_luong))
+    return ra

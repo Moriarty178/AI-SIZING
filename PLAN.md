@@ -11,7 +11,7 @@
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
 | 1 | MVP chỉ xử lý text | 14 / 17 | 🟡 Đang làm — chờ số recall thật (1.13) |
-| 2 | Đa phương thức & tái sử dụng | 3,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.12 xong, 2.11 một nửa (đều offline) |
+| 2 | Đa phương thức & tái sử dụng | 4 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.12 xong; 2.4 · 2.11 một nửa (đều offline) |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
 
@@ -957,7 +957,24 @@ chứng minh công cụ có giá trị hay không.
       → ⬜ **Cần người xác nhận nhãn**: 40 nhãn do một tác nhân AI nhìn ảnh mà gán, n
       nhỏ cho 5 lớp — cùng hạn chế đã ghi cho eval set.
 - [ ] 2.3 — C2: vision + OCR, sinh mô tả và trích số
-- [ ] 2.4 — Cơ chế xuống cấp có kiểm soát: cảnh báo khi không kiểm chứng được (NT4)
+- [~] 2.4 — Cơ chế xuống cấp có kiểm soát (NT4) — **phần ẢNH XONG 2026-09-05**; phần
+      phụ thuộc 2.3 (model vision không với tới / từ chối / OCR hỏng) làm cùng 2.3.
+      → ✅ Cảnh báo NT4 về ảnh nay **tách theo loại** nhờ 2.2 thay vì một dòng gộp.
+      Đo trên bản Vtag thật: trước là *"tài liệu có 43 hình ảnh chưa đọc được"*; nay là
+      **18 ảnh chụp dòng lệnh** (nơi đặt số đo tải làm sở cứ) · 9 biểu đồ giám sát ·
+      3 ảnh chụp bảng · 1 sơ đồ · 12 chưa phân loại được — mỗi nhóm một **gợi ý riêng**,
+      vì chép số từ ảnh `top` và mô tả lại một sơ đồ là hai việc khác hẳn nhau.
+      → ✅ **Nhãn và gợi ý từng loại là DỮ LIỆU** trong `config/report_labels.yaml`
+      (khoá `anh_loai`), đúng quyết định 2026-09-04 của C7 — không hard-code tiếng Việt
+      vào Python. Loại lạ không có nhãn vẫn không làm vỡ báo cáo (có test).
+      → ✅ **Giữ nguyên mức `info`**: mức độ là dữ liệu (NT3), 2.4 chỉ mô tả chính xác
+      hơn phần máy CHƯA nhìn tới chứ không được tự đặt thêm mức.
+      → ✅ **Xuống cấp hai tầng**: mất tín hiệu pixel (thiếu Pillow, ảnh vector, file
+      không mở được) thì lùi về cảnh báo tổng **kèm lý do**, không im lặng và không đoán
+      loại. **15 unit test**, dựng ảnh PNG tổng hợp nằm xa mọi ngưỡng nên không dòn.
+      → 📏 Chi phí: **2,4–3,8 giây mỗi tài liệu** (43–58 ảnh), không gọi model.
+      → 🔧 Vá kèm: `Image.getdata()` bị bỏ ở Pillow 14 mà `pyproject` chỉ ghim
+      `pillow>=10.0` — đã đổi sang `tobytes()`; độ chính xác 2.2 không đổi (34/40).
 - [ ] 2.5 — Kiểm tra chéo: số trong ảnh biểu đồ vs số trong bảng sizing
 
 ### Tuần 5 — Truy hồi & scale
@@ -1139,3 +1156,5 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-05 | **Đệm lời gọi model ở tầng LỜI GỌI, không phải "theo hash file" như dòng kế hoạch 2.12** | Cái đắt là lời gọi (~40 giây), không phải đọc `.docx`. Khoá theo nội dung lời gọi phủ cả C3 lẫn C5 bằng một cơ chế, và cứu thêm hai ca hay gặp hơn: lượt chạy đứt giữa chừng, và sửa một quy tắc rồi chạy lại (chỉ lượt gọi có nội dung đổi mới phải gọi lại). Khoá phải gồm MỌI tham số đổi được kết quả — kể cả model và `response_format` |
 | 2026-09-05 | **KHÔNG bao giờ đệm lời gọi lỗi** | Phản hồi rỗng vì `reasoning_content` ăn hết `max_tokens` là lỗi TẠM THỜI, cần gọi lại. Đệm nó lại thành vĩnh viễn, và vì đệm nằm dưới cùng nên không tầng nào ở trên phát hiện được |
 | 2026-09-05 | **Điểm dừng của `run_eval` có CHỮ KÝ; chữ ký lệch thì bỏ, không trộn** | `--tiep-tuc` mà trộn kết quả của hai lượt chạy khác bộ lọc (khác model, khác `--nhom`) sẽ cho một con số recall không truy lại được nguồn. Thà chạy lại từ đầu và nói rõ lý do |
+| 2026-09-05 | **2.4: cảnh báo NT4 về ảnh tách theo LOẠI, mỗi loại một gợi ý riêng** | *"Tài liệu có 43 hình ảnh chưa đọc được"* là đúng nhưng không hành động được. 18 ảnh chụp dòng lệnh (nơi đặt số đo tải làm sở cứ) và 1 sơ đồ đòi hai việc hoàn toàn khác nhau: chép số ra bảng, và mô tả lại thành phần bằng lời. Nhãn + gợi ý từng loại nằm trong `config/report_labels.yaml`, không hard-code |
+| 2026-09-05 | **2.4 KHÔNG nâng mức độ cảnh báo ảnh lên trên `info`** | Dù ảnh chụp console nhiều khả năng chứa sở cứ mà máy chưa đọc, mức độ là DỮ LIỆU của bộ quy tắc (NT3). Thiếu tham số đã có `thieu_thong_tin` mức `major` do C4 sinh; đặt thêm một mức ở pipeline là dựng quy tắc trong code |

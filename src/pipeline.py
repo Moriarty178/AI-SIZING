@@ -26,10 +26,11 @@ from .extraction.schema import SizingCore
 from .ingestion.docx_reader import DocxDocument, read_docx
 from .llm.client import LLMClient
 from .reporting.finding import Finding
-from .reporting.report import build_report
+from .reporting.report import build_report, load_labels
 from .validators.qualitative import QualitativeValidator
 from .validators.quantitative import QuantitativeValidator, RuleOutcome
 from .validators.rules_loader import RuleSet, load_rules
+from .vision.phan_loai import tom_tat_anh
 
 MAX_VI_TRI_LIET_KE = 5      # cảnh báo ảnh chỉ nêu vài vị trí đầu, không đổ cả 767 dòng
 
@@ -55,6 +56,59 @@ class KetQuaChay:
                             ma_pyc=self.sizing.ma_pyc)
 
 
+def _canh_bao_anh(doc: DocxDocument, anh: list) -> list[Finding]:
+    """Cảnh báo NT4 về ảnh, TÁCH THEO LOẠI khi phân loại được (2.2).
+
+    Trước 2.4, cảnh báo này chỉ nói *"tài liệu có 767 hình ảnh chưa đọc được"* —
+    đúng nhưng không hành động được. Với 2.2 nó nói được phần nào đáng lo: ảnh
+    chụp dòng lệnh là nơi đặt số đo tải làm sở cứ, còn sơ đồ thì không có số nào
+    để đối chiếu. Cùng một sự thật, khác hẳn về việc người dùng phải làm.
+
+    Vẫn là cảnh báo `info` chứ không nâng mức: quy tắc và mức độ là dữ liệu
+    (NT3), không được tự đặt thêm ở đây. Đây chỉ là mô tả chính xác hơn về phần
+    máy CHƯA nhìn tới.
+    """
+    tt = tom_tat_anh(doc)
+    nhan = load_labels().anh_loai
+
+    if not tt.da_phan_loai or not tt.nhom:
+        # Không đo được pixel (thiếu Pillow, ảnh vector, file không mở được):
+        # vẫn phải nói ra tổng số, và nói rõ vì sao không chia được loại.
+        vt = [e.location for e in anh[:MAX_VI_TRI_LIET_KE]]
+        them = f" và {len(anh) - len(vt)} ảnh khác" if len(anh) > len(vt) else ""
+        ly_do = ("; ".join(tt.canh_bao[:2]) if tt.canh_bao
+                 else "không đo được đặc trưng ảnh")
+        return [Finding(
+            id="NT4-ANH", severity="info", category="khong_kiem_chung_duoc",
+            finding=f"Tài liệu có {len(anh)} hình ảnh mà bản này chưa đọc được nội "
+                    f"dung. Nếu sở cứ hoặc số liệu nằm trong ảnh thì phần đó CHƯA "
+                    f"được kiểm.",
+            computed_evidence=f"{len(anh)} ảnh tại: {'; '.join(vt)}{them} "
+                              f"(chưa chia được theo loại: {ly_do})",
+            suggestion="Đưa số liệu trong ảnh ra thành bảng hoặc văn bản để kiểm được.",
+            confidence="cao")]
+
+    ra: list[Finding] = []
+    for n in tt.nhom:
+        nh = nhan.get(n.loai, {})
+        ten = nh.get("ten", n.loai)
+        mo_ta = str(nh.get("mo_ta", "")).strip()
+        them = (f" và {n.so_luong - len(n.vi_tri)} ảnh khác"
+                if n.so_luong > len(n.vi_tri) else "")
+        ra.append(Finding(
+            id=f"NT4-ANH-{n.loai.upper()}", severity="info",
+            category="khong_kiem_chung_duoc",
+            finding=f"Tài liệu có {n.so_luong} {ten}"
+                    + (f" ({mo_ta})" if mo_ta else "")
+                    + ". Bản này chưa đọc được nội dung ảnh, nên phần nằm trong "
+                      "chúng CHƯA được kiểm.",
+            computed_evidence=f"{n.so_luong}/{tt.tong} ảnh, phân loại bằng đặc trưng "
+                              f"ảnh (C2 mục 2.2), tại: {'; '.join(n.vi_tri)}{them}",
+            suggestion=str(nh.get("goi_y", "")).strip(),
+            confidence="cao"))
+    return ra
+
+
 def canh_bao_nt4(doc: DocxDocument) -> list[Finding]:
     """Những gì Giai đoạn 1 KHÔNG nhìn tới — nói ra, không im lặng bỏ qua (NT4).
 
@@ -65,16 +119,7 @@ def canh_bao_nt4(doc: DocxDocument) -> list[Finding]:
 
     anh = doc.images()
     if anh:
-        vt = [e.location for e in anh[:MAX_VI_TRI_LIET_KE]]
-        them = f" và {len(anh) - len(vt)} ảnh khác" if len(anh) > len(vt) else ""
-        ra.append(Finding(
-            id="NT4-ANH", severity="info", category="khong_kiem_chung_duoc",
-            finding=f"Tài liệu có {len(anh)} hình ảnh mà bản này chưa đọc được nội "
-                    f"dung. Nếu sở cứ hoặc số liệu nằm trong ảnh thì phần đó CHƯA "
-                    f"được kiểm.",
-            computed_evidence=f"{len(anh)} ảnh tại: {'; '.join(vt)}{them}",
-            suggestion="Đưa số liệu trong ảnh ra thành bảng hoặc văn bản để kiểm được.",
-            confidence="cao"))
+        ra += _canh_bao_anh(doc, anh)
 
     if doc.page_source == "none":
         ra.append(Finding(

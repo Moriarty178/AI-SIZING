@@ -84,6 +84,11 @@ class ReportLabels:
         return set(self._get("vong2_chua_kiem_duoc"))
 
     @property
+    def anh_loai(self) -> dict:
+        """Nhãn từng loại ảnh của C2. Thiếu khoá nào thì phần đó chỉ hiện tên mã."""
+        return dict(self.data.get("anh_loai") or {})
+
+    @property
     def parts(self) -> list[dict]:
         return list(self._get("checklist_parts"))
 
