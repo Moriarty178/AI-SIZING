@@ -151,3 +151,25 @@ def test_location_khi_khong_co_gi_de_neo():
     doc.add_paragraph("văn xuôi")
     d = read_docx(_save(doc))
     assert d.elements[0].location == "phần tử #0"
+
+
+def test_phan_tu_anh_giu_duoc_rid_de_lan_ra_file_anh():
+    """C1 trước đây chỉ ghi "đoạn này có ảnh" — không đủ cho C2 đọc file nào.
+
+    Hồi quy cho thay đổi 2026-09-04: `anh_refs` + `rels` là thứ để 2.1 tra ra
+    `word/media/imageN.png`.
+    """
+    from docx.shared import Inches
+
+    from tests.test_vision_anh import _file_png
+
+    doc = Document()
+    doc.add_picture(_file_png(30, 15), width=Inches(1.5))
+    d = read_docx(_save(doc))
+
+    anh = d.images()[0]
+    assert anh.anh_refs and len(anh.anh_refs) == 1
+    ref = anh.anh_refs[0]
+    assert ref.rid and ref.neo == "inline"
+    assert ref.emu_rong and ref.emu_cao          # cỡ hiển thị trong Word
+    assert d.rels[ref.rid] in d.media

@@ -19,6 +19,7 @@ phải bản web app xuất ra):
 from __future__ import annotations
 
 import re
+import xml.etree.ElementTree as ET
 import zipfile
 from dataclasses import dataclass, field
 
@@ -51,6 +52,23 @@ def _level_of(num: str, seen_roman: bool) -> int:
 
 
 @dataclass
+class AnhRef:
+    """Một ảnh trong một đoạn — đủ để C2 lần ra đúng file trong `word/media`.
+
+    C1 trước đây chỉ ghi *"đoạn này có ảnh"*. Như thế đủ cho cảnh báo NT4 nhưng
+    KHÔNG đủ cho C2: không có `rid` thì không biết đọc file nào, và một đoạn chứa
+    ba ảnh vẫn chỉ ra một phần tử.
+    """
+
+    rid: str                        # r:embed / r:id -> tra trong `DocxDocument.rels`
+    alt: str = ""                   # wp:docPr/@descr — thực đo: 84% để trống
+    ten_shape: str = ""             # wp:docPr/@name — thực đo: hầu hết là "Picture 3"
+    emu_rong: int | None = None     # kích thước HIỂN THỊ trong Word (EMU)
+    emu_cao: int | None = None
+    neo: str = "inline"             # inline | anchor | vml
+
+
+@dataclass
 class Element:
     """Một phần tử trong tài liệu, kèm đủ thông tin để neo một finding vào."""
 
@@ -62,6 +80,7 @@ class Element:
     section_title: str = ""         # "Định cỡ máy chủ BigData"
     level: int | None = None        # chỉ cho heading
     rows: list[list[str]] | None = None   # chỉ cho table
+    anh_refs: list[AnhRef] | None = None  # chỉ cho image; một đoạn có thể nhiều ảnh
     style: str = ""
 
     @property
@@ -81,6 +100,8 @@ class DocxDocument:
     elements: list[Element] = field(default_factory=list)
     page_source: str = "none"       # rendered | manual | none — độ tin của `page`
     warnings: list[str] = field(default_factory=list)
+    rels: dict[str, str] = field(default_factory=dict)   # rId -> "word/media/image7.png"
+    media: list[str] = field(default_factory=list)       # mọi file trong word/media
 
     @property
     def n_pages(self) -> int | None:
@@ -108,6 +129,61 @@ def _cell_text(tc) -> str:
         "".join(n.text or "" for n in p.iter(qn("w:t"))).strip()
         for p in tc.iter(qn("w:p"))
     ).strip()
+
+
+_REL_ANH = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+_NS_REL = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+_NS_VML = "{urn:schemas-microsoft-com:vml}"
+_NS_R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+
+
+def _doc_rels(z: zipfile.ZipFile) -> dict[str, str]:
+    """rId -> đường dẫn file ảnh trong gói. Chỉ nhận quan hệ loại `image`."""
+    try:
+        root = ET.fromstring(z.read("word/_rels/document.xml.rels"))
+    except (KeyError, ET.ParseError):
+        return {}
+    ra: dict[str, str] = {}
+    for rel in root.iter(_NS_REL + "Relationship"):
+        if rel.get("Type") != _REL_ANH:
+            continue
+        target = (rel.get("Target") or "").lstrip("/")
+        if target.startswith("media/"):
+            target = "word/" + target
+        ra[rel.get("Id") or ""] = target
+    return ra
+
+
+def _anh_refs(para) -> list[AnhRef]:
+    """Mọi ảnh trong MỘT đoạn, theo đúng thứ tự xuất hiện.
+
+    Bắt cả hai đường: DrawingML (`w:drawing`, Word 2007+) và VML (`w:pict`, ảnh
+    dán từ bản Word cũ — đo được 107 cái trong kho hồ sơ thật). Ảnh không có
+    `rid` thì BỎ, vì không đọc lại được file: giữ lại sẽ thành một bản ghi rỗng
+    mà C2 không làm gì được.
+    """
+    ra: list[AnhRef] = []
+    for node in para.iter():
+        if node.tag in (qn("wp:inline"), qn("wp:anchor")):
+            ext = node.find(qn("wp:extent"))
+            props = node.find(qn("wp:docPr"))
+            blip = node.find(".//" + qn("a:blip"))
+            rid = blip.get(_NS_R + "embed") if blip is not None else None
+            if not rid:
+                continue
+            ra.append(AnhRef(
+                rid=rid,
+                alt=(props.get("descr") or "").strip() if props is not None else "",
+                ten_shape=(props.get("name") or "").strip() if props is not None else "",
+                emu_rong=int(ext.get("cx")) if ext is not None and ext.get("cx") else None,
+                emu_cao=int(ext.get("cy")) if ext is not None and ext.get("cy") else None,
+                neo="inline" if node.tag == qn("wp:inline") else "anchor"))
+        elif node.tag == _NS_VML + "imagedata":
+            rid = node.get(_NS_R + "id")
+            if rid:
+                ra.append(AnhRef(rid=rid, alt=(node.get("title") or "").strip(),
+                                 neo="vml"))
+    return ra
 
 
 def _classify_heading(text: str, style: str, bold: bool,
@@ -174,9 +250,12 @@ def read_docx(path: str) -> DocxDocument:
     out = DocxDocument(path=path)
     numbering = load_numbering(doc)
 
-    # Ảnh: đếm trước để đối chiếu với số ảnh nhặt được khi duyệt thân bài.
+    # Ảnh: đọc bảng quan hệ và danh sách file media trước, để đối chiếu với số ảnh
+    # nhặt được khi duyệt thân bài — lệch giữa hai con số là điều phải NÓI RA.
     with zipfile.ZipFile(path) as z:
-        n_media = sum(1 for n in z.namelist() if n.startswith("word/media/"))
+        out.media = sorted(n for n in z.namelist() if n.startswith("word/media/"))
+        out.rels = _doc_rels(z)
+    n_media = len(out.media)
 
     page = 1
     saw_rendered = saw_manual = False
@@ -217,7 +296,8 @@ def read_docx(path: str) -> DocxDocument:
             if has_img:
                 out.elements.append(Element(
                     index=idx, kind="image", text=text, page=page,
-                    section=cur_num, section_title=cur_title, style=style))
+                    section=cur_num, section_title=cur_title, style=style,
+                    anh_refs=_anh_refs(child)))
                 idx += 1
                 if not text:
                     continue
