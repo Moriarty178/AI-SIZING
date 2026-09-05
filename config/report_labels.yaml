@@ -32,6 +32,34 @@ category_labels:
   khong_kiem_chung_duoc: "Chưa kiểm chứng được"
   khong_nhat_quan: "Không nhất quán"
 
+# Loại ảnh (C2 mục 2.2) — câu mô tả đưa vào cảnh báo NT4 của báo cáo.
+# `goi_y` là việc người dùng nên làm để phần đó kiểm được.
+anh_loai:
+  console:
+    ten: "ảnh chụp màn hình dòng lệnh"
+    mo_ta: >-
+      thường là kết quả `top`, `free`, `lscpu`, `kubectl` — nơi đặt SỐ ĐO TẢI dùng
+      làm sở cứ định cỡ
+    goi_y: "Chép các số đo trong ảnh ra thành bảng để công cụ đối chiếu được."
+  dashboard:
+    ten: "ảnh chụp biểu đồ giám sát"
+    mo_ta: >-
+      Grafana/APM — số chính xác chỉ có ở ô KPI và đồng hồ, phần đồ thị chỉ đọc
+      được xu hướng
+    goi_y: "Ghi rõ giá trị đỉnh và giá trị trung bình kèm khoảng thời gian đo."
+  anh_van_ban:
+    ten: "ảnh chụp bảng hoặc văn bản"
+    mo_ta: "bảng số liệu, thư trao đổi, trang kết quả benchmark chụp lại"
+    goi_y: "Đưa nội dung ảnh vào tài liệu dưới dạng bảng hoặc đoạn văn."
+  so_do:
+    ten: "sơ đồ"
+    mo_ta: "sơ đồ kiến trúc, mô hình triển khai, topology mạng"
+    goi_y: "Mô tả bằng lời các thành phần và luồng chính đã vẽ trong sơ đồ."
+  chua_ro:
+    ten: "ảnh chưa phân loại được"
+    mo_ta: "tín hiệu không đủ để đoán chắc ảnh thuộc loại nào"
+    goi_y: "Nếu ảnh chứa số liệu hoặc sở cứ, hãy nêu lại bằng chữ trong tài liệu."
+
 # Nhóm finding Vòng 1 coi là "trượt" -> chặn finding Vòng 2 của cùng mục.
 # CỐ Ý không gồm `khong_kiem_chung_duoc`: không biết KHÔNG đồng nghĩa với thiếu —
 # một số liệu lưỡng nghĩa hay ảnh chưa đọc được vẫn có thể là phần đã viết đủ.
