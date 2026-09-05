@@ -21,3 +21,7 @@ data/knowledge_base/mau-sizing-chuan.docx
 # Kết quả 1.17 sinh lại được bằng scripts/fill_checklist.py — không commit
 docs/checklist/
 .cache/
+
+# Báo cáo DIỄN TẬP (model giả) — số vô nghĩa về chất lượng, giữ lại chỉ gây nhầm
+# với báo cáo eval thật. Sinh lại bất cứ lúc nào bằng `run_eval --gia-lap`.
+eval/reports/dien-tap-*.md
