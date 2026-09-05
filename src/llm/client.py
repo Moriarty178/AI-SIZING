@@ -26,6 +26,8 @@ import yaml
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
+from .cache import BoNhoDem
+
 try:  # gateway từ chối tham số lạ bằng HTTP 400, KHÔNG phải TypeError của SDK
     from openai import BadRequestError as _BadRequest
     _PARAM_REJECTED: tuple[type[BaseException], ...] = (TypeError, _BadRequest)
@@ -79,7 +81,8 @@ def load_settings(path: str = "config/settings.yaml") -> dict:
 
 
 class LLMClient:
-    def __init__(self, settings: dict | None = None, settings_path: str = "config/settings.yaml"):
+    def __init__(self, settings: dict | None = None, settings_path: str = "config/settings.yaml",
+                 *, cache: BoNhoDem | None = None):
         cfg = (settings or load_settings(settings_path))["llm"]
         key = os.environ.get(KEY_ENV)
         if not key:
@@ -90,25 +93,36 @@ class LLMClient:
         self.temperature = float(cfg.get("temperature", 0.1))
         self._client = OpenAI(base_url=cfg["base_url"], api_key=key,
                               timeout=float(cfg.get("timeout_s", 120)))
+        # 2.12 — đệm ở tầng lời gọi, phủ cả C3 lẫn C5. Xem `src/llm/cache.py`.
+        self.cache = cache if cache is not None else BoNhoDem()
 
     # ------------------------------------------------------------------
     def chat(self, messages: list[dict], *, model: str | None = None,
              max_tokens: int = DEFAULT_MAX_TOKENS, **extra) -> str:
         """Một lời gọi chat. Phản hồi rỗng là LỖI, không phải chuỗi rỗng hợp lệ."""
-        resp = self._client.chat.completions.create(
+        goi = dict(
             model=model or self.chat_model,
             messages=messages,
             temperature=self.temperature,
             max_tokens=max_tokens,
             **extra,
         )
+        # Khoá đệm phải phủ MỌI thứ đổi được kết quả — kể cả `response_format`.
+        khoa = self.cache.khoa(goi)
+        da_co = self.cache.lay(khoa)
+        if da_co is not None:
+            return da_co
+
+        resp = self._client.chat.completions.create(**goi)
         content = (resp.choices[0].message.content or "").strip()
         if not content:
             # Đã gặp thật: model dồn hết ngân sách token vào reasoning_content.
+            # KHÔNG đệm ca này: đó là lỗi cần gọi lại, đệm sẽ đóng băng nó vĩnh viễn.
             raise LLMError(
                 f"phản hồi rỗng (finish_reason={resp.choices[0].finish_reason}, "
                 f"max_tokens={max_tokens}) — thử tăng max_tokens"
             )
+        self.cache.luu(khoa, content, meta={"model": goi["model"]})
         return content
 
     # ------------------------------------------------------------------
