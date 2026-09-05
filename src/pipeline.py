@@ -48,6 +48,7 @@ class KetQuaChay:
     sizing: SizingCore
     ket_qua_dl: list[RuleOutcome] = field(default_factory=list)
     ket_qua_dt: list[RuleOutcome] = field(default_factory=list)
+    ket_qua_anh: list = field(default_factory=list)      # C2 mục 2.3, khi bật
     findings: list[Finding] = field(default_factory=list)
     thong_ke: dict = field(default_factory=dict)
 
@@ -143,6 +144,7 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
          model: str | None = None, chi_nhom: list[str] | None = None,
          chi_vong: int | None = None, chi_ma_dt: list[str] | None = None,
          bo_qua_dinh_tinh: bool = False, bo_qua_trich_xuat: bool = False,
+         doc_anh: bool = False, loai_anh=None,
          on_tien_do=None, song_song: int = 1) -> KetQuaChay:
     """Chạy trọn pipeline trên một file `.docx`.
 
@@ -150,6 +152,11 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
     95 lượt gọi cho C3 cộng 120 lượt cho C5.
     `bo_qua_trich_xuat=True` chạy C4/C5 trên tài liệu rỗng — chỉ dùng để xem bộ quy
     tắc hỏi những gì, không phải để thẩm định thật.
+
+    `doc_anh` (C2 mục 2.3) **mặc định TẮT**. Người dùng chốt 2026-09-05: lượt đo
+    recall chạy sạch trước, không kèm 2.3 — trộn hai thay đổi vào một lượt chạy tốn
+    tiền thì không quy được kết quả cho cái nào. Bật lên thì mỗi ảnh thuộc loại đã
+    chọn tốn thêm một lượt gọi (~40 giây).
     """
     rs = rules or load_rules()
     doc = read_docx(path)
@@ -167,6 +174,7 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
     kq_dl = QuantitativeValidator(rs).run(core)
     findings = [o.finding for o in kq_dl if o.finding is not None]
 
+    kq_anh: list = []
     kq_dt: list[RuleOutcome] = []
     if not bo_qua_dinh_tinh:
         c5 = QualitativeValidator(client or LLMClient(), rules=rs, model=model,
@@ -176,7 +184,17 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
         findings += [o.finding for o in kq_dt if o.finding is not None]
         tk["c5"] = dict(c5.tk.__dict__)
 
+    if doc_anh:
+        from .vision.doc_anh import LOAI_MAC_DINH, DocAnh, thanh_finding
+        c2 = DocAnh(client or LLMClient(), model=model,
+                    loai=tuple(loai_anh or LOAI_MAC_DINH),
+                    on_tien_do=_bao("C2", on_tien_do), song_song=song_song)
+        kq_anh = c2.run(doc)
+        findings += [thanh_finding(k) for k in kq_anh]
+        tk["c2"] = dict(c2.tk.__dict__)
+        tk["c2"].pop("_khoa", None)
+
     findings += canh_bao_nt4(doc)
     # KHÔNG lọc NT2 ở đây — C7 lọc và ĐẾM số bị loại; lọc sớm sẽ giấu mất con số đó.
     return KetQuaChay(doc=doc, sizing=core, ket_qua_dl=kq_dl, ket_qua_dt=kq_dt,
-                      findings=findings, thong_ke=tk)
+                      ket_qua_anh=kq_anh, findings=findings, thong_ke=tk)
