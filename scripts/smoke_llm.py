@@ -39,6 +39,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from pydantic import BaseModel, Field
 
+from src.llm.cache import BoNhoDem
 from src.llm.client import KEY_ENV, ExtractionFailed, LLMClient, LLMError
 
 
@@ -185,7 +186,10 @@ def bang_bao_cao(ket_qua: list[dict], base_url: str) -> str:
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     try:
-        c = LLMClient()
+        # TẮT đệm (2.12): script này tồn tại để xác nhận endpoint có SỐNG và đo độ
+        # trễ thật. Lấy kết quả trong đệm sẽ báo "gọi được" kèm một con số độ trễ
+        # bịa — đúng loại kết luận sai mà smoke test sinh ra để chặn.
+        c = LLMClient(cache=BoNhoDem(bat=False))
     except (FileNotFoundError, LLMError) as e:
         print(f"Chưa chạy được: {e}")
         return 2
