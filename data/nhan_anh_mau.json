@@ -1,0 +1,252 @@
+{
+ "mo_ta": "Nhãn tay cho 40 ảnh mẫu, dùng đo độ chính xác của C2/2.2 (phân loại ảnh).",
+ "cach_lay_mau": "Phân tầng theo hồ sơ: mỗi hồ sơ lấy tối đa 2 ảnh ngẫu nhiên (seed 7), rút còn 40. Không chọn theo cảm tính.",
+ "han_che": [
+  "n=40 cho 5 lớp — mẫu nhỏ, ngưỡng suy từ đây chưa chắc khớp cả 776 ảnh.",
+  "Nhãn do MỘT TÁC NHÂN AI nhìn ảnh mà gán, chưa có người thẩm định xác nhận — cùng hạn chế đã ghi cho eval set ở docs/0.7-nhan-vang-tu-pnx.md.",
+  "Hai lớp bang_chup (2 mẫu) và khac (4 mẫu) đã gộp thành anh_van_ban vì quá ít mẫu để tách, và vì 2.3 đọc chúng bằng cùng một cách."
+ ],
+ "ngay": "2026-09-04",
+ "nhan": [
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi CALLBASE 44087/PL Sizing cap moi phan cung trien khai CallBase lay tin hieu qua Kafka_updated_v2.docx",
+   "ma": "anh#77",
+   "loai": "console",
+   "mo_ta": "terminal ls log"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi CALLBASE 44087/PL Sizing cap moi phan cung trien khai CallBase lay tin hieu qua Kafka_updated_v2.docx",
+   "ma": "anh#69",
+   "loai": "console",
+   "mo_ta": "terminal ifconfig+lscpu"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi SSO 2.0 46385/Tai lieu sizing he thong SSO 2.0 - VTT_v4.DOCX",
+   "ma": "anh#126",
+   "loai": "dashboard",
+   "mo_ta": "Grafana dashboard"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi hethong Vtag/hethong Vtag/Ver4/10112023_Tài liệu thiết kế và định cỡ hệ thống dịch vụ vTag_v4.docx",
+   "ma": "anh#65",
+   "loai": "console",
+   "mo_ta": "terminal lscpu"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi BCCS3_thị_trường_Lào 34221/Sizing_BCCS3_thị_trường_Lào_23072024.docx",
+   "ma": "anh#10",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ kiến trúc k8s"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi CAMPAIGN_PUSH_MXH 36759/DINH_CO_HE_THONG_CAMPAIGN_PUSH_MXH.docx",
+   "ma": "anh#30",
+   "loai": "console",
+   "mo_ta": "terminal top"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi MySign 10371/Sizing_Gateway_Cloud_CA_Site_DC_v2.docx",
+   "ma": "anh#97",
+   "loai": "dashboard",
+   "mo_ta": "Grafana chart bộ nhớ"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi PBH 4.0 20043/Sizing_PBH_4_v2.docx",
+   "ma": "anh#14",
+   "loai": "anh_van_ban",
+   "mo_ta": "DBeaver kết quả SQL"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi FMRA_Sizing_server_Backup_2024 58352/FMRA_Sizing_server_Training_2025_Final_New_v2.docx",
+   "ma": "anh#39",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ Hadoop→Spark"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi callbot inbound CSKH_bosung videobot XMKH 35485/PL02_Sizing_callbot inbound CSKH_bosung videobot XMKH_v1.2v4.DOCX",
+   "ma": "anh#127",
+   "loai": "console",
+   "mo_ta": "terminal lscpu"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi CMP 40562/PL17_Mau bieu Thiet ke va dinh co he thong 4.0v2.docx",
+   "ma": "anh#85",
+   "loai": "dashboard",
+   "mo_ta": "Grafana dashboard"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap bo sung campaign 2.0 8964/Định cỡ hệ thống Campaign 2.0 bổ sungv3.docx",
+   "ma": "anh#60",
+   "loai": "console",
+   "mo_ta": "terminal top"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi StrongSwan 40325/Sizing_VHKT 2025_StrongSwan.docx",
+   "ma": "anh#18",
+   "loai": "dashboard",
+   "mo_ta": "Grafana gauge"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi APIGW-Meta_2024 18927/Sizing_APIGW-Meta_2024v2.docx",
+   "ma": "anh#25",
+   "loai": "anh_van_ban",
+   "mo_ta": "ảnh chụp bảng cấp phát"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi Mykid 2.0 30959/Sizing Mykid 2.0 v2.docx",
+   "ma": "anh#195",
+   "loai": "dashboard",
+   "mo_ta": "Grafana chart Kafka"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi PNM 57012/PL02_Sizing_PNM_v1.2.docx",
+   "ma": "anh#123",
+   "loai": "console",
+   "mo_ta": "terminal top"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap bo sung campaign 2.0 8964/Định cỡ hệ thống Campaign 2.0 bổ sungv3.docx",
+   "ma": "anh#41",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ topology mạng"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi APIGee Mini App 64015/PL17_Thiet ke va dinh co he thong Apigee 53 nodes_miniappv2.docx",
+   "ma": "anh#30",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ APIGEE"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi SSO 2.0 46385/Tai lieu sizing he thong SSO 2.0 - VTT_v4.DOCX",
+   "ma": "anh#131",
+   "loai": "dashboard",
+   "mo_ta": "Grafana bảng disk"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap bo sung VTracking 2.0.1 14716/Thiet ke va dinh co he thong_VTracking 2.0.1.docx",
+   "ma": "anh#100",
+   "loai": "console",
+   "mo_ta": "kubectl top"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi hethong Vtag/hethong Vtag/Sizing Tài liệu thiết kế và định cỡ hệ thống dịch vụ vTag.docx",
+   "ma": "anh#189",
+   "loai": "anh_van_ban",
+   "mo_ta": "ảnh chụp dòng bảng checklist"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap bo sung Sizing_CloudCA_BoSungTaiNguyen 62967/Sizing_CloudCA_BoSungTaiNguyen.docx",
+   "ma": "anh#115",
+   "loai": "dashboard",
+   "mo_ta": "APM latency"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi APIGee Mini App 64015/PL17_Thiet ke va dinh co he thong Apigee 53 nodes_miniappv2.docx",
+   "ma": "anh#45",
+   "loai": "anh_van_ban",
+   "mo_ta": "ảnh chụp email Gmail"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi C360_Public 9367/2023_12_13_Sizing_C360_Public.docx",
+   "ma": "anh#31",
+   "loai": "anh_van_ban",
+   "mo_ta": "trang SPEC CINT2006"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi Mykid 2.0 30959/Sizing Mykid 2.0 v2.docx",
+   "ma": "anh#193",
+   "loai": "dashboard",
+   "mo_ta": "Grafana chart"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi Mybox 38327/PL07_Sizing_Mybox_update_20251803_hungnh46_update_20_03v2.docx",
+   "ma": "anh#48",
+   "loai": "dashboard",
+   "mo_ta": "Grafana chart"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi PBH 4.0 20043/Sizing_PBH_4_v2.docx",
+   "ma": "anh#45",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ WAN-FW-switch"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi Mybox 38327/PL07_Sizing_Mybox_update_20251803_hungnh46_update_20_03v2.docx",
+   "ma": "anh#52",
+   "loai": "dashboard",
+   "mo_ta": "Grafana CPU"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi PNM 57012/PL02_Sizing_callbot inbound CSKH_bosung2022_v1.1.DOCX",
+   "ma": "anh#67",
+   "loai": "console",
+   "mo_ta": "terminal top"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap bo sung VTracking 2.0.1 14716/Thiet ke va dinh co he thong_VTracking 2.0.1.docx",
+   "ma": "anh#134",
+   "loai": "console",
+   "mo_ta": "log IDE StressTest"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi BCCS3_thị_trường_Lào 34221/Sizing_BCCS3_thị_trường_Lào_23072024.docx",
+   "ma": "anh#12",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ BCCS3"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi CAMPAIGN_PUSH_MXH 36759/DINH_CO_HE_THONG_CAMPAIGN_PUSH_MXH.docx",
+   "ma": "anh#28",
+   "loai": "console",
+   "mo_ta": "terminal free -m"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi CMP 40562/PL17_Mau bieu Thiet ke va dinh co he thong 4.0v2.docx",
+   "ma": "anh#16",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ CMP"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi StrongSwan 40325/Sizing_VHKT 2025_StrongSwan.docx",
+   "ma": "anh#20",
+   "loai": "dashboard",
+   "mo_ta": "Grafana memory"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi C360_Public 9367/2023_12_13_Sizing_C360_Public.docx",
+   "ma": "anh#41",
+   "loai": "console",
+   "mo_ta": "terminal free"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi c360 58872/2025_Sizing_C360_Mariadb_increase_RAM_new.docx",
+   "ma": "anh#31",
+   "loai": "anh_van_ban",
+   "mo_ta": "trang SPEC CINT2006"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi GSCG CSKH_bosung2022 23096/PL01_Sizing_giam sat cuoc goi CSKH_bosung2022_v1.0.docx",
+   "ma": "anh#69",
+   "loai": "console",
+   "mo_ta": "terminal free -m"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi c360 58872/2025_Sizing_C360_Mariadb_increase_RAM_new.docx",
+   "ma": "anh#23",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ C360-MariaDB-Hadoop"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap moi callbot inbound CSKH_bosung videobot XMKH 35485/PL02_Sizing_callbot inbound CSKH_bosung videobot XMKH_v1.1v3.DOCX",
+   "ma": "anh#60",
+   "loai": "console",
+   "mo_ta": "terminal top+free"
+  },
+  {
+   "docx": "danh_sach_sizings_da_duyet/cap bo sung Sizing_CloudCA_BoSungTaiNguyen 62967/Sizing_CloudCA_BoSungTaiNguyen.docx",
+   "ma": "anh#28",
+   "loai": "so_do",
+   "mo_ta": "sơ đồ hạ tầng DC"
+  }
+ ]
+}
