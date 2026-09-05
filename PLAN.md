@@ -806,6 +806,24 @@
       liệu (`--ho-so "GSCG,Data Security,Vtag,Mybox,PBH 4.0"`) thực tế chỉ chạy **4 hồ sơ
       / 160 nhãn**, không phải 191. Đã sửa lại tài liệu; **không được** thêm `--tap test`
       để "chạy đủ 5" — làm thế là đốt tập giữ kín.
+      → ✅ **DIỄN TẬP OFFLINE — XONG 2026-09-05.** `run_eval --gia-lap` chạy TRỌN đường
+      thật (`C1→C3→C4→C5→C7→đối chiếu nhãn→ghi báo cáo`, kèm điểm dừng và ghép phiên
+      bản) trên hồ sơ THẬT bằng **model giả** (`eval/gia_lap.py`) — **12 giây** cho mẫu
+      4 hồ sơ mà lượt thật tốn 1,1 giờ. **9 test** khoá lại trong bộ test.
+      → 🐞 **Lần chạy đầu bắt ngay hai lỗi ghép nối** — đúng lý do dựng nó:
+      (a) **`--tiep-tuc` sập ngay** (`UnboundLocalError: canh_bao`) — lỗi này nếu không
+      diễn tập thì chỉ lộ vào đúng lúc tệ nhất: sau khi một lượt chạy 1 giờ bị đứt;
+      (b) C7 xếp finding theo `id` nên vứt mất thứ tự ưu tiên của C2 (xem 2.4).
+      → ✅ Model giả sinh theo **LƯỢC ĐỒ** chứ không theo danh sách trường viết sẵn, nên
+      đổi lược đồ C3/C5 là diễn tập tự bao phủ. Hai chỗ sinh khéo để đi được cả nhánh
+      chấp nhận: `dong` của C3 lấy từ danh sách `«...»` trong mô tả trường, trích dẫn của
+      C5 lấy câu CÓ THẬT trong tài liệu. Đo được: C3 neo 12–28 giá trị/hồ sơ, C5 đi cả
+      nhánh đạt lẫn nhánh loại trích dẫn.
+      → ✅ `--bom-loi` bơm hai chế độ hỏng ĐÃ GẶP THẬT (phản hồi rỗng · JSON sai lược đồ);
+      30% lượt gọi hỏng vẫn ra báo cáo đủ.
+      → ✅ Chống lẫn: báo cáo diễn tập đặt tên `dien-tap-*` (đã gitignore), đóng dấu
+      "VÔ NGHĨA về chất lượng" trong ruột, chữ ký điểm dừng có `gia_lap` nên không dùng
+      lại được cho lượt chạy thật, và **từ chối chạy trên tập TEST giữ kín**.
       → ✅ Tập TEST đòi cờ `--toi-hieu-rui-ro` mới chạy được, để không ai lỡ tay làm rò rỉ.
       → ✅ **Báo cáo GHI RÕ bộ lọc đã dùng** kèm cảnh báo *"không được trích như recall
       thật"* (có test). Cần vì `--nhom KPI,CPU` cho **C5 = 0 lượt** — không quy tắc định
@@ -936,7 +954,7 @@ chứng minh công cụ có giá trị hay không.
 > | 2.4 xuống cấp NT4 | 🟡 phần ảnh xong | Phần "vision hỏng / model từ chối" **chờ 2.3 chạy thật** |
 > | 2.3 đọc ảnh | 🟡 code + 24 test xong | **CHƯA chạy thật lần nào** — cần model. Chất lượng đọc chưa biết |
 > | 2.5 đối chiếu số ảnh ↔ bảng | ⬜ chưa làm | **Chờ đầu ra thật của 2.3.** Thiết kế bây giờ là đoán: chưa biết model đọc ra dạng số gì, sai kiểu gì |
-> | 2.11 lỗi/timeout | 🟡 điểm dừng xong | Phần backoff lỗi mạng chỉ chỉnh đúng được **sau một lượt chạy dài thật** |
+> | 2.11 lỗi/timeout | 🟡 điểm dừng + diễn tập xong | Phần backoff lỗi mạng chỉ chỉnh đúng được **sau một lượt chạy dài thật** |
 > | 2.12 cache | ✅ xong | — |
 > | 2.6 · 2.7 · 2.8 · 2.9 (C6) | ⬜ chưa làm | Chốt chặn 0.13 **đã lỗi thời**; nay chỉ cần **người dùng duyệt cài `sentence-transformers`** |
 > | 2.10 LangGraph | ⬜ không bắt buộc | Pipeline vẫn tuyến tính, chưa cần |
@@ -1222,3 +1240,5 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-05 | **Cổng NT2 cho ảnh là TÍNH NHẤT QUÁN NỘI TẠI, không phải neo vào văn bản** | C3/C5 neo giá trị vào tài liệu gốc; ảnh không có "văn bản gốc" nào để neo. Cổng kiểm được bằng code là: chuỗi giá trị model đưa ra phải nằm trong chính đoạn trích dẫn nó nói đã nhìn thấy. Một con số không có trong trích dẫn của chính nó là dấu hiệu model tự nghĩ ra |
 | 2026-09-05 | **Dừng phần offline của C2 ở 2.3; KHÔNG làm trước 2.5** | Ranh giới tự đặt: không dựng thêm thành phần mà kết quả chỉ kiểm chứng được sau khi có model. 2.5 phải biết model trả số ở dạng nào và sai kiểu gì mới thiết kế đúng cổng đối chiếu; làm trước là đoán, và sửa một thiết kế đoán sai tốn hơn làm lại từ đầu |
 | 2026-09-05 | **Thứ tự ưu tiên của 2.2 phải mã hoá vào `id` finding** | C7 xếp finding cùng mức độ theo `id`, nên thứ tự dựng ở tầng dưới bị xếp lại theo bảng chữ cái: `chua_ro` hiện trước `console` trong báo cáo thật. Lỗi liên thành phần, không unit test nào bắt được — nay có test dựng báo cáo thật |
+| 2026-09-05 | **Diễn tập lượt B1 bằng model giả, chạy ĐÚNG `run_eval` chứ không phải bản sao** | Một bản sao song song sẽ không bắt được lỗi ghép nối nằm trong chính `run_eval` — mà đó là loại lỗi cần bắt: lần chạy đầu lộ ngay `--tiep-tuc` sập vì `UnboundLocalError`. Đổi lại phải chống lẫn kỹ: tên file `dien-tap-*`, dấu đóng trong ruột báo cáo, chữ ký điểm dừng có `gia_lap`, và từ chối tập TEST |
+| 2026-09-05 | **Model giả sinh theo LƯỢC ĐỒ, không theo danh sách trường viết sẵn** | Sinh theo danh sách cứng thì đúng những thay đổi nguy hiểm nhất — thêm trường vào `NhanXetDinhTinh`, đổi lược đồ bảng của C3 — lại là thứ diễn tập KHÔNG chạm tới. Sinh theo lược đồ thì mọi thay đổi tự được bao phủ |

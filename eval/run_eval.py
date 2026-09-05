@@ -23,6 +23,7 @@ import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
+from eval.gia_lap import ClientGiaLap
 from eval.matching import bang_markdown, doi_chieu, nap_nhan
 from eval.phien_ban import ghep_phien_ban, so_vong_theo_ho_so
 from src.extraction.extractor import uoc_tinh_luot_goi
@@ -38,6 +39,7 @@ GOC_HO_SO = "danh_sach_sizings_da_duyet"
 # Điểm dừng nằm trong `.cache/` (đã gitignore) — nó là trạng thái của MỘT lượt chạy,
 # không phải kết quả để lưu trữ.
 THU_MUC_DIEM_DUNG = pathlib.Path(".cache/eval")
+THU_MUC_BAO_CAO = pathlib.Path("eval/reports")
 GIAY_MOI_LUOT = 40      # đo thật 2026-09-04, xem scripts/try_c3_on_dossier.py
 BANG_GIA_DINH = 20      # đo trên BCCS3; chỉ dùng cho dòng ước lượng
 
@@ -55,7 +57,9 @@ def _chu_ky(a, chi_nhom, ma_dt) -> dict:
     """
     return {"tap": a.tap, "model": a.model or "", "nhom": ",".join(chi_nhom or []),
             "nhom_dt": ",".join(ma_dt or []), "chi_vong": a.chi_vong or 0,
-            "moi_phien_ban": bool(a.moi_phien_ban)}
+            "moi_phien_ban": bool(a.moi_phien_ban),
+            # Điểm dừng của lượt DIỄN TẬP không được dùng lại cho lượt chạy thật.
+            "gia_lap": bool(getattr(a, "gia_lap", False))}
 
 
 def duong_dan_diem_dung(tap: str) -> pathlib.Path:
@@ -121,6 +125,13 @@ def main() -> int:
     ap.add_argument("--chi-vong", type=int, default=None)
     ap.add_argument("--chi", type=int, default=0,
                     help="chỉ chạy N hồ sơ ĐẦU TIÊN CÓ .docx")
+    ap.add_argument("--gia-lap", action="store_true",
+                    help="DIỄN TẬP: chạy trọn đường thật với MODEL GIẢ, không gọi "
+                         "mạng. Dùng để bắt lỗi ghép nối trước khi tiêu giờ mạng "
+                         "nội bộ. Kết quả KHÔNG phải số đo chất lượng.")
+    ap.add_argument("--bom-loi", type=float, default=0.0,
+                    help="chỉ với --gia-lap: tỷ lệ lượt gọi bị bơm hỏng (0–1), để "
+                         "chứng minh một lượt gọi hỏng không kéo sập cả lượt chạy")
     ap.add_argument("--tiep-tuc", action="store_true",
                     help="dùng lại kết quả các hồ sơ đã chạy xong ở lượt trước "
                          "(cùng bộ lọc) thay vì chạy lại từ đầu")
@@ -206,15 +217,28 @@ def main() -> int:
     if a.uoc_tinh:
         return 0
 
-    try:
-        client = LLMClient()
-    except (FileNotFoundError, LLMError) as e:
-        print(f"Chưa chạy được: {e}")
-        return 2
+    if a.gia_lap:
+        if a.tap == "test":
+            print("TỪ CHỐI: không diễn tập trên tập TEST giữ kín.")
+            return 2
+        client = ClientGiaLap(ty_le_rong=a.bom_loi / 2,
+                              ty_le_sai_luoc_do=a.bom_loi / 2,
+                              ty_le_loi_mang=0.0)
+        print("\n" + "!" * 74)
+        print("DIỄN TẬP — MODEL GIẢ. Mọi con số dưới đây KHÔNG phải kết quả thật.")
+        print("Mục đích duy nhất: bắt lỗi ghép nối trước khi tiêu giờ mạng nội bộ.")
+        print("!" * 74 + "\n")
+    else:
+        try:
+            client = LLMClient()
+        except (FileNotFoundError, LLMError) as e:
+            print(f"Chưa chạy được: {e}")
+            return 2
 
     theo_ho_so: dict[str, list] = {}
     theo_vong_ho_so: dict[str, dict[int, list]] = {}
     da_dung: dict[str, str] = {}
+    canh_bao: list[str] = []
     chu_ky = _chu_ky(a, chi_nhom, ma_dt)
     da_luu: dict = {}
     if a.tiep_tuc:
@@ -222,7 +246,6 @@ def main() -> int:
         canh_bao += ghi_chu
         for g in ghi_chu:
             print(f"  {g}")
-    canh_bao: list[str] = []
 
     def tien_do(giai_doan: str, i: int, tong: int, nhan: str) -> None:
         print(f"    {giai_doan} {i}/{tong} · {nhan}", flush=True)
@@ -295,7 +318,20 @@ def main() -> int:
                 print(f"LỖI {type(e).__name__}")
                 continue
             ket_qua_ban[dd] = kq.findings
-            print(f"{len(kq.findings)} finding ({time.time() - t0:.0f}s)")
+            # In bộ đếm của từng thành phần, không chỉ số finding. Một lượt chạy
+            # "qua" vì thành phần nào đó âm thầm không làm gì là lượt chạy vô giá
+            # trị — nhất là khi diễn tập.
+            c3, c5 = kq.thong_ke.get("c3", {}), kq.thong_ke.get("c5", {})
+            chan_doan = " · ".join(x for x in [
+                f"C1 {kq.thong_ke.get('c1_phan_tu', 0)} phần tử/"
+                f"{kq.thong_ke.get('c1_bang', 0)} bảng",
+                (f"C3 {c3.get('luot_goi', 0)} lượt/"
+                 f"{c3.get('truong_co_gia_tri', 0)} trường có giá trị/"
+                 f"{c3.get('khong_neo_duoc', 0)} không neo được" if c3 else ""),
+                (f"C5 {c5.get('dat', 0)}đạt/{c5.get('khong_dat', 0)}không đạt/"
+                 f"{c5.get('trich_dan_bia', 0)} trích dẫn bị loại" if c5 else ""),
+            ] if x)
+            print(f"{len(kq.findings)} finding ({time.time() - t0:.0f}s) · {chan_doan}")
         if not ket_qua_ban:
             continue
         # Mẫu số vẫn tính đủ; `theo_ho_so` gom mọi bản để `finding_khong_khop` đúng.
@@ -323,6 +359,10 @@ def main() -> int:
                  "nhom C5": ",".join(ma_dt) if ma_dt else "",
                  "chi_vong": a.chi_vong or "", "chi N ho so": a.chi or "",
                  "ho so": a.ho_so or "", "song song": a.song_song}
+    if a.gia_lap:
+        canh_bao.insert(0, "⚠️ LƯỢT DIỄN TẬP BẰNG MODEL GIẢ — mọi con số trong báo "
+                           "cáo này là VÔ NGHĨA về mặt chất lượng. Chỉ dùng để xác "
+                           "nhận đường chạy không vỡ. " + client.tk.tom_tat())
     tk_cache = client.cache.tk
     if tk_cache.trung or tk_cache.luu:
         canh_bao.append(
@@ -335,7 +375,8 @@ def main() -> int:
     meta = json.load(open("data/eval_set.json", encoding="utf-8"))["meta"]
     bao_cao = bang_markdown(ev, meta=meta)
 
-    ra = pathlib.Path("eval/reports") / f"eval-{a.tap}-{time.strftime('%Y%m%d-%H%M')}.md"
+    ten = ("dien-tap" if a.gia_lap else "eval")
+    ra = THU_MUC_BAO_CAO / f"{ten}-{a.tap}-{time.strftime('%Y%m%d-%H%M%S')}.md"
     ra.parent.mkdir(parents=True, exist_ok=True)
     ra.write_text(bao_cao + "\n", encoding="utf-8")
     print("\n" + bao_cao)

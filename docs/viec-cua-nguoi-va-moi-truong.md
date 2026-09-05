@@ -70,6 +70,21 @@ Nợ từ 0.7 mục 5. PNX nhận xét bản **trước khi sửa**, mà nhiều
 (PNM 5 bản, APIGW-Meta 3, SSO 3). Chạy trên bản đã sửa thì lỗi đã vá → **recall thấp giả
 tạo**. Đây là việc đọc tài liệu, không cần model.
 
+### A9. Diễn tập lượt B1 trước khi vào mạng nội bộ — *nên chạy ngay trước khi đi*
+
+```bash
+python -m eval.run_eval --gia-lap --ho-so "GSCG,Data Security,Vtag,PBH 4.0" --song-song 6
+```
+
+Chạy TRỌN đường của lượt B1 bằng **model giả**, mất **~12 giây** thay vì 1,1 giờ.
+Mục đích duy nhất: bảo đảm không có lỗi ghép nối nào làm hỏng lượt chạy thật. Lần chạy
+đầu đã bắt được hai lỗi, trong đó `--tiep-tuc` sập ngay khi gọi.
+
+Muốn thử cả tình huống xấu: thêm `--bom-loi 0.3` (bơm 30% lượt gọi hỏng).
+
+⚠️ Báo cáo sinh ra tên `dien-tap-*.md` và **mọi con số trong đó là vô nghĩa** — chỉ
+dùng để xác nhận đường chạy không vỡ.
+
 ### A7. Sinh mẫu Word chuẩn (1.16) nếu cần đưa cho người viết hồ sơ
 
 ```bash
