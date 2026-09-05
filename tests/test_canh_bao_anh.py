@@ -86,11 +86,11 @@ def test_moi_loai_ra_mot_canh_bao_rieng_kem_goi_y_rieng():
     d = _doc_co_anh(_png(ANH_CONSOLE), _png(ANH_TRANG))
     fs = _canh_bao_anh(d, d.images())
     ma = {f.id for f in fs}
-    assert ma == {"NT4-ANH-CONSOLE", "NT4-ANH-ANH_VAN_BAN"}
-    con = next(f for f in fs if f.id == "NT4-ANH-CONSOLE")
+    assert ma == {"NT4-ANH-1-CONSOLE", "NT4-ANH-2-ANH_VAN_BAN"}
+    con = next(f for f in fs if "CONSOLE" in f.id)
     assert "dòng lệnh" in con.finding
     assert con.suggestion and con.suggestion != next(
-        f for f in fs if f.id == "NT4-ANH-ANH_VAN_BAN").suggestion
+        f for f in fs if "ANH_VAN_BAN" in f.id).suggestion
 
 
 def test_canh_bao_van_la_muc_info_va_co_can_cu_dem_duoc():
@@ -138,7 +138,7 @@ def test_loai_la_khong_co_nhan_trong_config_van_khong_lam_vo_bao_cao(monkeypatch
                                             vi_tri=["trang 1"])]))
     d = _doc_co_anh(_png(ANH_CONSOLE))
     f = _canh_bao_anh(d, d.images())[0]
-    assert f.id == "NT4-ANH-LOAI_MOI" and "loai_moi" in f.finding
+    assert f.id == "NT4-ANH-1-LOAI_MOI" and "loai_moi" in f.finding
 
 
 def test_canh_bao_anh_nam_trong_canh_bao_nt4_chung():
@@ -161,3 +161,14 @@ def test_thu_tu_uu_tien_khop_voi_danh_sach_loai_cua_2_2():
     from typing import get_args
     assert set(get_args(pl.Loai)) == {"so_do", "console", "dashboard",
                                       "anh_van_ban", "chua_ro"}
+
+
+def test_thu_tu_uu_tien_song_qua_C7_chu_khong_bi_xep_lai_theo_bang_chu_cai():
+    """Hồi quy cho một lỗi LIÊN THÀNH PHẦN đã gặp thật: C7 xếp finding cùng mức độ
+    theo `id`, nên `chua_ro` từng hiện TRƯỚC `console` trong báo cáo bản Vtag —
+    đúng thứ tự ưu tiên dựng ở 2.2 bị vứt đi."""
+    from src.reporting.report import build_report
+
+    d = _doc_co_anh(_png(ANH_CONSOLE), _png(ANH_TRANG))
+    bc = build_report(_canh_bao_anh(d, d.images()))
+    assert bc.index("dòng lệnh") < bc.index("chụp bảng hoặc văn bản")

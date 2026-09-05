@@ -922,6 +922,31 @@ chứng minh công cụ có giá trị hay không.
 
 ## GIAI ĐOẠN 2 — Đa phương thức & tái sử dụng  (2–3 tuần)
 
+> **Trạng thái 2026-09-05 — đã kiểm lại trên toàn bộ 47 bản thật, 0 lỗi.**
+> `2.1 → 2.2 → 2.4` chạy liên hoàn: 776 ảnh, phân loại xong, cảnh báo NT4 vào tới
+> báo cáo C7 (kiểm 3/3 finding ảnh hiện trong báo cáo). `2.3` ước tính 325/776 ảnh
+> (42%) sẽ được đọc theo mặc định. Toàn bộ mất 223 giây cho 47 bản, không gọi model.
+>
+> **Cái gì đang chặn cái gì** — đọc bảng này trước khi chọn việc tiếp:
+>
+> | Mục | Trạng thái | Phụ thuộc / vì sao dừng |
+> |---|---|---|
+> | 2.1 trích ảnh | ✅ xong, đã kiểm 47 bản | — |
+> | 2.2 phân loại | ✅ xong, 34/40 nhãn tay | Nhãn do AI gán, **chờ người xác nhận** (mục A8) |
+> | 2.4 xuống cấp NT4 | 🟡 phần ảnh xong | Phần "vision hỏng / model từ chối" **chờ 2.3 chạy thật** |
+> | 2.3 đọc ảnh | 🟡 code + 24 test xong | **CHƯA chạy thật lần nào** — cần model. Chất lượng đọc chưa biết |
+> | 2.5 đối chiếu số ảnh ↔ bảng | ⬜ chưa làm | **Chờ đầu ra thật của 2.3.** Thiết kế bây giờ là đoán: chưa biết model đọc ra dạng số gì, sai kiểu gì |
+> | 2.11 lỗi/timeout | 🟡 điểm dừng xong | Phần backoff lỗi mạng chỉ chỉnh đúng được **sau một lượt chạy dài thật** |
+> | 2.12 cache | ✅ xong | — |
+> | 2.6 · 2.7 · 2.8 · 2.9 (C6) | ⬜ chưa làm | Chốt chặn 0.13 **đã lỗi thời**; nay chỉ cần **người dùng duyệt cài `sentence-transformers`** |
+> | 2.10 LangGraph | ⬜ không bắt buộc | Pipeline vẫn tuyến tính, chưa cần |
+> | 2.13 chạy lại eval | ⬜ chưa làm | **Chờ 1.13 (B1) có số nền để so** |
+> | 2.14 C7 chịu bản nháp | ⬜ chưa làm | Không phụ thuộc ai — làm được ngay ở laptop |
+>
+> ⚠️ **Ranh giới tự đặt cho phần offline**: không dựng thêm thành phần nào mà kết
+> quả của nó chỉ kiểm chứng được sau khi có model. 2.5 nằm đúng phía bên kia ranh
+> giới đó, nên **cố ý chưa làm**.
+
 ### Tuần 4 — Xử lý hình ảnh
 - [x] 2.1 — Trích ảnh từ `.docx` kèm ngữ cảnh văn bản trước/sau — **XONG 2026-09-04.**
       → ✅ **`src/vision/anh.py`** + C1 nay giữ `anh_refs` (rId, cỡ hiển thị, kiểu neo)
@@ -981,8 +1006,11 @@ chứng minh công cụ có giá trị hay không.
       **định dạng gateway không nhận (`emf`/`wmf`) bỏ TRƯỚC khi gọi** (đốt 40 giây để
       nhận về một lỗi là vô nghĩa) · ảnh quá lớn không thu nhỏ được — tất cả ra finding
       `khong_kiem_chung_duoc` kèm lý do đếm được.
-      → ⬜ **Còn lại**: chạy thật để biết model đọc đúng đến đâu, và OCR (chưa cần —
-      0.10 xác nhận endpoint CÓ vision nên không phải xuống cấp OCR-only).
+      → ⬜ **Còn lại — chưa làm được ở laptop**: (a) chạy thật để biết model đọc đúng
+      đến đâu và `trich_dan_bia` cao bao nhiêu; (b) phần xuống cấp của **2.4** cho ca
+      "vision hỏng / model từ chối" chỉ chỉnh đúng sau khi thấy lỗi thật; (c) **2.5**
+      đối chiếu số trong ảnh với bảng — thiết kế bây giờ là ĐOÁN, vì chưa biết model
+      trả số ở dạng nào và sai kiểu gì. OCR chưa cần (0.10 xác nhận endpoint CÓ vision).
 - [~] 2.4 — Cơ chế xuống cấp có kiểm soát (NT4) — **phần ẢNH XONG 2026-09-05**; phần
       phụ thuộc 2.3 (model vision không với tới / từ chối / OCR hỏng) làm cùng 2.3.
       → ✅ Cảnh báo NT4 về ảnh nay **tách theo loại** nhờ 2.2 thay vì một dòng gộp.
@@ -999,6 +1027,11 @@ chứng minh công cụ có giá trị hay không.
       không mở được) thì lùi về cảnh báo tổng **kèm lý do**, không im lặng và không đoán
       loại. **15 unit test**, dựng ảnh PNG tổng hợp nằm xa mọi ngưỡng nên không dòn.
       → 📏 Chi phí: **2,4–3,8 giây mỗi tài liệu** (43–58 ảnh), không gọi model.
+      → 🔎 **Kiểm lại 2026-09-05 bắt được một lỗi LIÊN THÀNH PHẦN**: C7 xếp finding
+      cùng mức độ theo `id`, nên thứ tự ưu tiên dựng ở 2.2 bị xếp lại theo bảng chữ
+      cái — `chua_ro` hiện TRƯỚC `console` trong báo cáo bản Vtag. Đã đưa số thứ tự
+      vào mã (`NT4-ANH-1-CONSOLE`) và **thêm test dựng báo cáo thật** để chặn.
+      Đây đúng loại lỗi chỉ lộ khi ghép các thành phần, không lộ ở unit test.
       → 🔧 Vá kèm: `Image.getdata()` bị bỏ ở Pillow 14 mà `pyproject` chỉ ghim
       `pillow>=10.0` — đã đổi sang `tobytes()`; độ chính xác 2.2 không đổi (34/40).
 - [ ] 2.5 — Kiểm tra chéo: số trong ảnh biểu đồ vs số trong bảng sizing
@@ -1187,3 +1220,5 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-05 | **2.3 mặc định chỉ đọc `so_do` + `console`; ba loại còn lại bật bằng cờ** | Người dùng chốt. Rẻ (325/776 ảnh, ~3,6 giờ thay vì 8,5) và phủ đúng hai chỗ có giá trị: `console` là lớp đông nhất và là nơi đặt số đo tải làm sở cứ, `so_do` là căn cứ cho quy tắc định tính Vòng 1 — nơi phép đo 04-09 chỉ ra recall thật sự nằm |
 | 2026-09-05 | **2.3 TẮT mặc định trong pipeline; lượt B1 chạy SẠCH trước** | Người dùng chốt. Trộn 2.3 vào lượt đo recall thì không quy được kết quả cho thay đổi nào. Quyết định này được khoá bằng test chứ không chỉ ghi trong tài liệu |
 | 2026-09-05 | **Cổng NT2 cho ảnh là TÍNH NHẤT QUÁN NỘI TẠI, không phải neo vào văn bản** | C3/C5 neo giá trị vào tài liệu gốc; ảnh không có "văn bản gốc" nào để neo. Cổng kiểm được bằng code là: chuỗi giá trị model đưa ra phải nằm trong chính đoạn trích dẫn nó nói đã nhìn thấy. Một con số không có trong trích dẫn của chính nó là dấu hiệu model tự nghĩ ra |
+| 2026-09-05 | **Dừng phần offline của C2 ở 2.3; KHÔNG làm trước 2.5** | Ranh giới tự đặt: không dựng thêm thành phần mà kết quả chỉ kiểm chứng được sau khi có model. 2.5 phải biết model trả số ở dạng nào và sai kiểu gì mới thiết kế đúng cổng đối chiếu; làm trước là đoán, và sửa một thiết kế đoán sai tốn hơn làm lại từ đầu |
+| 2026-09-05 | **Thứ tự ưu tiên của 2.2 phải mã hoá vào `id` finding** | C7 xếp finding cùng mức độ theo `id`, nên thứ tự dựng ở tầng dưới bị xếp lại theo bảng chữ cái: `chua_ro` hiện trước `console` trong báo cáo thật. Lỗi liên thành phần, không unit test nào bắt được — nay có test dựng báo cáo thật |

@@ -90,14 +90,18 @@ def _canh_bao_anh(doc: DocxDocument, anh: list) -> list[Finding]:
             confidence="cao")]
 
     ra: list[Finding] = []
-    for n in tt.nhom:
+    for i, n in enumerate(tt.nhom, 1):
         nh = nhan.get(n.loai, {})
         ten = nh.get("ten", n.loai)
         mo_ta = str(nh.get("mo_ta", "")).strip()
         them = (f" và {n.so_luong - len(n.vi_tri)} ảnh khác"
                 if n.so_luong > len(n.vi_tri) else "")
         ra.append(Finding(
-            id=f"NT4-ANH-{n.loai.upper()}", severity="info",
+            # Số thứ tự nằm TRONG mã: C7 xếp finding cùng mức độ theo `id`, nên
+            # không có nó thì thứ tự ưu tiên dựng ở 2.2 bị xếp lại theo bảng chữ
+            # cái — `chua_ro` chạy lên trước `console`. Đã gặp thật khi dựng báo
+            # cáo trên bản Vtag.
+            id=f"NT4-ANH-{i}-{n.loai.upper()}", severity="info",
             category="khong_kiem_chung_duoc",
             finding=f"Tài liệu có {n.so_luong} {ten}"
                     + (f" ({mo_ta})" if mo_ta else "")
