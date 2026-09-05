@@ -11,7 +11,7 @@
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
 | 1 | MVP chỉ xử lý text | 14 / 17 | 🟡 Đang làm — chờ số recall thật (1.13) |
-| 2 | Đa phương thức & tái sử dụng | 4 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.12 xong; 2.4 · 2.11 một nửa (đều offline) |
+| 2 | Đa phương thức & tái sử dụng | 4,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.12 xong; 2.3 · 2.4 · 2.11 phần offline xong |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
 
@@ -956,7 +956,33 @@ chứng minh công cụ có giá trị hay không.
       → ✅ 11 unit test + `scripts/danh_gia_phan_loai_anh.py` (offline, in cả hạn chế).
       → ⬜ **Cần người xác nhận nhãn**: 40 nhãn do một tác nhân AI nhìn ảnh mà gán, n
       nhỏ cho 5 lớp — cùng hạn chế đã ghi cho eval set.
-- [ ] 2.3 — C2: vision + OCR, sinh mô tả và trích số
+- [~] 2.3 — C2: vision, sinh mô tả và trích số — **phần code + test XONG 2026-09-05**;
+      **chưa chạy thật** (cần model).
+      → ✅ **`src/vision/doc_anh.py`** · **24 unit test** chạy offline bằng client giả.
+      Dạng thông điệp lấy đúng lượt dò 0.10 đã xác nhận chạy được với gateway
+      (`image_url` + data URL); model vision = `claude-haiku-4-5-20251001`.
+      → 🔒 **Mặc định chỉ đọc `so_do` + `console`** (người dùng chốt 2026-09-05):
+      `console` là lớp đông nhất (34,1%) và là nơi đặt số đo tải làm sở cứ; `so_do`
+      ít ảnh (7,7%) nhưng là căn cứ cho quy tắc định tính Vòng 1 — nơi phép đo 04-09
+      chỉ ra recall thật sự nằm. `dashboard` · `anh_van_ban` · `chua_ro` bật bằng
+      tham số `loai=`. Chi phí: **325/776 ảnh (42%)**, ~3,6 giờ cho cả 47 bản thay vì
+      8,5 giờ. Có test khoá mặc định này.
+      → 🔒 **`pipeline.chay(doc_anh=False)` — TẮT mặc định**, để lượt đo recall (B1)
+      chạy sạch trước, không trộn hai thay đổi vào một lượt chạy tốn tiền. Có test
+      chặn nếu ai đó đổi mặc định.
+      → ✅ **NT1**: lược đồ KHÔNG có trường số học nào — model chỉ trả nguyên văn chuỗi
+      nhìn thấy, `parse_number` của 1.4 mới ra số, và giữ cả hai cách đọc khi lưỡng
+      nghĩa (*"1.500"* → 1500 kèm 1,5). Có test khoá lược đồ.
+      → ✅ **NT2 — cổng chống bịa cho ảnh**: không có văn bản gốc để đối chiếu như
+      C3/C5, nên cổng là **tính nhất quán nội tại** — chuỗi giá trị phải nằm trong
+      chính đoạn trích dẫn model nói là đã nhìn thấy. Không thoả thì bỏ giá trị đó;
+      bỏ hết thì cả ảnh coi như KHÔNG đọc được.
+      → ✅ **NT4**: ảnh mờ · model báo đọc được nhưng không nêu được gì · lỗi gọi ·
+      **định dạng gateway không nhận (`emf`/`wmf`) bỏ TRƯỚC khi gọi** (đốt 40 giây để
+      nhận về một lỗi là vô nghĩa) · ảnh quá lớn không thu nhỏ được — tất cả ra finding
+      `khong_kiem_chung_duoc` kèm lý do đếm được.
+      → ⬜ **Còn lại**: chạy thật để biết model đọc đúng đến đâu, và OCR (chưa cần —
+      0.10 xác nhận endpoint CÓ vision nên không phải xuống cấp OCR-only).
 - [~] 2.4 — Cơ chế xuống cấp có kiểm soát (NT4) — **phần ẢNH XONG 2026-09-05**; phần
       phụ thuộc 2.3 (model vision không với tới / từ chối / OCR hỏng) làm cùng 2.3.
       → ✅ Cảnh báo NT4 về ảnh nay **tách theo loại** nhờ 2.2 thay vì một dòng gộp.
@@ -1158,3 +1184,6 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-05 | **Điểm dừng của `run_eval` có CHỮ KÝ; chữ ký lệch thì bỏ, không trộn** | `--tiep-tuc` mà trộn kết quả của hai lượt chạy khác bộ lọc (khác model, khác `--nhom`) sẽ cho một con số recall không truy lại được nguồn. Thà chạy lại từ đầu và nói rõ lý do |
 | 2026-09-05 | **2.4: cảnh báo NT4 về ảnh tách theo LOẠI, mỗi loại một gợi ý riêng** | *"Tài liệu có 43 hình ảnh chưa đọc được"* là đúng nhưng không hành động được. 18 ảnh chụp dòng lệnh (nơi đặt số đo tải làm sở cứ) và 1 sơ đồ đòi hai việc hoàn toàn khác nhau: chép số ra bảng, và mô tả lại thành phần bằng lời. Nhãn + gợi ý từng loại nằm trong `config/report_labels.yaml`, không hard-code |
 | 2026-09-05 | **2.4 KHÔNG nâng mức độ cảnh báo ảnh lên trên `info`** | Dù ảnh chụp console nhiều khả năng chứa sở cứ mà máy chưa đọc, mức độ là DỮ LIỆU của bộ quy tắc (NT3). Thiếu tham số đã có `thieu_thong_tin` mức `major` do C4 sinh; đặt thêm một mức ở pipeline là dựng quy tắc trong code |
+| 2026-09-05 | **2.3 mặc định chỉ đọc `so_do` + `console`; ba loại còn lại bật bằng cờ** | Người dùng chốt. Rẻ (325/776 ảnh, ~3,6 giờ thay vì 8,5) và phủ đúng hai chỗ có giá trị: `console` là lớp đông nhất và là nơi đặt số đo tải làm sở cứ, `so_do` là căn cứ cho quy tắc định tính Vòng 1 — nơi phép đo 04-09 chỉ ra recall thật sự nằm |
+| 2026-09-05 | **2.3 TẮT mặc định trong pipeline; lượt B1 chạy SẠCH trước** | Người dùng chốt. Trộn 2.3 vào lượt đo recall thì không quy được kết quả cho thay đổi nào. Quyết định này được khoá bằng test chứ không chỉ ghi trong tài liệu |
+| 2026-09-05 | **Cổng NT2 cho ảnh là TÍNH NHẤT QUÁN NỘI TẠI, không phải neo vào văn bản** | C3/C5 neo giá trị vào tài liệu gốc; ảnh không có "văn bản gốc" nào để neo. Cổng kiểm được bằng code là: chuỗi giá trị model đưa ra phải nằm trong chính đoạn trích dẫn nó nói đã nhìn thấy. Một con số không có trong trích dẫn của chính nó là dấu hiệu model tự nghĩ ra |

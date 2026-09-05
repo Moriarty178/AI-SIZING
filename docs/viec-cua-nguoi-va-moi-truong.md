@@ -131,6 +131,19 @@ py scripts/try_c3_on_dossier.py "danh_sach_sizings_da_duyet/cap moi BCCS3_thị_
 Đã **chốt dừng vòng lặp cải tiến C3 ở v6** nên dù kết quả thế nào tôi cũng chỉ ghi nhận,
 không sửa tiếp. Bỏ qua bước này cũng được.
 
+### B5. *(sau khi B1 xong)* Chạy thử 2.3 — đọc ảnh bằng vision
+
+⚠️ **Đừng bật 2.3 trong lượt B1.** Đã chốt: B1 chạy sạch trước để con số recall quy
+được về đúng một thay đổi. 2.3 mặc định TẮT trong pipeline, có test chặn.
+
+Khi B1 xong và muốn thử đọc ảnh, gọi `pipeline.chay(..., doc_anh=True)` (mặc định đọc
+`so_do` + `console` — 325/776 ảnh, ~3,6 giờ cho cả 47 bản; một bản Vtag là 19/43 ảnh
+≈ 13 phút). Muốn đọc thêm biểu đồ giám sát thì truyền
+`loai_anh=("so_do","console","dashboard")`.
+
+Con số cần nhìn: **`trich_dan_bia`** — số giá trị bị loại vì không nằm trong trích dẫn
+của chính nó. Cao là dấu hiệu model đang bịa, cùng loại rủi ro với C3.
+
 ### B3. Xem báo cáo thật trên giao diện
 
 `streamlit run ui/app.py` → chế độ **Thẩm định đầy đủ**. Giao diện in ước lượng chi phí
