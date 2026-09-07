@@ -137,3 +137,43 @@ def test_ho_so_nhan_nhieu_ten_ngan_cach_bang_phay():
     assert chon_ho_so(tat_ca, tat_ca, ho_so="bccs3, mykid") == [
         "cap moi BCCS3 111", "cap moi Mykid 333"]
     assert chon_ho_so(tat_ca, tat_ca, ho_so="cmp") == ["cap moi CMP 222"]
+
+# --- chấm theo LOẠI nhãn ---------------------------------------------------
+def _fc(rule_ref: str, category: str) -> Finding:
+    return Finding(id=rule_ref, severity="major", category=category,
+                   finding="x", rule_ref=rule_ref)
+
+
+def test_nhan_thieu_trung_bang_finding_thieu_thong_tin_la_DUNG():
+    """Cạm bẫy chính của thước đo theo loại: 56% nhãn dev là lời phàn nàn "chưa
+    nêu / thiếu". Với chúng, một finding `thieu_thong_tin` chính là bắt đúng —
+    loại nó ra (như cột `Thực chất` làm) là phạt oan."""
+    labels = [_nhan("l1", "HS1", ["PRC-01"])]
+    labels[0]["text"] = "Chưa nêu sở cứ tính toán số lượng máy chủ"
+    kq = doi_chieu({"HS1": [_fc("PRC-01", "thieu_thong_tin")]}, labels)
+    assert kq.trung_thuc_chat == 0        # sàn khắt khe: không tính
+    assert kq.recall_theo_loai == 1.0     # theo loại: tính, vì ĐÚNG loại
+
+
+def test_nhan_dinh_luong_KHONG_trung_bang_finding_thieu_thong_tin():
+    """Người thẩm định hỏi một con số sai; công cụ chỉ nói "không tìm thấy trường"
+    thì chưa bắt được gì. Đây là chỗ thước đo cũ cho điểm sai."""
+    labels = [_nhan("l1", "HS1", ["PRC-01"])]
+    labels[0]["text"] = "Dự phòng theo KPI 75% sao lại ra 8000, đề nghị tính lại"
+    kq = doi_chieu({"HS1": [_fc("PRC-01", "thieu_thong_tin")]}, labels)
+    assert kq.trung == 1                  # thước đo chính vẫn tính -> chính là lỗi
+    assert kq.recall_theo_loai == 0.0
+    kq2 = doi_chieu({"HS1": [_fc("PRC-01", "vuot_nguong")]}, labels)
+    assert kq2.recall_theo_loai == 1.0
+
+
+def test_nhan_qua_ngan_bi_BO_khoi_mau_so_chu_khong_doan():
+    """NT4: không đủ chữ để biết đòi gì thì nói ra, không đoán về phía nào."""
+    labels = [_nhan("l1", "HS1", ["PRC-01"]), _nhan("l2", "HS1", ["PRC-02"])]
+    labels[0]["text"] = "Tài nguyên ram"
+    labels[1]["text"] = "Dự phòng theo KPI 75% sao lại ra 8000, đề nghị tính lại"
+    kq = doi_chieu({"HS1": [_fc("PRC-01", "thieu_thong_tin"),
+                            _fc("PRC-02", "vuot_nguong")]}, labels)
+    assert kq.theo_loai_mau["manh_vun"] == 1
+    assert kq.recall_theo_loai == 1.0     # mẫu số chỉ còn nhãn l2
+    assert "KHÔNG vào mẫu số" in bang_markdown(kq)
