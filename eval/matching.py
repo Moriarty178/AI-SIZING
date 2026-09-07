@@ -35,6 +35,35 @@ DUONG_DAN_EVAL = "data/eval_set.json"
 DUONG_DAN_SPLIT = "data/eval_split.json"
 
 
+# --- loại của NHÃN (không phải của finding) --------------------------------
+# Cột `Thực chất` là SÀN và cố ý khắt khe: nó loại mọi cú trúng do finding
+# "thiếu thông tin". Nhưng 87/155 nhãn dev (56%) BẢN THÂN CHÚNG là lời phàn nàn
+# "chưa nêu / thiếu / bổ sung" — với những nhãn đó, một finding `thieu_thong_tin`
+# là bắt ĐÚNG, và loại nó ra là phạt oan. Thước đo theo loại nối hai đầu lại:
+# đòi finding phải CÙNG LOẠI với điều người thẩm định thật sự yêu cầu.
+#
+# Phân loại bằng từ khoá, THUẦN CODE và xem được — không hỏi LLM (NT1). Danh sách
+# này là chỗ cần người nghiệp vụ soi lại; nó quyết định con số nên không được giấu.
+TU_KHOA_THIEU = (
+    "chưa nêu", "không nêu", "chưa có", "không có", "thiếu", "bổ sung",
+    "chưa thuyết minh", "chưa làm rõ", "làm rõ", "chưa mô tả", "chưa cung cấp",
+    "chưa đưa ra", "chưa trình bày",
+)
+# Nhãn quá ngắn thì không đủ chữ để biết người thẩm định đòi gì ("Tài nguyên ram",
+# "Thiết bị lưu trữ"). KHÔNG đoán: tách riêng và nói ra, đúng NT4.
+TU_TOI_DA_MANH_VUN = 5
+
+
+def loai_nhan(text: str | None) -> str:
+    """`thieu` | `khac` | `manh_vun` — điều người thẩm định yêu cầu thuộc loại nào."""
+    t = (text or "").strip()
+    if any(k in t.lower() for k in TU_KHOA_THIEU):
+        return "thieu"
+    if len(t.split()) <= TU_TOI_DA_MANH_VUN:
+        return "manh_vun"
+    return "khac"
+
+
 @dataclass
 class KetQuaHoSo:
     dossier: str
@@ -48,6 +77,10 @@ class KetQuaHoSo:
     # Trong số `trung`, bao nhiêu nhãn trúng nhờ một finding THỰC CHẤT — tức không
     # phải chỉ vì công cụ nói "không tìm thấy trường này". Xem `CAT_MEM`.
     trung_thuc_chat: int = 0
+    # Chấm theo LOẠI nhãn: nhãn "thiếu" trúng bằng finding `thieu_thong_tin` là
+    # đúng; nhãn "khác" đòi finding thực chất. Nhãn `manh_vun` KHÔNG vào mẫu số.
+    theo_loai_mau: dict = field(default_factory=dict)
+    theo_loai_trung: dict = field(default_factory=dict)
     ghi_chu: str = ""
 
 
@@ -100,6 +133,29 @@ class KetQuaEval:
     def recall_thuc_chat(self) -> float:
         """Recall khi chỉ tính cú trúng do một finding THỰC CHẤT tạo ra."""
         return (self.trung_thuc_chat / self.nhan_co_rule) if self.nhan_co_rule else 0.0
+
+    @property
+    def theo_loai_mau(self) -> dict:
+        r: dict = {}
+        for h in self.ho_so:
+            for k, v in h.theo_loai_mau.items():
+                r[k] = r.get(k, 0) + v
+        return r
+
+    @property
+    def theo_loai_trung(self) -> dict:
+        r: dict = {}
+        for h in self.ho_so:
+            for k, v in h.theo_loai_trung.items():
+                r[k] = r.get(k, 0) + v
+        return r
+
+    @property
+    def recall_theo_loai(self) -> float:
+        """Mẫu số BỎ nhãn `manh_vun` — không đủ chữ để biết yêu cầu thuộc loại nào."""
+        mau = sum(v for k, v in self.theo_loai_mau.items() if k != "manh_vun")
+        trung = sum(v for k, v in self.theo_loai_trung.items() if k != "manh_vun")
+        return trung / mau if mau else 0.0
 
     @property
     def recall_quy_tac(self) -> float:
@@ -182,14 +238,40 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
                 h.trung_ids.append(l["label_id"])
                 ma_trung |= chung
                 nguon = fs_l if theo_vong else fs
-                if any(f.rule_ref in chung and f.category not in CAT_MEM
-                       for f in nguon):
+                thuc_chat = any(f.rule_ref in chung and f.category not in CAT_MEM
+                                for f in nguon)
+                if thuc_chat:
                     h.trung_thuc_chat += 1
+                lo = loai_nhan(l.get("text"))
+                h.theo_loai_mau[lo] = h.theo_loai_mau.get(lo, 0) + 1
+                # Nhãn "thiếu": finding "thiếu thông tin" là bắt ĐÚNG loại.
+                # Nhãn "khác": phải có finding thực chất mới tính.
+                if lo == "thieu" or (lo == "khac" and thuc_chat):
+                    h.theo_loai_trung[lo] = h.theo_loai_trung.get(lo, 0) + 1
             else:
                 h.truot_ids.append(l["label_id"])
+                lo = loai_nhan(l.get("text"))
+                h.theo_loai_mau[lo] = h.theo_loai_mau.get(lo, 0) + 1
         h.finding_khong_khop = sorted(ma_finding - ma_trung)
         kq.ho_so.append(h)
     return kq
+
+
+def _bang_loai(kq: "KetQuaEval") -> str:
+    """Bảng nhỏ: mỗi loại nhãn được chấm trên bao nhiêu và trúng bao nhiêu."""
+    ten = {"thieu": "«chưa nêu / thiếu» — finding `thieu_thong_tin` tính là ĐÚNG",
+           "khac": "yêu cầu khác — đòi finding thực chất",
+           "manh_vun": "quá ngắn, không biết đòi gì — KHÔNG vào mẫu số"}
+    mau, trung = kq.theo_loai_mau, kq.theo_loai_trung
+    d = ["| Loại nhãn | Nhãn | Trúng | Recall |", "|---|---:|---:|---:|"]
+    for k in ("thieu", "khac", "manh_vun"):
+        m = mau.get(k, 0)
+        if not m:
+            continue
+        t = trung.get(k, 0)
+        r = "—" if k == "manh_vun" else f"{t / m:.0%}"
+        d.append(f"| {ten[k]} | {m} | {t if k != 'manh_vun' else '—'} | {r} |")
+    return "\n".join(d)
 
 
 def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
@@ -206,6 +288,7 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
          f"| **Recall so với mọi yêu cầu** | **{kq.recall_moi_yeu_cau:.1%}** |",
          f"| Trúng nhờ finding THỰC CHẤT | {kq.trung_thuc_chat} |",
          f"| **Recall thực chất** (sàn) | **{kq.recall_thuc_chat:.1%}** |",
+         f"| **Recall theo LOẠI nhãn** | **{kq.recall_theo_loai:.1%}** |",
          "",
          "> **Hai con số này KHÔNG thay thế nhau.** Con số dưới là con số nói với "
          "người dùng: so với người thẩm định, công cụ bắt được bao nhiêu. Con số trên "
@@ -218,6 +301,21 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
          "**99,4%** trên thước đo chính, cao hơn model thật (88,4%), vì trích "
          "xuất càng tệ thì càng nhiều cảnh báo \"thiếu\" và càng dễ trùng nhãn. "
          "Cột `Thực chất` không có tính chất ngược đời đó.",
+         "",
+         "> **Recall theo LOẠI nhãn** đòi finding CÙNG LOẠI với điều người thẩm "
+         "định yêu cầu: nhãn *\"chưa nêu / thiếu\"* trúng bằng finding `thieu_thong_tin` "
+         "là đúng, nhãn còn lại phải có finding thực chất. Nhãn quá ngắn để biết đòi gì "
+         "(`manh_vun`) bị BỎ khỏi mẫu số chứ không đoán. Việc phân loại dùng từ khoá "
+         "thuần code — xem `TU_KHOA_THIEU` trong `eval/matching.py`, **danh sách này "
+         "cần người nghiệp vụ soi lại vì nó quyết định con số**.",
+         "",
+         "> ⚠️ **Nhóm «chưa nêu / thiếu» gần như CHO KHÔNG.** Công cụ sinh cảnh "
+         "báo `thieu_thong_tin` cho hầu hết quy tắc, nên model GIẢ cũng đạt **99%** "
+         "ở nhóm này — nhưng chỉ **12%** ở nhóm «yêu cầu khác». Vì vậy **nhóm «yêu "
+         "cầu khác» mới là chỗ phân biệt được công cụ tốt với công cụ sinh bừa**; "
+         "đọc con số tổng mà bỏ qua tách nhóm là đọc sai.",
+         "",
+         _bang_loai(kq),
          "",
          "## Hạn chế phải nêu kèm mỗi khi công bố",
          "",
