@@ -277,18 +277,47 @@ class Extractor:
         dong = [self._ve_phan_tu(e) for e in els if e.text or e.rows]
         return "\n".join(dong)[:MAX_KY_TU_NGU_CANH]
 
-    def khoang_phan_he(self, core: SizingCore, ph: SizingExtension,
-                       het: int) -> tuple[int, int] | None:
-        """Khoảng phần tử thuộc về một phân hệ: từ chỗ nó được nhắc tới đến phân hệ kế.
+    def khoang_phan_he(self, core: SizingCore, ph: SizingExtension, het: int,
+                       doc: DocxDocument | None = None) -> tuple[int, int] | None:
+        """Khoảng phần tử thuộc về một phân hệ: từ đầu MỤC của nó đến phân hệ kế.
 
         Cắt theo `section` không đủ — ở BCCS3 cả 13 phân hệ nằm trong mục III, nên
         `Firewall` vẫn nhìn thấy bảng của `Database` và lấy nhầm số của nó.
+
+        **Bắt đầu từ đầu mục, không từ chỗ phân hệ được nhắc.** Mốc phân hệ thường là
+        bảng cấu hình (`bang_cau_hinh` được tra trước tên), mà bảng cấu hình nằm ở
+        CUỐI mục: trên bản Vtag, mục #49–59 có bảng ở #55–57, mục #59–74 có bảng ở #72.
+        Lấy mốc làm điểm đầu thì toàn bộ văn xuôi mở đầu mục nằm ngoài cửa sổ — mà
+        khoảng này quyết định CẢ ngữ cảnh gửi cho model lẫn vùng neo, nên model không
+        được thấy phần đó và giá trị trích từ đó cũng không neo lại được.
+
+        Đo ở lượt B1 2026-09-07: **28/58 lượt mất neo là giá trị CÓ THẬT nằm ngoài cửa
+        sổ** (Vtag 18/32) — nguyên nhân đơn lẻ lớn nhất. Cùng lượt đo đó bác bỏ giả
+        thuyết "trích vắt qua ranh giới phần tử": 0 lượt trên cả bốn hồ sơ.
+
+        Không lùi quá mốc của phân hệ liền trước, nên phần đất của nó không bị nuốt.
+        Không có `doc` hoặc không có heading nào ở giữa thì giữ nguyên hành vi cũ.
         """
         if ph.element_index is None:
             return None
-        sau = sorted(x.element_index for x in core.phan_he
-                     if x.element_index is not None and x.element_index > ph.element_index)
-        return (ph.element_index, sau[0] if sau else het)
+        moc = sorted(x.element_index for x in core.phan_he
+                     if x.element_index is not None)
+        # Điểm KẾT cũng phải là đầu mục của phân hệ kế, không phải mốc của nó: lấy mốc
+        # thì cửa sổ lấn sang phần văn xuôi mở đầu mục sau (Worker thành 49–72, nuốt
+        # trọn mục Postgres 59–74) — đúng thứ khoảng này sinh ra để chặn.
+        dau = {x: self._dau_muc(doc, x, max([y for y in moc if y < x], default=-1))
+               for x in moc}
+        sau = [x for x in moc if x > ph.element_index]
+        return (dau[ph.element_index], dau[sau[0]] if sau else het)
+
+    @staticmethod
+    def _dau_muc(doc: DocxDocument | None, idx: int, chan_duoi: int) -> int:
+        """Heading gần nhất ở TRƯỚC `idx`, không lùi quá `chan_duoi`."""
+        if doc is None:
+            return idx
+        return max((e.index for e in doc.elements
+                    if e.kind == "heading" and chan_duoi < e.index <= idx),
+                   default=idx)
 
     # ------------------------------------------------------------------ neo
     def neo(self, doc: DocxDocument, *khoa: str,
@@ -781,7 +810,7 @@ class Extractor:
         viec: list[tuple[str, Callable[[], None]]] = [
             (nhom.ten, partial(self.trich_nhom, doc, nhom, core)) for nhom in nhom_ht]
         for ph in core.phan_he:
-            kh = self.khoang_phan_he(core, ph, het)
+            kh = self.khoang_phan_he(core, ph, het, doc)
             for sc, ds in (("phan_he", nhom_ph), ("phan_he_x_cong_nghe_luu_tru", nhom_cn)):
                 if sc == "phan_he_x_cong_nghe_luu_tru" and not ph.cong_nghe_luu_tru:
                     continue

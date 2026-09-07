@@ -547,6 +547,55 @@ def test_khoang_phan_he_chan_lay_so_cua_phan_he_khac():
     assert el2 is not None
 
 
+def test_khoang_phan_he_bat_dau_tu_DAU_MUC_chu_khong_tu_moc():
+    """Nguyên nhân đơn lẻ lớn nhất của việc mất neo, đo ở B1 2026-09-07: 28/58 lượt
+    là giá trị CÓ THẬT nhưng nằm ngoài cửa sổ (Vtag 18/32).
+
+    Mốc phân hệ thường là bảng cấu hình (`bang_cau_hinh` được tra trước tên), mà bảng
+    cấu hình nằm ở CUỐI mục — trên bản Vtag mục #49–59 có bảng ở #55. Lấy mốc làm điểm
+    đầu thì văn xuôi mở đầu mục nằm ngoài cửa sổ, và cửa sổ quyết định CẢ ngữ cảnh gửi
+    cho model lẫn vùng neo: model không được thấy, mà thấy cũng không neo lại được.
+    """
+    from src.extraction.schema import SizingCore, SizingExtension
+
+    els = [Element(index=i, kind="paragraph", text=f"nội dung {i}", page=1,
+                   section="III") for i in range(130)]
+    for i, ten in ((49, "Worker"), (59, "Postgres"), (74, "Mongo")):
+        els[i] = Element(index=i, kind="heading", text=f"Định cỡ module {ten}",
+                         page=1, section="III")
+    doc = DocxDocument(path="giả.docx", elements=els, page_source="rendered")
+    core = SizingCore(phan_he=[            # mốc = BẢNG cấu hình, nằm cuối mỗi mục
+        SizingExtension(ten_phan_he="Worker", element_index=55),
+        SizingExtension(ten_phan_he="Postgres", element_index=72),
+        SizingExtension(ten_phan_he="Mongo", element_index=89)])
+    ex = Extractor(FakeLLM({}))
+
+    # Không có `doc` ⇒ giữ nguyên hành vi cũ, không làm hỏng chỗ đang chạy được.
+    assert ex.khoang_phan_he(core, core.phan_he[0], 130) == (55, 72)
+
+    # Có `doc` ⇒ cửa sổ trùng khít MỤC thật. Điểm kết cũng phải là đầu mục của phân
+    # hệ kế: lấy mốc của nó thì Worker thành (49, 72), nuốt trọn mục Postgres.
+    assert ex.khoang_phan_he(core, core.phan_he[0], 130, doc) == (49, 59)
+    assert ex.khoang_phan_he(core, core.phan_he[1], 130, doc) == (59, 74)
+    assert ex.khoang_phan_he(core, core.phan_he[2], 130, doc) == (74, 130)
+
+
+def test_khong_lui_qua_phan_he_lien_truoc():
+    """Tài liệu không có heading xen giữa thì không được lùi vào đất phân hệ trước."""
+    from src.extraction.schema import SizingCore, SizingExtension
+    els = [Element(index=i, kind="paragraph", text=f"x{i}", page=1, section="III")
+           for i in range(60)]
+    els[10] = Element(index=10, kind="heading", text="Mục chung", page=1, section="III")
+    doc = DocxDocument(path="giả.docx", elements=els, page_source="rendered")
+    core = SizingCore(phan_he=[
+        SizingExtension(ten_phan_he="A", element_index=20),
+        SizingExtension(ten_phan_he="B", element_index=40)])
+    ex = Extractor(FakeLLM({}))
+    assert ex.khoang_phan_he(core, core.phan_he[0], 60, doc) == (10, 40)
+    # B không có heading nào trong (20, 40] nên giữ nguyên mốc của chính nó.
+    assert ex.khoang_phan_he(core, core.phan_he[1], 60, doc) == (40, 60)
+
+
 def test_cong_nghe_luu_tru_la_ENUM_lay_tu_rules_yaml():
     """Khai `str` đã hỏng hai lần trên tài liệu thật: lần đầu model chép nguyên
     `cong_nghe` sang, lần sau điền cả tiêu đề mục "Mục III - Định cỡ cụm máy chủ…".
