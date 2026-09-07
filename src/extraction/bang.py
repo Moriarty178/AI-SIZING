@@ -57,6 +57,17 @@ _O_SO = re.compile(r"[\s\d.,]{1,12}[%A-Za-zÀ-ỹ/()\s]{0,10}")
 MAX_MAU_MOI_COT = 4         # số ô ví dụ gửi kèm mỗi cột
 
 
+# Cột số thứ tự: KHÔNG BAO GIỜ là tham số, nhưng vẫn lọt qua `la_o_so` vì toàn số.
+# Đo ở lượt B1 2026-09-07: 25/91 cột số (27%) là cột này, và chúng chiếm 42% trong
+# tổng số lần model trả `khong_ro`. Prompt vốn đã dặn model bỏ chúng và model làm
+# ĐÚNG — nhưng mỗi cột như vậy vẫn tốn một trường lược đồ và một phần token, lại
+# làm loãng chỗ model cần chú ý. Việc code quyết được thì không đem hỏi model (NT1).
+# Khớp CẢ tiêu đề, không khớp một phần: «TT» là số thứ tự, «TT máy chủ» thì không.
+_COT_SO_THU_TU = re.compile(
+    r"^\s*(stt|tt|s[ốo]\s*(tt|th[ứu]\s*t[ựu])|#|no\.?|num(ber)?|index)\s*\.?\s*$",
+    re.IGNORECASE)
+
+
 def la_o_so(s: str) -> bool:
     s = (s or "").strip()
     return bool(s) and any(c.isdigit() for c in s) and bool(_O_SO.fullmatch(s))
@@ -65,7 +76,8 @@ def la_o_so(s: str) -> bool:
 def cot_du_lieu(e: Element) -> list[tuple[int, str]]:
     """`(chỉ số cột, tiêu đề)` của các cột CHỨA SỐ LIỆU.
 
-    Điều kiện: có tiêu đề, có ít nhất một ô số, và **không ô dữ liệu nào là văn xuôi**.
+    Điều kiện: có tiêu đề, KHÔNG phải cột số thứ tự, có ít nhất một ô số, và **không
+    ô dữ liệu nào là văn xuôi**.
     Một cột lẫn văn xuôi thì con số trong đó là con số nằm trong câu, không phải một
     trường dữ liệu — gán nó cho tham số là đúng loại lỗi v5 mắc phải.
     """
@@ -75,6 +87,8 @@ def cot_du_lieu(e: Element) -> list[tuple[int, str]]:
     ra: list[tuple[int, str]] = []
     for i, td in enumerate(dau):
         if not (td or "").strip():
+            continue
+        if _COT_SO_THU_TU.match(td):
             continue
         o = [(h[i] if i < len(h) else "") for h in e.rows[1:]]
         co_chu = [x for x in o if (x or "").strip()]
