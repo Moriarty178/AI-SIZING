@@ -48,7 +48,26 @@ def test_cot_van_xuoi_khong_bao_gio_duoc_hoi():
     bảng mô tả — con số nằm trong câu, không phải một trường dữ liệu.
     """
     assert cot_du_lieu(_bang(9, BANG_CAU_HINH)) == [
-        (0, "STT"), (2, "CPU (Cint)"), (3, "RAM (GB)")]
+        (2, "CPU (Cint)"), (3, "RAM (GB)")]      # «STT» bị loại, xem test dưới
+
+
+def test_cot_so_thu_tu_KHONG_bao_gio_duoc_hoi():
+    """25/91 cột số trong 4 hồ sơ dev là cột số thứ tự, và chúng chiếm 42% tổng số
+    lần model trả `khong_ro` (đo ở B1 2026-09-07). Model vẫn trả lời ĐÚNG, nhưng mỗi
+    cột như vậy tốn một trường lược đồ và làm loãng chỗ cần chú ý — việc code quyết
+    được thì không đem hỏi model (NT1)."""
+    for td in ("STT", "stt", "TT", "#", "No.", "Số TT", "Index", "Number"):
+        e = _bang(9, [[td, "RAM (GB)"], ["1", "16"], ["2", "32"]])
+        assert cot_du_lieu(e) == [(1, "RAM (GB)")], f"«{td}» đáng lẽ bị loại"
+
+
+def test_khong_nham_cot_that_thanh_cot_so_thu_tu():
+    """Khớp CẢ tiêu đề chứ không khớp một phần — nếu không sẽ mất cột dữ liệu thật.
+    «N» ở bảng tổng là số node, một tham số THẬT, không phải số thứ tự."""
+    assert cot_du_lieu(_bang(9, BANG_TONG))[0] == (0, "N")
+    for td in ("TT máy chủ", "Số TT/giây", "Stt_ram"):
+        e = _bang(9, [[td, "x"], ["16", "1"]])
+        assert any(t == td for _, t in cot_du_lieu(e)), f"«{td}» KHÔNG được loại"
 
 
 def test_bang_khong_co_cot_so_thi_khong_hoi_lan_nao():
@@ -71,7 +90,7 @@ def test_luoc_do_co_dung_MOT_truong_moi_cot():
     e = _bang(9, BANG_CAU_HINH)
     cot = cot_du_lieu(e)
     lop = luoc_do_bang(e, cot, [_ts("cpu_95th"), _ts("ram_cau_hinh_gb")], False)
-    assert set(lop.model_fields) == {"cot_0", "cot_2", "cot_3"}
+    assert set(lop.model_fields) == {"cot_2", "cot_3"}
     enum = lop.model_json_schema()["properties"]["cot_2"]["enum"]
     assert enum == ["cpu_95th", "ram_cau_hinh_gb", KHONG_RO]
 
@@ -96,18 +115,20 @@ def _chay_bang(dap_an: dict, rows=BANG_CAU_HINH, uv=None, index=9):
 def test_code_doc_o_chu_khong_phai_model_doc():
     """Model chỉ NÓI cột nào là tham số nào; con số do code lấy từ ô (NT1 + NT2)."""
     ex, dich = _chay_bang({"GanBang9": {
-        "cot_0": KHONG_RO, "cot_2": "cpu_95th", "cot_3": "ram_cau_hinh_gb"}})
+        "cot_2": "cpu_95th", "cot_3": "ram_cau_hinh_gb"}})
     assert dich.params["ram_cau_hinh_gb"].value == 16.0
     assert dich.params["ram_cau_hinh_gb"].element_index == 9
     assert "cột «RAM (GB)»" in dich.params["ram_cau_hinh_gb"].note
-    assert ex.tk.cot_gan_duoc == 2 and ex.tk.cot_khong_ro == 1
-    assert ex.tk.cot_hoi == 3
+    # `cot_khong_ro == 0`: cột «STT» không còn được hỏi nên không còn sinh ra một
+    # lượt "không biết" nữa — đó chính là điều thay đổi 2026-09-07 nhắm tới.
+    assert ex.tk.cot_gan_duoc == 2 and ex.tk.cot_khong_ro == 0
+    assert ex.tk.cot_hoi == 2      # 3 trước 2026-09-07, «STT» không còn được hỏi
 
 
 def test_hai_cot_cung_gia_tri_khong_bi_coi_la_tranh_mot_o():
     """`CPU 16 | RAM 16`: cùng con số, khác cột — cổng một-ô-một-tham-số không được bỏ."""
     ex, dich = _chay_bang({"GanBang9": {
-        "cot_0": KHONG_RO, "cot_2": "cpu_95th", "cot_3": "ram_cau_hinh_gb"}})
+        "cot_2": "cpu_95th", "cot_3": "ram_cau_hinh_gb"}})
     assert ex.loc_o_bi_nhieu_tham_so(dich) == 0
     assert dich.params["cpu_95th"].value == 16.0
     assert dich.params["ram_cau_hinh_gb"].value == 16.0
