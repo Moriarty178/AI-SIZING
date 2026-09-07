@@ -27,10 +27,19 @@ def chuan_hoa(s: str) -> str:
 
 
 def neo(doc: DocxDocument, *khoa: str,
-        khoang: tuple[int, int] | None = None) -> tuple[Element | None, int]:
+        khoang: tuple[int, int] | None = None,
+        uu_tien_kind: str | None = None) -> tuple[Element | None, int]:
     """Tìm phần tử chứa một trong các khoá, theo đúng thứ tự ưu tiên truyền vào.
 
     Trả `(phần tử, chỉ số khoá đã khớp)`; `(None, -1)` nếu không khoá nào có thật.
+
+    `uu_tien_kind` xét một loại phần tử trước phần còn lại. Sinh ra cho việc định vị
+    MỤC của phân hệ: quét theo thứ tự tài liệu thì tên phân hệ khớp trúng bảng thuật
+    ngữ ở đầu tài liệu chứ không phải heading mở đầu mục của nó. Đo trên bản Vtag
+    2026-09-07: 5/6 phân hệ cùng khớp phần tử #30 (bảng «# | Tên | Mô tả»), trong khi
+    heading thật nằm ở #49/#59/#74/#93/#105/#111. Hỏng theo hai kiểu cùng lúc — phân
+    hệ sớm nhất nhận khoảng không chứa nội dung của nó, còn các phân hệ trùng chỉ số
+    thì mất hẳn tác dụng tách khoảng.
     Thứ tự quan trọng: khoá đầu thường là nguyên văn câu (bằng chứng mạnh), khoá sau
     là bản rút gọn (bằng chứng yếu hơn) — bên gọi dùng chỉ số để hạ độ tin cậy.
 
@@ -42,11 +51,15 @@ def neo(doc: DocxDocument, *khoa: str,
     """
     els = ([e for e in doc.elements if khoang[0] <= e.index < khoang[1]]
            if khoang else doc.elements)
+    # `uu_tien_kind`: xét loại phần tử này TRƯỚC, rồi mới tới phần còn lại. Thứ tự
+    # khoá vẫn thắng — khoá mạnh hơn tìm hết cả hai vòng trước khi xét khoá yếu hơn.
+    vong = ([e for e in els if e.kind == uu_tien_kind], els) if uu_tien_kind else (els,)
     for i, k in enumerate(khoa):
         kk = chuan_hoa(k)
         if len(kk) < DAI_TOI_THIEU:
             continue
-        for e in els:
-            if kk in chuan_hoa(e.text):
-                return e, i
+        for tap in vong:
+            for e in tap:
+                if kk in chuan_hoa(e.text):
+                    return e, i
     return None, -1
