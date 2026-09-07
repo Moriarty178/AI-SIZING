@@ -341,6 +341,16 @@ def main() -> int:
                  f"{c5.get('trich_dan_bia', 0)} trích dẫn bị loại" if c5 else ""),
             ] if x)
             print(f"{len(kq.findings)} finding ({time.time() - t0:.0f}s) · {chan_doan}")
+            # Dòng trên chỉ nêu 3 trong hơn 20 bộ đếm của C3, nên khi trường rơi rụng
+            # ta không biết rơi ở ĐƯỜNG NÀO: đường cột bảng (v6) và đường neo câu có
+            # các cách hỏng hoàn toàn khác nhau và cần hai cách sửa ngược nhau. Lượt
+            # B1 2026-09-07 mất 119/161 trường mà không truy được nguyên nhân — nên
+            # từ đây in mọi bộ đếm KHÁC 0, để lượt chạy tự nói ra chỗ thủng.
+            bo_qua = {"luot_goi", "truong_hoi", "truong_co_gia_tri", "loi"}
+            mat = " · ".join(f"{k} {v}" for k, v in sorted(c3.items())
+                             if k not in bo_qua and isinstance(v, int) and v)
+            if mat:
+                print(f"    C3 chi tiết: {mat}")
         if not ket_qua_ban:
             continue
         # Mẫu số vẫn tính đủ; `theo_ho_so` gom mọi bản để `finding_khong_khop` đúng.
