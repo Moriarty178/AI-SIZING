@@ -160,6 +160,17 @@ class ThongKe:
     truong_hoi: int = 0
     truong_co_gia_tri: int = 0
     khong_neo_duoc: int = 0
+    # Trong số `khong_neo_duoc`, bao nhiêu lượt SẼ neo được nếu bỏ giới hạn khoảng
+    # phân hệ. Đây là phép tách hai nguyên nhân cần hai cách sửa NGƯỢC NHAU: cửa sổ
+    # quá hẹp (sửa cách xác định mốc phân hệ) hay model diễn đạt lại/bịa (sửa prompt
+    # hoặc cổng neo). Chỉ để chẩn đoán — KHÔNG dùng kết quả ngoài khoảng, vì giá trị
+    # neo sang phân hệ khác chính là thứ `khoang` sinh ra để chặn.
+    neo_duoc_neu_bo_khoang: int = 0
+    # Trong số `khong_neo_duoc`, bao nhiêu lượt khớp khi NỐI các phần tử của cửa sổ
+    # thành một khối, tức câu model trích vắt qua ranh giới hai phần tử. Ngữ cảnh gửi
+    # đi nối các phần tử thành văn bản liền mạch, nên model không có lý do gì để biết
+    # ranh giới đó ở đâu — nếu con số này lớn thì lỗi nằm ở CÁCH SO, không phải ở model.
+    neo_duoc_neu_noi_phan_tu: int = 0
     khong_doc_duoc_so: int = 0
     khong_quy_doi_duoc: int = 0
     luong_nghia: int = 0
@@ -188,7 +199,9 @@ class ThongKe:
                 f"{self.cot_trung_tham_so} cột trùng tham số · "
                 f"{self.bang_mat_dong} mất dòng · "
                 f"{self.mau_thuan_giua_bang} mâu thuẫn giữa bảng · "
-                f"{self.khong_neo_duoc} không neo được · "
+                f"{self.khong_neo_duoc} không neo được "
+                f"({self.neo_duoc_neu_bo_khoang} nếu bỏ khoảng, "
+                f"{self.neo_duoc_neu_noi_phan_tu} nếu nối phần tử) · "
                 f"{self.khong_doc_duoc_so} không đọc được số · "
                 f"{self.khong_quy_doi_duoc} không quy đổi được · "
                 f"{self.luong_nghia} lưỡng nghĩa · "
@@ -199,6 +212,21 @@ class ThongKe:
                 f"{self.o_bi_nhieu_tham_so} bỏ vì một ô bị nhiều tham số nhận · "
                 f"{self.cot_khong_co_that} cột không có thật · "
                 f"{self.gia_tri_khong_trong_cot} giá trị không nằm trong cột khai")
+
+
+def _vat_qua_phan_tu(doc: DocxDocument, cau: str,
+                     khoang: tuple[int, int] | None) -> bool:
+    """Câu có khớp khi NỐI các phần tử lại, dù không nằm gọn trong phần tử nào?
+
+    Chỉ để chẩn đoán, không dùng để chấp nhận giá trị: neo vào một khối nối thì mất
+    đúng thứ NT2 cần — biết finding chỉ vào phần tử NÀO.
+    """
+    kk = _chuan(cau)
+    if len(kk) < 3:
+        return False
+    els = [e for e in doc.elements
+           if not khoang or khoang[0] <= e.index < khoang[1]]
+    return kk in _chuan(" ".join(e.text for e in els if e.text))
 
 
 class Extractor:
@@ -406,6 +434,13 @@ class Extractor:
         if el is None:
             # Không tìm lại được trong tài liệu ⇒ không có căn cứ (NT2). Bỏ.
             self.tk.khong_neo_duoc += 1
+            if khoang and self.neo(doc, cau, raw)[0] is not None:
+                # Có thật trong tài liệu, chỉ nằm NGOÀI khoảng của phân hệ đang hỏi.
+                # Vẫn bỏ giá trị — nhưng đếm lại, vì đây là dấu hiệu mốc phân hệ sai
+                # chứ không phải model bịa.
+                self.tk.neo_duoc_neu_bo_khoang += 1
+            elif _vat_qua_phan_tu(doc, cau, khoang):
+                self.tk.neo_duoc_neu_noi_phan_tu += 1
             return None
 
         # Neo được CÂU thôi thì chưa đủ. Lần chạy thật cho thấy model ghép một câu có

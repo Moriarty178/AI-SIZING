@@ -137,6 +137,54 @@ def test_model_tra_nguyen_van_con_CODE_moi_quyet_dinh_so():
     assert core.params["dung_luong_gb"].raw == "1.500 GB"
 
 
+def test_dem_rieng_ba_nguyen_nhan_cua_mot_lan_MAT_NEO():
+    """Ba nguyên nhân khác nhau cần ba cách sửa khác nhau, nên phải đếm tách.
+
+    Sửa mù đã trả giá một lần: bản vá "neo phân hệ vào heading" 2026-09-07 không hề
+    chạy, vì `bang_cau_hinh` chiếm quyền trước — Vtag giữ nguyên ĐÚNG 32 lượt mất neo.
+    """
+    import src.extraction.schema as sch
+
+    t = ThamSo(name="cpu_95th", kieu="so", unit="%")
+
+    # (1) câu CÓ THẬT nhưng nằm NGOÀI khoảng của phân hệ đang hỏi ⇒ mốc phân hệ sai
+    doc = _doc("Redis: tải CPU 92% giờ cao điểm.", "Worker: tải CPU 40%.")
+    llm = FakeLLM({"TrichTEST1": {"cpu_95th": {
+        "gia_tri_nguyen_van": "92%",
+        "cau_chua": "Redis: tải CPU 92% giờ cao điểm."}}})
+    ex = Extractor(llm)
+    ex.trich_nhom(doc, _nhom(t), sch.SizingCore(), khoang=(1, 2))
+    assert ex.tk.khong_neo_duoc == 1
+    assert ex.tk.neo_duoc_neu_bo_khoang == 1
+    assert ex.tk.neo_duoc_neu_noi_phan_tu == 0
+
+    # (2) câu VẮT QUA ranh giới hai phần tử ⇒ lỗi ở cách so, không phải ở model.
+    # Ngữ cảnh gửi đi nối các phần tử thành văn bản liền mạch nên model không có cách
+    # nào biết ranh giới nằm đâu. Chỉ hỏng khi nhánh dự phòng "neo theo giá trị" cũng
+    # câm — mà nó câm với MỌI số 1–2 chữ số, do `DAI_TOI_THIEU = 3` loại khoá quá
+    # ngắn. `16`, `32`, `8` lại đúng là những con số dày đặc nhất trong bản sizing.
+    t2 = ThamSo(name="so_node", kieu="so", unit="")
+    doc2 = _doc("Phân hệ Worker chạy", "16 node ở chế độ N+1.")
+    llm2 = FakeLLM({"TrichTEST1": {"so_node": {
+        "gia_tri_nguyen_van": "16",
+        "cau_chua": "Phân hệ Worker chạy 16 node ở chế độ N+1."}}})
+    ex2 = Extractor(llm2)
+    ex2.trich_nhom(doc2, _nhom(t2), sch.SizingCore())
+    assert ex2.tk.khong_neo_duoc == 1
+    assert ex2.tk.neo_duoc_neu_noi_phan_tu == 1
+
+    # (3) câu KHÔNG có thật ở đâu cả ⇒ model bịa; cả hai bộ đếm phải im.
+    doc3 = _doc("Tải CPU trung bình 60%.")
+    llm3 = FakeLLM({"TrichTEST1": {"cpu_95th": {
+        "gia_tri_nguyen_van": "92%",
+        "cau_chua": "Tải CPU đỉnh đạt 92% vào giờ cao điểm."}}})
+    ex3 = Extractor(llm3)
+    ex3.trich_nhom(doc3, _nhom(t), sch.SizingCore())
+    assert ex3.tk.khong_neo_duoc == 1
+    assert ex3.tk.neo_duoc_neu_bo_khoang == 0
+    assert ex3.tk.neo_duoc_neu_noi_phan_tu == 0
+
+
 def test_quy_doi_ve_dung_don_vi_quy_tac_dung():
     """Bỏ bước quy đổi thì "1,5 TB" vào biểu thức tính bằng GB sẽ lệch 1024 lần."""
     doc = _doc("Dung lượng backup 1,5 TB.")
