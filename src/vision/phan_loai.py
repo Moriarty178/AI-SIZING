@@ -104,6 +104,24 @@ class KetQuaPhanLoai:
 
 
 # ---------------------------------------------------------------------------
+def co_pillow() -> bool:
+    """Có đo được đặc trưng ảnh không.
+
+    Thiếu Pillow thì 2.2 KHÔNG đỏ và KHÔNG dừng — mọi ảnh về `chua_ro`, đúng tinh
+    thần NT4. Nhưng hệ quả thì im lặng và đắt: 2.3 chọn ảnh theo loại, nên `se_doc`
+    thành 0 và lượt đọc ảnh không gọi model lần nào mà vẫn báo "xong". Vì vậy chỗ
+    nào tiêu giờ mạng nội bộ thì phải HỎI hàm này và nói ra trước khi chạy.
+
+    Gặp thật 2026-09-07: máy trong mạng nội bộ `uv sync` không kèm nhóm `ocr` nên
+    thiếu Pillow → 8 test đỏ. Từ nay `pillow` nằm ở phần phụ thuộc lõi.
+    """
+    try:
+        import PIL.Image                            # noqa: F401,PLC0415
+        return True
+    except ImportError:
+        return False
+
+
 def do_dac_trung(data: bytes) -> DacTrungAnh | None:
     """Đo đặc trưng pixel. Trả `None` khi không đọc được ảnh — KHÔNG đoán."""
     try:

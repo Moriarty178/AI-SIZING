@@ -18,6 +18,11 @@ from src.vision.anh import Anh
 from src.vision.doc_anh import (LOAI_MAC_DINH, DocAnh, DocConsole, DocSoDo,
                                 SoLieuAnh, dong_goi, neo_duoc, thanh_finding,
                                 uoc_tinh_luot_goi_anh)
+from src.vision.phan_loai import co_pillow
+
+can_pillow = pytest.mark.skipif(
+    not co_pillow(),
+    reason="cần Pillow để đo đặc trưng ảnh (C2 mục 2.2) — cài bằng `uv sync`")
 
 
 # --- hạ tầng giả -----------------------------------------------------------
@@ -205,6 +210,7 @@ def _doc_co_anh(*anh_data):
     return read_docx(g.name)
 
 
+@can_pillow
 def test_chi_goi_model_cho_loai_da_chon():
     """Ảnh chụp bảng không nằm trong mặc định thì KHÔNG được đốt một lượt gọi."""
     d = _doc_co_anh(_png(ANH_CONSOLE), _png(ANH_TRANG), _png(ANH_CONSOLE))
@@ -215,6 +221,7 @@ def test_chi_goi_model_cho_loai_da_chon():
     assert all(k.loai == "console" for k in kq)
 
 
+@can_pillow
 def test_bat_them_loai_bang_tham_so():
     d = _doc_co_anh(_png(ANH_CONSOLE), _png(ANH_TRANG))
     c = ClientGia([DocConsole(doc_duoc=True, so_lieu=[_so("a", "1", "a 1")])] * 2)
@@ -222,6 +229,7 @@ def test_bat_them_loai_bang_tham_so():
     assert len(kq) == 2
 
 
+@can_pillow
 def test_uoc_tinh_dem_truoc_khi_tieu_tien():
     d = _doc_co_anh(_png(ANH_CONSOLE), _png(ANH_CONSOLE), _png(ANH_TRANG))
     u = uoc_tinh_luot_goi_anh(d)

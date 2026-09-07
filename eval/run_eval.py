@@ -32,6 +32,7 @@ from src.llm.client import LLMClient, LLMError
 from src.reporting.finding import Finding
 from src.pipeline import chay
 from src.version import in_phien_ban
+from src.vision.phan_loai import co_pillow
 from src.validators.qualitative import uoc_tinh_luot_goi_dt
 from src.validators.rules_loader import load_rules
 
@@ -159,6 +160,14 @@ def main() -> int:
         return 2
 
     in_phien_ban()
+    if not co_pillow():
+        # Không dừng: recall khớp theo `rule_ref`, mà cảnh báo ảnh không có
+        # `rule_ref` nên CON SỐ KHÔNG ĐỔI. Nhưng phần ảnh trong báo cáo sẽ gộp
+        # làm một thay vì tách theo loại, nên phải nói ra kẻo đọc báo cáo lại
+        # tưởng tài liệu không có ảnh nào đáng chia.
+        print("  ⚠ THIẾU PILLOW — không đo được đặc trưng ảnh (C2 mục 2.2). "
+              "Recall KHÔNG đổi; chỉ phần cảnh báo ảnh bị gộp chung. "
+              "Cài: uv sync  (pillow nay ở phần lõi)")
     labels = nap_nhan(a.tap)
     ds = sorted({l["dossier"] for l in labels}, key=str.lower)
 
