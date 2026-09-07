@@ -45,7 +45,21 @@ class KetQuaHoSo:
     trung_ids: list[str] = field(default_factory=list)
     truot_ids: list[str] = field(default_factory=list)
     finding_khong_khop: list[str] = field(default_factory=list)
+    # Trong số `trung`, bao nhiêu nhãn trúng nhờ một finding THỰC CHẤT — tức không
+    # phải chỉ vì công cụ nói "không tìm thấy trường này". Xem `CAT_MEM`.
+    trung_thuc_chat: int = 0
     ghi_chu: str = ""
+
+
+# Loại finding KHÔNG tự nó chứng minh công cụ bắt được điều gì: nó chỉ nói công cụ
+# không đọc được chỗ đó. Một finding như vậy vẫn hợp lệ với người dùng (và đúng NT4),
+# nhưng dùng nó để tính recall thì thước đo THƯỞNG CHO VIỆC TRÍCH XUẤT THẤT BẠI:
+# càng ít trường đọc được thì càng nhiều mã quy tắc được nhắc, càng dễ trùng nhãn.
+#
+# Đo được ở lượt B1 2026-09-07: trên MỘT hồ sơ, pipeline nhắc tới 120–124 trong 151
+# quy tắc, với 96/123 finding thuộc `thieu_thong_tin` và đúng 1 finding `vuot_nguong`.
+# Hệ quả: model GIẢ (sinh bừa) đạt 99,4% còn model THẬT đạt 88,4% trên cùng thước đo.
+CAT_MEM = frozenset({"thieu_thong_tin", "khong_kiem_chung_duoc"})
 
 
 @dataclass
@@ -77,6 +91,15 @@ class KetQuaEval:
     @property
     def trung(self) -> int:
         return sum(h.trung for h in self.ho_so)
+
+    @property
+    def trung_thuc_chat(self) -> int:
+        return sum(h.trung_thuc_chat for h in self.ho_so)
+
+    @property
+    def recall_thuc_chat(self) -> float:
+        """Recall khi chỉ tính cú trúng do một finding THỰC CHẤT tạo ra."""
+        return (self.trung_thuc_chat / self.nhan_co_rule) if self.nhan_co_rule else 0.0
 
     @property
     def recall_quy_tac(self) -> float:
@@ -158,6 +181,10 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
                 h.trung += 1
                 h.trung_ids.append(l["label_id"])
                 ma_trung |= chung
+                nguon = fs_l if theo_vong else fs
+                if any(f.rule_ref in chung and f.category not in CAT_MEM
+                       for f in nguon):
+                    h.trung_thuc_chat += 1
             else:
                 h.truot_ids.append(l["label_id"])
         h.finding_khong_khop = sorted(ma_finding - ma_trung)
@@ -177,10 +204,20 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
          f"| Trúng | **{kq.trung}** |",
          f"| **Recall so với bộ quy tắc hiện có** | **{kq.recall_quy_tac:.1%}** |",
          f"| **Recall so với mọi yêu cầu** | **{kq.recall_moi_yeu_cau:.1%}** |",
+         f"| Trúng nhờ finding THỰC CHẤT | {kq.trung_thuc_chat} |",
+         f"| **Recall thực chất** (sàn) | **{kq.recall_thuc_chat:.1%}** |",
          "",
          "> **Hai con số này KHÔNG thay thế nhau.** Con số dưới là con số nói với "
          "người dùng: so với người thẩm định, công cụ bắt được bao nhiêu. Con số trên "
          "chỉ nói bộ quy tắc hiện có được khai thác tới đâu.",
+         "",
+         "> **Recall thực chất là SÀN, và là con số đáng tin hơn.** Một nhãn được "
+         "tính trúng chỉ vì công cụ nói *\"không tìm thấy trường này\"* thì chưa "
+         "chứng minh được điều gì — mà công cụ nói câu đó cho gần như mọi quy "
+         "tắc. Bằng chứng: ở lượt B1 2026-09-07, model GIẢ (sinh bừa) đạt "
+         "**99,4%** trên thước đo chính, cao hơn model thật (88,4%), vì trích "
+         "xuất càng tệ thì càng nhiều cảnh báo \"thiếu\" và càng dễ trùng nhãn. "
+         "Cột `Thực chất` không có tính chất ngược đời đó.",
          "",
          "## Hạn chế phải nêu kèm mỗi khi công bố",
          "",
@@ -208,15 +245,16 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
         d += ["## Cảnh báo khi chạy", ""] + [f"- {c}" for c in kq.canh_bao] + [""]
 
     d += ["## Theo hồ sơ", "",
-          "| Hồ sơ | Nhãn | Có `rule_ref` | Trúng | Recall | Mã finding không khớp nhãn |",
-          "|---|---:|---:|---:|---:|---|"]
+          "| Hồ sơ | Nhãn | Có `rule_ref` | Trúng | Thực chất | Recall | "
+          "Mã finding không khớp nhãn |",
+          "|---|---:|---:|---:|---:|---:|---|"]
     for h in sorted(kq.ho_so, key=lambda x: -x.nhan_tong):
         r = f"{h.trung / h.nhan_co_rule:.0%}" if h.nhan_co_rule else "—"
         kk = ", ".join(h.finding_khong_khop[:6]) or "—"
         if h.ghi_chu:
             kk = f"⚠ {h.ghi_chu}"
         d.append(f"| {h.dossier[:38]} | {h.nhan_tong} | {h.nhan_co_rule} | "
-                 f"{h.trung} | {r} | {kk} |")
+                 f"{h.trung} | {h.trung_thuc_chat} | {r} | {kk} |")
 
     truot = Counter()
     for h in kq.ho_so:
