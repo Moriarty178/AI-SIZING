@@ -182,6 +182,23 @@ def test_bang_ngoai_muc_cua_phan_he_khong_thuoc_phan_he_do():
     assert vung[30] is None            # Mục IV — của cả hệ thống, không của Firewall
 
 
+def test_hai_phan_he_trung_element_index_khong_lam_no_ca_ho_so():
+    """Hồi quy cho lỗi làm hỏng bản Vtag ở lượt B1 2026-09-07.
+
+    `sorted((p.element_index, p) ...)` rơi xuống so sánh chính `SizingExtension` khi
+    hai phân hệ trùng chỉ số → `TypeError` → cả hồ sơ không chạy được và 38/160 nhãn
+    bị tính TRƯỢT OAN. Một lỗi sắp xếp kéo recall toàn tập từ 85% xuống 64%.
+    """
+    doc = _doc(_bang(10, BANG_CAU_HINH, "III"), _bang(20, BANG_CAU_HINH, "III"))
+    core = SizingCore(phan_he=[
+        SizingExtension(ten_phan_he="Redis", muc="III", element_index=10),
+        SizingExtension(ten_phan_he="Kafka", muc="III", element_index=10),
+    ])
+    vung = {e.index: ph for e, ph, _ in phan_vung_bang(doc, core)}   # không được nổ
+    # Phân hệ đầu của cặp trùng KHÔNG được nhận khoảng rỗng rồi im lặng bỏ mọi bảng.
+    assert vung[10] is not None and vung[20] is not None
+
+
 def test_so_bang_dung_duoc_dem_dung():
     doc = _doc(_bang(1, BANG_CAU_HINH),
                _bang(2, [["Cấu hình", "Ghi chú"], ["Thông lượng >= 1 Gbps", ""]]))
