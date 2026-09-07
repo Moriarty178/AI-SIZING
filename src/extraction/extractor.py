@@ -264,9 +264,10 @@ class Extractor:
 
     # ------------------------------------------------------------------ neo
     def neo(self, doc: DocxDocument, *khoa: str,
-            khoang: tuple[int, int] | None = None) -> tuple[Element | None, str]:
+            khoang: tuple[int, int] | None = None,
+            uu_tien_kind: str | None = None) -> tuple[Element | None, str]:
         """Tìm lại đoạn model trích trong tài liệu. (phần tử, cách neo)."""
-        el, i = _neo_doc(doc, *khoa, khoang=khoang)
+        el, i = _neo_doc(doc, *khoa, khoang=khoang, uu_tien_kind=uu_tien_kind)
         if i < 0:
             return None, ""
         return el, ("câu", "giá trị")[i] if i < 2 else "khoá phụ"
@@ -663,7 +664,13 @@ class Extractor:
                 el = next((e for e in doc.elements
                            if e.index == bang and e.kind == "table"), None)
             if el is None:
-                el, _ = self.neo(doc, p.ten_phan_he, p.cong_nghe or "", p.muc)
+                # `uu_tien_kind="heading"`: mốc phân hệ phải là heading MỞ ĐẦU MỤC của
+                # nó, không phải chỗ đầu tiên tên nó được nhắc. Trên bản Vtag, quét
+                # theo thứ tự tài liệu cho cả 5 phân hệ cùng trỏ vào bảng thuật ngữ
+                # #30; heading thật ở #49–#111. Mốc sai kéo theo khoảng sai, và khoảng
+                # sai làm hỏng CẢ hai đường: neo câu trượt, mà phân vùng bảng cũng lệch.
+                el, _ = self.neo(doc, p.ten_phan_he, p.cong_nghe or "", p.muc,
+                                 uu_tien_kind="heading")
             clt = p.cong_nghe_luu_tru.strip()
             if clt == KHONG_NEU:
                 clt = ""
