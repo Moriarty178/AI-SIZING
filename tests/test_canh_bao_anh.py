@@ -16,6 +16,11 @@ from src.ingestion.docx_reader import Element, read_docx
 from src.pipeline import _canh_bao_anh, canh_bao_nt4
 from src.vision import phan_loai as pl
 from src.vision.phan_loai import NhomAnh, TomTatAnh, tom_tat_anh
+from src.vision.phan_loai import co_pillow
+
+can_pillow = pytest.mark.skipif(
+    not co_pillow(),
+    reason="cần Pillow để đo đặc trưng ảnh (C2 mục 2.2) — cài bằng `uv sync`")
 
 
 def _png(rows) -> bytes:
@@ -57,6 +62,7 @@ def _doc_co_anh(*anh_data):
 
 
 # --- tom_tat_anh -----------------------------------------------------------
+@can_pillow
 def test_dem_dung_tung_loai_tren_tai_lieu_that():
     d = _doc_co_anh(_png(ANH_CONSOLE), _png(ANH_CONSOLE), _png(ANH_TRANG))
     tt = tom_tat_anh(d)
@@ -65,6 +71,7 @@ def test_dem_dung_tung_loai_tren_tai_lieu_that():
     assert theo == {"console": 2, "anh_van_ban": 1}
 
 
+@can_pillow
 def test_loai_nhieu_kha_nang_chua_so_do_dung_TRUOC():
     """Ảnh chụp dòng lệnh là nơi đặt sở cứ đo tải — người đọc cần thấy nó đầu tiên."""
     d = _doc_co_anh(_png(ANH_TRANG), _png(ANH_CONSOLE))
@@ -82,6 +89,7 @@ def test_tai_lieu_khong_anh_thi_tom_tat_rong():
 
 
 # --- cảnh báo NT4 ----------------------------------------------------------
+@can_pillow
 def test_moi_loai_ra_mot_canh_bao_rieng_kem_goi_y_rieng():
     d = _doc_co_anh(_png(ANH_CONSOLE), _png(ANH_TRANG))
     fs = _canh_bao_anh(d, d.images())
@@ -93,6 +101,7 @@ def test_moi_loai_ra_mot_canh_bao_rieng_kem_goi_y_rieng():
         f for f in fs if "ANH_VAN_BAN" in f.id).suggestion
 
 
+@can_pillow
 def test_canh_bao_van_la_muc_info_va_co_can_cu_dem_duoc():
     """NT2: căn cứ là con số code đếm. NT3: KHÔNG tự nâng mức độ ở đây."""
     d = _doc_co_anh(_png(ANH_CONSOLE))
@@ -163,6 +172,7 @@ def test_thu_tu_uu_tien_khop_voi_danh_sach_loai_cua_2_2():
                                       "anh_van_ban", "chua_ro"}
 
 
+@can_pillow
 def test_thu_tu_uu_tien_song_qua_C7_chu_khong_bi_xep_lai_theo_bang_chu_cai():
     """Hồi quy cho một lỗi LIÊN THÀNH PHẦN đã gặp thật: C7 xếp finding cùng mức độ
     theo `id`, nên `chua_ro` từng hiện TRƯỚC `console` trong báo cáo bản Vtag —

@@ -26,6 +26,7 @@ from src.llm.client import LLMClient, LLMError                  # noqa: E402
 from src.version import commit_hien_tai, in_phien_ban           # noqa: E402
 from src.vision.doc_anh import (LOAI_MAC_DINH, DocAnh,          # noqa: E402
                                 thanh_finding, uoc_tinh_luot_goi_anh)
+from src.vision.phan_loai import co_pillow                      # noqa: E402
 
 GIAY_MOI_LUOT = 40      # đo thật ở 0.10
 
@@ -44,6 +45,15 @@ def main() -> int:
 
     loai = tuple(x.strip() for x in a.loai.split(",") if x.strip())
     in_phien_ban("C2/2.3 đọc ảnh")
+    if not co_pillow():
+        # DỪNG HẲN, khác với `run_eval` chỉ cảnh báo. Ở đây 2.3 chọn ảnh THEO LOẠI,
+        # nên thiếu Pillow là mọi ảnh về `chua_ro` → đọc 0 ảnh → script vẫn in
+        # "không có ảnh nào thuộc loại đã chọn" rồi thoát 0. Một lượt chạy không
+        # làm gì mà báo thành công là thứ tệ nhất có thể xảy ra trong giờ mạng nội bộ.
+        print("THIẾU PILLOW — 2.3 chọn ảnh theo loại nên sẽ không đọc được ảnh nào.")
+        print("  Cài rồi chạy lại:  uv sync      (pillow nay ở phần phụ thuộc lõi)")
+        print("  hoặc:              py -m pip install pillow")
+        return 2
     doc = read_docx(a.docx)
 
     u = uoc_tinh_luot_goi_anh(doc, loai)

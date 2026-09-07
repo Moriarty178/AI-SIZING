@@ -9,6 +9,7 @@ dependencies = [
     "pyyaml>=6.0",           # rules.yaml, settings.yaml
     "python-docx>=1.1",      # C1 đọc .docx
     "asteval>=1.0",          # đánh giá công thức trong rules.yaml — KHÔNG dùng eval()
+    "pillow>=10.0",          # C2 mục 2.2 đo đặc trưng ảnh — nằm trên ĐƯỜNG CHẠY MẶC ĐỊNH
 ]
 
 [project.optional-dependencies]
@@ -17,7 +18,7 @@ rag = [
     "sentence-transformers>=3.0",  # BGE-M3 chạy CỤC BỘ: cụm không có /v1/embeddings (0.10)
     "qdrant-client>=1.9",
 ]
-ocr = ["pytesseract>=0.3.10", "pillow>=10.0"]
+ocr = ["pytesseract>=0.3.10"]   # pillow đã lên phần lõi: 2.2 chạy ở mọi lượt
 api = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
 ui  = ["streamlit>=1.35"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0"]
