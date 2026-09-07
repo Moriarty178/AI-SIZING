@@ -151,8 +151,14 @@ def phan_vung_bang(doc: DocxDocument, core: SizingCore
     một bảng của cả hệ thống, không của riêng nó.
     """
     het = (max(e.index for e in doc.elements) + 1) if doc.elements else 0
-    moc = sorted((p.element_index, p) for p in core.phan_he
-                 if p.element_index is not None)
+    # `key=` chứ không sắp thẳng tuple: hai phân hệ CÓ THỂ trùng `element_index`
+    # (được nhắc trong cùng một phần tử), và khi đó sắp tuple sẽ rơi xuống so sánh
+    # chính `SizingExtension` — một model không có thứ tự — nên nổ `TypeError` và
+    # làm hỏng cả hồ sơ. Gặp thật ở lượt B1 2026-09-07: bản Vtag chết ở đây, 38/160
+    # nhãn bị tính trượt oan. Sắp ổn định nên phân hệ trùng chỉ số giữ nguyên thứ
+    # tự xuất hiện trong tài liệu.
+    moc = sorted(((p.element_index, p) for p in core.phan_he
+                  if p.element_index is not None), key=lambda t: t[0])
     ra = []
     for e in doc.elements:
         if e.kind != "table" or not e.rows:
@@ -160,7 +166,10 @@ def phan_vung_bang(doc: DocxDocument, core: SizingCore
         chu: SizingExtension | None = None
         kh: tuple[int, int] | None = None
         for k, (idx, p) in enumerate(moc):
-            ket = moc[k + 1][0] if k + 1 < len(moc) else het
+            # Mốc kết là chỉ số LỚN HƠN HẲN kế tiếp. Lấy `moc[k+1][0]` thì phân hệ
+            # đầu của một cặp trùng chỉ số nhận khoảng rỗng `(idx, idx)` và im lặng
+            # không nhận bảng nào.
+            ket = next((j for j, _ in moc[k + 1:] if j > idx), het)
             if idx <= e.index < ket and _muc_goc(e.section) == _muc_goc(p.muc):
                 chu, kh = p, (idx, ket)
                 break
