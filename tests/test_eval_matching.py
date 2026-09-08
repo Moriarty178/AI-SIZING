@@ -177,3 +177,27 @@ def test_nhan_qua_ngan_bi_BO_khoi_mau_so_chu_khong_doan():
     assert kq.theo_loai_mau["manh_vun"] == 1
     assert kq.recall_theo_loai == 1.0     # mẫu số chỉ còn nhãn l2
     assert "KHÔNG vào mẫu số" in bang_markdown(kq)
+
+def test_nhan_MENH_LENH_doi_trinh_bay_duoc_tach_rieng_chu_khong_gop():
+    """«Lập bảng…», «Đề xuất cấu hình cần có N+1» — người thẩm định nói *anh chưa
+    trình bày*, không nói *số của anh sai*. Chúng không chứa chữ "chưa nêu/thiếu" nên
+    rơi vào nhóm «yêu cầu khác», mà nhóm ấy từ chối đúng loại finding hợp với chúng.
+
+    TÁCH RIÊNG chứ không gộp vào «thiếu»: gộp sẽ đẩy 15 nhãn từ nhóm ta đạt 4% sang
+    nhóm ta đạt 94% — tự sửa thước đo cho con số của mình đẹp lên.
+    """
+    from eval.matching import loai_nhan
+    assert loai_nhan("Đề xuất cấu hình cần có ít nhất N+1 server để đảm bảo HA")         == "menh_lenh"
+    assert loai_nhan("Lập bảng giá trị đề xuất số lượng máy chủ theo mô hình của VT")         == "menh_lenh"
+    kq = doi_chieu({"HS1": [_fc("PRC-01", "thieu_thong_tin")]},
+                   [dict(_nhan("l1", "HS1", ["PRC-01"]),
+                         text="Đề xuất cấu hình cần có ít nhất N+1 server")])
+    assert kq.theo_loai_mau == {"menh_lenh": 1}
+    assert "CHỜ XÁC NHẬN" in bang_markdown(kq)
+
+
+def test_chat_van_con_so_SAI_khong_bi_xep_nham_sang_menh_lenh():
+    """«…sao lại ra 8000, đề nghị tính lại» là chất vấn con số, phải kiểm bằng số.
+    Xếp nó sang nhóm mệnh lệnh là tự cho điểm."""
+    from eval.matching import loai_nhan
+    assert loai_nhan("Dự phòng theo KPI 75% sao lại ra 8000, đề nghị tính lại") == "khac"
