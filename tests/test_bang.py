@@ -8,6 +8,7 @@ import pytest
 
 from src.extraction.bang import (KHONG_RO, MAX_DAI_TIEU_DE, MAX_DONG_TIEU_DE,
                                  cot_du_lieu, la_o_so, luoc_do_bang, nhan_dong,
+                                 ho_don_vi_cua_cot, loc_theo_don_vi,
                                  phan_vung_bang, so_dong_tieu_de, tham_so_so,
                                  tieu_de_cot)
 from src.extraction.extractor import Extractor, so_bang_dung_duoc
@@ -136,9 +137,15 @@ def test_hai_cot_cung_gia_tri_khong_bi_coi_la_tranh_mot_o():
     assert dich.params["ram_cau_hinh_gb"].value == 16.0
 
 
+BANG_HAI_COT_PHAN_TRAM = [["Module", "Tải CPU", "Tải RAM"], ["DBIN", "20%", "30%"]]
+
+
 def test_hai_cot_nhan_cung_tham_so_thi_bo_ca_hai():
+    """Hai cột phải CÙNG họ đơn vị thì tình huống này mới dựng được: từ 2026-09-07,
+    lọc ứng viên theo đơn vị khiến việc gán `cpu_95th` (đơn vị %) cho một cột «RAM
+    (GB)» là BẤT KHẢ về cấu trúc, chứ không còn phải bắt bằng cổng lọc phía sau."""
     ex, dich = _chay_bang({"GanBang9": {
-        "cot_0": KHONG_RO, "cot_2": "cpu_95th", "cot_3": "cpu_95th"}})
+        "cot_1": "cpu_95th", "cot_2": "cpu_95th"}}, rows=BANG_HAI_COT_PHAN_TRAM)
     assert "cpu_95th" not in dich.params
     assert ex.tk.cot_trung_tham_so == 2 and ex.tk.cot_gan_duoc == 0
 
@@ -284,3 +291,37 @@ def test_bang_toan_chu_khong_bi_nuot_het_thanh_tieu_de():
             ["Mô tả C", "z"], ["Mô tả D", "t"]]
     assert so_dong_tieu_de(rows) <= MAX_DONG_TIEU_DE
     assert cot_du_lieu(_bang(9, rows)) == []
+
+# ----------------------------------------------- lọc ứng viên theo đơn vị ---
+def test_cot_tu_noi_ra_don_vi_thi_chi_hoi_ung_vien_CUNG_don_vi():
+    """Mỗi cột đang bắt model chọn trong 99 ứng viên, và chính việc cân nhắc chừng ấy
+    là thứ đốt hết ngân sách token — 33/33 lượt hỏng ở B1 2026-09-07 đều là
+    `finish_reason=length`. Đơn vị thì code đọc được từ tiêu đề và ô mẫu, nên không
+    có lý do đem hỏi model (NT1). Đo trên 4 hồ sơ dev: 67/95 cột đoán được đơn vị,
+    tổng lựa chọn giảm 47%."""
+    e = _bang(9, [["Module", "Tải CPU"], ["DBIN", "20%"]])
+    uv = [_ts("cpu_95th", "%"), _ts("ram_cau_hinh_gb", "GB"), _ts("so_node", "node")]
+    lop = luoc_do_bang(e, cot_du_lieu(e), uv, False)
+    enum = lop.model_json_schema()["properties"]["cot_1"]["enum"]
+    assert enum == ["cpu_95th", KHONG_RO]        # GB và node bị loại
+
+
+def test_tham_so_KHONG_khai_don_vi_thi_khong_bao_gio_bi_loai():
+    """Không khai đơn vị thì không loại trừ được — loại chúng là loại theo một thứ
+    chúng không hề nói ra, và hậu quả là mất số một cách im lặng. Có 34 tham số như
+    vậy trong `rules.yaml`."""
+    hep = loc_theo_don_vi([_ts("cpu_95th", "%"), _ts("bi_an", ""),
+                           _ts("ram_cau_hinh_gb", "GB")], "%")
+    assert [t.name for t in hep] == ["cpu_95th", "bi_an"]
+
+
+def test_khong_doan_duoc_don_vi_thi_giu_NGUYEN_danh_sach():
+    uv = [_ts("cpu_95th", "%"), _ts("ram_cau_hinh_gb", "GB")]
+    assert loc_theo_don_vi(uv, "") == uv
+    assert ho_don_vi_cua_cot("Giá trị N", ["3", "4"]) == ""
+
+
+def test_loc_khong_bao_gio_tra_ve_RONG():
+    """Thà hỏi cả 99 ứng viên còn hơn khoá model vào một tập không chứa đáp án."""
+    uv = [_ts("so_node", "node")]
+    assert loc_theo_don_vi(uv, "%") == uv
