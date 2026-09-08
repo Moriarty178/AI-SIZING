@@ -55,7 +55,8 @@ from ..normalization.numbers import parse_number
 from ..normalization.units import UnknownUnit, Units, load_units
 from ..validators.rules_loader import RuleSet
 from .bang import (KHONG_RO, chu_giai, cot_du_lieu, luoc_do_bang, nhan_dong,
-                   phan_vung_bang, tham_so_so)
+                   phan_vung_bang, so_dong_tieu_de, so_tang_bo, tham_so_so,
+                   tieu_de_cot)
 from .plan import (NhomTrich, ThamSo, ke_hoach_trich,
                    tham_so_cua_bo_quy_tac)
 from .schema import ExtractedValue, SizingCore, SizingExtension
@@ -345,12 +346,17 @@ class Extractor:
                 continue
             if khoang and not (khoang[0] <= e.index < khoang[1]):
                 continue
-            dau = [_chuan(o or "") for o in e.rows[0]]
+            # Tiêu đề có thể trải trên nhiều dòng (ô gộp ngang), nên phải ghép tầng
+            # rồi mới so — và dòng dữ liệu bắt đầu SAU khối tiêu đề đó.
+            n_td = so_dong_tieu_de(e.rows)
+            rong = max(len(r) for r in e.rows)
+            bo = so_tang_bo(e.rows, n_td, rong)
+            dau = [_chuan(tieu_de_cot(e.rows, n_td, i, bo)) for i in range(rong)]
             cot = next((i for i, h in enumerate(dau) if h and (h == td or td in h)), None)
             if cot is None:
                 continue
             thay_cot = True
-            for hang in e.rows[1:]:
+            for hang in e.rows[n_td:]:
                 if cot < len(hang) and gt and gt in _chuan(hang[cot] or ""):
                     return e, ""
         return None, ("giá trị không nằm trong cột đã khai" if thay_cot
@@ -508,7 +514,7 @@ class Extractor:
         cot = cot_du_lieu(e)
         if not cot or not ung_vien:
             return
-        du_lieu = e.rows[1:]
+        du_lieu = e.rows[so_dong_tieu_de(e.rows):]
         nhan = nhan_dong(e)
         chon_dong = len(du_lieu) > 1
         lop = luoc_do_bang(e, cot, ung_vien, chon_dong)

@@ -73,6 +73,72 @@ def la_o_so(s: str) -> bool:
     return bool(s) and any(c.isdigit() for c in s) and bool(_O_SO.fullmatch(s))
 
 
+MAX_DONG_TIEU_DE = 3        # trần an toàn: bảng toàn chữ không được nuốt hết thành tiêu đề
+
+
+def so_dong_tieu_de(rows: list[list[str]]) -> int:
+    """Số dòng đầu bảng là TIÊU ĐỀ — dòng chưa có ô nào trông như số liệu.
+
+    Bảng định cỡ thật hay có tiêu đề hai tầng, tầng trên là ô gộp ngang:
+
+        |    | CPU Intel(R) Xeon(R) Gold …            | Ghi chú |
+        |    | Số cores | % Tiêu thụ | Cint           |         |
+        | Worker | Tổng |    8       |   20%  |  25.1 |         |
+
+    Coi mỗi bảng chỉ có MỘT dòng tiêu đề thì tầng hai bị tính là dữ liệu, mà nó toàn
+    chữ nên `cot_du_lieu` loại sạch cột. Trên bản Vtag đó là gần như toàn bộ bảng chứa
+    số cores / RAM / % tiêu thụ của từng module — 9 bảng, đúng chỗ số liệu nằm.
+
+    Luôn trả ít nhất 1: bảng mà dòng đầu đã có số thì giữ nguyên hành vi cũ.
+    """
+    n = 0
+    for r in rows[:MAX_DONG_TIEU_DE]:
+        if any(la_o_so(c) for c in r if (c or "").strip()):
+            break
+        n += 1
+    return max(1, min(n, len(rows) - 1)) if len(rows) > 1 else 1
+
+
+MAX_DAI_TIEU_DE = 80        # tiêu đề ghép dài quá thì làm loãng phần model cần đọc
+
+
+def _tang(rows: list[list[str]], n_td: int, i: int, bo: int) -> str:
+    """Ghép các tầng tiêu đề của cột `i`, bỏ `bo` tầng trên cùng, khử phần lặp."""
+    phan: list[str] = []
+    for r in rows[bo:n_td]:
+        c = (r[i] if i < len(r) else "").strip()
+        if c and c not in phan:
+            phan.append(c)
+    return " / ".join(phan)
+
+
+def so_tang_bo(rows: list[list[str]], n_td: int, rong: int) -> int:
+    """Bỏ bao nhiêu tầng tiêu đề TRÊN CÙNG để mọi nhãn của bảng đủ ngắn.
+
+    Quyết định theo CẢ BẢNG, không theo từng cột: cắt riêng lẻ thì cùng một bảng có
+    cột mang tiền tố dài, cột thì không — model nhận một bộ nhãn không nhất quán và
+    người đọc báo cáo cũng vậy.
+
+    Tầng dưới cùng mô tả cột chính xác hơn tầng trên, nên khi phải bỏ thì bỏ từ trên:
+    ở bảng #55 bản Vtag tầng trên là tên con CPU dài 71 ký tự lặp trên mọi cột — bỏ đi
+    còn «Số cores» / «% Tiêu thụ» / «Cint». Nhưng tầng trên KHÔNG phải lúc nào cũng là
+    rác: ở bảng #56 nó là «RAM», mà thiếu nó thì «% Tiêu thụ» không rõ của CPU hay RAM
+    — nên chỉ bỏ khi thật sự quá dài, không bỏ vì nó lặp lại.
+    """
+    for bo in range(n_td):
+        if all(len(_tang(rows, n_td, i, bo)) <= MAX_DAI_TIEU_DE for i in range(rong)):
+            return bo
+    return n_td - 1
+
+
+def tieu_de_cot(rows: list[list[str]], n_td: int, i: int,
+                bo_tang: int | None = None) -> str:
+    """Tiêu đề cột `i`. `bo_tang` mặc định tính theo cả bảng (xem `so_tang_bo`)."""
+    if bo_tang is None:
+        bo_tang = so_tang_bo(rows, n_td, max((len(r) for r in rows), default=0))
+    return _tang(rows, n_td, i, bo_tang)[:MAX_DAI_TIEU_DE].strip()
+
+
 def cot_du_lieu(e: Element) -> list[tuple[int, str]]:
     """`(chỉ số cột, tiêu đề)` của các cột CHỨA SỐ LIỆU.
 
@@ -83,24 +149,38 @@ def cot_du_lieu(e: Element) -> list[tuple[int, str]]:
     """
     if not e.rows or len(e.rows) < 2:
         return []
-    dau = e.rows[0]
+    n_td = so_dong_tieu_de(e.rows)
+    rong = max(len(r) for r in e.rows)
+    bo = so_tang_bo(e.rows, n_td, rong)
     ra: list[tuple[int, str]] = []
-    for i, td in enumerate(dau):
-        if not (td or "").strip():
+    da_co: set[str] = set()
+    for i in range(rong):
+        td = tieu_de_cot(e.rows, n_td, i, bo)
+        if not td or _COT_SO_THU_TU.match(td):
             continue
-        if _COT_SO_THU_TU.match(td):
+        # Hai cột TRÙNG TIÊU ĐỀ thì không mô tả tách bạch được cho model, mà hỏi cả
+        # hai lại mời gọi chúng nhận cùng một tham số — và khi ấy `cot_trung_tham_so`
+        # bỏ CẢ HAI, mất luôn cột đúng. Giữ cột đầu là kết cục tốt hơn hẳn.
+        #
+        # Sinh ra từ ô gộp lệch của chính tài liệu: ở bảng #55 bản Vtag, ô «20%» của
+        # dòng dữ liệu vắt qua ranh giới giữa «Số cores» và «% Tiêu thụ», nên cột 3
+        # mang nhãn «Số cores» nhưng chứa 20%. Cột 2 («Số cores» → 8) mới là cột thật.
+        if td in da_co:
             continue
-        o = [(h[i] if i < len(h) else "") for h in e.rows[1:]]
+        o = [(h[i] if i < len(h) else "") for h in e.rows[n_td:]]
         co_chu = [x for x in o if (x or "").strip()]
         if not co_chu or not all(la_o_so(x) for x in co_chu):
             continue
-        ra.append((i, td.strip()))
+        da_co.add(td)
+        ra.append((i, td))
     return ra
 
 
 def nhan_dong(e: Element) -> list[str]:
     """Nhãn của từng dòng dữ liệu — ô đầu tiên, dùng để model chỉ đúng dòng."""
-    return [(h[0] if h else "").strip() for h in e.rows[1:]] if e.rows else []
+    if not e.rows:
+        return []
+    return [(h[0] if h else "").strip() for h in e.rows[so_dong_tieu_de(e.rows):]]
 
 
 # ------------------------------------------------------------------ lược đồ --
@@ -116,7 +196,8 @@ def luoc_do_bang(e: Element, cot: list[tuple[int, str]], ung_vien: list[ThamSo],
             "liệu cần lấy, chọn đúng một trong: "
             + " / ".join(f"«{x}»" for x in nhan if x))))
     for i, td in cot:
-        mau = [(h[i] if i < len(h) else "").strip() for h in e.rows[1:]]
+        mau = [(h[i] if i < len(h) else "").strip()
+               for h in e.rows[so_dong_tieu_de(e.rows):]]
         mau = [x for x in mau if x][:MAX_MAU_MOI_COT]
         truong[f"cot_{i}"] = (Literal[opts], Field(  # type: ignore[valid-type]
             description=(f"Cột «{td}» (các ô: {', '.join(mau)}) chứa tham số nào? "

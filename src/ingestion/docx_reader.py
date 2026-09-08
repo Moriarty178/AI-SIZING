@@ -131,6 +131,55 @@ def _cell_text(tc) -> str:
     ).strip()
 
 
+def _so_o_gop(tc) -> int:
+    """Số cột lưới mà ô này chiếm (`w:gridSpan`), tối thiểu 1."""
+    gs = tc.find(qn("w:tcPr") + "/" + qn("w:gridSpan"))
+    try:
+        return max(1, int(gs.get(qn("w:val")))) if gs is not None else 1
+    except (TypeError, ValueError):
+        return 1
+
+
+def _noi_tiep_doc(tc) -> bool:
+    """Ô này có phải phần NỐI TIẾP của một ô gộp theo chiều dọc (`w:vMerge`)?"""
+    vm = tc.find(qn("w:tcPr") + "/" + qn("w:vMerge"))
+    return vm is not None and (vm.get(qn("w:val")) or "continue") != "restart"
+
+
+def _cac_dong(tbl) -> list[list[str]]:
+    """Bảng thành lưới CHỮ NHẬT, đã trải ô gộp ra đúng số cột nó chiếm.
+
+    `w:tc` chỉ đếm số ô ĐƯỢC KHAI, không phải số cột lưới: một ô `gridSpan=3` chiếm
+    một chỗ trong danh sách nhưng ba cột trên màn hình. Bỏ qua điều đó thì các dòng
+    dài ngắn khác nhau và chỉ số cột `i` KHÔNG còn trỏ cùng một cột giữa các dòng —
+    tức mọi giá trị đọc theo `(dòng, cột)` đều có thể bị gán nhầm cột.
+
+    Đo trên bản Vtag 2026-09-07: `document.xml` có 202 `w:gridSpan` và 130 `w:vMerge`,
+    và **20/35 bảng có số ô lệch nhau giữa các dòng** — gồm gần như toàn bộ bảng chứa
+    số cores / RAM / % tiêu thụ của từng module. Vì lệch nên `cot_du_lieu` loại chúng,
+    và đó lại là điều MAY: đọc chúng theo chỉ số cột sẽ ra số sai chứ không phải số
+    thiếu. PBH chỉ có 1 bảng lệch — đúng hồ sơ cho nhiều trường nhất.
+
+    Ô gộp NGANG được lặp lại ở mọi cột nó phủ: tiêu đề gộp «CPU Intel…» phủ ba cột con
+    thì cả ba cột đều mang nhãn đó, ghép với tiêu đề tầng dưới ra «CPU… / Số cores».
+    Ô gộp DỌC thừa kế chữ của ô ngay trên cùng cột, đúng như người đọc nhìn thấy.
+    """
+    ra: list[list[str]] = []
+    for tr in tbl.findall(qn("w:tr")):
+        dong: list[str] = []
+        for tc in tr.findall(qn("w:tc")):
+            chu = _cell_text(tc)
+            if _noi_tiep_doc(tc) and ra:
+                tren = ra[-1]
+                vt = len(dong)
+                chu = tren[vt] if vt < len(tren) else chu
+            dong += [chu] * _so_o_gop(tc)
+        ra.append(dong)
+    # Đệm cho đủ chữ nhật: dòng thiếu ô (ô cuối bị bỏ khai) không được làm lệch lưới.
+    rong = max((len(r) for r in ra), default=0)
+    return [r + [""] * (rong - len(r)) for r in ra]
+
+
 _REL_ANH = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
 _NS_REL = "{http://schemas.openxmlformats.org/package/2006/relationships}"
 _NS_VML = "{urn:schemas-microsoft-com:vml}"
@@ -338,9 +387,7 @@ def read_docx(path: str) -> DocxDocument:
             if child.find(".//" + qn("w:lastRenderedPageBreak")) is not None:
                 page += 1
                 saw_rendered = True
-            rows: list[list[str]] = []
-            for tr in child.findall(qn("w:tr")):
-                rows.append([_cell_text(tc) for tc in tr.findall(qn("w:tc"))])
+            rows: list[list[str]] = _cac_dong(child)
             flat = "\n".join(" | ".join(r) for r in rows)
             out.elements.append(Element(
                 index=idx, kind="table", text=flat, page=page,
