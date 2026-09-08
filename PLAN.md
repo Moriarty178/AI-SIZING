@@ -11,7 +11,7 @@
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
 | 1 | MVP chỉ xử lý text | 14 / 17 | 🔴 1.13 CHƯA đạt — đã có số thật, nút thắt là độ phủ trích xuất của C3 |
-| 2 | Đa phương thức & tái sử dụng | 4,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.12 xong; 2.3 · 2.4 · 2.11 phần offline xong |
+| 2 | Đa phương thức & tái sử dụng | 5,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.3 · 2.12 xong (2.3 đã CHẠY THẬT 08-09); 2.4 · 2.11 phần offline xong; 2.5 sẵn dữ liệu để thiết kế |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
 
