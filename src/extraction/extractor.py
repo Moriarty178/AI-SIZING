@@ -49,7 +49,7 @@ from pydantic import BaseModel, Field, create_model
 
 from ..ingestion.anchor import chuan_hoa as _chuan
 from ..ingestion.anchor import neo as _neo_doc
-from ..ingestion.docx_reader import DocxDocument, Element
+from ..ingestion.docx_reader import DocxDocument, Element, gon_o_lap
 from ..llm.client import ExtractionFailed, LLMClient, LLMError
 from ..normalization.numbers import parse_number
 from ..normalization.units import UnknownUnit, Units, load_units
@@ -265,7 +265,7 @@ class Extractor:
         trần, và model gán chúng cho bất kỳ tham số nào được hỏi.
         """
         if e.kind == "table" and e.rows:
-            dong = [" | ".join(o or "" for o in h) for h in e.rows]
+            dong = [" | ".join(gon_o_lap([o or "" for o in h])) for h in e.rows]
             return (f"[BẢNG #{e.index} · {e.location}]\n"
                     + "\n".join(f"  | {d} |" for d in dong))
         return f"[{e.location}] {e.text}"

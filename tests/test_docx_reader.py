@@ -208,3 +208,30 @@ def test_o_gop_DOC_thua_ke_chu_cua_o_ngay_tren():
     bang = [e for e in read_docx(_save(doc)).elements if e.kind == "table"][0]
     assert [r[0] for r in bang.rows] == ["Module", "Worker", "Worker"]
     assert [r[1] for r in bang.rows] == ["Giá trị", "8", "16"]
+
+def test_ban_de_DOC_gon_o_lap_con_luoi_cho_CODE_van_chu_nhat():
+    """Hai người dùng khác nhau, hai hình dạng khác nhau.
+
+    Code cần lưới chữ nhật để chỉ số cột trỏ đúng một cột ở mọi dòng. Model thì không
+    cần thấy chữ lặp — giữ bản trải khi gửi đi làm phình đúng chỗ đang đau: chữ trong
+    bảng của bản Vtag tăng 13.058 → 26.355 ký tự, và cùng lượt chạy đó 28/62 lượt gọi
+    C3 của nó hỏng (trước là 1), thời gian 121s → 994s.
+    """
+    doc = Document()
+    t = doc.add_table(rows=2, cols=4)
+    t.cell(0, 1).merge(t.cell(0, 3)).text = "CPU Intel(R) Xeon(R) Gold 6240"
+    t.cell(1, 0).text = "Worker"
+    t.cell(1, 1).text, t.cell(1, 2).text, t.cell(1, 3).text = "8", "20%", "25.1"
+    bang = [e for e in read_docx(_save(doc)).elements if e.kind == "table"][0]
+
+    assert len({len(r) for r in bang.rows}) == 1          # lưới: vẫn chữ nhật
+    assert bang.rows[0].count("CPU Intel(R) Xeon(R) Gold 6240") == 3
+    assert bang.text.count("CPU Intel(R) Xeon(R) Gold 6240") == 1   # bản đọc: một lần
+    assert "8 | 20% | 25.1" in bang.text                  # ô khác nhau KHÔNG bị gộp
+
+
+def test_gon_o_lap_chi_gop_o_GIONG_NHAU_LIEN_KE():
+    from src.ingestion.docx_reader import gon_o_lap
+    assert gon_o_lap(["a", "a", "a", "b", "", ""]) == ["a", "b", ""]
+    assert gon_o_lap(["8", "8"]) == ["8"]          # hai ô cùng giá trị là một ô gộp
+    assert gon_o_lap(["8", "16", "8"]) == ["8", "16", "8"]   # không liền kề: giữ cả
