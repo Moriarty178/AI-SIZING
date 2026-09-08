@@ -173,3 +173,38 @@ def test_phan_tu_anh_giu_duoc_rid_de_lan_ra_file_anh():
     assert ref.rid and ref.neo == "inline"
     assert ref.emu_rong and ref.emu_cao          # cỡ hiển thị trong Word
     assert d.rels[ref.rid] in d.media
+
+# ------------------------------------------------------------- ô gộp ------
+def test_o_gop_NGANG_duoc_trai_ra_du_so_cot_luoi():
+    """Bảng định cỡ thật dùng tiêu đề hai tầng bằng ô gộp ngang. Đếm `w:tc` thì mỗi
+    ô gộp chỉ chiếm MỘT chỗ, nên các dòng dài ngắn khác nhau và chỉ số cột `i` không
+    còn trỏ cùng một cột giữa các dòng — mọi giá trị đọc theo `(dòng, cột)` đều có
+    thể bị gán nhầm cột.
+
+    Đo trên bản Vtag 2026-09-07: `document.xml` có 202 `w:gridSpan`, 130 `w:vMerge`,
+    và 20/35 bảng có số ô lệch nhau giữa các dòng.
+    """
+    doc = Document()
+    t = doc.add_table(rows=3, cols=4)
+    t.cell(0, 1).merge(t.cell(0, 3)).text = "CPU"          # gộp 3 cột
+    t.cell(1, 1).text, t.cell(1, 2).text, t.cell(1, 3).text = "Số cores", "% Tiêu thụ", "Cint"
+    t.cell(2, 0).text = "Worker"
+    t.cell(2, 1).text, t.cell(2, 2).text, t.cell(2, 3).text = "8", "20%", "25.1"
+    bang = [e for e in read_docx(_save(doc)).elements if e.kind == "table"][0]
+
+    assert len({len(r) for r in bang.rows}) == 1, "lưới phải CHỮ NHẬT"
+    assert bang.rows[0] == ["", "CPU", "CPU", "CPU"]        # ô gộp lặp ở mọi cột nó phủ
+    assert bang.rows[1][1:] == ["Số cores", "% Tiêu thụ", "Cint"]
+    assert bang.rows[2][1:] == ["8", "20%", "25.1"]
+
+
+def test_o_gop_DOC_thua_ke_chu_cua_o_ngay_tren():
+    """Ô gộp dọc không có chữ của riêng nó; người đọc thấy chữ của ô trên."""
+    doc = Document()
+    t = doc.add_table(rows=3, cols=2)
+    t.cell(0, 0).text, t.cell(0, 1).text = "Module", "Giá trị"
+    t.cell(1, 0).merge(t.cell(2, 0)).text = "Worker"       # gộp dọc 2 dòng
+    t.cell(1, 1).text, t.cell(2, 1).text = "8", "16"
+    bang = [e for e in read_docx(_save(doc)).elements if e.kind == "table"][0]
+    assert [r[0] for r in bang.rows] == ["Module", "Worker", "Worker"]
+    assert [r[1] for r in bang.rows] == ["Giá trị", "8", "16"]

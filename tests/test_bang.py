@@ -6,8 +6,10 @@ bừa; ở đây lược đồ không có chỗ để điền bừa. Test đầu
 """
 import pytest
 
-from src.extraction.bang import (KHONG_RO, cot_du_lieu, la_o_so, luoc_do_bang,
-                                 nhan_dong, phan_vung_bang, tham_so_so)
+from src.extraction.bang import (KHONG_RO, MAX_DAI_TIEU_DE, MAX_DONG_TIEU_DE,
+                                 cot_du_lieu, la_o_so, luoc_do_bang, nhan_dong,
+                                 phan_vung_bang, so_dong_tieu_de, tham_so_so,
+                                 tieu_de_cot)
 from src.extraction.extractor import Extractor, so_bang_dung_duoc
 from src.extraction.plan import ThamSo
 from src.extraction.schema import ExtractedValue, SizingCore, SizingExtension
@@ -230,3 +232,55 @@ def test_ung_vien_chi_gom_tham_so_kieu_so_dung_pham_vi():
     uv = tham_so_so(scope="phan_he")
     assert all(t.kieu == "so" and t.scope == "phan_he" for t in uv)
     assert any(t.name == "cpu_95th" for t in uv)
+
+# ----------------------------------------------------- tiêu đề nhiều tầng ---
+BANG_HAI_TANG = [
+    ["", "CPU Intel(R) Xeon(R) Gold 6240 @ 2.60GHz 72 cores, Cint 226 (Crate2017)",
+     "CPU Intel(R) Xeon(R) Gold 6240 @ 2.60GHz 72 cores, Cint 226 (Crate2017)",
+     "CPU Intel(R) Xeon(R) Gold 6240 @ 2.60GHz 72 cores, Cint 226 (Crate2017)",
+     "Ghi chú"],
+    ["", "Số cores", "% Tiêu thụ", "Cint", ""],
+    ["Worker", "8", "20%", "25.1", ""],
+    ["Worker", "72", "", "226", ""],
+]
+
+
+def test_tieu_de_hai_tang_KHONG_bi_tinh_la_dong_du_lieu():
+    """Trên bản Vtag đây là 9 bảng — đúng chỗ số cores / RAM / % tiêu thụ nằm. Coi
+    bảng chỉ có một dòng tiêu đề thì tầng hai bị tính là dữ liệu, mà nó toàn chữ nên
+    mọi cột bị loại và cả 9 bảng biến mất."""
+    e = _bang(9, BANG_HAI_TANG)
+    assert so_dong_tieu_de(BANG_HAI_TANG) == 2
+    assert cot_du_lieu(e) == [(1, "Số cores"), (2, "% Tiêu thụ"), (3, "Cint")]
+    assert nhan_dong(e) == ["Worker", "Worker"]      # nhãn dòng cũng phải bỏ tầng tiêu đề
+
+
+def test_tieu_de_dai_bi_cat_tu_TREN_xuong():
+    """Tầng dưới mô tả cột chính xác hơn tầng trên, nên khi phải bỏ bớt thì bỏ tầng
+    trên — giữ «Số cores» chứ không giữ tên con CPU dài 74 ký tự."""
+    td = tieu_de_cot(BANG_HAI_TANG, 2, 1)
+    assert td == "Số cores" and len(td) <= MAX_DAI_TIEU_DE
+
+
+def test_bang_mot_tang_giu_nguyen_hanh_vi_cu():
+    assert so_dong_tieu_de(BANG_CAU_HINH) == 1
+    assert cot_du_lieu(_bang(9, BANG_CAU_HINH)) == [(2, "CPU (Cint)"), (3, "RAM (GB)")]
+
+
+def test_hai_cot_TRUNG_tieu_de_chi_giu_cot_dau():
+    """Ô gộp lệch của chính tài liệu sinh ra cột trùng nhãn: ở bảng #55 bản Vtag, ô
+    «20%» vắt qua ranh giới «Số cores»/«% Tiêu thụ» nên có hai cột cùng mang nhãn
+    «Số cores». Hỏi cả hai thì chúng dễ nhận cùng một tham số, và khi ấy
+    `cot_trung_tham_so` bỏ CẢ HAI — mất luôn cột đúng."""
+    rows = [["", "Số cores", "Số cores", "Cint"],
+            ["Worker", "8", "20%", "25.1"]]
+    assert cot_du_lieu(_bang(9, rows)) == [(1, "Số cores"), (3, "Cint")]
+
+
+def test_bang_toan_chu_khong_bi_nuot_het_thanh_tieu_de():
+    """Trần `MAX_DONG_TIEU_DE` và điều kiện `len(rows) - 1`: không được để một bảng
+    không có số nào biến thành toàn tiêu đề rồi trả về dữ liệu rỗng."""
+    rows = [["Nội dung", "Ghi chú"], ["Mô tả A", "x"], ["Mô tả B", "y"],
+            ["Mô tả C", "z"], ["Mô tả D", "t"]]
+    assert so_dong_tieu_de(rows) <= MAX_DONG_TIEU_DE
+    assert cot_du_lieu(_bang(9, rows)) == []
