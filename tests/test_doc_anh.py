@@ -16,7 +16,8 @@ from src.llm.client import ExtractionFailed
 from src.vision import doc_anh as da
 from src.vision.anh import Anh
 from src.vision.doc_anh import (LOAI_MAC_DINH, DocAnh, DocConsole, DocSoDo,
-                                SoLieuAnh, dong_goi, neo_duoc, thanh_finding,
+                                SoLieuAnh, _thanh_so, dong_goi, neo_duoc,
+                                thanh_finding,
                                 uoc_tinh_luot_goi_anh)
 from src.vision.phan_loai import co_pillow
 
@@ -307,3 +308,47 @@ def test_thieu_model_vision_phai_NOI_RA_chu_khong_chay_bang():
     assert DocAnh(CoVision()).thieu_model_vision is False
     # `--model` trên dòng lệnh đủ để chạy dù settings.yaml bỏ trống
     assert DocAnh(KhongCoVision(), model="haiku").thieu_model_vision is False
+
+# --- NT1: code KHÔNG được nặn số từ văn xuôi ------------------------------
+def test_chuoi_CHU_khong_bao_gio_bi_nan_thanh_so():
+    """Ca thật, lượt chạy vision ĐẦU TIÊN 2026-09-08 trên bản PBH 4.0.
+
+    Model đọc `lscpu`, trả «Model name» = "AMD Ryzen 9 7950X 16-Core Processor" và
+    TỰ ghi chú «chữ, không phải số». Cổng NT2 cho qua vì chuỗi ấy có thật trong trích
+    dẫn, rồi `parse_number` gom chữ số lại thành **97950** — một con số không ai nhìn
+    thấy trong ảnh, do CODE nặn ra, không cờ nào bật lên.
+    """
+    d = _thanh_so(SoLieuAnh(
+        nhan="Model name (chữ, không phải số)",
+        gia_tri_raw="AMD Ryzen 9 7950X 16-Core Processor",
+        trich_dan="Model name:            AMD Ryzen 9 7950X 16-Core Processor"))
+    assert d.gia_tri is None and d.ghi_chu
+    assert d.raw == "AMD Ryzen 9 7950X 16-Core Processor"   # nguyên văn vẫn giữ (NT2)
+
+    # Cùng lượt chạy đó: «Address sizes» = "48 bits physical, 48 bits virtual" -> 48.0
+    d2 = _thanh_so(SoLieuAnh(nhan="Address sizes",
+                             gia_tri_raw="48 bits physical, 48 bits virtual",
+                             trich_dan="Address sizes:  48 bits physical, 48 bits virtual"))
+    assert d2.gia_tri is None
+
+
+@pytest.mark.parametrize("raw,mong", [
+    ("32", 32.0), ("136G", 136.0), ("82%", 82.0), ("2,7M", 2.7),
+    ("128010.0", 128010.0), ("31.2", 31.2),
+])
+def test_gia_tri_that_van_ra_so_binh_thuong(raw, mong):
+    """Cổng hình dạng không được cắt nhầm số thật — đây đều là ca có thật trong lượt
+    chạy 2026-09-08 (`lscpu`, `df -h`, `top`)."""
+    assert _thanh_so(SoLieuAnh(nhan="x", gia_tri_raw=raw,
+                               trich_dan=f"... {raw} ...")).gia_tri == mong
+
+
+def test_dem_rieng_so_chuoi_khong_phai_gia_tri():
+    c = ClientGia([DocConsole(doc_duoc=True, so_lieu=[
+        _so("Model name", "AMD Ryzen 9 7950X 16-Core Processor",
+            "Model name: AMD Ryzen 9 7950X 16-Core Processor"),
+        _so("CPU(s)", "32", "CPU(s):  32")])])
+    d = DocAnh(c)
+    kq = d.doc_mot(_anh(), "console", _png(ANH_CONSOLE))
+    assert d.tk.khong_phai_gia_tri == 1 and d.tk.trich_dan_bia == 0
+    assert [x.gia_tri for x in kq.so_lieu] == [None, 32.0]
