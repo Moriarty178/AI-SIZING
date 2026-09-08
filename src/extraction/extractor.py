@@ -74,8 +74,21 @@ MIN_KY_TU_NGU_CANH_HEP = 400
 # Lượt 18:51 vẫn hỏng 7/53 lượt, có lượt 12 trường với ngân sách 4560. Lý do đã biết
 # từ 0.10 nhưng tôi chưa tính vào: gateway trả kèm `reasoning_content`, và phần đó ĂN
 # VÀO CHÍNH `max_tokens` — nên ngân sách phải phủ cả suy luận lẫn đầu ra.
-TOKEN_NEN = 3000
-TOKEN_MOI_TRUONG = 450
+#
+# 2026-09-07 — đo dứt điểm: 33/33 lượt hỏng đều là `finish_reason=length`, và chúng
+# rơi ĐÚNG vào các ngân sách NHỎ NHẤT: 3450 (1 trường) ×13, 3900 (2) ×3, 4350 (3) ×12,
+# 4800 (4) ×2. Không lượt nào hỏng ở ngân sách lớn hơn.
+#
+# Nghĩa là công thức đang ngược. `TOKEN_MOI_TRUONG` chỉ trả cho phần JSON, vốn tỉ lệ
+# với số trường; nhưng phần ăn hết ngân sách là `reasoning_content`, mà độ dài suy
+# luận KHÔNG co lại khi hỏi ít trường hơn — hỏi 1 cột vẫn phải đọc cả bảng và cân
+# nhắc 99 ứng viên. Nên lượt gọi càng nhỏ càng bị bỏ đói.
+#
+# `TOKEN_NEN` do đó phải phủ trọn phần suy luận cho MỌI lượt, không phụ thuộc số
+# trường. Lấy 8000: gấp ~1,7 lần ngân sách lớn nhất từng hỏng (4800), cho ngân sách
+# thực 8450–11600 và vẫn nằm dưới trần 16000 để trần còn ý nghĩa.
+TOKEN_NEN = 8000
+TOKEN_MOI_TRUONG = 450      # chỉ cho phần JSON: phần này MỚI tỉ lệ với số trường
 TOKEN_TOI_DA = 16000        # trần an toàn: model có giới hạn đầu ra riêng
 
 
