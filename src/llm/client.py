@@ -113,7 +113,16 @@ class LLMClient:
         if da_co is not None:
             return da_co
 
-        resp = self._client.chat.completions.create(**goi)
+        try:
+            resp = self._client.chat.completions.create(**goi)
+        except _PARAM_REJECTED:
+            raise                        # bên gọi có đường đi khác cho ca này
+        except Exception as e:
+            # Hết giờ / rớt kết nối / 5xx của gateway phải thành `LLMError` thì vòng
+            # thử lại của `extract()` mới nuốt được. Trước 2026-09-07 chúng thoát ra
+            # ngoài dưới dạng `APITimeoutError` và giết CẢ hồ sơ: lượt B1 mất trắng
+            # bản Data Security vì đúng một lượt gọi hết giờ.
+            raise LLMError(f"{type(e).__name__}: {e}"[:200]) from e
         content = (resp.choices[0].message.content or "").strip()
         if not content:
             # Đã gặp thật: model dồn hết ngân sách token vào reasoning_content.

@@ -678,6 +678,20 @@ class Extractor:
                 self.tk.o_trung_cap_hai += len(ds)
             else:
                 self.tk.o_trung_cap_ba_tro_len += len(ds)
+
+            # Không có toạ độ ô mà chỉ có ĐÚNG HAI tham số trùng giá trị thì không đủ
+            # căn cứ để bỏ: hai tham số hoàn toàn có thể cùng một con số một cách chính
+            # đáng («16 vCPU và 16 GB RAM» trong một đoạn). Đo ở B1 2026-09-07: 48/48
+            # đụng độ đều KHÔNG có toạ độ ô — đường cột v6 cấu trúc đã cấm hai tham số
+            # cùng nhận một ô — và 34/48 là đụng độ đúng hai. Cổng này sinh ra để bắt
+            # việc RẢI một con số ra nhiều trường, mà chữ ký của rải là ≥3.
+            if not co_toa_do and len(ds) == 2:
+                for ten in ds:
+                    dich.params[ten].note = "; ".join(x for x in (
+                        dich.params[ten].note,
+                        "một tham số khác cũng nhận đúng giá trị này — trùng ô hay "
+                        "trùng hợp thì chưa phân biệt được") if x)
+                continue
             for ten in ds:
                 ev = dich.params[ten]
                 ev.value = None
