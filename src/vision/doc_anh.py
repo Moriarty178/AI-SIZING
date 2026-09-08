@@ -266,6 +266,17 @@ class DocAnh:
         self.song_song = max(1, song_song)
         self.tk = ThongKeAnh()
 
+    @property
+    def thieu_model_vision(self) -> bool:
+        """Không biết gọi model NÀO để nhìn ảnh.
+
+        `extract(model=None)` lặng lẽ rơi về `chat_model`, vốn có thể không nhìn được
+        ảnh: lượt chạy vẫn "thành công", đốt hết thời gian, rồi trả về mô tả bịa —
+        cùng loại bẫy im lặng với vụ thiếu Pillow ở 2.2. Nơi nào tiêu giờ mạng nội bộ
+        thì phải HỎI cái này và dừng, chứ không chạy rồi mới biết.
+        """
+        return not self.model
+
     # ------------------------------------------------------------------
     def doc_mot(self, anh: Anh, loai: Loai, data: bytes) -> KetQuaDocAnh:
         kq = KetQuaDocAnh(ma_anh=anh.ma, loai=loai, location=anh.location)
