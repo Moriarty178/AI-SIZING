@@ -194,7 +194,7 @@ def main() -> int:
                     help="in cả ảnh không neo được")
     ap.add_argument("--max-thua", type=int, default=8)
     ap.add_argument("--khong-tach-phan-tram", action="store_true",
-                    help="bỏ qua các `raw` gộp cả dòng (df -h) thay vì tách lấy %")
+                    help="bỏ qua các `raw` gộp cả dòng (df -h) thay vì tách lấy %%")
     ap.add_argument("--ca-anh", action="store_true",
                     help="suy rộng quy kết ra CẢ ảnh khi ảnh chỉ quy về một phân hệ "
                          "(đúng cho top/free/lscpu, SAI cho kubectl top — mặc định tắt)")

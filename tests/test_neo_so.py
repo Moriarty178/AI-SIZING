@@ -150,11 +150,15 @@ class TestNeo:
         online» tr.10. Xét va chạm trên cả cửa sổ thì mất một neo ĐÚNG.
         """
         kq = anh("anh#53", "Mục 1, trang 11", [
-            so("node4 - CPU%", "20%", trich_dan=DONG_NODE4)])
+            so("node4 - CPU%", "20%", trich_dan=DONG_NODE4),
+            # `20%` một mình là chứng cứ yếu (xem `test_neo_yeu_...`); dòng thật
+            # có cả `66%`, và chính cặp đó mới đủ căn cứ.
+            so("node4 - MEMORY%", "66%", trich_dan=DONG_NODE4)])
         r = neo_mot_anh(kq, KB_VTAG)
         assert r.va_cham == 0
-        assert [n.scope_key for n in r.neo] == ["Worker"]
-        assert r.neo[0].o.location == "Mục 1, trang 11"
+        assert {n.scope_key for n in r.neo} == {"Worker"}
+        o20 = next(n.o for n in r.neo if n.so.raw == "20%")
+        assert o20.location == "Mục 1, trang 11"
 
     def test_va_cham_that_thi_bo(self):
         """Cùng khoảng cách trang, hai nhãn khác nhau ⇒ không biết ⇒ bỏ (NT4)."""
@@ -185,10 +189,11 @@ class TestNeo:
         gán node1 vào cùng phân hệ."""
         kq = anh("anh#53", "Mục 1, trang 11", [
             so("node4 - CPU%", "20%", trich_dan=DONG_NODE4),
+            so("node4 - MEMORY%", "66%", trich_dan=DONG_NODE4),
             so("node1 - CPU(cores)", "162m", trich_dan=DONG_NODE1),
         ])
         r = neo_mot_anh(kq, KB_VTAG)
-        assert [n.so.raw for n in r.neo] == ["20%"]
+        assert {n.so.raw for n in r.neo} == {"20%", "66%"}
 
     def test_ca_anh_mac_dinh_tat(self):
         """Suy rộng ra cả ảnh chỉ đúng cho `top`/`free`; mặc định phải TẮT."""
@@ -222,8 +227,61 @@ class TestNeo:
         assert {n.so.nhan: n.scope_key for n in sai.neo}[
             "node1 - MEMORY(bytes)"] == "Worker", "ca_anh gán sai — đúng như đã đo"
 
+    def test_neo_yeu_gia_tri_mo_ho_dung_mot_minh_thi_bo(self):
+        """Ca thật VTracking `anh#61`: ảnh đọc `CPU% - master-node = 1%`.
+
+        `1%` có ở 4 ô khai báo thuộc 3 phân hệ (Kafka, Video Streaming, Worker).
+        Cổng đại lượng loại hai ô RAM rồi để lại đúng một ô «Video Streaming ·
+        Cores» — nó THẮNG BẰNG LOẠI TRỪ chứ không bằng chứng cứ, và kéo theo 6 số
+        cùng dòng thừa hưởng quy kết sai.
+        """
+        kb = [
+            OKhaiBao(gia_tri=1.0, loai="phan_tram", raw="1%", page=4,
+                     location="trang 4", nhan_dong="Video Streaming",
+                     tieu_de_cot="Cores"),
+            OKhaiBao(gia_tri=1.0, loai="phan_tram", raw="1%", page=4,
+                     location="trang 4", nhan_dong="Worker", tieu_de_cot="RAM"),
+            OKhaiBao(gia_tri=1.0, loai="phan_tram", raw="1%", page=4,
+                     location="trang 4", nhan_dong="Kafka", tieu_de_cot="RAM"),
+        ]
+        dong = "master-node   226m   1%   4971Mi   31%"
+        kq = anh("anh#61", "Mục 1, trang 5", [
+            so("CPU% - master-node", "1%", trich_dan=dong),
+            so("MEMORY% - master-node", "31%", trich_dan=dong),
+            so("CPU(cores) - master-node", "226m", trich_dan=dong),
+        ])
+        r = neo_mot_anh(kq, kb)
+        assert r.neo == [], "1% đứng một mình không đủ căn cứ"
+        assert r.neo_yeu == 1
+        # và vì không neo được, KHÔNG số nào cùng dòng được thừa hưởng
+        assert thanh_finding(r) is not None
+
+    def test_gia_tri_duy_nhat_thi_dung_mot_minh_van_du(self):
+        """PBH `31.2` và Vtag `63%` chỉ ứng với MỘT phân hệ ⇒ tự nó đã định danh."""
+        kb = [OKhaiBao(gia_tri=31.2, loai="phan_tram", raw="31.2%", page=9,
+                       location="Mục 3, trang 9", nhan_dong="Test",
+                       tieu_de_cot="Tải CPU")]
+        kq = anh("anh#79", "Mục 3, trang 9", [
+            so("CPU - us (user)", "31.2", "%", trich_dan="%Cpu(s): 31.2 us")])
+        r = neo_mot_anh(kq, kb)
+        assert [n.scope_key for n in r.neo] == ["Test"] and r.neo_yeu == 0
+
+    def test_lech_dai_luong_thi_bo(self):
+        """Ca thật callbot XMKH `anh#88`: `GPU 0 — Bộ nhớ = 80%` khớp một ô `80%`
+        nằm ở cột «Lưu trữ». Trùng số, khác hẳn thứ đang nói tới."""
+        kb = [OKhaiBao(gia_tri=80.0, loai="phan_tram", raw="80%", page=11,
+                       location="Mục III, trang 11", nhan_dong="Model",
+                       tieu_de_cot="Lưu trữ")]
+        kq = anh("anh#88", "Mục III, trang 13", [
+            so("GPU 0 — Bộ nhớ / Util", "80%",
+               trich_dan="18235MiB / 24220MiB | 80% Default")])
+        r = neo_mot_anh(kq, kb)
+        assert r.neo == [] and r.lech_dai_luong == 1
+
     def test_gan_trang_loai_bang_o_xa(self):
-        kq = anh("a", "Mục 1, trang 30", [so("CPU%", "20%")])
+        # Dùng `66%` vì nó chỉ thuộc MỘT nhãn trong KB_VTAG, nên đứng một mình
+        # vẫn đủ căn cứ — phép thử này nói về cổng TRANG, không về chứng cứ.
+        kq = anh("a", "Mục 1, trang 30", [so("MEMORY%", "66%")])
         assert neo_mot_anh(kq, KB_VTAG).neo == []
         assert neo_mot_anh(kq, KB_VTAG, gan_trang=None).neo != []
 
@@ -270,7 +328,8 @@ class TestNT4:
 
     def test_neo_duoc_thi_khong_sinh_canh_bao(self):
         kq = anh("anh#53", "Mục 1, trang 11", [
-            so("node4 - CPU%", "20%", trich_dan=DONG_NODE4)])
+            so("node4 - CPU%", "20%", trich_dan=DONG_NODE4),
+            so("node4 - MEMORY%", "66%", trich_dan=DONG_NODE4)])
         assert thanh_finding(neo_mot_anh(kq, KB_VTAG)) is None
 
 

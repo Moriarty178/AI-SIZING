@@ -33,28 +33,41 @@ Câu trả lời được là: **số trong ảnh chỉ dùng được khi CHÍN
 đó ở gần đó**. Trùng khớp ấy vừa là chứng cứ quy kết, vừa là `computed_evidence`
 cho NT2.
 
-Bốn cổng, đều thuần code (NT1) — model không tham gia bước này:
+SÁU cổng, đều thuần code (NT1) — model không tham gia bước này:
 
-1. **Cùng loại đại lượng** — `%` chỉ khớp `%`, byte chỉ khớp byte. Suy từ hậu tố
-   của `raw`, phân biệt HOA/thường: `162m` là millicore, `504M` là megabyte.
+1. **Cùng loại đại lượng đo** — `%` chỉ khớp `%`, byte chỉ khớp byte. Suy từ hậu
+   tố của `raw`, phân biệt HOA/thường: `162m` là millicore, `504M` là megabyte.
 2. **Khớp giá trị CHÍNH XÁC** (`dung_sai=0` mặc định).
-3. **Gần trang** — mặc định ±3.
-4. **Quy kết không va chạm** — nếu cùng một giá trị khớp nhiều ô khai báo mang
-   nhãn dòng KHÁC nhau thì không biết nó thuộc phân hệ nào ⇒ bỏ (NT4).
+3. **Gần trang** — mặc định ±3, tầng gần nhất thắng.
+4. **Ô khai báo phải LÀ một giá trị**, không phải một câu có số lẫn trong
+   (`co_ve_la_gia_tri`) — và nhãn dòng phải là một TÊN, không phải một mệnh đề.
+5. **Cùng đại lượng vật lý** — CPU không khớp RAM, RAM không khớp dung lượng.
+   Xem `dai_luong_vat_ly`.
+6. **Đủ chứng cứ** — giá trị mơ hồ (có ở nhiều phân hệ) thì phải có số CÙNG DÒNG
+   NGUỒN chứng thực; đứng một mình thì bỏ.
 
-### Vì sao dung sai phải là 0, và vì sao mặc định chỉ nhận `%`
+Rồi mới tới: **quy kết không va chạm** — cùng một tầng trang mà ra nhiều nhãn
+dòng khác nhau thì không biết nó thuộc phân hệ nào ⇒ bỏ (NT4).
 
-Đo trên đúng hai lượt chạy vision đã có (`eval/reports/`, 2026-09-08):
+### Số đo — 6 hồ sơ, 2026-09-08
 
-| Biến thể                                   |  PBH   |  Vtag   | khớp sai   |
-|--------------------------------------------|-------:|--------:|-----------:|
-| khớp giá trị, dung sai 2%, toàn tài liệu    | 22/54  | 124/228 | gần như hết|
-| bốn cổng trên, chỉ `%`                      |  1/15  |  10/24  | **0**      |
+Cổng 4·5·6 KHÔNG có ở lượt chạy đầu, và đúng ba họ khớp sai đã lộ ra khi chạy
+thêm 4 hồ sơ. Bảng dưới là số neo *trực tiếp + thừa hưởng*:
 
-Biến thể lỏng là rác: `1%` khớp `1`, `126G` (đĩa) khớp `125.48` (số bản ghi ở bảng
-khác), `706` khớp `715`. Biến thể chặt cho 11 khớp và **cả 11 đều đúng nghĩa**:
-`31.2` ↔ `Tải CPU 31.2%` dòng `Test`; `node4/5: 20%, 66%` ↔ dòng `Worker`;
-`node1/2: 59%` ↔ dòng `Master`.
+| Hồ sơ            | cổng 1–3 | + cổng 4·5·6 | ghi chú                       |
+|------------------|---------:|-------------:|-------------------------------|
+| Vtag             |    30    |      **30**  | đúng cả, không hồi quy        |
+| PBH 4.0          |     8    |       **8**  | đúng cả, không hồi quy        |
+| VTracking 2.0.1  |    16    |       **0**  | **16 sai** — xem cổng 5 và 6  |
+| callbot XMKH     |     2    |       **0**  | **2 sai** — xem cổng 4 và 5   |
+| CallBase         |     0    |         0    | 2.3 không đọc ra số nào       |
+| PBH 4.0 v2       |     0    |         0    | không khai % tải nào khớp     |
+
+Tức **38 số dùng được, 0 khớp sai** trên 738 số đọc từ 6 hồ sơ.
+
+Biến thể lỏng (dung sai 2%) từng cho 124/228 riêng Vtag nhưng gần như toàn rác:
+`1%` khớp `1`, `126G` (đĩa) khớp `125.48` (số bản ghi ở bảng khác), `706` khớp
+`715`. Nên **dung sai = 0**.
 
 `byte` TẮT mặc định vì «GB» trong bảng khai báo không nói rõ là 10⁹ hay 2³⁰, mà
 `df -h`/`du -h` thì luôn nhị phân. Đoán một trong hai là vi phạm NT4; bật bằng
@@ -84,7 +97,7 @@ from typing import Literal
 
 from ..extraction.bang import so_dong_tieu_de
 from ..ingestion.docx_reader import DocxDocument, Element
-from ..normalization.numbers import parse_number
+from ..normalization.numbers import co_ve_la_gia_tri, parse_number
 from ..reporting.finding import Finding
 from .doc_anh import KetQuaDocAnh, SoDaDoc
 
@@ -126,6 +139,51 @@ _PHAN_TRAM_TRONG = re.compile(r"([\d]+(?:[.,][\d]+)?)\s*%")
 _CHI_LA_SO = re.compile(r"^\s*\d+([.,]\d+)?\s*$")
 
 MAX_DAI_NHAN = 60
+
+# Nhãn dòng dài hơn thế thì không phải TÊN một phân hệ, mà là một câu. Ca thật
+# (callbot XMKH tr.11): ô đầu dòng là «Tổng dung lượngSau khi nhân hệ số dự phòng
+# (KPI: 80%, sai số…)» — lấy làm `scope_key` thì quy kết thành vô nghĩa.
+MAX_DAI_NHAN_DONG = 40
+
+# Đại lượng VẬT LÝ của một chỉ số. Không phải quy tắc định cỡ (NT3) mà là bảng đơn
+# vị, cùng loại với `HO_DON_VI` vốn đã nằm trong `extraction/bang.py`.
+#
+# THỨ TỰ CÓ Ý NGHĨA: «Dung lượng Ram GB» phải ra `ram`, không ra `disk` — nên nhóm
+# bộ nhớ phải xét TRƯỚC từ chung «dung lượng».
+_DAI_LUONG: tuple[tuple[str, str], ...] = (
+    ("gpu",  r"\bgpu\b|\bvga\b|\bcuda\b"),
+    ("ram",  r"\bram\b|\bmem\b|\bmemory\b|\bswap\b|bộ\s*nhớ"),
+    ("cpu",  r"\bv?cpus?\b|\bcores?\b|\bcint\b|\bcpu\(s\)|\bload\s*average\b"),
+    ("mang", r"\bmbps\b|\bgbps\b|\bbăng\s*thông\b|\bnetwork\b"),
+    ("disk", r"\bdisk\b|\bssd\b|\bhdd\b|\bstorage\b|lưu\s*trữ|\bfilesystem\b"
+             r"|hệ\s*thống\s*file|\bpartition\b|/dev/|\bmount\b|dung\s*lượng"),
+)
+
+
+def dai_luong_vat_ly(*phan: str) -> str | None:
+    """CPU / RAM / DISK / GPU / mạng — hoặc `None` khi không suy ra được.
+
+    Đây là cổng đã THIẾU ở lượt chạy 6 hồ sơ ngày 2026-09-08, và nó cho ra hai họ
+    khớp sai, cả hai đều "đúng số, sai thứ":
+
+    - **VTracking** `anh#61`: ảnh đọc `CPU% - master-node = 1%`, khớp ô khai báo
+      `1%` ở cột «RAM · % Tiêu thụ» dòng «Worker». Sai đại lượng (CPU↔RAM) và sai
+      cả máy. Rồi 6 số cùng dòng THỪA HƯỞNG quy kết sai đó.
+    - **callbot XMKH** `anh#88`: ảnh đọc `GPU 0 — Bộ nhớ = 80%`, khớp `80%` nằm
+      trong cột «Lưu trữ».
+
+    `1%`, `2%`, `80%` là những giá trị quá phổ biến để chỉ dựa vào con số.
+    """
+    s = " ".join(x for x in phan if x).lower()
+    for ten, pat in _DAI_LUONG:
+        if re.search(pat, s):
+            return ten
+    return None
+
+
+def _lech_dai_luong(anh: str | None, khai_bao: str | None) -> bool:
+    """Chỉ bác khi BIẾT cả hai và chúng khác nhau — không biết thì không bác."""
+    return anh is not None and khai_bao is not None and anh != khai_bao
 
 
 # ---------------------------------------------------------------------------
@@ -223,10 +281,19 @@ class OKhaiBao:
 
 
 def _nhan_dong(row: list[str]) -> str:
+    """Tên phân hệ ở đầu dòng — bỏ ô số thứ tự, bỏ ô văn xuôi.
+
+    Một `scope_key` phải là TÊN («Worker», «Postgres», «Test»), không phải một
+    câu. callbot XMKH tr.11 có ô đầu dòng là cả một mệnh đề giải thích hệ số dự
+    phòng; lấy nó làm nhãn thì mọi thứ neo vào đó đều vô nghĩa.
+    """
     for c in row:
         s = (c or "").strip()
-        if s and not _CHI_LA_SO.match(s):
-            return s[:MAX_DAI_NHAN]
+        if not s or _CHI_LA_SO.match(s):
+            continue
+        if len(s) > MAX_DAI_NHAN_DONG:
+            continue
+        return s
     return ""
 
 
@@ -313,6 +380,12 @@ def thu_thap_khai_bao(doc: DocxDocument) -> list[OKhaiBao]:
                 if not txt:
                     continue
                 td = _tieu_de_cot(td_rows, r, i)
+                # Ô phải LÀ một giá trị, không phải một câu có số lẫn trong. Cùng
+                # cổng hình dạng đã cứu 2.3 khỏi «AMD Ryzen 9 7950X» → 97950.
+                # Ca thật: «…(KPI: 80%, sai số…)» là HẰNG SỐ trong lời giải thích,
+                # không phải số đo của một phân hệ.
+                if not co_ve_la_gia_tri(txt):
+                    continue
                 for m in _O_PHAN_TRAM.finditer(txt):
                     ra.append(OKhaiBao(
                         gia_tri=float(m.group(1).replace(",", ".")),
@@ -373,6 +446,8 @@ class KetQuaNeoAnh:
     so_khong_xep_loai: int = 0      # không suy được đại lượng
     so_ngoai_loai_nhan: int = 0     # xếp được loại nhưng loại đó đang không nhận
     so_khong_neo: int = 0           # có đại lượng nhưng không ô khai báo nào khớp
+    lech_dai_luong: int = 0         # trùng số nhưng khác CPU/RAM/DISK ⇒ bỏ
+    neo_yeu: int = 0                # giá trị mơ hồ, không có số cùng dòng chứng thực
     va_cham: int = 0                # khớp nhiều nhãn dòng khác nhau ⇒ bỏ (NT4)
 
     @property
@@ -393,6 +468,8 @@ class ThongKeNeo:
     neo_truc_tiep: int = 0
     neo_thua_huong: int = 0
     va_cham: int = 0
+    lech_dai_luong: int = 0
+    neo_yeu: int = 0
     o_khai_bao: int = 0
     khong_co_so_trang: bool = False     # C1 không suy được trang ⇒ đã tắt cổng trang
 
@@ -402,7 +479,9 @@ class ThongKeNeo:
                 f"({self.anh_neo_duoc} neo được) · {self.so_da_doc} số đọc được → "
                 f"{dung} số dùng được cho C4 "
                 f"({self.neo_truc_tiep} khớp trực tiếp + {self.neo_thua_huong} "
-                f"thừa hưởng theo dòng) · {self.va_cham} bỏ vì quy kết va chạm"
+                f"thừa hưởng theo dòng) · {self.va_cham} bỏ vì quy kết va chạm · "
+                f"{self.lech_dai_luong} bỏ vì lệch đại lượng · "
+                f"{self.neo_yeu} bỏ vì chứng cứ yếu"
                 + (" · ⚠ tài liệu KHÔNG có số trang, đã tắt cổng gần-trang"
                    if self.khong_co_so_trang else ""))
 
@@ -461,9 +540,16 @@ def neo_mot_anh(kq: KetQuaDocAnh, khai_bao: list[OKhaiBao], *,
             ra.so_ngoai_loai_nhan += 1
             continue
 
+        dl_anh = dai_luong_vat_ly(s.nhan, s.trich_dan)
         ung_vien = []
+        lech = 0
         for o in khai_bao:
             if o.loai != loai or not _khop(gt, o.gia_tri, dung_sai):
+                continue
+            # Cùng con số KHÔNG đủ. `1%`, `2%`, `80%` phổ biến tới mức khớp bừa;
+            # xem `dai_luong_vat_ly` cho hai họ khớp sai đã đo được.
+            if _lech_dai_luong(dl_anh, dai_luong_vat_ly(o.bang_con, o.tieu_de_cot)):
+                lech += 1
                 continue
             if pg is None or o.page is None:
                 kc = None
@@ -475,7 +561,10 @@ def neo_mot_anh(kq: KetQuaDocAnh, khai_bao: list[OKhaiBao], *,
                     continue
             ung_vien.append((kc, o))
         if not ung_vien:
-            ra.so_khong_neo += 1
+            if lech:
+                ra.lech_dai_luong += 1
+            else:
+                ra.so_khong_neo += 1
             continue
 
         # Trang gần nhất THẮNG, rồi mới xét va chạm trong đúng tầng ấy. Bảng nằm
@@ -498,6 +587,40 @@ def neo_mot_anh(kq: KetQuaDocAnh, khai_bao: list[OKhaiBao], *,
         truc_tiep.append(Neo(so=s, loai=loai, gia_tri=gt, scope_key=scope,
                              o=_o_mo_ta_ro_nhat(tang, loai),
                              khoang_cach_trang=gan_nhat))
+
+    # --- cổng CHỨNG CỨ: giá trị mơ hồ mà đứng một mình thì không đủ ----------
+    # Đo trên 6 hồ sơ ngày 2026-09-08 cho một ranh giới tách bạch hoàn toàn.
+    # Với mỗi neo, đếm (a) số NHÃN DÒNG khác nhau mang cùng giá trị ấy trong CẢ
+    # tài liệu, và (b) số neo khác CÙNG DÒNG NGUỒN cùng quy về một phân hệ:
+    #
+    #                        | giá trị duy nhất (a=1) | giá trị mơ hồ (a>1)
+    #   có bạn cùng dòng b≥2 |            —           | Vtag 20% → ĐÚNG
+    #   đứng một mình  b=1   | Vtag 59/63/15/11%,     | VTracking 1% → SAI
+    #                        | PBH 31.2 → ĐÚNG        |
+    #
+    # VTracking `1%` có mặt ở 4 ô thuộc 3 phân hệ (Kafka, Video Streaming,
+    # Worker). Cổng đại lượng loại hai ô RAM rồi để lại đúng một ô, nên nó
+    # THẮNG BẰNG LOẠI TRỪ chứ không bằng chứng cứ — và kéo theo 6 số thừa hưởng
+    # sai. Nên: mơ hồ thì phải có số cùng dòng chứng thực, không thì bỏ (NT2).
+    nhan_theo_gia_tri: dict[tuple[str, float], set[str]] = {}
+    for o in khai_bao:
+        if o.nhan_dong:
+            nhan_theo_gia_tri.setdefault((o.loai, o.gia_tri), set()).add(o.nhan_dong)
+
+    cung_dong: dict[tuple[str, str], int] = {}
+    for n in truc_tiep:
+        khoa = (n.so.trich_dan, n.scope_key)
+        cung_dong[khoa] = cung_dong.get(khoa, 0) + 1
+
+    du_can_cu = []
+    for n in truc_tiep:
+        duy_nhat = len(nhan_theo_gia_tri.get((n.loai, n.gia_tri), set())) <= 1
+        duoc_chung_thuc = cung_dong.get((n.so.trich_dan, n.scope_key), 0) >= 2
+        if duy_nhat or duoc_chung_thuc:
+            du_can_cu.append(n)
+        else:
+            ra.neo_yeu += 1
+    truc_tiep = du_can_cu
 
     ra.neo = list(truc_tiep)
 
@@ -573,6 +696,8 @@ def neo_tai_lieu(doc: DocxDocument, ket_qua: list[KetQuaDocAnh], *,
         tk.so_da_doc += r.so_da_doc
         tk.so_xep_duoc_loai += r.so_da_doc - r.so_khong_xep_loai
         tk.va_cham += r.va_cham
+        tk.lech_dai_luong += r.lech_dai_luong
+        tk.neo_yeu += r.neo_yeu
         tk.neo_truc_tiep += sum(1 for n in r.neo if n.truc_tiep)
         tk.neo_thua_huong += sum(1 for n in r.neo if not n.truc_tiep)
         if r.neo_duoc:
@@ -601,6 +726,12 @@ def thanh_finding(r: KetQuaNeoAnh, *, source_doc: str = "") -> Finding | None:
     if r.va_cham:
         ly.append(f"{r.va_cham} số khớp nhiều dòng khai báo khác nhau nên không rõ "
                   f"thuộc phân hệ nào")
+    if r.neo_yeu:
+        ly.append(f"{r.neo_yeu} số khớp một ô khai báo nhưng giá trị đó có ở nhiều "
+                  f"phân hệ và không số nào cùng dòng chứng thực")
+    if r.lech_dai_luong:
+        ly.append(f"{r.lech_dai_luong} số trùng giá trị với một ô khai báo nhưng "
+                  f"khác đại lượng (CPU/RAM/dung lượng) nên không dùng")
     if r.so_ngoai_loai_nhan:
         ly.append(f"{r.so_ngoai_loai_nhan} số thuộc đại lượng chưa nhận đối chiếu "
                   f"(đơn vị dung lượng trong bảng không nói rõ 10⁹ hay 2³⁰)")
