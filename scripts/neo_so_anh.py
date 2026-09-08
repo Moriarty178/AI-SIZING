@@ -35,9 +35,24 @@ from src.vision.neo_so import (GAN_TRANG_MAC_DINH,                   # noqa: E40
 THU_MUC_BAO_CAO = pathlib.Path("eval/reports")
 
 
+class BaoCaoChuaXong(Exception):
+    """File báo cáo đọc không ra JSON — nhiều khả năng đang được ghi dở."""
+
+
 def nap_bao_cao(p: pathlib.Path) -> tuple[str, list[KetQuaDocAnh]]:
-    """Dựng lại `KetQuaDocAnh` từ JSON của `scripts/thu_doc_anh.py`."""
-    d = json.loads(p.read_text(encoding="utf-8"))
+    """Dựng lại `KetQuaDocAnh` từ JSON của `scripts/thu_doc_anh.py`.
+
+    Chạy 2.5 SONG SONG với đợt 2.3 là việc bình thường — 2.5 không gọi model nên
+    không có lý do gì phải đợi. Nhưng `thu_doc_anh.py` ghi báo cáo bằng một lệnh
+    `write_text`, và trên Windows file được tạo rỗng trước rồi mới đổ nội dung
+    vào; đọc trúng khoảnh khắc đó thì `json.loads` ném lỗi. Để lỗi ấy nổi lên thì
+    **một file ghi dở giết cả lượt quét** — cùng khuôn với vụ `APITimeoutError`
+    từng làm mất trắng 41 nhãn. Nên: báo là chưa xong, bỏ qua, chạy tiếp.
+    """
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        raise BaoCaoChuaXong(str(e)) from e
     kq = []
     for k in d.get("ket_qua", []):
         kq.append(KetQuaDocAnh(
@@ -60,7 +75,11 @@ def tim_docx(duong_dan: str) -> pathlib.Path | None:
 
 
 def chay_mot(bao_cao: pathlib.Path, docx_de: str | None, a) -> dict | None:
-    duong_dan, ket_qua = nap_bao_cao(bao_cao)
+    try:
+        duong_dan, ket_qua = nap_bao_cao(bao_cao)
+    except BaoCaoChuaXong as e:
+        print(f"  ⏳ {bao_cao.name}: đang được ghi dở, bỏ qua lượt này ({e})")
+        return None
     dx = tim_docx(docx_de or duong_dan)
     if dx is None:
         print(f"  ✗ không tìm thấy .docx cho {bao_cao.name}: {duong_dan}")
@@ -130,7 +149,11 @@ def quet(bao_caos: list[pathlib.Path], a) -> None:
     print("-" * 78)
     nap = []
     for bc in bao_caos:
-        duong_dan, ket_qua = nap_bao_cao(bc)
+        try:
+            duong_dan, ket_qua = nap_bao_cao(bc)
+        except BaoCaoChuaXong as e:
+            print(f"  ⏳ {bc.name}: đang được ghi dở, bỏ qua ({e})")
+            continue
         dx = tim_docx(duong_dan)
         if dx is None:
             continue
