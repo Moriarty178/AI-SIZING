@@ -6,6 +6,7 @@ nên chúng là hồi quy, không phải test cho vui.
 import pytest
 from pydantic import BaseModel
 
+from src.llm.cache import BoNhoDem
 from src.llm.client import (
     ExtractionFailed, LLMClient, LLMError, extract_json_block, strip_fence,
 )
@@ -134,3 +135,30 @@ def test_gateway_tu_choi_response_format_thi_lui_ve_prompt_VA_GHI_LAI():
     assert out.so_ccu == 300
     assert c.last_schema_path == "prompt"
     assert "response_format" in c.last_schema_error
+
+# --- lỗi gateway phải THỬ LẠI ĐƯỢC, không được giết cả hồ sơ --------------
+class _TransportHong:
+    """Giả đúng chỗ `openai` đứng: `.chat.completions.create` ném lỗi mạng."""
+
+    def __init__(self, loi):
+        self.loi = loi
+        self.chat = self
+        self.completions = self
+
+    def create(self, **kw):
+        raise self.loi
+
+
+def test_loi_gateway_thanh_LLMError_de_vong_thu_lai_nuot_duoc():
+    """Lượt B1 2026-09-07 mất TRẮNG bản Data Security vì đúng một lượt gọi hết giờ:
+    `APITimeoutError` không phải `LLMError` nên thoát khỏi mọi lớp bắt lỗi của C3 và
+    giết cả hồ sơ. Một lượt gọi hỏng chỉ được phép làm hỏng một lượt gọi."""
+    class APITimeoutError(Exception):
+        pass
+
+    c = LLMClient.__new__(LLMClient)
+    c._client = _TransportHong(APITimeoutError("Request timed out."))
+    c.chat_model, c.temperature, c.cfg = "fake", 0.1, {}
+    c.cache = BoNhoDem(bat=False)
+    with pytest.raises(LLMError, match="APITimeoutError"):
+        c.chat([{"role": "user", "content": "x"}])
