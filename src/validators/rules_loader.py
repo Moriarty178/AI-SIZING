@@ -122,6 +122,11 @@ class RuleSet:
         self.globals: dict[str, Any] = dict(doc.get("globals") or {})
         self.sources = {s["key"]: s for s in (doc.get("sources") or []) if "key" in s}
         self.scopes = list(doc.get("evaluation_scopes") or [])
+        # Gợi ý TRÍCH XUẤT, không phải quy tắc: giá trị đó trông thế nào trong tài
+        # liệu. Không ảnh hưởng ngưỡng/công thức; thiếu thì mọi thứ chạy như cũ.
+        self.goi_y_tham_so: dict[str, str] = {
+            str(k): str(v).strip()
+            for k, v in (doc.get("tham_so_goi_y") or {}).items() if str(v).strip()}
         self.rules: list[Rule] = [_to_rule(r) for r in (doc.get("rules") or [])]
         self._by_id = {r.id: r for r in self.rules}
 

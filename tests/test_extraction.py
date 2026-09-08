@@ -715,3 +715,39 @@ def test_ngan_sach_token_phu_duoc_suy_luan_ke_ca_luot_goi_NHO_nhat():
         f"lượt gọi 1 trường chỉ có {nho_nhat} token, chưa đủ xa mức từng hỏng")
     assert TOKEN_NEN + TOKEN_MOI_TRUONG * 8 <= TOKEN_TOI_DA, (
         "trần phải còn ý nghĩa: nhóm lớn nhất vẫn phải nằm dưới nó")
+
+# ------------------------------------------- gợi ý trích xuất (NT3) --------
+def test_goi_y_trich_xuat_di_vao_mo_ta_gui_cho_model():
+    """Mô tả gửi cho model vốn ghép từ TÊN QUY TẮC — tức câu phát biểu điều kiện phải
+    đạt («Máy chủ dự phòng tối thiểu N+1 ở mức vật lý»), không nói giá trị viết ra sao
+    trong tài liệu. Với số liệu nằm trong bảng thì code đọc theo cột nên không sao;
+    với số liệu nằm trong VĂN XUÔI thì model không có manh mối nào.
+
+    Đo ở B1 2026-09-07: 19/57 nhãn nhóm «yêu cầu khác» chỉ cần 5 tham số, và 14 trong
+    số đó nằm ở đường văn xuôi. `tham_so_goi_y` là chỗ người nghiệp vụ mô tả *tìm ở
+    đâu, trông thế nào* — dữ liệu, không phải code, không phải prompt (NT3).
+    """
+    from src.extraction.plan import tham_so_cua_bo_quy_tac
+    ts = tham_so_cua_bo_quy_tac()
+    t = ts["so_may_du_phong"]
+    assert t.goi_y and "N+1" in t.goi_y
+    assert t.mo_ta.startswith(t.goi_y)          # gợi ý ĐỨNG TRƯỚC tên quy tắc
+    assert "quy tắc dùng nó" in t.mo_ta         # vẫn giữ căn cứ, không thay thế nó
+
+
+def test_tham_so_khong_co_goi_y_giu_NGUYEN_hanh_vi_cu():
+    """Mục `tham_so_goi_y` là tuỳ chọn: bỏ trống thì không được đổi gì."""
+    from src.extraction.plan import tham_so_cua_bo_quy_tac
+    ts = tham_so_cua_bo_quy_tac()
+    t = ts["so_node"]
+    assert t.goi_y == ""
+    assert t.mo_ta == " · ".join(t.ten_quy_tac[:2])
+
+
+def test_goi_y_KHONG_dung_de_doi_quy_tac():
+    """Ranh giới phải giữ: gợi ý chỉ giúp TÌM, không được đụng tới ngưỡng, công thức
+    hay mức độ của quy tắc nào."""
+    from src.validators.rules_loader import load_rules
+    rs = load_rules()
+    assert set(rs.goi_y_tham_so) <= {t.name for r in rs.rules for t in r.inputs}
+    assert len(rs.rules) == 151
