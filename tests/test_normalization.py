@@ -170,3 +170,27 @@ def test_nguong_hop_ly_doc_tu_config_khong_hard_code():
     strict = Units(cfg)
     total = u.parse_quantity("500 GB").base_value
     assert check_storage_per_user(total, 1080, units=strict) is not None
+
+# --- hình dạng của một GIÁ TRỊ --------------------------------------------
+@pytest.mark.parametrize("raw", [
+    "32", "136G", "82%", "2,7M", "1.500", "128010.0", "31.2", "-5", "LTO-3",
+])
+def test_gia_tri_that_duoc_chap_nhan(raw):
+    from src.normalization.numbers import co_ve_la_gia_tri
+    assert co_ve_la_gia_tri(raw)
+
+
+@pytest.mark.parametrize("raw,vi_sao", [
+    ("AMD Ryzen 9 7950X 16-Core Processor", "văn xuôi — từng bị nặn thành 97950"),
+    ("48 bits physical, 48 bits virtual", "cả một câu — từng ra 48"),
+    ("Filesystem               Size  Used Avail Use%", "dòng tiêu đề bảng"),
+    ("0-31", "KHOẢNG: «On-line CPU(s) list: 0-31» là 32 CPU, không phải 0"),
+    ("1–4", "khoảng dùng gạch ngang dài"),
+    ("", "rỗng"),
+])
+def test_chuoi_KHONG_phai_gia_tri_bi_tu_choi(raw, vi_sao):
+    """Mọi ca ở đây đều lấy từ lượt chạy thật (C3 04-09, vision 08-09). `parse_number`
+    luôn nhặt được số đầu tiên, kể cả khi chuỗi không phải một giá trị — nên không có
+    cổng này thì CODE tự nặn ra số từ văn xuôi và không cờ nào bật lên."""
+    from src.normalization.numbers import co_ve_la_gia_tri
+    assert not co_ve_la_gia_tri(raw), vi_sao

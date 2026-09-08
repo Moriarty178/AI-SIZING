@@ -41,6 +41,9 @@ class ParsedNumber:
         return f"ParsedNumber({self.value}{a} từ {self.raw!r})"
 
 
+KHOANG = re.compile(r"^\s*\d+\s*[-–—]\s*\d+\s*$")   # "0-31", "1–4": một KHOẢNG, không phải một giá trị
+
+
 DAI_TOI_DA_GIA_TRI = 30      # dài hơn thế thì là một câu, không phải một giá trị
 CHU_SO_DAU_TOI_DA = 6        # số phải nằm gần đầu chuỗi
 
@@ -62,6 +65,10 @@ def co_ve_la_gia_tri(raw: str, *, dai_toi_da: int = DAI_TOI_DA_GIA_TRI,
     """
     r = (raw or "").strip()
     if not r or len(r) > dai_toi_da:
+        return False
+    if KHOANG.match(r):
+        # "On-line CPU(s) list: 0-31" nghĩa là 32 CPU; `parse_number` nhặt số đầu và
+        # báo **0**. Ca thật, lượt chạy vision 2026-09-08 trên bản PBH 4.0.
         return False
     vt = next((i for i, c in enumerate(r) if c.isdigit()), -1)
     return 0 <= vt <= chu_so_dau_toi_da
