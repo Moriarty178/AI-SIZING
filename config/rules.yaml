@@ -350,6 +350,43 @@ globals:
   # KHÔNG có nguồn trong Guideline — giữ null, không tự điền (NT2/NT4)
   datanode_kpi: null    # code ghim 0.50 nhưng R01–R110 không có quy tắc này
 
+# =============================================================================
+# GỢI Ý TRÍCH XUẤT — giá trị đó TRÔNG THẾ NÀO trong tài liệu
+# =============================================================================
+#
+# KHÔNG phải quy tắc. Không đổi ngưỡng, công thức hay `severity` của bất kỳ quy
+# tắc nào; chỉ giúp model TÌM ĐÚNG CHỖ. Bỏ trống thì mọi thứ vẫn chạy như cũ.
+#
+# Vì sao cần: mô tả gửi cho model hiện ghép từ TÊN QUY TẮC, tức câu phát biểu
+# điều kiện phải đạt («Máy chủ dự phòng tối thiểu N+1 ở mức vật lý»), chứ không
+# nói giá trị đó viết ra sao trong bản sizing. Với số liệu nằm trong bảng thì
+# không sao — code đọc theo cột. Với số liệu nằm trong VĂN XUÔI thì model không
+# có manh mối nào để nhận ra.
+#
+# Đo ở lượt B1 2026-09-07: trong 57 nhãn nhóm «yêu cầu khác», 19 nhãn chỉ cần
+# MỘT tham số, và 5 tham số dưới đây gánh cả 19. 14/19 nằm ở đường văn xuôi.
+#
+# Người nghiệp vụ sửa trực tiếp; mỗi tham số khai MỘT lần dù nhiều quy tắc dùng.
+tham_so_goi_y:
+  so_may_du_phong: >-
+    Số máy chủ DỰ PHÒNG, không phải tổng số máy. Thường viết dạng «N+1», «N+2»,
+    «(N + 1)» ngay sau tên phân hệ, hoặc «dự phòng 1 máy», «1 node standby».
+    Với «N+1» thì giá trị cần lấy là 1.
+  ty_le_overcommit_ram_khai: >-
+    Hệ số overcommit RAM mà bản sizing KHAI, ví dụ «overcommit 1.5», «tỷ lệ
+    overcommit RAM = 1», «không overcommit» (khi đó là 1). Là một hệ số, không
+    phải dung lượng.
+  tong_luu_luong_dich_vu: >-
+    TỔNG thông lượng dịch vụ đi qua FW/LB, ví dụ «tổng thông lượng 2 Gbps»,
+    «băng thông yêu cầu 500 Mbps». Không lấy thông lượng của một cổng lẻ hay
+    của một phân hệ đơn.
+  cpu_95th: >-
+    Tải CPU dùng làm sở cứ định cỡ, thường viết «tải CPU 60%», «CPU 95th 72%»,
+    «% tiêu thụ CPU». Là phần trăm, không phải số core hay điểm Cint.
+  so_broker: >-
+    Số broker Kafka trong cụm, ví dụ «cluster 3 broker», «Kafka 5 node».
+    Không lấy số node của phân hệ khác trong cùng tài liệu.
+
 
 rules:
 

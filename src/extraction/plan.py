@@ -46,11 +46,19 @@ class ThamSo:
     scope: str = "he_thong"
     rule_ids: list[str] = field(default_factory=list)
     la_khoa_tra_bang: bool = False
+    goi_y: str = ""                 # `tham_so_goi_y` trong rules.yaml (NT3)
 
     @property
     def mo_ta(self) -> str:
-        """Câu mô tả cho model — ghép từ tên quy tắc, không tự nghĩ."""
-        return " · ".join(self.ten_quy_tac[:2])
+        """Câu mô tả cho model — ghép từ tên quy tắc, không tự nghĩ.
+
+        Tên quy tắc phát biểu ĐIỀU KIỆN PHẢI ĐẠT («Máy chủ dự phòng tối thiểu N+1»),
+        không nói giá trị viết ra sao trong tài liệu. Với số liệu nằm trong văn xuôi
+        thì model không có manh mối nào — nên `goi_y` đứng TRƯỚC, vì nó mới là thứ
+        trả lời câu hỏi model đang phải trả lời: *tìm cái này ở đâu, trông thế nào?*
+        """
+        ten = " · ".join(self.ten_quy_tac[:2])
+        return f"{self.goi_y} (quy tắc dùng nó: {ten})" if self.goi_y and ten             else (self.goi_y or ten)
 
     ten_quy_tac: list[str] = field(default_factory=list)
 
@@ -103,6 +111,7 @@ def tham_so_cua_bo_quy_tac(rules: RuleSet | None = None) -> dict[str, ThamSo]:
         if rule.name and rule.name not in t.ten_quy_tac:
             t.ten_quy_tac.append(rule.name)
         t.la_khoa_tra_bang = t.la_khoa_tra_bang or is_lookup
+        t.goi_y = rs.goi_y_tham_so.get(name, "")
 
     for r in rs.rules:
         for i in r.inputs:
