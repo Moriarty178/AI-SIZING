@@ -41,6 +41,32 @@ class ParsedNumber:
         return f"ParsedNumber({self.value}{a} từ {self.raw!r})"
 
 
+DAI_TOI_DA_GIA_TRI = 30      # dài hơn thế thì là một câu, không phải một giá trị
+CHU_SO_DAU_TOI_DA = 6        # số phải nằm gần đầu chuỗi
+
+
+def co_ve_la_gia_tri(raw: str, *, dai_toi_da: int = DAI_TOI_DA_GIA_TRI,
+                     chu_so_dau_toi_da: int = CHU_SO_DAU_TOI_DA) -> bool:
+    """Chuỗi này trông như MỘT GIÁ TRỊ, hay là cả một câu có số lẫn trong?
+
+    `parse_number` luôn nhặt được con số ĐẦU TIÊN trong chuỗi, kể cả khi chuỗi không
+    phải một giá trị — nên không có cổng này thì code tự nặn ra số từ văn xuôi, và
+    không cờ nào bật lên. Đã gặp thật ở CẢ HAI thành phần:
+
+    - C3, 2026-09-04: model trả nguyên một ô bảng *"Tài nguyên CPU/RAM của 1 node
+      database … | 48 | 500 |"* ⇒ `parse_number` ra `1` (từ "1 node").
+    - C2/2.3, 2026-09-08 (lượt chạy vision THẬT đầu tiên): model đọc `lscpu` và trả
+      «Model name» = *"AMD Ryzen 9 7950X 16-Core Processor"*, tự ghi chú «chữ, không
+      phải số» — code vẫn nặn thành **97950**. Cổng NT2 cho qua vì chuỗi ấy CÓ THẬT
+      trong trích dẫn; cổng thiếu ở đây là cổng về HÌNH DẠNG.
+    """
+    r = (raw or "").strip()
+    if not r or len(r) > dai_toi_da:
+        return False
+    vt = next((i for i, c in enumerate(r) if c.isdigit()), -1)
+    return 0 <= vt <= chu_so_dau_toi_da
+
+
 def parse_number(text: str, *, style: str = "vi", group_len: int = 3) -> ParsedNumber | None:
     """Đọc số đầu tiên trong `text`. Trả None nếu không có số nào."""
     m = _NUMBER.search(text or "")

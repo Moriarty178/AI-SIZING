@@ -44,7 +44,7 @@ from pydantic import BaseModel, Field
 
 from ..ingestion.docx_reader import DocxDocument
 from ..llm.client import ExtractionFailed, LLMClient, LLMError
-from ..normalization.numbers import parse_number
+from ..normalization.numbers import co_ve_la_gia_tri, parse_number
 from ..reporting.finding import Finding
 from .anh import Anh
 from .phan_loai import Loai, phan_loai, tom_tat_anh
@@ -136,6 +136,7 @@ class SoDaDoc:
     trich_dan: str
     luong_nghia: bool = False       # "1.500" đọc được hai cách — giữ cả hai (1.4)
     gia_tri_khac: float | None = None
+    ghi_chu: str = ""               # vì sao KHÔNG ra số, khi `gia_tri` là None
 
 
 @dataclass
@@ -160,6 +161,7 @@ class ThongKeAnh:
     khong_doc_duoc: int = 0
     so_lieu: int = 0
     trich_dan_bia: int = 0
+    khong_phai_gia_tri: int = 0     # chuỗi không có hình dạng một giá trị -> không ra số
     bo_qua_qua_lon: int = 0
     bo_qua_dinh_dang: int = 0
     loi: list[str] = field(default_factory=list)
@@ -179,6 +181,7 @@ class ThongKeAnh:
                 f"{self.doc_duoc} ảnh đọc được · {self.khong_doc_duoc} không đọc được · "
                 f"{self.so_lieu} số liệu lấy được · "
                 f"{self.trich_dan_bia} giá trị bị loại vì trích dẫn không chứa nó · "
+                f"{self.khong_phai_gia_tri} chuỗi không phải giá trị (giữ chữ, không ra số) · "
                 f"{self.bo_qua_qua_lon} ảnh bỏ qua vì quá lớn · "
                 f"{self.bo_qua_dinh_dang} ảnh bỏ qua vì định dạng")
 
@@ -242,7 +245,20 @@ def neo_duoc(gia_tri_raw: str, trich_dan: str) -> bool:
 
 
 def _thanh_so(s: SoLieuAnh) -> SoDaDoc:
-    """CODE ra số, không phải model (NT1). Lưỡng nghĩa thì giữ cả hai cách đọc."""
+    """CODE ra số, không phải model (NT1). Lưỡng nghĩa thì giữ cả hai cách đọc.
+
+    Chuỗi không có HÌNH DẠNG của một giá trị thì giữ nguyên văn nhưng KHÔNG ra số.
+    Lượt chạy vision thật đầu tiên (2026-09-08) cho thấy vì sao: model đọc `lscpu`,
+    trả «Model name» = *"AMD Ryzen 9 7950X 16-Core Processor"* và tự ghi chú «chữ,
+    không phải số» — cổng NT2 vẫn cho qua vì chuỗi ấy CÓ THẬT trong trích dẫn, rồi
+    `parse_number` gom chữ số thành **97950**. Con số đó do CODE nặn ra, không ai
+    đọc thấy trong ảnh, và không cờ nào bật lên.
+    """
+    if not co_ve_la_gia_tri(s.gia_tri_raw):
+        return SoDaDoc(nhan=s.nhan.strip(), raw=s.gia_tri_raw.strip(), gia_tri=None,
+                       don_vi=s.don_vi.strip(), trich_dan=s.trich_dan.strip(),
+                       ghi_chu="không có hình dạng của một giá trị — giữ nguyên văn, "
+                               "KHÔNG quy ra số")
     pn = parse_number(s.gia_tri_raw)
     return SoDaDoc(
         nhan=s.nhan.strip(), raw=s.gia_tri_raw.strip(),
@@ -340,8 +356,11 @@ class DocAnh:
                 kq.bo_vi_khong_neo += 1
                 self.tk.tang("trich_dan_bia")
                 continue
-            kq.so_lieu.append(_thanh_so(s))
+            sd = _thanh_so(s)
+            kq.so_lieu.append(sd)
             self.tk.tang("so_lieu")
+            if sd.gia_tri is None and sd.ghi_chu:
+                self.tk.tang("khong_phai_gia_tri")
         if not kq.so_lieu and kq.bo_vi_khong_neo:
             kq.doc_duoc = False
             kq.ly_do = (f"{kq.bo_vi_khong_neo} giá trị model đưa ra đều không nằm "
