@@ -1,0 +1,2642 @@
+{
+ "docx": "danh_sach_sizings_da_duyet\\cap moi hethong Vtag\\hethong Vtag\\Sizing Tài liệu thiết kế và định cỡ hệ thống dịch vụ vTag.docx",
+ "commit": "b8af4e2 (có sửa cục bộ)",
+ "loai": [
+  "so_do",
+  "console"
+ ],
+ "giay": 123,
+ "thong_ke": {
+  "luot_goi": 19,
+  "luot_goi_hong": 0,
+  "doc_duoc": 19,
+  "khong_doc_duoc": 0,
+  "so_lieu": 228,
+  "trich_dan_bia": 0,
+  "bo_qua_qua_lon": 0,
+  "bo_qua_dinh_dang": 0,
+  "loi": []
+ },
+ "ket_qua": [
+  {
+   "ma": "anh#15",
+   "loai": "so_do",
+   "location": "trang 4",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [
+    "Khung nét đứt, nhãn nguyên văn: \"IDC Viettel\"",
+    "Khối màu xanh (bên trong khung IDC Viettel), nhãn nguyên văn: \"MQTT Broker\"",
+    "Hình đám mây màu xanh, nhãn nguyên văn: \"Innoway\"",
+    "Khối màu cam (góc phải trên), nhãn nguyên văn: \"Viettel System\"",
+    "Khối màu xanh (bên phải), nhãn nguyên văn: \"External System\"",
+    "Thiết bị hình tròn màu trắng (góc trái dưới), nhãn nguyên văn trên thiết bị: \"vTag\" (kèm biểu tượng định vị)",
+    "Hình chiếc điện thoại thông minh (góc phải dưới) — KHÔNG có nhãn chữ cho thành phần này trong ảnh"
+   ],
+   "luong": [
+    "Giữa \"MQTT Broker\" và \"Innoway\": mũi tên hai chiều, nhãn nguyên văn: \"Websocket\"",
+    "Giữa \"Innoway\" và \"Viettel System\": đường nối có mũi tên (thấy mũi tên chỉ vào \"Viettel System\" và mũi tên chỉ vào \"Innoway\" ở đầu kia), nhãn nguyên văn: \"DCN\"",
+    "Giữa \"Innoway\" và \"External System\": mũi tên hai chiều, nhãn nguyên văn: \"HTTP\"",
+    "Giữa \"Innoway\" và hình điện thoại: đường nối có mũi tên (thấy mũi tên chỉ vào \"Innoway\" và mũi tên chỉ vào điện thoại), nhãn nguyên văn: \"HTTP\"",
+    "Giữa \"vTag\" và khung \"IDC Viettel\": mũi tên hai chiều (dọc), nhãn nguyên văn: \"MQTT\"",
+    "Từ \"Innoway\" tới \"vTag\": mũi tên một chiều (line đi xuống rồi sang trái, đầu mũi tên chỉ vào \"vTag\"), nhãn nguyên văn: \"FOTA HTTP\"",
+    "Giữa \"External System\" và hình điện thoại: mũi tên hai chiều (dọc), nhãn nguyên văn (hai dòng): \"SMS\" / \"FCM\""
+   ],
+   "mo_ta": "Ảnh rõ, đọc được đầy đủ. Sơ đồ gồm: khung nét đứt \"IDC Viettel\" chứa khối \"MQTT Broker\"; đám mây \"Innoway\" nằm trong/kế bên khung này; bên phải có \"Viettel System\" (màu cam) và \"External System\" (màu xanh); dưới trái là thiết bị \"vTag\"; dưới phải là hình điện thoại không có nhãn chữ. Các nhãn luồng nhìn thấy rõ: \"Websocket\", \"DCN\", \"HTTP\" (xuất hiện 2 lần ở 2 vị trí khác nhau), \"MQTT\", \"FOTA HTTP\", \"SMS FCM\". Không đọc/thêm bất kỳ số liệu nào vì ảnh không chứa con số.",
+   "so_lieu": []
+  },
+  {
+   "ma": "anh#53",
+   "loai": "console",
+   "location": "Mục 1, trang 11",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "node1 - CPU(cores)",
+     "raw": "162m",
+     "gia_tri": 162.0,
+     "don_vi": "",
+     "trich_dan": "node1   162m        4%     4385Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node1 - CPU%",
+     "raw": "4%",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "node1   162m        4%     4385Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node1 - MEMORY(bytes)",
+     "raw": "4385Mi",
+     "gia_tri": 4385.0,
+     "don_vi": "",
+     "trich_dan": "node1   162m        4%     4385Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node1 - MEMORY%",
+     "raw": "59%",
+     "gia_tri": 59.0,
+     "don_vi": "",
+     "trich_dan": "node1   162m        4%     4385Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node2 - CPU(cores)",
+     "raw": "200m",
+     "gia_tri": 200.0,
+     "don_vi": "",
+     "trich_dan": "node2   200m        5%     4344Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node2 - CPU%",
+     "raw": "5%",
+     "gia_tri": 5.0,
+     "don_vi": "",
+     "trich_dan": "node2   200m        5%     4344Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node2 - MEMORY(bytes)",
+     "raw": "4344Mi",
+     "gia_tri": 4344.0,
+     "don_vi": "",
+     "trich_dan": "node2   200m        5%     4344Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node2 - MEMORY%",
+     "raw": "59%",
+     "gia_tri": 59.0,
+     "don_vi": "",
+     "trich_dan": "node2   200m        5%     4344Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node3 - CPU(cores)",
+     "raw": "183m",
+     "gia_tri": 183.0,
+     "don_vi": "",
+     "trich_dan": "node3   183m        4%     4277Mi          58%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node3 - CPU%",
+     "raw": "4%",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "node3   183m        4%     4277Mi          58%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node3 - MEMORY(bytes)",
+     "raw": "4277Mi",
+     "gia_tri": 4277.0,
+     "don_vi": "",
+     "trich_dan": "node3   183m        4%     4277Mi          58%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node3 - MEMORY%",
+     "raw": "58%",
+     "gia_tri": 58.0,
+     "don_vi": "",
+     "trich_dan": "node3   183m        4%     4277Mi          58%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node4 - CPU(cores)",
+     "raw": "1403m",
+     "gia_tri": 1403.0,
+     "don_vi": "",
+     "trich_dan": "node4   1403m       20%    10393Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node4 - CPU%",
+     "raw": "20%",
+     "gia_tri": 20.0,
+     "don_vi": "",
+     "trich_dan": "node4   1403m       20%    10393Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node4 - MEMORY(bytes)",
+     "raw": "10393Mi",
+     "gia_tri": 10393.0,
+     "don_vi": "",
+     "trich_dan": "node4   1403m       20%    10393Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node4 - MEMORY%",
+     "raw": "66%",
+     "gia_tri": 66.0,
+     "don_vi": "",
+     "trich_dan": "node4   1403m       20%    10393Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node5 - CPU(cores)",
+     "raw": "1413m",
+     "gia_tri": 1413.0,
+     "don_vi": "",
+     "trich_dan": "node5   1413m       20%    10378Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node5 - CPU%",
+     "raw": "20%",
+     "gia_tri": 20.0,
+     "don_vi": "",
+     "trich_dan": "node5   1413m       20%    10378Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node5 - MEMORY(bytes)",
+     "raw": "10378Mi",
+     "gia_tri": 10378.0,
+     "don_vi": "",
+     "trich_dan": "node5   1413m       20%    10378Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node5 - MEMORY%",
+     "raw": "66%",
+     "gia_tri": 66.0,
+     "don_vi": "",
+     "trich_dan": "node5   1413m       20%    10378Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node6 - CPU(cores)",
+     "raw": "1375m",
+     "gia_tri": 1375.0,
+     "don_vi": "",
+     "trich_dan": "node6   1375m       19%    10203Mi         65%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node6 - CPU%",
+     "raw": "19%",
+     "gia_tri": 19.0,
+     "don_vi": "",
+     "trich_dan": "node6   1375m       19%    10203Mi         65%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node6 - MEMORY(bytes)",
+     "raw": "10203Mi",
+     "gia_tri": 10203.0,
+     "don_vi": "",
+     "trich_dan": "node6   1375m       19%    10203Mi         65%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node6 - MEMORY%",
+     "raw": "65%",
+     "gia_tri": 65.0,
+     "don_vi": "",
+     "trich_dan": "node6   1375m       19%    10203Mi         65%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#61",
+   "loai": "console",
+   "location": "Mục 1, trang 12",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Số CPU (logic)",
+     "raw": "8",
+     "gia_tri": 8.0,
+     "don_vi": "",
+     "trich_dan": "CPU(s):                          8",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Danh sách CPU on-line",
+     "raw": "0-7",
+     "gia_tri": 0.0,
+     "don_vi": "",
+     "trich_dan": "On-line CPU(s) list:             0-7",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Thread mỗi core",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "Thread(s) per core:              1",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Core mỗi socket",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "Core(s) per socket:              1",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Số socket",
+     "raw": "8",
+     "gia_tri": 8.0,
+     "don_vi": "",
+     "trich_dan": "Socket(s):                       8",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Số NUMA node",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "NUMA node(s):                    1",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU family",
+     "raw": "6",
+     "gia_tri": 6.0,
+     "don_vi": "",
+     "trich_dan": "CPU family:                      6",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Model",
+     "raw": "85",
+     "gia_tri": 85.0,
+     "don_vi": "",
+     "trich_dan": "Model:                           85",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Model name (chứa số 6240 và 2.60GHz)",
+     "raw": "Intel(R) Xeon(R) Gold 6240 CPU @ 2.60GHz",
+     "gia_tri": 6240.0,
+     "don_vi": "",
+     "trich_dan": "Model name:                      Intel(R) Xeon(R) Gold 6240 CPU @ 2.60GHz",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Stepping",
+     "raw": "7",
+     "gia_tri": 7.0,
+     "don_vi": "",
+     "trich_dan": "Stepping:                        7",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU MHz",
+     "raw": "2593.906",
+     "gia_tri": 2593906.0,
+     "don_vi": "",
+     "trich_dan": "CPU MHz:                         2593.906",
+     "luong_nghia": true,
+     "gia_tri_khac": 2593.906
+    },
+    {
+     "nhan": "BogoMIPS",
+     "raw": "5187.81",
+     "gia_tri": 5187.81,
+     "don_vi": "",
+     "trich_dan": "BogoMIPS:                        5187.81",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Address sizes",
+     "raw": "43 bits physical, 48 bits virtual",
+     "gia_tri": 43.0,
+     "don_vi": "",
+     "trich_dan": "Address sizes:                   43 bits physical, 48 bits virtual",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU op-mode(s)",
+     "raw": "32-bit, 64-bit",
+     "gia_tri": 32.0,
+     "don_vi": "",
+     "trich_dan": "CPU op-mode(s):                  32-bit, 64-bit",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#63",
+   "loai": "console",
+   "location": "Mục 1, trang 13",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dòng được khung vàng nổi bật (hệ thống file gốc /)",
+     "raw": "983G  586G  335G  63%",
+     "gia_tri": 983.0,
+     "don_vi": "",
+     "trich_dan": "/dev/mapper/ubuntu--vg-ubuntu--lv  983G  586G  335G  63% /",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "udev",
+     "raw": "7.8G  0  7.8G  0%",
+     "gia_tri": 7.8,
+     "don_vi": "",
+     "trich_dan": "udev                  7.8G     0  7.8G   0% /dev",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run",
+     "raw": "1.6G  3.7M  1.6G  1%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 1.6G  3.7M  1.6G   1% /run",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /dev/shm",
+     "raw": "7.9G  0  7.9G  0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 7.9G     0  7.9G   0% /dev/shm",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run/lock",
+     "raw": "5.0M  0  5.0M  0%",
+     "gia_tri": 5.0,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 5.0M     0  5.0M   0% /run/lock",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /sys/fs/cgroup",
+     "raw": "7.9G  0  7.9G  0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 7.9G     0  7.9G   0% /sys/fs/cgroup",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/sda2 (/boot)",
+     "raw": "976M  308M  602M  34%",
+     "gia_tri": 976.0,
+     "don_vi": "",
+     "trich_dan": "/dev/sda2             976M  308M  602M  34% /boot",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run/user/1000",
+     "raw": "1.6G  0  1.6G  0%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 1.6G     0  1.6G   0% /run/user/1000",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop2",
+     "raw": "92M  92M  0  100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop2             92M   92M     0 100% /snap/lxd/23991",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop5",
+     "raw": "92M  92M  0  100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop5             92M   92M     0 100% /snap/lxd/24061",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop13",
+     "raw": "129M  129M  0  100%",
+     "gia_tri": 129.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop13           129M  129M     0 100% /snap/docker/2883",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop1",
+     "raw": "129M  129M  0  100%",
+     "gia_tri": 129.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop1            129M  129M     0 100% /snap/docker/2893",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop14",
+     "raw": "56M  56M  0  100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop14            56M   56M     0 100% /snap/core18/2785",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop16",
+     "raw": "64M  64M  0  100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop16            64M   64M     0 100% /snap/core20/1974",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop11",
+     "raw": "74M  74M  0  100%",
+     "gia_tri": 74.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop11            74M   74M     0 100% /snap/core22/858",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop8",
+     "raw": "64M  64M  0  100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop8             64M   64M     0 100% /snap/core20/2015",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop17",
+     "raw": "56M  56M  0  100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop17            56M   56M     0 100% /snap/core18/2790",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop12",
+     "raw": "41M  41M  0  100%",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop12            41M   41M     0 100% /snap/snapd/19993",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop0",
+     "raw": "74M  74M  0  100%",
+     "gia_tri": 74.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop0             74M   74M     0 100% /snap/core22/864",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop6",
+     "raw": "41M  41M  0  100%",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop6             41M   41M     0 100% /snap/snapd/20092",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#65",
+   "loai": "console",
+   "location": "Mục 1, trang 13",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dung lượng lưu trữ (output của lệnh du)",
+     "raw": "536G",
+     "gia_tri": 536.0,
+     "don_vi": "G",
+     "trich_dan": "536G    /var/lib/postgresql/14",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#76",
+   "loai": "console",
+   "location": "Mục 1, trang 14",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Tổng số CPU (logic)",
+     "raw": "8",
+     "gia_tri": 8.0,
+     "don_vi": "",
+     "trich_dan": "CPU(s):                8",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Danh sách CPU on-line",
+     "raw": "0-7",
+     "gia_tri": 0.0,
+     "don_vi": "",
+     "trich_dan": "On-line CPU(s) list:   0-7",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Thread mỗi core",
+     "raw": "2",
+     "gia_tri": 2.0,
+     "don_vi": "",
+     "trich_dan": "Thread(s) per core:    2",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Core mỗi socket",
+     "raw": "4",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "Core(s) per socket:    4",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Số socket",
+     "raw": "2",
+     "gia_tri": 2.0,
+     "don_vi": "",
+     "trich_dan": "Socket(s):             2",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Số NUMA node",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "NUMA node(s):          1",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU family",
+     "raw": "6",
+     "gia_tri": 6.0,
+     "don_vi": "",
+     "trich_dan": "CPU family:            6",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Model",
+     "raw": "85",
+     "gia_tri": 85.0,
+     "don_vi": "",
+     "trich_dan": "Model:                 85",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Model name (có số hiệu 6240 và xung 2.60GHz)",
+     "raw": "Intel(R) Xeon(R) Gold 6240 CPU @ 2.60GHz",
+     "gia_tri": 6240.0,
+     "don_vi": "",
+     "trich_dan": "Model name:            Intel(R) Xeon(R) Gold 6240 CPU @ 2.60GHz",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Stepping",
+     "raw": "7",
+     "gia_tri": 7.0,
+     "don_vi": "",
+     "trich_dan": "Stepping:              7",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU MHz",
+     "raw": "2593.906",
+     "gia_tri": 2593906.0,
+     "don_vi": "",
+     "trich_dan": "CPU MHz:               2593.906",
+     "luong_nghia": true,
+     "gia_tri_khac": 2593.906
+    },
+    {
+     "nhan": "BogoMIPS",
+     "raw": "5187.81",
+     "gia_tri": 5187.81,
+     "don_vi": "",
+     "trich_dan": "BogoMIPS:              5187.81",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Address sizes",
+     "raw": "43 bits physical, 48 bits virtual",
+     "gia_tri": 43.0,
+     "don_vi": "",
+     "trich_dan": "Address sizes:         43 bits physical, 48 bits virtual",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Architecture",
+     "raw": "x86_64",
+     "gia_tri": 86.0,
+     "don_vi": "",
+     "trich_dan": "Architecture:          x86_64",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU op-mode",
+     "raw": "32-bit, 64-bit",
+     "gia_tri": 32.0,
+     "don_vi": "",
+     "trich_dan": "CPU op-mode(s):        32-bit, 64-bit",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#78",
+   "loai": "console",
+   "location": "Mục 1, trang 14",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dung lượng apache-zookeeper-3.8.1-bin",
+     "raw": "41M",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "41M     apache-zookeeper-3.8.1-bin",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng backup-db",
+     "raw": "107M",
+     "gia_tri": 107.0,
+     "don_vi": "",
+     "trich_dan": "107M    backup-db",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng collection_backup.sh",
+     "raw": "4.0K",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "4.0K    collection_backup.sh",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng kafka_2_12-3.4.0",
+     "raw": "5.2G",
+     "gia_tri": 5.2,
+     "don_vi": "",
+     "trich_dan": "5.2G    kafka_2_12-3.4.0",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng kafka-logs",
+     "raw": "7.4G",
+     "gia_tri": 7.4,
+     "don_vi": "",
+     "trich_dan": "7.4G    kafka-logs",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng node_exporter-1.3.1.linux-amd64.tar.gz",
+     "raw": "8.7M",
+     "gia_tri": 8.7,
+     "don_vi": "",
+     "trich_dan": "8.7M    node_exporter-1.3.1.linux-amd64.tar.gz",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng test.sh",
+     "raw": "4.0K",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "4.0K    test.sh",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng zookeeper",
+     "raw": "580K",
+     "gia_tri": 580.0,
+     "don_vi": "",
+     "trich_dan": "580K    zookeeper",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#80",
+   "loai": "console",
+   "location": "Mục 1, trang 14",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dung lượng thư mục /var/lib/mongodb/",
+     "raw": "504M",
+     "gia_tri": 504.0,
+     "don_vi": "M",
+     "trich_dan": "504M     /var/lib/mongodb/",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#97",
+   "loai": "console",
+   "location": "Mục 1, trang 17",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dòng được khung nổi bật (filesystem gốc /)",
+     "raw": "98G   14G   80G  15%",
+     "gia_tri": 98.0,
+     "don_vi": "",
+     "trich_dan": "/dev/mapper/ubuntu--vg-ubuntu--lv   98G   14G   80G  15% /",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "udev",
+     "raw": "7.8G     0  7.8G   0%",
+     "gia_tri": 7.8,
+     "don_vi": "",
+     "trich_dan": "udev                    7.8G     0  7.8G   0% /dev",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run",
+     "raw": "1.6G  1.3M  1.6G   1%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   1.6G  1.3M  1.6G   1% /run",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /dev/shm",
+     "raw": "7.9G     0  7.9G   0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   7.9G     0  7.9G   0% /dev/shm",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run/lock",
+     "raw": "5.0M     0  5.0M   0%",
+     "gia_tri": 5.0,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   5.0M     0  5.0M   0% /run/lock",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /sys/fs/cgroup",
+     "raw": "7.9G     0  7.9G   0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   7.9G     0  7.9G   0% /sys/fs/cgroup",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop1",
+     "raw": "56M   56M     0 100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop1               56M   56M     0 100% /snap/core18/2785",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop6",
+     "raw": "129M  129M     0 100%",
+     "gia_tri": 129.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop6              129M  129M     0 100% /snap/docker/2883",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop7",
+     "raw": "129M  129M     0 100%",
+     "gia_tri": 129.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop7              129M  129M     0 100% /snap/docker/2893",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop3",
+     "raw": "64M   64M     0 100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop3               64M   64M     0 100% /snap/core20/1974",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/sda2",
+     "raw": "974M  411M  497M  46%",
+     "gia_tri": 974.0,
+     "don_vi": "",
+     "trich_dan": "/dev/sda2               974M  411M  497M  46% /boot",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop8",
+     "raw": "92M   92M     0 100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop8               92M   92M     0 100% /snap/lxd/23991",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop11",
+     "raw": "92M   92M     0 100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop11              92M   92M     0 100% /snap/lxd/24061",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop4",
+     "raw": "74M   74M     0 100%",
+     "gia_tri": 74.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop4               74M   74M     0 100% /snap/core22/858",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop13",
+     "raw": "56M   56M     0 100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop13              56M   56M     0 100% /snap/core18/2790",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop0",
+     "raw": "64M   64M     0 100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop0               64M   64M     0 100% /snap/core20/2015",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop2",
+     "raw": "41M   41M     0 100%",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop2               41M   41M     0 100% /snap/snapd/19993",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop9",
+     "raw": "74M   74M     0 100%",
+     "gia_tri": 74.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop9               74M   74M     0 100% /snap/core22/864",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop12",
+     "raw": "41M   41M     0 100%",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop12              41M   41M     0 100% /snap/snapd/20092",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run/user/1000",
+     "raw": "1.6G     0  1.6G   0%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   1.6G     0  1.6G   0% /run/user/1000",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#116",
+   "loai": "console",
+   "location": "Mục 1, trang 19",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dòng tiêu đề bảng",
+     "raw": "Filesystem               Size  Used Avail Use% Mounted on",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "Filesystem               Size  Used Avail Use% Mounted on",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "udev — /dev",
+     "raw": "7.8G  0  7.8G  0%",
+     "gia_tri": 7.8,
+     "don_vi": "",
+     "trich_dan": "udev                     7.8G     0  7.8G   0% /dev",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /run",
+     "raw": "1.6G  1.7M  1.6G  1%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    1.6G  1.7M  1.6G   1% /run",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Filesystem gốc / (dòng được tô vàng khung trong ảnh)",
+     "raw": "98G  9.8G  84G  11%",
+     "gia_tri": 98.0,
+     "don_vi": "",
+     "trich_dan": "/dev/mapper/ubuntu--vg-ubuntu--lv   98G  9.8G   84G  11% /",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /dev/shm",
+     "raw": "7.9G  0  7.9G  0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    7.9G     0  7.9G   0% /dev/shm",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /run/lock",
+     "raw": "5.0M  0  5.0M  0%",
+     "gia_tri": 5.0,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    5.0M     0  5.0M   0% /run/lock",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /sys/fs/cgroup",
+     "raw": "7.9G  0  7.9G  0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    7.9G     0  7.9G   0% /sys/fs/cgroup",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/sda2 — /boot",
+     "raw": "976M  207M  702M  23%",
+     "gia_tri": 976.0,
+     "don_vi": "",
+     "trich_dan": "/dev/sda2                976M  207M  702M  23% /boot",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop1 — /snap/core18/1988",
+     "raw": "56M  56M  0  100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop1                56M   56M     0 100% /snap/core18/1988",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop3 — /snap/lxd/16099",
+     "raw": "72M  72M  0  100%",
+     "gia_tri": 72.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop3                72M   72M     0 100% /snap/lxd/16099",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /run/user/0",
+     "raw": "1.6G  0  1.6G  0%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    1.6G     0  1.6G   0% /run/user/0",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop4 — /snap/core20/1974",
+     "raw": "64M  64M  0  100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop4                64M   64M     0 100% /snap/core20/1974",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop5 — /snap/core18/2785",
+     "raw": "56M  56M  0  100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop5                56M   56M     0 100% /snap/core18/2785",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop0 — /snap/lxd/24061",
+     "raw": "92M  92M  0  100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop0                92M   92M     0 100% /snap/lxd/24061",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop6 — /snap/lxd/19457",
+     "raw": "54M  54M  0  100%",
+     "gia_tri": 54.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop6                54M   54M     0 100% /snap/lxd/19457",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /run/user/1001",
+     "raw": "1.6G  0  1.6G  0%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    1.6G     0  1.6G   0% /run/user/1001",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#134",
+   "loai": "console",
+   "location": "Mục 1, trang 22",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "node1 - CPU(cores)",
+     "raw": "162m",
+     "gia_tri": 162.0,
+     "don_vi": "",
+     "trich_dan": "node1   162m        4%     4385Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node1 - CPU%",
+     "raw": "4%",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "node1   162m        4%     4385Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node1 - MEMORY(bytes)",
+     "raw": "4385Mi",
+     "gia_tri": 4385.0,
+     "don_vi": "",
+     "trich_dan": "node1   162m        4%     4385Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node1 - MEMORY%",
+     "raw": "59%",
+     "gia_tri": 59.0,
+     "don_vi": "",
+     "trich_dan": "node1   162m        4%     4385Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node2 - CPU(cores)",
+     "raw": "200m",
+     "gia_tri": 200.0,
+     "don_vi": "",
+     "trich_dan": "node2   200m        5%     4344Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node2 - CPU%",
+     "raw": "5%",
+     "gia_tri": 5.0,
+     "don_vi": "",
+     "trich_dan": "node2   200m        5%     4344Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node2 - MEMORY(bytes)",
+     "raw": "4344Mi",
+     "gia_tri": 4344.0,
+     "don_vi": "",
+     "trich_dan": "node2   200m        5%     4344Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node2 - MEMORY%",
+     "raw": "59%",
+     "gia_tri": 59.0,
+     "don_vi": "",
+     "trich_dan": "node2   200m        5%     4344Mi          59%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node3 - CPU(cores)",
+     "raw": "183m",
+     "gia_tri": 183.0,
+     "don_vi": "",
+     "trich_dan": "node3   183m        4%     4277Mi          58%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node3 - CPU%",
+     "raw": "4%",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "node3   183m        4%     4277Mi          58%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node3 - MEMORY(bytes)",
+     "raw": "4277Mi",
+     "gia_tri": 4277.0,
+     "don_vi": "",
+     "trich_dan": "node3   183m        4%     4277Mi          58%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node3 - MEMORY%",
+     "raw": "58%",
+     "gia_tri": 58.0,
+     "don_vi": "",
+     "trich_dan": "node3   183m        4%     4277Mi          58%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node4 - CPU(cores)",
+     "raw": "1403m",
+     "gia_tri": 1403.0,
+     "don_vi": "",
+     "trich_dan": "node4   1403m       20%    10393Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node4 - CPU%",
+     "raw": "20%",
+     "gia_tri": 20.0,
+     "don_vi": "",
+     "trich_dan": "node4   1403m       20%    10393Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node4 - MEMORY(bytes)",
+     "raw": "10393Mi",
+     "gia_tri": 10393.0,
+     "don_vi": "",
+     "trich_dan": "node4   1403m       20%    10393Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node4 - MEMORY%",
+     "raw": "66%",
+     "gia_tri": 66.0,
+     "don_vi": "",
+     "trich_dan": "node4   1403m       20%    10393Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node5 - CPU(cores)",
+     "raw": "1413m",
+     "gia_tri": 1413.0,
+     "don_vi": "",
+     "trich_dan": "node5   1413m       20%    10378Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node5 - CPU%",
+     "raw": "20%",
+     "gia_tri": 20.0,
+     "don_vi": "",
+     "trich_dan": "node5   1413m       20%    10378Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node5 - MEMORY(bytes)",
+     "raw": "10378Mi",
+     "gia_tri": 10378.0,
+     "don_vi": "",
+     "trich_dan": "node5   1413m       20%    10378Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node5 - MEMORY%",
+     "raw": "66%",
+     "gia_tri": 66.0,
+     "don_vi": "",
+     "trich_dan": "node5   1413m       20%    10378Mi         66%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node6 - CPU(cores)",
+     "raw": "1375m",
+     "gia_tri": 1375.0,
+     "don_vi": "",
+     "trich_dan": "node6   1375m       19%    10203Mi         65%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node6 - CPU%",
+     "raw": "19%",
+     "gia_tri": 19.0,
+     "don_vi": "",
+     "trich_dan": "node6   1375m       19%    10203Mi         65%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node6 - MEMORY(bytes)",
+     "raw": "10203Mi",
+     "gia_tri": 10203.0,
+     "don_vi": "",
+     "trich_dan": "node6   1375m       19%    10203Mi         65%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "node6 - MEMORY%",
+     "raw": "65%",
+     "gia_tri": 65.0,
+     "don_vi": "",
+     "trich_dan": "node6   1375m       19%    10203Mi         65%",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#142",
+   "loai": "console",
+   "location": "Mục 1, trang 23",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "CPU(s) - tổng số CPU nhìn thấy",
+     "raw": "8",
+     "gia_tri": 8.0,
+     "don_vi": "",
+     "trich_dan": "CPU(s):                8",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "On-line CPU(s) list",
+     "raw": "0-7",
+     "gia_tri": 0.0,
+     "don_vi": "",
+     "trich_dan": "On-line CPU(s) list:   0-7",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Thread(s) per core",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "Thread(s) per core:    1",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Core(s) per socket",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "Core(s) per socket:    1",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Socket(s)",
+     "raw": "8",
+     "gia_tri": 8.0,
+     "don_vi": "",
+     "trich_dan": "Socket(s):             8",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "NUMA node(s)",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "NUMA node(s):          1",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU family",
+     "raw": "6",
+     "gia_tri": 6.0,
+     "don_vi": "",
+     "trich_dan": "CPU family:            6",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Model",
+     "raw": "85",
+     "gia_tri": 85.0,
+     "don_vi": "",
+     "trich_dan": "Model:                 85",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU MHz",
+     "raw": "2593.906",
+     "gia_tri": 2593906.0,
+     "don_vi": "",
+     "trich_dan": "CPU MHz:               2593.906",
+     "luong_nghia": true,
+     "gia_tri_khac": 2593.906
+    },
+    {
+     "nhan": "BogoMIPS",
+     "raw": "5187.81",
+     "gia_tri": 5187.81,
+     "don_vi": "",
+     "trich_dan": "BogoMIPS:              5187.81",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Stepping",
+     "raw": "7",
+     "gia_tri": 7.0,
+     "don_vi": "",
+     "trich_dan": "Stepping:              7",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#144",
+   "loai": "console",
+   "location": "Mục 1, trang 24",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dòng được khung vàng nổi bật (hệ thống file gốc /)",
+     "raw": "983G  586G  335G  63%",
+     "gia_tri": 983.0,
+     "don_vi": "",
+     "trich_dan": "/dev/mapper/ubuntu--vg-ubuntu--lv  983G  586G  335G  63% /",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "udev",
+     "raw": "7.8G  0  7.8G  0%",
+     "gia_tri": 7.8,
+     "don_vi": "",
+     "trich_dan": "udev                  7.8G     0  7.8G   0% /dev",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run",
+     "raw": "1.6G  3.7M  1.6G  1%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 1.6G  3.7M  1.6G   1% /run",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /dev/shm",
+     "raw": "7.9G  0  7.9G  0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 7.9G     0  7.9G   0% /dev/shm",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run/lock",
+     "raw": "5.0M  0  5.0M  0%",
+     "gia_tri": 5.0,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 5.0M     0  5.0M   0% /run/lock",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /sys/fs/cgroup",
+     "raw": "7.9G  0  7.9G  0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 7.9G     0  7.9G   0% /sys/fs/cgroup",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/sda2 (/boot)",
+     "raw": "976M  308M  602M  34%",
+     "gia_tri": 976.0,
+     "don_vi": "",
+     "trich_dan": "/dev/sda2             976M  308M  602M  34% /boot",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run/user/1000",
+     "raw": "1.6G  0  1.6G  0%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                 1.6G     0  1.6G   0% /run/user/1000",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop2",
+     "raw": "92M  92M  0  100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop2             92M   92M     0 100% /snap/lxd/23991",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop5",
+     "raw": "92M  92M  0  100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop5             92M   92M     0 100% /snap/lxd/24061",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop13",
+     "raw": "129M  129M  0  100%",
+     "gia_tri": 129.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop13           129M  129M     0 100% /snap/docker/2883",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop1",
+     "raw": "129M  129M  0  100%",
+     "gia_tri": 129.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop1            129M  129M     0 100% /snap/docker/2893",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop14",
+     "raw": "56M  56M  0  100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop14            56M   56M     0 100% /snap/core18/2785",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop16",
+     "raw": "64M  64M  0  100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop16            64M   64M     0 100% /snap/core20/1974",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop11",
+     "raw": "74M  74M  0  100%",
+     "gia_tri": 74.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop11            74M   74M     0 100% /snap/core22/858",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop8",
+     "raw": "64M  64M  0  100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop8             64M   64M     0 100% /snap/core20/2015",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop17",
+     "raw": "56M  56M  0  100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop17            56M   56M     0 100% /snap/core18/2790",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop12",
+     "raw": "41M  41M  0  100%",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop12            41M   41M     0 100% /snap/snapd/19993",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop0",
+     "raw": "74M  74M  0  100%",
+     "gia_tri": 74.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop0             74M   74M     0 100% /snap/core22/864",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop6",
+     "raw": "41M  41M  0  100%",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop6             41M   41M     0 100% /snap/snapd/20092",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#146",
+   "loai": "console",
+   "location": "Mục 1, trang 24",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dung lượng lưu trữ (output của lệnh du)",
+     "raw": "536G",
+     "gia_tri": 536.0,
+     "don_vi": "G",
+     "trich_dan": "536G    /var/lib/postgresql/14",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#157",
+   "loai": "console",
+   "location": "Mục 1, trang 26",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "CPU(s) (tổng số CPU nhìn thấy)",
+     "raw": "8",
+     "gia_tri": 8.0,
+     "don_vi": "",
+     "trich_dan": "CPU(s):              8",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "On-line CPU(s) list",
+     "raw": "0-7",
+     "gia_tri": 0.0,
+     "don_vi": "",
+     "trich_dan": "On-line CPU(s) list: 0-7",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Thread(s) per core",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "Thread(s) per core:  1",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Core(s) per socket",
+     "raw": "4",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "Core(s) per socket:  4",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Socket(s)",
+     "raw": "2",
+     "gia_tri": 2.0,
+     "don_vi": "",
+     "trich_dan": "Socket(s):           2",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "CPU MHz",
+     "raw": "2593.906",
+     "gia_tri": 2593906.0,
+     "don_vi": "MHz",
+     "trich_dan": "CPU MHz:             2593.906",
+     "luong_nghia": true,
+     "gia_tri_khac": 2593.906
+    },
+    {
+     "nhan": "BogoMIPS",
+     "raw": "5187.81",
+     "gia_tri": 5187.81,
+     "don_vi": "",
+     "trich_dan": "BogoMIPS:            5187.81",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Model name (CPU)",
+     "raw": "Intel(R) Xeon(R) Gold 6240 CPU @ 2.60GHz",
+     "gia_tri": 6240.0,
+     "don_vi": "",
+     "trich_dan": "Model name:          Intel(R) Xeon(R) Gold 6240 CPU @ 2.60GHz",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#159",
+   "loai": "console",
+   "location": "Mục 1, trang 26",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dung lượng thư mục apache-zookeeper-3.8.1-bin",
+     "raw": "41M",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "41M     apache-zookeeper-3.8.1-bin",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng thư mục backup-db",
+     "raw": "107M",
+     "gia_tri": 107.0,
+     "don_vi": "",
+     "trich_dan": "107M    backup-db",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng tệp collection_backup.sh",
+     "raw": "4.0K",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "4.0K    collection_backup.sh",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng thư mục kafka_2_12-3.4.0",
+     "raw": "5.2G",
+     "gia_tri": 5.2,
+     "don_vi": "",
+     "trich_dan": "5.2G    kafka_2_12-3.4.0",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng thư mục kafka-logs",
+     "raw": "7.4G",
+     "gia_tri": 7.4,
+     "don_vi": "",
+     "trich_dan": "7.4G    kafka-logs",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng tệp node_exporter-1.3.1.linux-amd64.tar.gz",
+     "raw": "8.7M",
+     "gia_tri": 8.7,
+     "don_vi": "",
+     "trich_dan": "8.7M    node_exporter-1.3.1.linux-amd64.tar.gz",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng tệp test.sh",
+     "raw": "4.0K",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "4.0K    test.sh",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Dung lượng thư mục zookeeper",
+     "raw": "580K",
+     "gia_tri": 580.0,
+     "don_vi": "",
+     "trich_dan": "580K    zookeeper",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#161",
+   "loai": "console",
+   "location": "Mục 1, trang 26",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dung lượng thư mục /var/lib/mongodb/",
+     "raw": "504M",
+     "gia_tri": 504.0,
+     "don_vi": "M",
+     "trich_dan": "504M     /var/lib/mongodb/",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#178",
+   "loai": "console",
+   "location": "Mục 1, trang 29",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dòng được khung nổi bật (filesystem gốc /)",
+     "raw": "98G   14G   80G  15%",
+     "gia_tri": 98.0,
+     "don_vi": "",
+     "trich_dan": "/dev/mapper/ubuntu--vg-ubuntu--lv   98G   14G   80G  15% /",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "udev",
+     "raw": "7.8G     0  7.8G   0%",
+     "gia_tri": 7.8,
+     "don_vi": "",
+     "trich_dan": "udev                    7.8G     0  7.8G   0% /dev",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run",
+     "raw": "1.6G  1.3M  1.6G   1%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   1.6G  1.3M  1.6G   1% /run",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /dev/shm",
+     "raw": "7.9G     0  7.9G   0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   7.9G     0  7.9G   0% /dev/shm",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run/lock",
+     "raw": "5.0M     0  5.0M   0%",
+     "gia_tri": 5.0,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   5.0M     0  5.0M   0% /run/lock",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /sys/fs/cgroup",
+     "raw": "7.9G     0  7.9G   0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   7.9G     0  7.9G   0% /sys/fs/cgroup",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop1",
+     "raw": "56M   56M     0 100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop1               56M   56M     0 100% /snap/core18/2785",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop6",
+     "raw": "129M  129M     0 100%",
+     "gia_tri": 129.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop6              129M  129M     0 100% /snap/docker/2883",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop7",
+     "raw": "129M  129M     0 100%",
+     "gia_tri": 129.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop7              129M  129M     0 100% /snap/docker/2893",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop3",
+     "raw": "64M   64M     0 100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop3               64M   64M     0 100% /snap/core20/1974",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/sda2",
+     "raw": "974M  411M  497M  46%",
+     "gia_tri": 974.0,
+     "don_vi": "",
+     "trich_dan": "/dev/sda2               974M  411M  497M  46% /boot",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop8",
+     "raw": "92M   92M     0 100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop8               92M   92M     0 100% /snap/lxd/23991",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop11",
+     "raw": "92M   92M     0 100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop11              92M   92M     0 100% /snap/lxd/24061",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop4",
+     "raw": "74M   74M     0 100%",
+     "gia_tri": 74.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop4               74M   74M     0 100% /snap/core22/858",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop13",
+     "raw": "56M   56M     0 100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop13              56M   56M     0 100% /snap/core18/2790",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop0",
+     "raw": "64M   64M     0 100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop0               64M   64M     0 100% /snap/core20/2015",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop2",
+     "raw": "41M   41M     0 100%",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop2               41M   41M     0 100% /snap/snapd/19993",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop9",
+     "raw": "74M   74M     0 100%",
+     "gia_tri": 74.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop9               74M   74M     0 100% /snap/core22/864",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop12",
+     "raw": "41M   41M     0 100%",
+     "gia_tri": 41.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop12              41M   41M     0 100% /snap/snapd/20092",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs /run/user/1000",
+     "raw": "1.6G     0  1.6G   0%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                   1.6G     0  1.6G   0% /run/user/1000",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  },
+  {
+   "ma": "anh#197",
+   "loai": "console",
+   "location": "Mục 1, trang 32",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Dòng tiêu đề bảng",
+     "raw": "Filesystem               Size  Used Avail Use% Mounted on",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "Filesystem               Size  Used Avail Use% Mounted on",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "udev — /dev",
+     "raw": "7.8G  0  7.8G  0%",
+     "gia_tri": 7.8,
+     "don_vi": "",
+     "trich_dan": "udev                     7.8G     0  7.8G   0% /dev",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /run",
+     "raw": "1.6G  1.7M  1.6G  1%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    1.6G  1.7M  1.6G   1% /run",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "Filesystem gốc / (dòng được tô vàng khung trong ảnh)",
+     "raw": "98G  9.8G  84G  11%",
+     "gia_tri": 98.0,
+     "don_vi": "",
+     "trich_dan": "/dev/mapper/ubuntu--vg-ubuntu--lv   98G  9.8G   84G  11% /",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /dev/shm",
+     "raw": "7.9G  0  7.9G  0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    7.9G     0  7.9G   0% /dev/shm",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /run/lock",
+     "raw": "5.0M  0  5.0M  0%",
+     "gia_tri": 5.0,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    5.0M     0  5.0M   0% /run/lock",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /sys/fs/cgroup",
+     "raw": "7.9G  0  7.9G  0%",
+     "gia_tri": 7.9,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    7.9G     0  7.9G   0% /sys/fs/cgroup",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/sda2 — /boot",
+     "raw": "976M  207M  702M  23%",
+     "gia_tri": 976.0,
+     "don_vi": "",
+     "trich_dan": "/dev/sda2                976M  207M  702M  23% /boot",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop1 — /snap/core18/1988",
+     "raw": "56M  56M  0  100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop1                56M   56M     0 100% /snap/core18/1988",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop3 — /snap/lxd/16099",
+     "raw": "72M  72M  0  100%",
+     "gia_tri": 72.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop3                72M   72M     0 100% /snap/lxd/16099",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /run/user/0",
+     "raw": "1.6G  0  1.6G  0%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    1.6G     0  1.6G   0% /run/user/0",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop4 — /snap/core20/1974",
+     "raw": "64M  64M  0  100%",
+     "gia_tri": 64.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop4                64M   64M     0 100% /snap/core20/1974",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop5 — /snap/core18/2785",
+     "raw": "56M  56M  0  100%",
+     "gia_tri": 56.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop5                56M   56M     0 100% /snap/core18/2785",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop0 — /snap/lxd/24061",
+     "raw": "92M  92M  0  100%",
+     "gia_tri": 92.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop0                92M   92M     0 100% /snap/lxd/24061",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "/dev/loop6 — /snap/lxd/19457",
+     "raw": "54M  54M  0  100%",
+     "gia_tri": 54.0,
+     "don_vi": "",
+     "trich_dan": "/dev/loop6                54M   54M     0 100% /snap/lxd/19457",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    },
+    {
+     "nhan": "tmpfs — /run/user/1001",
+     "raw": "1.6G  0  1.6G  0%",
+     "gia_tri": 1.6,
+     "don_vi": "",
+     "trich_dan": "tmpfs                    1.6G     0  1.6G   0% /run/user/1001",
+     "luong_nghia": false,
+     "gia_tri_khac": null
+    }
+   ]
+  }
+ ],
+ "finding": [
+  {
+   "id": "C2-ANH-anh#15",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được sơ đồ tại trang 4: 7 thành phần, 7 luồng. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "trang 4",
+   "computed_evidence": "Khung nét đứt, nhãn nguyên văn: \"IDC Viettel\"; Khối màu xanh (bên trong khung IDC Viettel), nhãn nguyên văn: \"MQTT Broker\"; Hình đám mây màu xanh, nhãn nguyên văn: \"Innoway\"; Khối màu cam (góc phải trên), nhãn nguyên văn: \"Viettel System\"; Khối màu xanh (bên phải), nhãn nguyên văn: \"External System\"; Thiết bị hình tròn màu trắng (góc trái dưới), nhãn nguyên văn trên thiết bị: \"vTag\" (kèm biểu tượng định vị); Hình chiếc điện thoại thông minh (góc phải dưới) — KHÔNG có nhãn chữ cho thành phần này trong ảnh",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#53",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 24 số liệu trong ảnh tại Mục 1, trang 11. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 11",
+   "computed_evidence": "node1 - CPU(cores)=162m · node1 - CPU%=4% · node1 - MEMORY(bytes)=4385Mi · node1 - MEMORY%=59% · node2 - CPU(cores)=200m · node2 - CPU%=5%",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#61",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 14 số liệu trong ảnh tại Mục 1, trang 12. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 12",
+   "computed_evidence": "Số CPU (logic)=8 · Danh sách CPU on-line=0-7 · Thread mỗi core=1 · Core mỗi socket=1 · Số socket=8 · Số NUMA node=1",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#63",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 20 số liệu trong ảnh tại Mục 1, trang 13. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 13",
+   "computed_evidence": "Dòng được khung vàng nổi bật (hệ thống file gốc /)=983G  586G  335G  63% · udev=7.8G  0  7.8G  0% · tmpfs /run=1.6G  3.7M  1.6G  1% · tmpfs /dev/shm=7.9G  0  7.9G  0% · tmpfs /run/lock=5.0M  0  5.0M  0% · tmpfs /sys/fs/cgroup=7.9G  0  7.9G  0%",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#65",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 1 số liệu trong ảnh tại Mục 1, trang 13. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 13",
+   "computed_evidence": "Dung lượng lưu trữ (output của lệnh du)=536G G",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#76",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 15 số liệu trong ảnh tại Mục 1, trang 14. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 14",
+   "computed_evidence": "Tổng số CPU (logic)=8 · Danh sách CPU on-line=0-7 · Thread mỗi core=2 · Core mỗi socket=4 · Số socket=2 · Số NUMA node=1",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#78",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 8 số liệu trong ảnh tại Mục 1, trang 14. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 14",
+   "computed_evidence": "Dung lượng apache-zookeeper-3.8.1-bin=41M · Dung lượng backup-db=107M · Dung lượng collection_backup.sh=4.0K · Dung lượng kafka_2_12-3.4.0=5.2G · Dung lượng kafka-logs=7.4G · Dung lượng node_exporter-1.3.1.linux-amd64.tar.gz=8.7M",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#80",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 1 số liệu trong ảnh tại Mục 1, trang 14. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 14",
+   "computed_evidence": "Dung lượng thư mục /var/lib/mongodb/=504M M",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#97",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 20 số liệu trong ảnh tại Mục 1, trang 17. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 17",
+   "computed_evidence": "Dòng được khung nổi bật (filesystem gốc /)=98G   14G   80G  15% · udev=7.8G     0  7.8G   0% · tmpfs /run=1.6G  1.3M  1.6G   1% · tmpfs /dev/shm=7.9G     0  7.9G   0% · tmpfs /run/lock=5.0M     0  5.0M   0% · tmpfs /sys/fs/cgroup=7.9G     0  7.9G   0%",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#116",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 16 số liệu trong ảnh tại Mục 1, trang 19. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 19",
+   "computed_evidence": "Dòng tiêu đề bảng=Filesystem               Size  Used Avail Use% Mounted on · udev — /dev=7.8G  0  7.8G  0% · tmpfs — /run=1.6G  1.7M  1.6G  1% · Filesystem gốc / (dòng được tô vàng khung trong ảnh)=98G  9.8G  84G  11% · tmpfs — /dev/shm=7.9G  0  7.9G  0% · tmpfs — /run/lock=5.0M  0  5.0M  0%",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#134",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 24 số liệu trong ảnh tại Mục 1, trang 22. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 22",
+   "computed_evidence": "node1 - CPU(cores)=162m · node1 - CPU%=4% · node1 - MEMORY(bytes)=4385Mi · node1 - MEMORY%=59% · node2 - CPU(cores)=200m · node2 - CPU%=5%",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#142",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 11 số liệu trong ảnh tại Mục 1, trang 23. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 23",
+   "computed_evidence": "CPU(s) - tổng số CPU nhìn thấy=8 · On-line CPU(s) list=0-7 · Thread(s) per core=1 · Core(s) per socket=1 · Socket(s)=8 · NUMA node(s)=1",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#144",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 20 số liệu trong ảnh tại Mục 1, trang 24. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 24",
+   "computed_evidence": "Dòng được khung vàng nổi bật (hệ thống file gốc /)=983G  586G  335G  63% · udev=7.8G  0  7.8G  0% · tmpfs /run=1.6G  3.7M  1.6G  1% · tmpfs /dev/shm=7.9G  0  7.9G  0% · tmpfs /run/lock=5.0M  0  5.0M  0% · tmpfs /sys/fs/cgroup=7.9G  0  7.9G  0%",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#146",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 1 số liệu trong ảnh tại Mục 1, trang 24. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 24",
+   "computed_evidence": "Dung lượng lưu trữ (output của lệnh du)=536G G",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#157",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 8 số liệu trong ảnh tại Mục 1, trang 26. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 26",
+   "computed_evidence": "CPU(s) (tổng số CPU nhìn thấy)=8 · On-line CPU(s) list=0-7 · Thread(s) per core=1 · Core(s) per socket=4 · Socket(s)=2 · CPU MHz=2593.906 MHz",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#159",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 8 số liệu trong ảnh tại Mục 1, trang 26. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 26",
+   "computed_evidence": "Dung lượng thư mục apache-zookeeper-3.8.1-bin=41M · Dung lượng thư mục backup-db=107M · Dung lượng tệp collection_backup.sh=4.0K · Dung lượng thư mục kafka_2_12-3.4.0=5.2G · Dung lượng thư mục kafka-logs=7.4G · Dung lượng tệp node_exporter-1.3.1.linux-amd64.tar.gz=8.7M",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#161",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 1 số liệu trong ảnh tại Mục 1, trang 26. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 26",
+   "computed_evidence": "Dung lượng thư mục /var/lib/mongodb/=504M M",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#178",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 20 số liệu trong ảnh tại Mục 1, trang 29. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 29",
+   "computed_evidence": "Dòng được khung nổi bật (filesystem gốc /)=98G   14G   80G  15% · udev=7.8G     0  7.8G   0% · tmpfs /run=1.6G  1.3M  1.6G   1% · tmpfs /dev/shm=7.9G     0  7.9G   0% · tmpfs /run/lock=5.0M     0  5.0M   0% · tmpfs /sys/fs/cgroup=7.9G     0  7.9G   0%",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#197",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 16 số liệu trong ảnh tại Mục 1, trang 32. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 32",
+   "computed_evidence": "Dòng tiêu đề bảng=Filesystem               Size  Used Avail Use% Mounted on · udev — /dev=7.8G  0  7.8G  0% · tmpfs — /run=1.6G  1.7M  1.6G  1% · Filesystem gốc / (dòng được tô vàng khung trong ảnh)=98G  9.8G  84G  11% · tmpfs — /dev/shm=7.9G  0  7.9G  0% · tmpfs — /run/lock=5.0M  0  5.0M  0%",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  }
+ ]
+}

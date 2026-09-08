@@ -147,6 +147,7 @@ class KetQuaDocAnh:
     doc_duoc: bool = False
     ly_do: str = ""
     so_lieu: list[SoDaDoc] = field(default_factory=list)
+    lenh: str = ""                  # lệnh model nhìn thấy — `top`, `kubectl top nodes`…
     thanh_phan: list[str] = field(default_factory=list)
     luong: list[str] = field(default_factory=list)
     mo_ta: str = ""
@@ -350,6 +351,12 @@ class DocAnh:
                 self.tk.tang("doc_duoc", -1)
                 self.tk.tang("khong_doc_duoc")
             return kq
+
+        # Lệnh quyết định một ảnh là MỘT máy hay NHIỀU máy: `top`/`free`/`lscpu`
+        # là một host, còn `kubectl top nodes` là mỗi dòng một node. 2.5 cần điều
+        # đó để biết được phép suy rộng quy kết ra cả ảnh hay chỉ trong một dòng.
+        # Model đã trả sẵn trường này từ 2.3; trước đây ta vứt đi.
+        kq.lenh = (getattr(out, "lenh", "") or "").strip()
 
         for s in out.so_lieu:
             if not neo_duoc(s.gia_tri_raw, s.trich_dan):
