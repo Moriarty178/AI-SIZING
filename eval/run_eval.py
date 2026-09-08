@@ -351,6 +351,17 @@ def main() -> int:
                              if k not in bo_qua and isinstance(v, int) and v)
             if mat:
                 print(f"    C3 chi tiết: {mat}")
+            # Lý do HỎNG bị nuốt suốt bốn lượt chạy: `luot_goi_hong` tăng 10 → 49 mà
+            # `tk.loi` không bao giờ được in, nên ta chỉ đoán được nguyên nhân — và đã
+            # đoán sai ba lần liên tiếp. Gom theo thông điệp để một dòng nói đủ.
+            loi = c3.get("loi") or []
+            if loi:
+                gom: dict[str, int] = {}
+                for x in loi:
+                    k = str(x).split(":")[-1].strip()[:70]
+                    gom[k] = gom.get(k, 0) + 1
+                for k, v in sorted(gom.items(), key=lambda t: -t[1])[:3]:
+                    print(f"    C3 lỗi ×{v}: {k}")
         if not ket_qua_ban:
             continue
         # Mẫu số vẫn tính đủ; `theo_ho_so` gom mọi bản để `finding_khong_khop` đúng.
