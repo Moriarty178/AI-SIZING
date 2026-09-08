@@ -183,6 +183,70 @@ def nhan_dong(e: Element) -> list[str]:
     return [(h[0] if h else "").strip() for h in e.rows[so_dong_tieu_de(e.rows):]]
 
 
+# --- lọc ứng viên theo ĐƠN VỊ đọc được từ cột ------------------------------
+# Mỗi cột đang bắt model chọn trong 99 ứng viên, và chính việc cân nhắc chừng ấy lựa
+# chọn là thứ đốt hết ngân sách token: 33/33 lượt hỏng ở B1 2026-09-07 đều là
+# `finish_reason=length`. Nhưng một nửa số cột tự nói ra đơn vị của mình ngay trong
+# tiêu đề hoặc ô mẫu, mà đơn vị thì code đọc được — việc code quyết được thì không
+# đem hỏi model (NT1).
+#
+# Đo trên 4 hồ sơ dev: 36/72 cột đoán được đơn vị, và với 5 tham số mà nhóm nhãn
+# «yêu cầu khác» phụ thuộc nhiều nhất, danh sách thu từ 98 xuống 3–9.
+#
+# Gộp RỘNG TAY chứ không khớp chính xác chuỗi đơn vị: loại nhầm tham số ĐÚNG là mất
+# số một cách im lặng, còn để dư vài ứng viên chỉ tốn chút token. «vCPU» và «core»
+# cùng một họ, «bps»/«Mbps»/«MB/s» cùng một họ, «%» đi với «tỷ lệ».
+HO_DON_VI: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("%",     ("%", "tỷ lệ", "tỷ lệ 0–1", "tỷ lệ 0-1")),
+    ("gb",    ("GB",)),
+    ("iops",  ("IOPS",)),
+    ("bang_thong", ("bps", "Mbps", "MB/s", "GB/s")),
+    ("cpu",   ("vCPU", "core", "CPU", "points")),
+    ("node",  ("node", "máy", "host", "bộ", "thiết bị")),
+    ("port",  ("port", "đường")),
+    ("tps",   ("TPS", "CPS", "lượt")),
+)
+# Dấu hiệu trong tiêu đề/ô mẫu → họ đơn vị. Thứ tự có ý nghĩa: «Mbps» phải khớp
+# trước «bps», nếu không mọi thứ có đuôi «bps» đều rơi vào một chỗ.
+_DAU_HIEU: tuple[tuple[str, str], ...] = (
+    ("%", r"%"),
+    ("iops", r"\biops\b"),
+    ("bang_thong", r"\b[mg]bps\b|\bbps\b|\bmb/s\b|\bgb/s\b"),
+    ("gb", r"\bgb\b|\bgi?ga\s*byte\b"),
+    ("cpu", r"\bv?cpus?\b|\bcores?\b|\bcint\b"),
+    ("tps", r"\btps\b|\bcps\b|\bqps\b"),
+    ("port", r"\bport\b"),
+    ("node", r"\bnodes?\b|\bbroker\b|\bmáy\s*chủ\b"),
+)
+
+
+def ho_don_vi_cua_cot(tieu_de: str, mau: list[str]) -> str:
+    """Họ đơn vị đoán được từ tiêu đề + ô mẫu; rỗng nếu không chắc."""
+    s = (tieu_de + " " + " ".join(mau)).lower()
+    for ho, pat in _DAU_HIEU:
+        if re.search(pat, s):
+            return ho
+    return ""
+
+
+def loc_theo_don_vi(ung_vien: list[ThamSo], ho: str) -> list[ThamSo]:
+    """Ứng viên có đơn vị thuộc họ `ho`. Trả NGUYÊN danh sách nếu không lọc được.
+
+    Không bao giờ trả rỗng: thà hỏi cả 99 ứng viên còn hơn khoá model vào một tập
+    không chứa đáp án đúng.
+    """
+    if not ho:
+        return ung_vien
+    dv = next((d for h, d in HO_DON_VI if h == ho), ())
+    thap = {x.lower() for x in dv}
+    # Tham số KHÔNG khai đơn vị thì không loại trừ được — giữ lại hết. Có 34 tham số
+    # như vậy; loại chúng theo đơn vị là loại theo một thứ chúng không hề nói ra, và
+    # hậu quả là mất số một cách im lặng.
+    ra = [t for t in ung_vien
+          if (t.unit or "").strip().lower() in thap or not (t.unit or "").strip()]
+    return ra or ung_vien
+
+
 # ------------------------------------------------------------------ lược đồ --
 def luoc_do_bang(e: Element, cot: list[tuple[int, str]], ung_vien: list[ThamSo],
                  chon_dong: bool) -> type[BaseModel]:
@@ -199,7 +263,10 @@ def luoc_do_bang(e: Element, cot: list[tuple[int, str]], ung_vien: list[ThamSo],
         mau = [(h[i] if i < len(h) else "").strip()
                for h in e.rows[so_dong_tieu_de(e.rows):]]
         mau = [x for x in mau if x][:MAX_MAU_MOI_COT]
-        truong[f"cot_{i}"] = (Literal[opts], Field(  # type: ignore[valid-type]
+        # Cột tự nói ra đơn vị thì chỉ đưa ứng viên CÙNG đơn vị ra hỏi.
+        hep = loc_theo_don_vi(ung_vien, ho_don_vi_cua_cot(td, mau))
+        o = tuple(t.name for t in hep) + (KHONG_RO,)
+        truong[f"cot_{i}"] = (Literal[o], Field(  # type: ignore[valid-type]
             description=(f"Cột «{td}» (các ô: {', '.join(mau)}) chứa tham số nào? "
                          f"Chọn {KHONG_RO} nếu không tham số nào đúng NGHĨA của cột "
                          f"này — cột số thứ tự, số hiệu dòng đều là {KHONG_RO}.")))
