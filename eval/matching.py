@@ -53,14 +53,37 @@ TU_KHOA_THIEU = (
 # "Thiết bị lưu trữ"). KHÔNG đoán: tách riêng và nói ra, đúng NT4.
 TU_TOI_DA_MANH_VUN = 5
 
+# Câu MỆNH LỆNH đòi trình bày/bổ sung. Không chứa chữ "chưa nêu/thiếu" nên rơi vào
+# nhóm «yêu cầu khác», mà nhóm ấy lại từ chối finding `thieu_thong_tin` — chính là
+# câu trả lời ĐÚNG cho chúng. Ví dụ thật, cùng gắn mã ARC-03 (`so_may_du_phong >= 1`):
+#   «Lập bảng giá trị đề xuất số lượng máy chủ cụ thể…, lưu ý giá trị N+1»
+#   «Đề xuất cấu hình cần có ít nhất N+1 server để đảm bảo HA dự phòng»
+# Người thẩm định đang nói *anh chưa trình bày*, không nói *số của anh sai*.
+#
+# Đo ở B1 2026-09-07: 20/57 nhãn (35%) nhóm «yêu cầu khác» thuộc loại này.
+#
+# TÁCH RIÊNG chứ KHÔNG gộp vào «thiếu»: gộp sẽ đẩy 20 nhãn từ nhóm ta đạt 4% sang
+# nhóm ta đạt 94%, tức tự sửa thước đo cho con số của mình đẹp lên. Người thẩm định
+# phải là người xác nhận chúng thuộc về đâu.
+TU_KHOA_MENH_LENH = (
+    "lập bảng", "đề xuất", "cần có", "ghi rõ", "ghi chú", "thuyết minh", "nêu rõ",
+    "mô tả rõ", "cung cấp", "đưa vào", "xây dựng",
+)
+# CỐ Ý không có «tính lại» / «tính toán lại»: đó là chất vấn con số SAI, không phải
+# đòi bổ sung thông tin. «Dự phòng theo KPI 75% sao lại ra 8000, đề nghị tính lại»
+# là việc phải kiểm bằng số — xếp nhầm nó sang nhóm mệnh lệnh là tự cho điểm.
+
 
 def loai_nhan(text: str | None) -> str:
-    """`thieu` | `khac` | `manh_vun` — điều người thẩm định yêu cầu thuộc loại nào."""
+    """`thieu` | `menh_lenh` | `khac` | `manh_vun` — yêu cầu thuộc loại nào."""
     t = (text or "").strip()
-    if any(k in t.lower() for k in TU_KHOA_THIEU):
+    thap = t.lower()
+    if any(k in thap for k in TU_KHOA_THIEU):
         return "thieu"
     if len(t.split()) <= TU_TOI_DA_MANH_VUN:
         return "manh_vun"
+    if any(k in thap for k in TU_KHOA_MENH_LENH):
+        return "menh_lenh"
     return "khac"
 
 
@@ -246,7 +269,9 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
                 h.theo_loai_mau[lo] = h.theo_loai_mau.get(lo, 0) + 1
                 # Nhãn "thiếu": finding "thiếu thông tin" là bắt ĐÚNG loại.
                 # Nhãn "khác": phải có finding thực chất mới tính.
-                if lo == "thieu" or (lo == "khac" and thuc_chat):
+                # `menh_lenh` chấm như «thiếu» — nhưng ĐẾM RIÊNG để thấy được nó
+                # đóng góp bao nhiêu, và để người thẩm định xác nhận cách xếp.
+                if lo in ("thieu", "menh_lenh") or (lo == "khac" and thuc_chat):
                     h.theo_loai_trung[lo] = h.theo_loai_trung.get(lo, 0) + 1
             else:
                 h.truot_ids.append(l["label_id"])
@@ -260,11 +285,12 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
 def _bang_loai(kq: "KetQuaEval") -> str:
     """Bảng nhỏ: mỗi loại nhãn được chấm trên bao nhiêu và trúng bao nhiêu."""
     ten = {"thieu": "«chưa nêu / thiếu» — finding `thieu_thong_tin` tính là ĐÚNG",
-           "khac": "yêu cầu khác — đòi finding thực chất",
+           "menh_lenh": "«lập bảng / đề xuất / ghi rõ» — đòi trình bày, CHỜ XÁC NHẬN",
+           "khac": "thật sự đòi TÍNH hoặc SO số — đòi finding thực chất",
            "manh_vun": "quá ngắn, không biết đòi gì — KHÔNG vào mẫu số"}
     mau, trung = kq.theo_loai_mau, kq.theo_loai_trung
     d = ["| Loại nhãn | Nhãn | Trúng | Recall |", "|---|---:|---:|---:|"]
-    for k in ("thieu", "khac", "manh_vun"):
+    for k in ("thieu", "menh_lenh", "khac", "manh_vun"):
         m = mau.get(k, 0)
         if not m:
             continue
