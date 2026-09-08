@@ -325,3 +325,29 @@ def test_loc_khong_bao_gio_tra_ve_RONG():
     """Thà hỏi cả 99 ứng viên còn hơn khoá model vào một tập không chứa đáp án."""
     uv = [_ts("so_node", "node")]
     assert loc_theo_don_vi(uv, "%") == uv
+
+def test_nhan_dong_phai_TACH_BACH_duoc_cac_dong():
+    """Hồi quy cho `bang_mat_dong` tăng gấp đôi (6 → 12) ở lượt B1 2026-09-07.
+
+    Từ khi C1 trải ô gộp dọc, ô gộp thừa kế chữ của ô trên, nên cột đầu của bảng #55
+    bản Vtag thành «Worker» ở CẢ HAI dòng — model bị bảo *chọn đúng một trong
+    «Worker» / «Worker»*. Chữ phân biệt nằm ở cột kế.
+    """
+    e = _bang(9, [["Module", "Thông số", "Số cores"],
+                  ["Worker", "Tổng", "8"],
+                  ["Worker", "Thiết kế", "72"]])
+    assert nhan_dong(e) == ["Worker / Tổng", "Worker / Thiết kế"]
+
+
+def test_nhan_dong_khong_dai_hon_muc_can_thiet():
+    """Đủ tách bạch thì dừng — nhãn còn phải chép lại được."""
+    e = _bang(9, [["Module", "Thông số", "RAM (GB)"],
+                  ["Worker", "Tổng", "16"],
+                  ["Redis", "Tổng", "8"]])
+    assert nhan_dong(e) == ["Worker", "Redis"]
+
+
+def test_bang_toan_cot_so_van_co_nhan_dong():
+    """Bảng tổng «N | CPU | RAM | Storage» không có cột chữ nào; ô đầu là nhãn duy
+    nhất có được, và bỏ nó đi thì model không chỉ được dòng nào."""
+    assert nhan_dong(_bang(9, BANG_TONG)) == ["1", "4"]

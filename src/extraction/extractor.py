@@ -194,6 +194,15 @@ class ThongKe:
     cot_khong_co_that: int = 0      # model khai tiêu đề cột không tồn tại
     gia_tri_khong_trong_cot: int = 0  # giá trị không nằm trong cột model khai
     o_bi_nhieu_tham_so: int = 0     # cùng một ô được nhiều tham số nhận làm nguồn
+    # Cổng trên khoá theo `o_nguon` khi có TOẠ ĐỘ Ô thật, còn không thì lùi về so
+    # CHÍNH GIÁ TRỊ — và hai chuyện đó rất khác nhau. Cùng một ô thì đúng là chỉ một
+    # tham số được nhận; nhưng cùng một GIÁ TRỊ thì hoàn toàn có thể là trùng hợp
+    # chính đáng («16 vCPU và 16 GB RAM» trong cùng một đoạn). Tách ra để biết cổng
+    # đang bắt đúng hay bắt oan trước khi dám nới nó — đây là cổng ĐỘ CHÍNH XÁC.
+    o_trung_theo_toa_do: int = 0    # trùng ô THẬT — cổng bắt đúng
+    o_trung_theo_gia_tri: int = 0   # chỉ trùng giá trị — có thể bắt oan
+    o_trung_cap_hai: int = 0        # đụng độ 2 tham số — dễ là trùng hợp
+    o_trung_cap_ba_tro_len: int = 0 # đụng độ ≥3 — chữ ký của việc rải số
     lay_tu_bang: int = 0            # lấy được đúng ô bảng — ca đáng tin nhất
     # --- đường CỘT (v6) ---
     bang_hoi: int = 0               # số bảng đã đưa ra hỏi
@@ -657,9 +666,18 @@ class Extractor:
             theo_o.setdefault((ev.element_index, khoa), []).append(ten)
 
         bo = 0
-        for _, ds in theo_o.items():
+        for (_, khoa_o), ds in theo_o.items():
             if len(ds) < 2:
                 continue
+            co_toa_do = any(dich.params[t].o_nguon for t in ds)
+            if co_toa_do:
+                self.tk.o_trung_theo_toa_do += len(ds)
+            else:
+                self.tk.o_trung_theo_gia_tri += len(ds)
+            if len(ds) == 2:
+                self.tk.o_trung_cap_hai += len(ds)
+            else:
+                self.tk.o_trung_cap_ba_tro_len += len(ds)
             for ten in ds:
                 ev = dich.params[ten]
                 ev.value = None
