@@ -132,7 +132,7 @@ def main() -> int:
         "ket_qua": [
             {"ma": k.ma_anh, "loai": k.loai, "location": k.location,
              "doc_duoc": k.doc_duoc, "ly_do": k.ly_do,
-             "bo_vi_khong_neo": k.bo_vi_khong_neo,
+             "bo_vi_khong_neo": k.bo_vi_khong_neo, "lenh": k.lenh,
              "thanh_phan": k.thanh_phan, "luong": k.luong, "mo_ta": k.mo_ta,
              "so_lieu": [s.__dict__ for s in k.so_lieu]} for k in kq],
         "finding": [thanh_finding(k).as_dict() for k in kq],

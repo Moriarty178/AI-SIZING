@@ -11,7 +11,7 @@
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
 | 1 | MVP chỉ xử lý text | 14 / 17 | 🔴 1.13 CHƯA đạt — đã có số thật, nút thắt là độ phủ trích xuất của C3 |
-| 2 | Đa phương thức & tái sử dụng | 5,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.3 · 2.12 xong (2.3 đã CHẠY THẬT 08-09); 2.4 · 2.11 phần offline xong; 2.5 sẵn dữ liệu để thiết kế |
+| 2 | Đa phương thức & tái sử dụng | 6,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.3 · 2.5 · 2.12 xong (2.3 đã CHẠY THẬT 08-09; 2.5 đo offline trên chính đầu ra đó); 2.4 · 2.11 phần offline xong |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
 
@@ -1054,7 +1054,32 @@ chứng minh công cụ có giá trị hay không.
       Đây đúng loại lỗi chỉ lộ khi ghép các thành phần, không lộ ở unit test.
       → 🔧 Vá kèm: `Image.getdata()` bị bỏ ở Pillow 14 mà `pyproject` chỉ ghim
       `pillow>=10.0` — đã đổi sang `tobytes()`; độ chính xác 2.2 không đổi (34/40).
-- [ ] 2.5 — Kiểm tra chéo: số trong ảnh biểu đồ vs số trong bảng sizing
+- [x] 2.5 — Kiểm tra chéo: số trong ảnh vs số trong bảng sizing — `src/vision/neo_so.py`
+      + `scripts/neo_so_anh.py` + 23 test, 2026-09-08. Chạy OFFLINE, không tốn lượt model.
+      → 🔴 **Tiền đề của bản bàn giao SAI, đã lật bằng số.** PBH không phải ca âm:
+      `AMD Ryzen 9 7950x`, `Tải CPU 31.2%`, `RAM 125`, `SSD 1024` đều **do chính tài
+      liệu khai** (Mục 2 tr.4-5, Mục 3 tr.9) — máy Ryzen là **máy chuẩn đo được khai
+      báo**, không phải máy cá nhân người viết. `109.375 = 175 × 20/32` nên «20 cores»
+      khai vs «32 CPU(s)» trong ảnh là **cố ý**. Lọc theo dấu vân tay máy cá nhân
+      (`/run/user/1000`, tên CPU desktop) sẽ vứt đúng bộ số neo tốt nhất trong kho —
+      và `/run/user/1000` có ở **cả hai** hồ sơ nên không phân biệt được gì.
+      → ✅ **Cách làm: NEO HAI PHÍA**, không phân loại nguồn. Số trong ảnh chỉ dùng
+      được khi chính tài liệu nói ra con số đó ở gần đó. Bốn cổng thuần code (NT1):
+      cùng loại đại lượng · khớp CHÍNH XÁC · gần trang ±3 · quy kết không va chạm.
+      Neo được rồi thì các số **cùng dòng nguồn** thừa hưởng quy kết — đó mới là số
+      bảng KHÔNG có (`1403m`, `10393Mi`), tức số thật cho C4.
+      → 📊 Đo trên 2 lượt vision đã có: **17 khớp trực tiếp + 21 thừa hưởng = 38 số
+      dùng được**, **0 khớp sai**. Quy kết đúng node↔phân hệ: node1/2→Master,
+      node4/5→Worker, PBH→Test, và `df` root→Postgres/Redis/MQTT đúng dải DISK.
+      Biến thể lỏng (dung sai 2%) cho 124/228 nhưng gần như toàn rác (`1%`↔`1`,
+      `126G` đĩa ↔ `125.48` số bản ghi), nên **dung sai = 0**.
+      → ⚠️ `byte` TẮT mặc định: «GB» trong bảng không nói rõ 10⁹ hay 2³⁰, đoán là vi
+      phạm NT4. `--ca-anh` (suy rộng cả ảnh) **ĐÃ ĐO LÀ SAI**: Vtag `anh#134` chỉ neo
+      được node4/5 ⇒ gán luôn node1 (vốn là Master) thành Worker. Cả hai có test khoá.
+      → 🔧 Vá kèm: `KetQuaDocAnh.lenh` nay được giữ lại (model vẫn trả từ 2.3, ta vứt
+      đi) — cần nó để biết ảnh là MỘT máy (`top`) hay NHIỀU máy (`kubectl top nodes`).
+      → 🐛 Bẫy im lặng đã chặn: tài liệu không có số trang thì cổng gần-trang không
+      bao giờ thoả và 2.5 trả 0 neo mà không lỗi gì — nay tự tắt cổng và **nói ra**.
 
 ### Tuần 5 — Truy hồi & scale
 - [ ] 🔴 2.6 — ~~Nạp 30 bản lịch sử vào vector DB~~ **BỊ CHẶN bởi 0.13**
@@ -1261,3 +1286,6 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-08 | **2.3 chạy thật lần đầu: cơ chế CHẠY ĐƯỢC, nhưng lộ 2 lỗi mà chỉ chạy thật mới thấy** | PBH 4.0: 15 lượt gọi, **0 hỏng**, **`trich_dan_bia` = 0** — cổng NT2 không phải loại giá trị nào. (1) **Lỗi của CODE, không phải của model:** model đọc `lscpu`, trả «Model name» = "AMD Ryzen 9 7950X 16-Core Processor" kèm ghi chú «chữ, không phải số»; cổng NT2 cho qua vì chuỗi có thật trong trích dẫn, rồi `parse_number` nặn thành **97950**. C3 đã có cổng hình dạng từ 04-09, 2.3 thì chưa — nay đưa về `normalization/numbers.py` dùng chung. (2) **2.2 phân loại sai nặng trên hồ sơ này:** 9/10 ảnh gán `so_do` thực ra là ảnh chụp SQL editor, model vision nhận ra và từ chối đúng — nên chỉ 4/15 ảnh đọc được. Ảnh sơ đồ THẬT duy nhất (#38) đọc rất tốt: 6 thành phần, 5 luồng, mô tả mạch lạc |
 | 2026-09-08 | **Vtag: 19/19 ảnh đọc được, 228 số liệu — và SỞ CỨ TẢI nằm trong ẢNH, không phải trong văn xuôi** | 19 lượt gọi, 0 hỏng, `trich_dan_bia` 0, 123 giây. Ngược hẳn PBH (4/15) ⇒ tỷ lệ đọc được phụ thuộc PHÂN LOẠI của 2.2 chứ không phải năng lực model. `anh#53` là `kubectl top nodes`: CPU cores/CPU%/memory bytes/memory% của 6 node, đọc chính xác kèm trích dẫn nguyên văn — tổng 24 số liệu tải. **Đây là lời giải cho bế tắc của nhánh định lượng:** C3 không tìm được `cpu_95th` trong văn xuôi vì con số đó KHÔNG nằm trong văn xuôi. Lượt chạy này dùng `b8af4e2` (trước bản vá hình dạng số) và xác nhận bản vá trên dữ liệu độc lập: nó chặn 7/228 giá trị, trong đó 3 lần lặp lại đúng lỗi cũ — «Intel(R) Xeon(R) Gold 6240 CPU @ 2.60GHz» → 6240.0 |
 | 2026-09-07 | **Nút thắt là C3 (trích xuất), KHÔNG phải bộ quy tắc — 1.13 CHƯA đạt** | Nhóm phân biệt được («yêu cầu khác», 57 nhãn): model thật **2/57 = 4%**, model giả 7/57 = 12% (Fisher p=0,16 ⟹ **không phân biệt được với ngẫu nhiên**, KHÔNG được nói "thua model giả"). Soi 57 nhãn thì 39 (68%) là kiểm định lượng thuần code: *công thức sai* 15, *N+1/HA* 7, *hệ số KPI/sai số 1.1* 4, *số liệu mâu thuẫn* 3 — đúng việc C4. Nhưng C4 chỉ tính được trên trường C3 đã trích, mà C3 chỉ ra 1–18 trường có giá trị mỗi hồ sơ (Data Security: **1 trường / 17 lượt gọi**), nên cả tài liệu chỉ sinh ĐÚNG 1 finding `vuot_nguong`. ⟹ Không thêm quy tắc, không thêm thành phần (C6/RAG, 2.5) cho tới khi độ phủ trích xuất của C3 lên; thước đo phải theo là nhóm «yêu cầu khác», không phải 88,4% |
+| 2026-09-08 | **2.5 — bài toán KHÔNG phải "phân biệt máy của hệ thống với máy lạ"; tiền đề ấy sai và đã lật được bằng số** | Bản bàn giao xếp PBH 4.0 làm ca âm vì `lscpu` ra `AMD Ryzen 9 7950X` và `df -h` ra `/run/user/1000`, `/boot/efi`, `/run/qemu` — kết luận "máy để bàn người viết". Đọc bảng khai báo của chính hồ sơ đó thì ngược lại: Mục 2 tr.4 khai `AMD Ryzen 9 7950x @ 4.50GHz 20 cores \| 80 GB \| Cint 109.375 \| SSD 1024 GB`, Mục 3 tr.9 khai `Test \| RAM 125 \| SSD 1024 \| Tải CPU 31.2% \| Tải Ram 71Gb`, và `anh#79` (`top`) đọc ra đúng `31.2 us` + `128010 MiB` = 125,0 GiB. **Máy Ryzen là máy chuẩn đo được khai báo**, và `109.375 = 175 × 20/32` nên «20 cores» vs «32 CPU(s)» là cố ý. ⟹ Lọc theo dấu vân tay máy cá nhân sẽ vứt đúng bộ số neo tốt nhất trong kho, mà `/run/user/1000` lại có ở **cả hai** hồ sơ nên không phân biệt được gì. Bài học: đọc bảng khai báo TRƯỚC khi kết luận một con số là nhiễu |
+| 2026-09-08 | **2.5 chốt cách làm: NEO HAI PHÍA — số trong ảnh chỉ dùng được khi chính tài liệu nói ra con số đó ở gần đó** | Câu hỏi "máy này có phải máy của hệ thống không" không trả lời được từ pixel; câu trả lời được là sự trùng khớp, và nó vừa là chứng cứ quy kết vừa là `computed_evidence` cho NT2. Bốn cổng thuần code (NT1): cùng loại đại lượng · khớp CHÍNH XÁC · gần trang ±3 · quy kết không va chạm. Đo trên 2 lượt vision đã có: **17 khớp trực tiếp + 21 thừa hưởng = 38 số dùng được, 0 khớp sai**; quy kết đúng node1/2→Master, node4/5→Worker, PBH→Test, `df` root→Postgres/Redis/MQTT đúng dải DISK. Biến thể dung sai 2% cho 124/228 nhưng gần như toàn rác (`1%`↔`1`; `126G` đĩa ↔ `125.48` số bản ghi; `706`↔`715`) ⟹ **dung sai = 0**. `byte` tắt mặc định vì «GB» trong bảng không nói rõ 10⁹ hay 2³⁰ (đoán = vi phạm NT4). Người dùng chốt phương án **chặt**: ảnh không neo được thì ra finding NT4 và **không số nào** sang C4 |
+| 2026-09-08 | **Suy rộng quy kết ra CẢ ảnh (`--ca-anh`) ĐÃ ĐO LÀ SAI — giữ suy rộng theo DÒNG NGUỒN** | Ý tưởng: ảnh chỉ quy về một phân hệ thì gán cả ảnh cho phân hệ đó, để vớt `RAM total`/`RAM used` của PBH `top` (nằm khác dòng với `%Cpu(s)`). Đo trên Vtag `anh#134`: chỉ node4/node5 neo được ⇒ tập phân hệ = {Worker} ⇒ điều kiện thoả ⇒ cả ảnh bị gán «Worker», **kể cả `node1 4385Mi / 59%` vốn là Master** (chính tr.9 khai «Master · RAM · 59%»). Một ảnh nhiều máy mà chỉ neo được vài máy thì suy rộng là gán sai. Giữ mặc định TẮT + test khoá. Đường đi đúng về sau: dùng `KetQuaDocAnh.lenh` (nay đã được giữ lại, model vẫn trả từ 2.3 mà ta vứt đi) để biết lệnh là một-máy (`top`/`free`/`lscpu`) hay nhiều-máy (`kubectl top nodes`) |
