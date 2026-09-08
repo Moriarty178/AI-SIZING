@@ -176,11 +176,44 @@ def cot_du_lieu(e: Element) -> list[tuple[int, str]]:
     return ra
 
 
+MAX_COT_NHAN = 3            # đủ để tách dòng, chưa dài tới mức khó chép lại
+
+
 def nhan_dong(e: Element) -> list[str]:
-    """Nhãn của từng dòng dữ liệu — ô đầu tiên, dùng để model chỉ đúng dòng."""
+    """Nhãn của từng dòng dữ liệu — model phải chép lại NGUYÊN VĂN để chỉ đúng dòng.
+
+    Ghép thêm cột cho tới khi các nhãn KHÁC NHAU. Lấy mỗi ô đầu là không đủ từ khi
+    C1 trải ô gộp dọc (2026-09-07): ô gộp dọc thừa kế chữ của ô trên, nên cột đầu của
+    bảng #55 bản Vtag thành «Worker» ở cả hai dòng, còn chữ phân biệt («Tổng» /
+    «Thiết kế») nằm ở cột 1. Model bị bảo *chọn đúng một trong «Worker» / «Worker»* —
+    không cách nào chọn đúng, và `bang_mat_dong` tăng gấp đôi (6 → 12) đúng lượt đó.
+
+    Bỏ qua cột SỐ LIỆU: nhãn dòng phải là chữ, không phải chính con số đang đi hỏi.
+    """
     if not e.rows:
         return []
-    return [(h[0] if h else "").strip() for h in e.rows[so_dong_tieu_de(e.rows):]]
+    dong = e.rows[so_dong_tieu_de(e.rows):]
+    if not dong:
+        return []
+    so = {i for i, _ in cot_du_lieu(e)}
+    rong = max(len(r) for r in dong)
+    ra = ["" for _ in dong]
+    for i in range(rong):
+        if i in so:
+            continue
+        if all(ra) and len(set(ra)) == len(ra):
+            break                       # đã đủ tách bạch, không cần dài thêm
+        if max(len(x.split(" / ")) for x in ra) >= MAX_COT_NHAN:
+            break
+        for k, r in enumerate(dong):
+            c = (r[i] if i < len(r) else "").strip()
+            if c and c not in ra[k].split(" / "):
+                ra[k] = f"{ra[k]} / {c}" if ra[k] else c
+    if not any(ra):
+        # Bảng mà MỌI cột đều là số liệu (bảng tổng «N | CPU | RAM | Storage») thì
+        # không còn cột chữ nào; khi ấy chính ô đầu là nhãn duy nhất có được.
+        ra = [(r[0] if r else "").strip() for r in dong]
+    return ra
 
 
 # --- lọc ứng viên theo ĐƠN VỊ đọc được từ cột ------------------------------
