@@ -75,11 +75,24 @@ def main() -> int:
         print(f"Chưa chạy được: {e}")
         return 2
 
+    c2 = DocAnh(client, model=a.model, loai=loai, on_tien_do=None,
+                song_song=a.song_song)
+    if c2.thieu_model_vision:
+        # Cùng loại bẫy với vụ thiếu Pillow: `extract(model=None)` lặng lẽ rơi về
+        # `chat_model`, vốn có thể không nhìn được ảnh. Lượt chạy vẫn "thành công",
+        # đốt hết thời gian, rồi trả về mô tả bịa. Thà dừng và nói ra.
+        print("CHƯA ĐẶT MODEL VISION — lượt gọi sẽ âm thầm rơi về model chat, vốn có "
+              "thể không nhìn được ảnh.")
+        print("  Đặt `llm.vision_model` trong config/settings.yaml, hoặc chạy lại với")
+        print("  --model <tên-model-vision>   (lượt dò 0.10 dùng "
+              "claude-haiku-4-5-20251001)")
+        return 2
+    print(f"  model vision: {c2.model}")
+
     def tien_do(i, tong, nhan):
         print(f"    {i}/{tong} · {nhan}", flush=True)
 
-    c2 = DocAnh(client, model=a.model, loai=loai, on_tien_do=tien_do,
-                song_song=a.song_song)
+    c2.on_tien_do = tien_do
     t0 = time.time()
     kq = c2.run(doc)
     giay = time.time() - t0

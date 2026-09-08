@@ -293,3 +293,17 @@ def test_pipeline_bat_len_thi_finding_anh_vao_bao_cao(monkeypatch):
               bo_qua_dinh_tinh=True, doc_anh=True)
     assert any(f.id == "C2-ANH-anh#1" for f in kq.findings)
     assert kq.thong_ke["c2"]["luot_goi"] == 1
+
+def test_thieu_model_vision_phai_NOI_RA_chu_khong_chay_bang():
+    """`extract(model=None)` lặng lẽ rơi về `chat_model`, vốn có thể không nhìn được
+    ảnh — lượt chạy vẫn "thành công", đốt hết thời gian, rồi trả mô tả bịa. Cùng loại
+    bẫy im lặng với vụ thiếu Pillow ở 2.2, và `scripts/thu_doc_anh.py` dừng ở đây."""
+    class KhongCoVision:
+        vision_model = ""
+    class CoVision:
+        vision_model = "claude-haiku-4-5-20251001"
+
+    assert DocAnh(KhongCoVision()).thieu_model_vision is True
+    assert DocAnh(CoVision()).thieu_model_vision is False
+    # `--model` trên dòng lệnh đủ để chạy dù settings.yaml bỏ trống
+    assert DocAnh(KhongCoVision(), model="haiku").thieu_model_vision is False
