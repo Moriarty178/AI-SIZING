@@ -131,6 +131,22 @@ def _cell_text(tc) -> str:
     ).strip()
 
 
+def gon_o_lap(dong: list[str]) -> list[str]:
+    """Gộp các ô GIỐNG NHAU liền kề — bản để ĐỌC của một dòng đã trải ô gộp.
+
+    Lưới chữ nhật là thứ CODE cần (chỉ số cột phải trỏ cùng một cột ở mọi dòng); model
+    thì không cần thấy chữ lặp lại. Giữ nguyên bản trải khi gửi đi làm phình prompt
+    đúng chỗ đang đau: chữ trong bảng của bản Vtag tăng từ 13.058 lên 26.355 ký tự sau
+    khi trải ô gộp, và cùng lượt đó 28/62 lượt gọi C3 của nó hỏng (trước là 1) với thời
+    gian chạy 121s → 994s. PBH gần như không có ô gộp nên chỉ +1% và hỏng ít hơn hẳn.
+    """
+    ra: list[str] = []
+    for o in dong:
+        if not ra or o != ra[-1]:
+            ra.append(o)
+    return ra
+
+
 def _so_o_gop(tc) -> int:
     """Số cột lưới mà ô này chiếm (`w:gridSpan`), tối thiểu 1."""
     gs = tc.find(qn("w:tcPr") + "/" + qn("w:gridSpan"))
@@ -388,7 +404,7 @@ def read_docx(path: str) -> DocxDocument:
                 page += 1
                 saw_rendered = True
             rows: list[list[str]] = _cac_dong(child)
-            flat = "\n".join(" | ".join(r) for r in rows)
+            flat = "\n".join(" | ".join(gon_o_lap(r)) for r in rows)
             out.elements.append(Element(
                 index=idx, kind="table", text=flat, page=page,
                 section=cur_num, section_title=cur_title, rows=rows))
