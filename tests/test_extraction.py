@@ -697,3 +697,21 @@ def test_enum_khong_duoc_neo_ra_NGOAI_phan_he_dang_hoi():
     core = SizingCore()
     Extractor(llm).trich_nhom(doc, _nhom(t), core)
     assert core.params["chuan_spec"].value == "2006"
+
+def test_ngan_sach_token_phu_duoc_suy_luan_ke_ca_luot_goi_NHO_nhat():
+    """Hồi quy cho 33 lượt hỏng ở B1 2026-09-07 — tất cả đều `finish_reason=length`.
+
+    Chúng rơi đúng vào các ngân sách NHỎ NHẤT (3450/3900/4350/4800, tức 1–4 trường),
+    không lượt nào hỏng ở ngân sách lớn hơn: phần ăn hết token là `reasoning_content`,
+    mà suy luận không co lại khi hỏi ít trường hơn — hỏi 1 cột vẫn phải đọc cả bảng và
+    cân nhắc 99 ứng viên. Nên `TOKEN_NEN` phải phủ suy luận cho MỌI lượt, và lượt gọi
+    một trường mới là ca đáng lo, không phải lượt nhiều trường.
+    """
+    from src.extraction.extractor import (TOKEN_MOI_TRUONG, TOKEN_NEN,
+                                          TOKEN_TOI_DA)
+    NGAN_SACH_TUNG_HONG = 4800
+    nho_nhat = TOKEN_NEN + TOKEN_MOI_TRUONG * 1
+    assert nho_nhat > NGAN_SACH_TUNG_HONG * 1.5, (
+        f"lượt gọi 1 trường chỉ có {nho_nhat} token, chưa đủ xa mức từng hỏng")
+    assert TOKEN_NEN + TOKEN_MOI_TRUONG * 8 <= TOKEN_TOI_DA, (
+        "trần phải còn ý nghĩa: nhóm lớn nhất vẫn phải nằm dưới nó")
