@@ -111,10 +111,31 @@ def _doc(**params) -> SizingCore:
     return d
 
 
-def test_check_dat_thi_khong_sinh_finding(rules):
+def test_check_dat_thi_sinh_finding_co_can_cu(rules):
+    """Người dùng chốt 2026-09-09: quy tắc ĐẠT phải NÓI RA, không im lặng.
+
+    Trước đó `dat` trả về lặng lẽ, và người viết sizing mất thông tin "chỗ này đã
+    kiểm rồi, không cần sửa". Điều kiện đi kèm: chỉ sinh khi code THẬT SỰ tính
+    được — nhánh thiếu đầu vào và nhánh lưỡng nghĩa không đi qua đây.
+    """
     v = QuantitativeValidator(rules)
     out = v.check_rule(rules["KPI-02"], _doc(cpu_95th=60))
-    assert out.status == "dat" and out.finding is None
+    assert out.status == "dat"
+    f = out.finding
+    assert f is not None
+    assert f.category == "dat_co_can_cu"
+    assert f.severity == "info", "ĐẠT không phải vấn đề, không được nhuộm nặng"
+    assert f.co_can_cu(), "NT2: phải có căn cứ thì C7 mới không lọc bỏ"
+    assert "60" in f.computed_evidence, "phải chỉ ra con số đã dùng"
+
+
+def test_dat_khong_bao_gio_sinh_khi_thieu_dau_vao(rules):
+    """Ranh giới khiến nhóm này KHÁC `thieu_thong_tin`: một model sinh bừa không
+    giả được, vì nó đòi code chạy được phép tính."""
+    v = QuantitativeValidator(rules)
+    out = v.check_rule(rules["KPI-02"], _doc())
+    assert out.status == "khong_danh_gia_duoc"
+    assert out.finding is not None and out.finding.category == "thieu_thong_tin"
 
 
 def test_check_vi_pham_thi_sinh_finding_co_can_cu_tinh_duoc(rules):

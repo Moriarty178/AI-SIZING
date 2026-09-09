@@ -97,6 +97,8 @@ class KetQuaHoSo:
     trung_ids: list[str] = field(default_factory=list)
     truot_ids: list[str] = field(default_factory=list)
     finding_khong_khop: list[str] = field(default_factory=list)
+    # Số finding nhóm ĐẠT đã bị loại khỏi phép chấm. Đếm ra chứ không lọc im lặng.
+    finding_dat_loai_tru: int = 0
     # Trong số `trung`, bao nhiêu nhãn trúng nhờ một finding THỰC CHẤT — tức không
     # phải chỉ vì công cụ nói "không tìm thấy trường này". Xem `CAT_MEM`.
     trung_thuc_chat: int = 0
@@ -116,6 +118,23 @@ class KetQuaHoSo:
 # quy tắc, với 96/123 finding thuộc `thieu_thong_tin` và đúng 1 finding `vuot_nguong`.
 # Hệ quả: model GIẢ (sinh bừa) đạt 99,4% còn model THẬT đạt 88,4% trên cùng thước đo.
 CAT_MEM = frozenset({"thieu_thong_tin", "khong_kiem_chung_duoc"})
+
+# Finding nhóm ĐẠT bị LOẠI HẲN khỏi phép chấm recall (người dùng chốt sinh chúng
+# 2026-09-09, cho BÁO CÁO).
+#
+# Vì sao loại: một nhãn PNX là điều người thẩm định thấy SAI. Đếm một lượt ĐẠT là
+# "trúng" nhãn ấy nghĩa là công cụ nói «chỗ này ổn» còn người thẩm định nói «chỗ
+# này hỏng», mà ta vẫn ghi điểm. Đó đúng là kiểu tự sửa thước đo cho số mình đẹp
+# lên mà `CLAUDE.md` cấm, và cùng họ với lỗi đã phát hiện ngày 2026-09-07 (thước
+# đo thưởng cho trích xuất thất bại).
+#
+# Chúng cũng KHÔNG bị tính vào `finding_khong_khop`: một lượt ĐẠT không phải dấu
+# hiệu công cụ báo bừa.
+#
+# Nếu người thẩm định về sau muốn ĐẠT-có-căn-cứ được tính cho nhóm nhãn "bổ sung
+# sở cứ", đó là quyết định của họ, KHÔNG phải của công cụ — sửa ở đây và nói rõ
+# trong báo cáo.
+CAT_KHONG_TINH_RECALL = frozenset({"dat_co_can_cu"})
 
 
 @dataclass
@@ -243,7 +262,13 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
             kq.ho_so.append(h)
             continue
 
-        theo_vong = findings_theo_vong.get(dossier) or {}
+        h.finding_dat_loai_tru = sum(
+            1 for f in fs if getattr(f, "category", "") in CAT_KHONG_TINH_RECALL)
+        fs = [f for f in fs
+              if getattr(f, "category", "") not in CAT_KHONG_TINH_RECALL]
+        theo_vong = {v: [f for f in lst
+                         if getattr(f, "category", "") not in CAT_KHONG_TINH_RECALL]
+                     for v, lst in (findings_theo_vong.get(dossier) or {}).items()}
         ma_finding = {f.rule_ref for f in fs if f.rule_ref}
         ma_trung: set[str] = set()
         for l in ds:

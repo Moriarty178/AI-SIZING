@@ -31,6 +31,7 @@ category_labels:
   vuot_nguong: "Vượt ngưỡng"
   khong_kiem_chung_duoc: "Chưa kiểm chứng được"
   khong_nhat_quan: "Không nhất quán"
+  dat_co_can_cu: "Đã kiểm — đạt"
 
 # Loại ảnh (C2 mục 2.2) — câu mô tả đưa vào cảnh báo NT4 của báo cáo.
 # `goi_y` là việc người dùng nên làm để phần đó kiểm được.

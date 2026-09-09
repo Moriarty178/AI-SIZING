@@ -21,11 +21,17 @@ tiếp, mỗi lần tốn một lượt chạy model. Nên: dựng thật, chạ
     PBH 4.0    gán được  Test{cpu_95th 31.2}
                C4 ra      78 không đánh giá được · 1 ĐẠT (KPI-02 Test)
 
-**Cả hai lượt ĐẠT đều KHÔNG sinh finding** (`quantitative.py` trả `RuleOutcome`
-trạng thái `dat` không kèm `Finding`). Mà thước đo 1.13 tính một nhãn là TRÚNG khi
-có finding nhắc mã quy tắc của nó. ⟹ **Nối 2.5 vào C4 không đổi recall một chút
-nào.** Xây phần nối trước khi chốt việc "quy tắc ĐẠT có sinh finding không" là xây
-vào chỗ trống.
+**Lượt đo ĐẦU cho 0 finding**, vì `quantitative.py` khi ấy trả trạng thái `dat`
+không kèm `Finding`, mà thước đo 1.13 tính một nhãn là trúng khi có finding nhắc
+mã quy tắc của nó. Đó là lý do phần nối KHÔNG được xây trước — xây vào chỗ trống.
+
+Người dùng chốt cùng ngày: **quy tắc ĐẠT phải sinh finding** (`dat_co_can_cu`,
+`severity: info`). Đo lại sau khi sửa: **2 lượt ĐẠT → 2 finding**.
+
+⚠️ Nhưng recall của 1.13 **vẫn không đổi**, và đó là CỐ Ý: `eval/matching.py` loại
+hẳn nhóm `dat_co_can_cu` khỏi phép chấm. Đếm một lượt ĐẠT là "trúng" một nhãn PNX
+nghĩa là công cụ nói «chỗ này ổn» còn người thẩm định nói «chỗ này hỏng», mà ta vẫn
+ghi điểm. Giá trị của nhóm này nằm ở BÁO CÁO cho người viết sizing, không ở thước đo.
 
 `ALC-03` cũng có đủ `cpu_95th` + `ram_95th` cho Worker nhưng vẫn không đánh giá
 được: nó còn đòi `la_ho_so_thu_hoi` (`role: lookup`), thứ chưa số hoá.
@@ -39,24 +45,14 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.extraction.schema import (ExtractedValue, SizingCore,   # noqa: E402
-                                   SizingExtension)
+from src.extraction.schema import SizingCore                     # noqa: E402
 from src.ingestion.docx_reader import read_docx                  # noqa: E402
 from src.validators.quantitative import QuantitativeValidator    # noqa: E402
 from src.validators.rules_loader import load_rules               # noqa: E402
 from src.version import in_phien_ban                             # noqa: E402
 from src.vision.doc_anh import KetQuaDocAnh, SoDaDoc             # noqa: E402
-from src.vision.neo_so import dai_luong_vat_ly, neo_tai_lieu     # noqa: E402
-
-# (đại lượng vật lý, loại đo) -> tên tham số trong `rules.yaml`.
-# Chỉ hai dòng vì `rules.yaml` chỉ có ba input đơn vị `%`: `cpu_95th` (2 quy tắc),
-# `ram_95th` (1), `datanode_95th` (1 — riêng cho node dữ liệu, không suy từ ảnh
-# chung được). Dung lượng `%` không có tham số nào nhận, nên neo DISK của Vtag
-# (Postgres 63%, Redis 15%, MQTT 11%) hiện KHÔNG có chỗ để vào.
-ANH_XA: dict[tuple[str, str], str] = {
-    ("cpu", "phan_tram"): "cpu_95th",
-    ("ram", "phan_tram"): "ram_95th",
-}
+from src.vision.neo_so import neo_tai_lieu                       # noqa: E402
+from src.vision.tham_so_anh import gan_vao_core, tham_so_tu_neo  # noqa: E402
 
 THU_MUC_BAO_CAO = pathlib.Path("eval/reports")
 
@@ -108,24 +104,12 @@ def main() -> int:
             continue
         ket, _ = neo_tai_lieu(read_docx(str(dx)), kqs)
 
-        gan: dict[str, dict[str, tuple[float, str]]] = {}
-        bo_qua: list[str] = []
-        for r in ket:
-            for n in r.neo:
-                if not n.truc_tiep or n.o is None:
-                    continue
-                dl = dai_luong_vat_ly(n.o.bang_con, n.o.tieu_de_cot)
-                ten = ANH_XA.get((dl or "", n.loai))
-                if ten is None:
-                    bo_qua.append(f"{n.scope_key}·{dl or '?'}·{n.loai}")
-                    continue
-                gan.setdefault(n.scope_key, {})[ten] = (n.gia_tri, n.o.location)
-
-        core = SizingCore(phan_he=[
-            SizingExtension(ten_phan_he=sk, params={
-                k: ExtractedValue(value=v, unit="%", location=loc)
-                for k, (v, loc) in ps.items()})
-            for sk, ps in gan.items()])
+        core = SizingCore()
+        tk_gan = gan_vao_core(core, ket)
+        gan = {ph.ten_phan_he: {k: v.value for k, v in ph.params.items()}
+               for ph in core.phan_he}
+        bo_qua = [f"{n.scope_key}·{n.loai}" for r in ket for n in r.neo
+                  if n.truc_tiep and tham_so_tu_neo(n) is None]
 
         kq = QuantitativeValidator(rs).run(core)
         dem: dict[str, int] = {}
@@ -138,9 +122,9 @@ def main() -> int:
         tong_finding += n_finding
 
         print(f"\n{'=' * 78}\n{dx.name}\n{'=' * 78}")
-        print("  gán được: " + (json.dumps(
-            {k: {a2: b[0] for a2, b in v.items()} for k, v in gan.items()},
-            ensure_ascii=False) if gan else "(không có)"))
+        print("  gán được: " + (json.dumps(gan, ensure_ascii=False)
+                                 if gan else "(không có)"))
+        print(f"  {tk_gan.tom_tat()}")
         if bo_qua:
             print(f"  neo KHÔNG có tham số nhận ({len(bo_qua)}): "
                   + ", ".join(sorted(set(bo_qua))))

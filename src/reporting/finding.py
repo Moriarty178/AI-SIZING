@@ -24,6 +24,15 @@ Category = Literal[
     "thieu_muc",            # Vòng 1: thành phần bắt buộc không có
     "khong_kiem_chung_duoc",  # số liệu lưỡng nghĩa, ảnh, bảng tra chưa số hóa
     "khong_nhat_quan",
+    # Quy tắc ĐẠT, và code thật sự đã tính được để nói thế. Người dùng chốt
+    # 2026-09-09. KHÔNG phải nhóm "có vấn đề" — nó nói với người viết rằng chỗ này
+    # đã được kiểm và không cần sửa, kèm con số làm căn cứ.
+    #
+    # Chỉ sinh khi đầu vào ĐỦ và KHÔNG lưỡng nghĩa, nên nó khác hẳn `thieu_thong_tin`
+    # — thứ mà lượt B1 2026-09-07 chỉ ra là đang thưởng cho trích xuất thất bại
+    # (96/123 finding, model GIẢ đạt 99,4%). Một model sinh bừa KHÔNG giả được nhóm
+    # này vì nó đòi code chạy được phép tính.
+    "dat_co_can_cu",
 ]
 
 

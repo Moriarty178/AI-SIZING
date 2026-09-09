@@ -175,10 +175,34 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
         core = c3.run(doc, chi_nhom=chi_nhom)
         tk["c3"] = dict(c3.tk.__dict__)
 
-    kq_dl = QuantitativeValidator(rs).run(core)
-    findings = [o.finding for o in kq_dl if o.finding is not None]
-
+    # C2 (2.3 đọc ảnh + 2.5 neo số) chạy TRƯỚC C4, không sau như trước 2026-09-09.
+    # Thứ tự cũ khiến số 2.5 lấy được không bao giờ kịp vào phép tính của C4 —
+    # `scripts/thu_neo_vao_c4.py` đo ra `cpu_95th`/`ram_95th` mà C3 bỏ trống.
     kq_anh: list = []
+    findings: list[Finding] = []
+    if doc_anh:
+        from .vision.doc_anh import LOAI_MAC_DINH, DocAnh
+        from .vision.doc_anh import thanh_finding as _finding_anh
+        from .vision.neo_so import neo_tai_lieu
+        from .vision.tham_so_anh import gan_vao_core
+        c2 = DocAnh(client or LLMClient(), model=model,
+                    loai=tuple(loai_anh or LOAI_MAC_DINH),
+                    on_tien_do=_bao("C2", on_tien_do), song_song=song_song)
+        kq_anh = c2.run(doc)
+        findings += [_finding_anh(k) for k in kq_anh]
+        tk["c2"] = dict(c2.tk.__dict__)
+        tk["c2"].pop("_khoa", None)
+
+        ket_neo, tk_neo = neo_tai_lieu(doc, kq_anh)
+        tk_gan = gan_vao_core(core, ket_neo)
+        tk["c2_neo"] = {k: v for k, v in tk_neo.__dict__.items()}
+        tk["c2_gan"] = {k: v for k, v in tk_gan.__dict__.items()}
+        from .vision.neo_so import thanh_finding as _finding_neo
+        findings += [f for f in (_finding_neo(r) for r in ket_neo) if f is not None]
+
+    kq_dl = QuantitativeValidator(rs).run(core)
+    findings += [o.finding for o in kq_dl if o.finding is not None]
+
     kq_dt: list[RuleOutcome] = []
     if not bo_qua_dinh_tinh:
         c5 = QualitativeValidator(client or LLMClient(), rules=rs, model=model,
@@ -187,16 +211,6 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
         kq_dt = c5.run(doc, core, chi_vong=chi_vong, chi_ma=chi_ma_dt)
         findings += [o.finding for o in kq_dt if o.finding is not None]
         tk["c5"] = dict(c5.tk.__dict__)
-
-    if doc_anh:
-        from .vision.doc_anh import LOAI_MAC_DINH, DocAnh, thanh_finding
-        c2 = DocAnh(client or LLMClient(), model=model,
-                    loai=tuple(loai_anh or LOAI_MAC_DINH),
-                    on_tien_do=_bao("C2", on_tien_do), song_song=song_song)
-        kq_anh = c2.run(doc)
-        findings += [thanh_finding(k) for k in kq_anh]
-        tk["c2"] = dict(c2.tk.__dict__)
-        tk["c2"].pop("_khoa", None)
 
     findings += canh_bao_nt4(doc)
     # KHÔNG lọc NT2 ở đây — C7 lọc và ĐẾM số bị loại; lọc sớm sẽ giấu mất con số đó.
