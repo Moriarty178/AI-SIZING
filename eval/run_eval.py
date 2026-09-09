@@ -16,6 +16,7 @@ bản tìm thấy và ghi rõ bản nào đã dùng**, để người đọc bi�
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import sys
@@ -63,15 +64,40 @@ def _chu_ky(a, chi_nhom, ma_dt) -> dict:
             "gia_lap": bool(getattr(a, "gia_lap", False))}
 
 
-def duong_dan_diem_dung(tap: str) -> pathlib.Path:
-    return THU_MUC_DIEM_DUNG / f"diem-dung-{tap}.json"
+def duong_dan_diem_dung(tap: str, chu_ky: dict | None = None) -> pathlib.Path:
+    """Điểm dừng đặt tên theo CHỮ KÝ lượt chạy, không chỉ theo tập.
+
+    Trước 2026-09-09 tên file chỉ có `tap`, nên hai lượt `--tap dev` chạy cùng lúc
+    (ví dụ bước 3 chạy cả 14 hồ sơ, bước 4 chạy 3 hồ sơ để đo biên độ) đè lên
+    điểm dừng của nhau. Chữ ký khác nhau nên `--tiep-tuc` sau đó TỪ CHỐI file và
+    chạy lại từ đầu — một lượt 5 giờ bị ngắt ở giờ thứ 4 là mất trắng.
+    """
+    if chu_ky is None:
+        return THU_MUC_DIEM_DUNG / f"diem-dung-{tap}.json"
+    van = json.dumps(chu_ky, sort_keys=True, ensure_ascii=False, default=str)
+    ma = hashlib.sha256(van.encode("utf-8")).hexdigest()[:8]
+    return THU_MUC_DIEM_DUNG / f"diem-dung-{tap}-{ma}.json"
 
 
 def nap_diem_dung(tap: str, chu_ky: dict) -> tuple[dict, list[str]]:
     """Trả (dữ liệu hồ sơ đã chạy, ghi chú). Chữ ký lệch thì BỎ, không trộn."""
-    p = duong_dan_diem_dung(tap)
+    p = duong_dan_diem_dung(tap, chu_ky)
     if not p.exists():
-        return {}, []
+        # Đường lùi cho file theo lối đặt tên CŨ. Bản vá này ra đời giữa lúc một
+        # lượt dev nhiều giờ đang chạy; đổi tên file mà không có nhánh này thì
+        # `--tiep-tuc` của chính lượt ấy sẽ không tìm thấy gì.
+        cu = duong_dan_diem_dung(tap)
+        if cu.exists():
+            p = cu
+        else:
+            # Im lặng chạy lại từ đầu là một bước lùi so với bản cũ: trước đây
+            # người dùng ít nhất được báo "điểm dừng thuộc lượt khác". Giữ lời
+            # báo ấy bằng cách soi các điểm dừng KHÁC của cùng tập.
+            khac = sorted(THU_MUC_DIEM_DUNG.glob(f"diem-dung-{tap}-*.json"))
+            if khac:
+                return {}, [f"có {len(khac)} điểm dừng của tập `{tap}` nhưng thuộc "
+                            "lượt chạy khác bộ lọc — KHÔNG dùng lẫn, chạy lại từ đầu"]
+            return {}, []
     try:
         d = json.loads(p.read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -85,7 +111,7 @@ def nap_diem_dung(tap: str, chu_ky: dict) -> tuple[dict, list[str]]:
 
 def ghi_diem_dung(tap: str, chu_ky: dict, ho_so: dict) -> None:
     """Ghi nguyên tử sau MỖI hồ sơ — lượt chạy 2 giờ bị ngắt không được mất sạch."""
-    p = duong_dan_diem_dung(tap)
+    p = duong_dan_diem_dung(tap, chu_ky)
     try:
         p.parent.mkdir(parents=True, exist_ok=True)
         tam = p.with_suffix(".tmp")

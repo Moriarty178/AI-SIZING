@@ -84,6 +84,46 @@ def test_ghi_de_diem_dung_khong_de_lai_file_tam():
     ck = _chu_ky(_args(), None, None)
     ghi_diem_dung("dev", ck, {"A": {"findings": []}})
     ghi_diem_dung("dev", ck, {"A": {"findings": []}, "B": {"findings": []}})
-    p = duong_dan_diem_dung("dev")
+    p = duong_dan_diem_dung("dev", ck)
     assert list(p.parent.glob("*.tmp")) == []
     assert len(json.loads(p.read_text(encoding="utf-8"))["ho_so"]) == 2
+
+
+def test_hai_luot_KHAC_BO_LOC_khong_de_len_diem_dung_cua_nhau(tmp_path, monkeypatch):
+    """Bước 3 (cả 14 hồ sơ) và bước 4 (3 hồ sơ đo biên độ) đều là `--tap dev`.
+
+    Trước 2026-09-09 tên file điểm dừng chỉ có `tap`, nên lượt sau đè lượt trước;
+    chữ ký lệch nên `--tiep-tuc` từ chối file và chạy lại từ đầu — một lượt 5 giờ
+    bị ngắt ở giờ thứ 4 là mất trắng.
+    """
+    from eval import run_eval
+    monkeypatch.setattr(run_eval, "THU_MUC_DIEM_DUNG", tmp_path)
+
+    ck_day = _chu_ky(_args(), None, None)
+    ck_mau = _chu_ky(_args(), ["KPI"], None)          # lượt khác bộ lọc
+    assert run_eval.duong_dan_diem_dung("dev", ck_day) \
+        != run_eval.duong_dan_diem_dung("dev", ck_mau)
+
+    ghi_diem_dung("dev", ck_day, {"A": {"findings": []}, "B": {"findings": []}})
+    ghi_diem_dung("dev", ck_mau, {"C": {"findings": []}})
+
+    ho_so, _ = nap_diem_dung("dev", ck_day)
+    assert sorted(ho_so) == ["A", "B"], "lượt đầy đủ phải còn nguyên điểm dừng"
+    ho_so2, _ = nap_diem_dung("dev", ck_mau)
+    assert sorted(ho_so2) == ["C"]
+
+
+def test_van_doc_duoc_diem_dung_theo_LOI_DAT_TEN_CU(tmp_path, monkeypatch):
+    """Bản vá ra đời giữa lúc một lượt dev nhiều giờ đang chạy. Không có đường lùi
+    này thì `--tiep-tuc` của chính lượt ấy sẽ không tìm thấy gì."""
+    import json as _json
+    from eval import run_eval
+    monkeypatch.setattr(run_eval, "THU_MUC_DIEM_DUNG", tmp_path)
+
+    ck = _chu_ky(_args(), None, None)
+    cu = run_eval.duong_dan_diem_dung("dev")          # tên CŨ, không có chữ ký
+    cu.parent.mkdir(parents=True, exist_ok=True)
+    cu.write_text(_json.dumps({"chu_ky": ck, "ho_so": {"A": {"findings": []}}}),
+                  encoding="utf-8")
+    ho_so, ghi_chu = nap_diem_dung("dev", ck)
+    assert sorted(ho_so) == ["A"] and ghi_chu
