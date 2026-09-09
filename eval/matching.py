@@ -75,8 +75,18 @@ TU_KHOA_MENH_LENH = (
 
 
 def loai_nhan(text: str | None) -> str:
-    """`thieu` | `menh_lenh` | `khac` | `manh_vun` — yêu cầu thuộc loại nào."""
-    t = (text or "").strip()
+    """`thieu` | `menh_lenh` | `khac` | `manh_vun` — yêu cầu thuộc loại nào.
+
+    Gộp khoảng trắng TRƯỚC khi dò từ khoá. Nhãn PNX chép nguyên từ Word, và Word
+    đầy dấu cách đúp: bốn nhãn của GSCG viết «Bổ  sung sở cứ cho Cấu hình server…»
+    với HAI dấu cách, nên `"bổ sung" in text` trượt và chúng rơi từ nhóm «thiếu»
+    xuống nhóm «đòi tính/so số» — đúng nhóm quyết định con số của 1.13.
+
+    Sửa chỗ này làm con số của công cụ ĐẸP LÊN (4 nhãn rời nhóm ta đạt ~12% sang
+    nhóm ta đạt ~94%), nên nói rõ: đây là **lỗi so khớp**, không phải đổi cách
+    chấm. Từ khoá có thật trong nhãn, chỉ là dấu cách thừa che mất.
+    """
+    t = " ".join((text or "").split())
     thap = t.lower()
     if any(k in thap for k in TU_KHOA_THIEU):
         return "thieu"
