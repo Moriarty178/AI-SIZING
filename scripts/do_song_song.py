@@ -28,6 +28,25 @@ con số đẹp vô nghĩa.
 
 Điểm bão hoà là chỗ lượt/phút **thôi tăng**. Vượt qua đó, tăng song song chỉ làm
 tăng lỗi và độ trễ đuôi, không tăng thông lượng.
+
+## ⚠️ Con số tuyệt đối ở đây KHÔNG phải tốc độ thật
+
+Lời gọi thử là *"Trả lời đúng một từ: OK"* — vài chục token. Lời gọi thật của
+C3/C5 mang theo cả ngữ cảnh tài liệu và sinh structured output, nặng hơn hàng
+chục lần.
+
+Đo được ngày 2026-09-09, cùng cổng, cùng mức song song 6:
+
+    lời gọi nhỏ (script này)   119,7 lượt/phút
+    lời gọi thật (lượt eval)     7,2 lượt/phút   ← 649 lượt / 90 phút
+                                 ---------------
+                                 lệch 16,6 lần
+
+Bản đầu của script in thẳng "0,3 giờ cho lượt dev" từ con số nhỏ ấy, trong khi
+thực tế là ~7 giờ. Nên nay script chỉ dùng phép đo này cho thứ nó ĐO ĐÚNG —
+**tỉ lệ giữa các mức** — rồi quy ra giờ bằng cách nhân tỉ lệ đó với tốc độ THẬT
+đã đo. Và vì lời gọi nặng làm cổng bão hoà SỚM hơn lời gọi nhẹ, tỉ lệ ấy là
+**cận trên**: thực tế thường được ít hơn.
 """
 from __future__ import annotations
 
@@ -48,6 +67,11 @@ from src.llm.client import (DEFAULT_MAX_TOKENS, LLMClient, LLMError,  # noqa: E4
 from src.version import in_phien_ban                  # noqa: E402
 
 MUC_MAC_DINH = "4,8,16,24"
+
+# Tốc độ THẬT đã đo trên máy nội bộ 2026-09-09: lượt eval 649 lời gọi / 90 phút ở
+# song song 6. Đây là mốc để quy tỉ lệ đo được thành giờ; đo lại được thì cập nhật.
+TOC_DO_THAT = 7.2          # lượt/phút
+MUC_THAT = 6               # ở mức song song này
 
 
 def _mot_luot(client: LLMClient, model: str | None,
@@ -133,21 +157,24 @@ def main() -> int:
     print(f"\nLời gọi thử ĐẠT sau {dt:.1f}s · ngân sách {a.max_tokens} token")
 
     muc = [int(m) for m in a.muc.split(",") if m.strip()]
-    print(f"{a.moi_muc} lời gọi mỗi mức · đệm ĐÃ TẮT · "
-          f"quy đổi theo {a.luot_mot_tai_lieu} lượt/tài liệu\n")
+    print(f"{a.moi_muc} lời gọi mỗi mức · đệm ĐÃ TẮT · lời gọi NHỎ — đây là "
+          f"trần cổng, KHÔNG phải tốc độ thật\n")
     print(f"{'song song':>9} {'lượt/phút':>10} {'trễ giữa':>9} {'trễ p90':>8} "
-          f"{'phút/tài liệu':>14}  lỗi")
-    print("-" * 66)
+          f"{'so mức đầu':>11}  lỗi")
+    print("-" * 62)
 
     kq = []
     for m in muc:
         r = do_mot_muc(client, m, a.moi_muc, a.model, a.max_tokens)
         kq.append(r)
-        phut_tl = (a.luot_mot_tai_lieu / r["luot_moi_phut"]
-                   if r["luot_moi_phut"] else float("inf"))
+        # Cột cuối là TỈ LỆ, không phải phút/tài liệu: phép đo này chỉ đáng tin
+        # về mặt so sánh giữa các mức. Quy ra giờ để ở phần kết luận, qua
+        # `TOC_DO_THAT`.
+        nen = kq[0]["luot_moi_phut"]
+        ti_le = (r["luot_moi_phut"] / nen) if nen else 0.0
         loi = ", ".join(f"{k}×{v}" for k, v in r["loi"].items()) or "—"
         print(f"{m:>9} {r['luot_moi_phut']:>10.1f} {r['do_tre_giua']:>8.1f}s "
-              f"{r['do_tre_p90']:>7.1f}s {phut_tl:>13.0f}'  {loi}")
+              f"{r['do_tre_p90']:>7.1f}s {ti_le:>10.2f}×  {loi}")
 
     tot = max(kq, key=lambda r: r["luot_moi_phut"])
     # Điều kiện là KHÔNG CÓ LƯỢT NÀO THÀNH CÔNG, không phải "thông lượng bằng 0":
@@ -171,11 +198,26 @@ def main() -> int:
               "tăng --moi-muc rồi đo lại.")
         return 0
 
-    print(f"\nThông lượng cao nhất ở song song {tot['muc']}: "
-          f"{tot['luot_moi_phut']:.1f} lượt/phút "
-          f"⟹ {a.luot_mot_tai_lieu / tot['luot_moi_phut']:.0f} phút/tài liệu, "
-          f"lượt dev 14 hồ sơ ≈ "
-          f"{14 * a.luot_mot_tai_lieu / tot['luot_moi_phut'] / 60:.1f} giờ.")
+    goc = kq[0]
+    ti_le = (tot["luot_moi_phut"] / goc["luot_moi_phut"]
+             if goc["luot_moi_phut"] else 1.0)
+    print(f"\nBão hoà ở song song {tot['muc']}: nhanh gấp {ti_le:.2f}× "
+          f"mức {goc['muc']}.")
+
+    # Quy ra giờ bằng tốc độ THẬT, KHÔNG bằng thông lượng lời gọi nhỏ ở trên.
+    # Bản đầu quy thẳng từ lời gọi nhỏ và ra "0,3 giờ cho lượt dev" trong khi
+    # thực tế ~7 giờ — sai 16,6 lần, và tệ hơn là in ra như một sự thật.
+    that = TOC_DO_THAT * ti_le
+    phut_tl = a.luot_mot_tai_lieu / that
+    print(f"\nƯớc tính theo TỐC ĐỘ THẬT ({TOC_DO_THAT} lượt/phút ở song song "
+          f"{MUC_THAT}, đo 2026-09-09):")
+    print(f"  {that:.1f} lượt/phút ⟹ ~{phut_tl:.0f} phút/tài liệu ⟹ "
+          f"lượt dev 14 hồ sơ ≈ {14 * phut_tl / 60:.1f} giờ")
+    print("  Đây là CẬN TRÊN của phần lợi: lời gọi thật nặng hơn nên cổng bão "
+          "hoà sớm hơn lời gọi nhỏ.")
+    if goc["muc"] != MUC_THAT:
+        print(f"  ⚠ Mức đầu trong --muc là {goc['muc']}, không phải {MUC_THAT} — "
+              f"tỉ lệ quy đổi lệch gốc. Cho {MUC_THAT} vào --muc để so đúng.")
     if any(r["loi"] for r in kq):
         print("\n⚠ Có lỗi ở một số mức — mức nào bắt đầu lỗi thì ĐỪNG dùng mức đó "
               "cho lượt chạy thật, kể cả khi thông lượng của nó cao hơn.")
