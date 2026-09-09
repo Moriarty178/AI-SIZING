@@ -66,7 +66,7 @@ thông lượng của nó cao hơn.
 
 ---
 
-## Bước 3 — con số công bố được (7 giờ ở song song 6; ít hơn nếu bước 2 cho phép)
+## Bước 3 — con số công bố được (~4–6 giờ ở song song 12)
 
 ```powershell
 Remove-Item Env:\SIZING_COPILOT_KHONG_CACHE -ErrorAction SilentlyContinue   # đệm BẬT
@@ -86,6 +86,22 @@ Ba điều cố ý trong lệnh này:
   recall đẹp lên giả tạo.
 
 Nếu đứt giữa chừng: `py -m eval.run_eval --tap dev --tiep-tuc --song-song <mức>`.
+
+### Bao lâu là bình thường
+
+Đo 2026-09-09: bão hoà ở **song song 12** (gấp 1,85× mức 6; mức 24 *chậm hơn*).
+Quy ra theo tốc độ THẬT (7,2 lượt/phút ở mức 6, tức 649 lượt / 90 phút):
+
+    13,3 lượt/phút · ~216 lượt/hồ sơ · 13 hồ sơ có .docx  ⟹  ~3,5 giờ
+
+Cộng thêm hồ sơ nặng (BCCS3 có **13 phân hệ**, gấp 2,6 lần giả định 5 của bộ ước
+lượng) và việc lời gọi nặng làm cổng bão hoà sớm hơn lời gọi nhỏ: **dự kiến 4–6
+giờ**. Vẫn nhanh hơn hẳn 7 giờ ở mức song song 6.
+
+⚠️ **KHÔNG phải 0,3 giờ.** Bản đầu của `do_song_song.py` in ra con số đó vì nó
+quy giờ thẳng từ lời gọi thử *"Trả lời đúng một từ: OK"* — nhẹ hơn lời gọi thật
+16,6 lần. Đã sửa: script nay chỉ dùng phép đo cho **tỉ lệ giữa các mức**, rồi quy
+ra giờ qua tốc độ thật.
 
 ---
 

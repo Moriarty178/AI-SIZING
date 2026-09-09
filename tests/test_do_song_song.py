@@ -52,3 +52,26 @@ def test_ngan_sach_mac_dinh_bang_muc_dung_that():
     """Đặt 8 token là lỗi đã xảy ra. Mặc định phải bám `DEFAULT_MAX_TOKENS`."""
     from src.llm.client import DEFAULT_MAX_TOKENS
     assert dss.DEFAULT_MAX_TOKENS == DEFAULT_MAX_TOKENS >= 1000
+
+
+def test_moc_toc_do_THAT_khop_voi_so_da_do():
+    """649 lượt / 90 phút ở song song 6 = 7,2 lượt/phút (đo 2026-09-09).
+
+    Mốc này là thứ duy nhất chặn script tái phạm lỗi in "0,3 giờ cho lượt dev"
+    từ phép đo lời gọi nhỏ — sai 16,6 lần so với thực tế ~7 giờ.
+    """
+    assert dss.MUC_THAT == 6
+    assert abs(dss.TOC_DO_THAT - 649 / 90) < 0.1
+
+
+def test_khong_quy_gio_tu_loi_goi_nho(capsys):
+    """Bảng chỉ được báo TỈ LỆ giữa các mức; phần quy ra giờ phải đi qua
+    `TOC_DO_THAT`. Trước đây script nhân thẳng thông lượng lời gọi nhỏ với số
+    lượt mỗi tài liệu và in ra như sự thật."""
+    nguon = (pathlib.Path(__file__).resolve().parents[1]
+             / "scripts" / "do_song_song.py").read_text(encoding="utf-8")
+    than = nguon.split("def main(")[1]
+    assert "TOC_DO_THAT * ti_le" in than, "phải quy đổi qua tốc độ thật"
+    assert "luot_mot_tai_lieu / tot[" not in than, \
+        "không được quy giờ thẳng từ thông lượng lời gọi nhỏ"
+    assert "trần cổng, KHÔNG phải tốc độ thật" in than
