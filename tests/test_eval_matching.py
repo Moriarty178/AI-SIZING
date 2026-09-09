@@ -201,3 +201,16 @@ def test_chat_van_con_so_SAI_khong_bi_xep_nham_sang_menh_lenh():
     Xếp nó sang nhóm mệnh lệnh là tự cho điểm."""
     from eval.matching import loai_nhan
     assert loai_nhan("Dự phòng theo KPI 75% sao lại ra 8000, đề nghị tính lại") == "khac"
+
+
+def test_dau_cach_dup_khong_duoc_lam_truot_tu_khoa():
+    """Ca thật, 4 nhãn của GSCG: «Bổ  sung sở cứ cho Cấu hình server…» — HAI dấu
+    cách giữa «Bổ» và «sung», chép nguyên từ Word.
+
+    Không gộp khoảng trắng thì `"bổ sung" in text` trượt, và nhãn rơi từ nhóm
+    «thiếu» xuống nhóm «đòi tính/so số» — đúng nhóm quyết định con số của 1.13.
+    """
+    from eval.matching import loai_nhan
+    assert loai_nhan("Bổ  sung sở cứ cho Cấu hình server thực tế đang chạy") == "thieu"
+    assert loai_nhan("Bổ sung sở cứ cho cấu hình") == "thieu"
+    assert loai_nhan("Chưa\tnêu rõ cấu hình máy chủ ứng dụng") == "thieu"
