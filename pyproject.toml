@@ -19,7 +19,9 @@ rag = [
     "qdrant-client>=1.9",
 ]
 ocr = ["pytesseract>=0.3.10"]   # pillow đã lên phần lõi: 2.2 chạy ở mọi lượt
-api = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
+# `python-multipart` KHÔNG phải phụ thuộc phụ: thiếu nó thì FastAPI ném lỗi ngay
+# lần đầu có người nộp file — tức hỏng đúng lúc có người dùng thật.
+api = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "python-multipart>=0.0.9"]
 ui  = ["streamlit>=1.35"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0"]
 

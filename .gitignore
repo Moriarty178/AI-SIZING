@@ -25,3 +25,8 @@ docs/checklist/
 # Báo cáo DIỄN TẬP (model giả) — số vô nghĩa về chất lượng, giữ lại chỉ gây nhầm
 # với báo cáo eval thật. Sinh lại bất cứ lúc nào bằng `run_eval --gia-lap`.
 eval/reports/dien-tap-*.md
+
+# Chứng chỉ CA nội bộ trích từ Windows cert store để build qua proxy
+# TLS MITM. KHÔNG commit: nó là hạ tầng của một mạng cụ thể.
+*.pem
+*.crt
