@@ -358,3 +358,52 @@ def test_bo_qua_anh_khong_co_so_lieu(tmp_path):
                        doc_duoc=True, thanh_phan=["MQTT Broker"])]
     ket, tk = neo_tai_lieu(doc, kq)
     assert ket == [] and tk.anh_co_so == 0
+
+
+# ------------------------------------------------------ dung lượng (byte) --
+class TestByte:
+    def test_co_so_lay_tu_units_yaml_khong_hard_code(self):
+        """NT3: «GB» = 2³⁰ là DỮ LIỆU trong `config/units.yaml`, không phải hằng
+        số trong code. Người dùng xác nhận quy ước 2026-09-09."""
+        from src.vision.neo_so import _boi_byte, co_so_dung_luong
+        assert co_so_dung_luong() == 1024
+        assert _boi_byte()["g"] == 1024 ** 3
+
+    def test_don_vi_o_tieu_de_cot(self, tmp_path):
+        """«Tổng dung lượng (GB)» rồi ô chỉ ghi «1000» — đơn vị ở TIÊU ĐỀ.
+
+        Không đọc tiêu đề thì 50/58 ô dung lượng của Vtag bị xếp nhầm là `dem`.
+        """
+        doc = _docx_khai_bao(tmp_path, [
+            ["Phân hệ", "Tổng dung lượng (GB)"],
+            ["Postgres", "1000"],
+        ])
+        kb = [o for o in thu_thap_khai_bao(doc) if o.loai == "byte"]
+        assert [o.gia_tri for o in kb] == [1000 * 1024 ** 3]
+
+    def test_chuoi_luong_nghia_KHONG_duoc_lam_neo(self, tmp_path):
+        """Ca thật: «15.712» dưới cột «RAM used (GB)» — 15712 hay 15,712?
+
+        Sai một lần là lệch 1000 lần, mà giá trị lệch 1000 lần vẫn có thể TÌNH CỜ
+        bằng một số đọc từ ảnh. `units.yaml`: *"TUYỆT ĐỐI không im lặng chọn một
+        cách rồi tính tiếp"*.
+        """
+        doc = _docx_khai_bao(tmp_path, [
+            ["Server", "RAM used (GB)"],
+            ["10.60.105.79", "15.712"],
+        ])
+        assert [o for o in thu_thap_khai_bao(doc) if o.loai == "byte"] == []
+        assert gia_tri_chuan("15.712", "GB", chat_che=True) is None
+        assert gia_tri_chuan("15.712", "GB") is not None      # lỏng thì vẫn ra số
+
+    def test_neo_duoc_dung_luong_do_bang_du(self):
+        """Ca thật Vtag `anh#65`: `du /var/lib/postgresql/14` = 536G, và bảng khai
+        đúng «536 GB» cho Postgres — ảnh này trước đó không neo nổi gì."""
+        kb = [OKhaiBao(gia_tri=536 * 1024 ** 3, loai="byte", raw="536 GB", page=14,
+                       location="Mục 1, trang 14", nhan_dong="Postgres",
+                       bang_con="DISK")]
+        kq = anh("anh#65", "Mục 1, trang 13", [
+            so("Dung lượng lưu trữ (output của lệnh du)", "536G", "G",
+               trich_dan="536G    /var/lib/postgresql/14")])
+        r = neo_mot_anh(kq, kb, loai_nhan=("byte",))
+        assert [n.scope_key for n in r.neo] == ["Postgres"]
