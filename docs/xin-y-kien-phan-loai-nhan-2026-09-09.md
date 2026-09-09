@@ -141,3 +141,50 @@ báo cáo con số kèm ghi rõ đã xếp nhóm theo quyết định nào — �
 biết con số dựa trên cơ sở gì.
 
 Xin cảm ơn các anh/chị.
+
+---
+
+## 6. PHÁN QUYẾT ĐÃ NHẬN — 2026-09-09
+
+| Câu | Đơn vị thẩm định chốt |
+|---|---|
+| 1 | **Tách nhóm D (thủ tục).** Công cụ chỉ cần nhắc *"hồ sơ thiếu thủ tục này"* — 13 nhận xét này không thuần công thức để tính như nhóm C |
+| 2 | **Phải tính lại con số mới tính là đạt** — chỉ trỏ được sở cứ là chưa đủ. 9 nhận xét **ở lại nhóm C** |
+| 3 | **Đồng ý giữ trong nhóm C** — 7 nhận xét giữ nguyên |
+
+Nhóm C: **87 → 74**. Đã ghi vào `data/phan_nhom_tham_dinh.json` và thi hành ở
+`eval/matching.py`.
+
+### Câu 2 là phán quyết bất lợi cho công cụ, và đã được giữ nguyên
+
+Mục 2.5 hiện chỉ **neo** được số trong ảnh vào số trong bảng, chưa tính lại con
+số nào. Theo phán quyết này, cả 9 nhận xét đòi sở cứ vẫn tính là **trượt** —
+gồm cả *"nếu dựa trên máy chủ có sẵn thì cần chụp ảnh dung lượng"*, đúng việc mà
+2.5 làm được. Chúng tôi không xin xem lại: yêu cầu như vậy là hợp lý.
+
+### Chỗ chúng tôi làm KHÔNG trọn vẹn được phán quyết Câu 1
+
+Trong 13 nhận xét thủ tục, **9 tách được bằng từ khoá** («cam kết», «checklist»,
+«ký sizing», «qua mail», «QHDC» — đo trên 317 nhận xét: bắt đúng 11, bắt dư 0).
+
+**4 nhận xét còn lại không tách được bằng chữ**, vì chúng dùng đúng từ vựng của
+nhóm C:
+
+> *"Sở cứ cần sử dụng SSD"* · *"Tại sao mô hình Kafka là 5 instances"* ·
+> *"Các máy chủ cần nhiều ram có thể chia nhỏ ra để ảo hóa được không ?"* ·
+> *"Tổng tài nguyên data, log, backup giữ nguyên không chia ra à ?"*
+
+Ví dụ: *"Sở cứ cần sử dụng SSD"* (nhóm D) và *"Sở cứ tải hệ thống cho 166 CCU"*
+(nhóm C) giống hệt nhau về mặt chữ. Từ khoá «tại sao» bắt 7 nhận xét thì chỉ 1
+thuộc nhóm D.
+
+Nên chúng tôi **ghi đích danh 4 nhận xét này** kèm nguyên văn, thay vì bịa ra một
+từ khoá vừa đủ khớp — một từ khoá như thế là chỉnh thước đo cho vừa con số. Nếu
+văn bản nhận xét về sau đổi, phán quyết cũ **không được áp dụng** và công cụ báo
+cảnh báo. Số nhận xét dùng cơ chế này luôn được in trong báo cáo.
+
+### Một chỗ phán quyết này sửa giúp chúng tôi
+
+Trước đây cùng một đòi hỏi bị xếp hai nhóm khác nhau chỉ vì cách hành văn:
+*"Bắt buộc phải có thời gian cam kết…"* (c360) nằm ở nhóm C, còn *"Bổ sung thời
+gian cam kết…"* (VAPS) nằm ở nhóm A. Nay cả hai cùng vào nhóm D.

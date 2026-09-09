@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 
 DUONG_DAN_EVAL = "data/eval_set.json"
 DUONG_DAN_SPLIT = "data/eval_split.json"
+DUONG_DAN_PHAN_NHOM = "data/phan_nhom_tham_dinh.json"
 
 
 # --- loại của NHÃN (không phải của finding) --------------------------------
@@ -73,9 +74,49 @@ TU_KHOA_MENH_LENH = (
 # đòi bổ sung thông tin. «Dự phòng theo KPI 75% sao lại ra 8000, đề nghị tính lại»
 # là việc phải kiểm bằng số — xếp nhầm nó sang nhóm mệnh lệnh là tự cho điểm.
 
+# Nhóm THỦ TỤC — đơn vị thẩm định chốt tách khỏi nhóm C ngày 2026-09-09
+# (`docs/xin-y-kien-phan-loai-nhan-2026-09-09.md`, Câu 1). Ví dụ thật:
+#   «Bắt buộc phải có thời gian cam kết hoàn thành triển khai và đổ tải thật»
+#   «Ký sizing phải đính kèm thêm file checklist»
+#   «Tài nguyên con này đã có trong QHDC nào chưa ạ»
+# Không phép tính nào trả lời được; phán quyết: công cụ chỉ cần nhắc *"hồ sơ còn
+# thiếu thủ tục này"*, nên nhóm này chấm như «thiếu» — nhưng ĐẾM RIÊNG.
+#
+# Từ khoá chọn bằng ĐO trên 317 nhãn dev, không bằng cảm giác:
+#   «cam kết» 5 · «checklist» 4 · «ký sizing» 4 · «qua mail» 1 · «qhdc» 1
+#   → hợp lại 11 nhãn, TẤT CẢ đều đòi thủ tục, 0 nhãn bắt dư.
+#
+# ĐÃ LOẠI ba ứng viên vì đo thấy bắt sai — ghi lại để đừng ai thêm lại:
+#   «đính kèm» bắt 13, gồm «Bổ sung tính toán băng thông cho FW/LB (tham khảo VD
+#     đính kèm)» (đòi TÍNH) và 3 nhãn «đính kèm sizing cũ đã ký để làm sở cứ».
+#   «tại sao» bắt 7, chỉ 1 thuộc nhóm thủ tục.
+#   `rule_ref` toàn mã `PRC-` bắt 74; trong 11 nhãn nhóm «khác» nó bắt có 2 nhãn
+#     ĐÒI SỞ CỨ mà Câu 2 vừa chốt phải Ở LẠI nhóm C.
+TU_KHOA_THU_TUC = ("cam kết", "checklist", "ký sizing", "qua mail", "qhdc")
 
-def loai_nhan(text: str | None) -> str:
-    """`thieu` | `menh_lenh` | `khac` | `manh_vun` — yêu cầu thuộc loại nào.
+
+def _nhan_thu_tuc_dich_danh(duong_dan: str = DUONG_DAN_PHAN_NHOM) -> dict[str, str]:
+    """`label_id` → văn bản nhãn TẠI LÚC người thẩm định phán quyết.
+
+    Bốn nhãn đòi giải thích lựa chọn thiết kế («Tại sao mô hình Kafka là 5
+    instances», «Sở cứ cần sử dụng SSD») không tách được bằng từ khoá: mọi từ
+    khoá bắt được chúng đều kéo theo nhãn nhóm C. Ghi đích danh còn hơn bịa ra
+    một từ khoá vừa đủ khớp — từ khoá kiểu đó là chỉnh thước đo cho vừa con số.
+
+    Cơ chế CỐ Ý hẹp: chỉ chuyển nhãn VÀO nhóm thủ tục, chỉ áp dụng khi văn bản
+    nhãn còn khớp nguyên vẹn, và `doi_chieu` đếm ra để báo cáo không giấu được.
+    """
+    try:
+        with open(duong_dan, encoding="utf-8") as f:
+            d = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return {n["label_id"]: " ".join(n["text"].split())
+            for n in d.get("cau_1_thu_tuc", {}).get("nhan_dich_danh", [])}
+
+
+def loai_nhan(text: str | None, *, label_id: str | None = None) -> str:
+    """`thu_tuc` | `thieu` | `menh_lenh` | `khac` | `manh_vun` — đòi hỏi loại nào.
 
     Gộp khoảng trắng TRƯỚC khi dò từ khoá. Nhãn PNX chép nguyên từ Word, và Word
     đầy dấu cách đúp: bốn nhãn của GSCG viết «Bổ  sung sở cứ cho Cấu hình server…»
@@ -85,9 +126,20 @@ def loai_nhan(text: str | None) -> str:
     Sửa chỗ này làm con số của công cụ ĐẸP LÊN (4 nhãn rời nhóm ta đạt ~12% sang
     nhóm ta đạt ~94%), nên nói rõ: đây là **lỗi so khớp**, không phải đổi cách
     chấm. Từ khoá có thật trong nhãn, chỉ là dấu cách thừa che mất.
+
+    `thu_tuc` xét TRƯỚC `thieu` là có chủ đích. Trước phán quyết, cùng một đòi
+    hỏi bị xếp hai nhóm khác nhau chỉ vì cách hành văn: «Bắt buộc phải có thời
+    gian cam kết…» (c360) rơi vào «khác», còn «Bổ sung thời gian cam kết…»
+    (VAPS) rơi vào «thiếu». Cả hai đều là đòi thủ tục.
     """
     t = " ".join((text or "").split())
+    if label_id:
+        pq = _nhan_thu_tuc_dich_danh().get(label_id)
+        if pq is not None and pq == t:
+            return "thu_tuc"
     thap = t.lower()
+    if any(k in thap for k in TU_KHOA_THU_TUC):
+        return "thu_tuc"
     if any(k in thap for k in TU_KHOA_THIEU):
         return "thieu"
     if len(t.split()) <= TU_TOI_DA_MANH_VUN:
@@ -109,6 +161,9 @@ class KetQuaHoSo:
     finding_khong_khop: list[str] = field(default_factory=list)
     # Số finding nhóm ĐẠT đã bị loại khỏi phép chấm. Đếm ra chứ không lọc im lặng.
     finding_dat_loai_tru: int = 0
+    # Nhãn xếp vào nhóm THỦ TỤC nhờ phán quyết ĐÍCH DANH (không phải từ khoá).
+    # Đếm ra vì đây là cơ chế duy nhất trong thước đo can thiệp theo từng nhãn.
+    thu_tuc_dich_danh: int = 0
     # Trong số `trung`, bao nhiêu nhãn trúng nhờ một finding THỰC CHẤT — tức không
     # phải chỉ vì công cụ nói "không tìm thấy trường này". Xem `CAT_MEM`.
     trung_thuc_chat: int = 0
@@ -116,6 +171,17 @@ class KetQuaHoSo:
     # đúng; nhãn "khác" đòi finding thực chất. Nhãn `manh_vun` KHÔNG vào mẫu số.
     theo_loai_mau: dict = field(default_factory=dict)
     theo_loai_trung: dict = field(default_factory=dict)
+    # Chi tiết TỪNG nhãn, để chấm lại OFFLINE khi cách xếp nhóm thay đổi.
+    #
+    # Vì sao cần: một lượt dev đầy đủ tốn ~7 giờ máy nội bộ (đo 2026-09-09: 90
+    # phút cho 3/14 hồ sơ, 649 lượt gọi, 0 lượt lấy trong đệm). Phán quyết ngày
+    # 2026-09-09 đổi mẫu số nhóm quyết định 87 → 74, nhưng lượt `--chi 3` chỉ
+    # lưu số tổng nên KHÔNG chấm lại được — phải chạy lại từ đầu. Lưu chi tiết
+    # ở đây để lần sau phán quyết đổi thì chỉ tốn vài giây.
+    chi_tiet_nhan: list = field(default_factory=list)
+    # rule_ref -> các `category` của finding mang mã đó. Đủ để dựng lại phép
+    # chấm `thuc_chat` dưới một định nghĩa `CAT_MEM` khác, cũng không cần model.
+    ma_finding_loai: dict = field(default_factory=dict)
     ghi_chu: str = ""
 
 
@@ -185,6 +251,10 @@ class KetQuaEval:
     def recall_thuc_chat(self) -> float:
         """Recall khi chỉ tính cú trúng do một finding THỰC CHẤT tạo ra."""
         return (self.trung_thuc_chat / self.nhan_co_rule) if self.nhan_co_rule else 0.0
+
+    @property
+    def thu_tuc_dich_danh(self) -> int:
+        return sum(h.thu_tuc_dich_danh for h in self.ho_so)
 
     @property
     def theo_loai_mau(self) -> dict:
@@ -280,6 +350,10 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
                          if getattr(f, "category", "") not in CAT_KHONG_TINH_RECALL]
                      for v, lst in (findings_theo_vong.get(dossier) or {}).items()}
         ma_finding = {f.rule_ref for f in fs if f.rule_ref}
+        for f in fs:
+            if f.rule_ref:
+                h.ma_finding_loai.setdefault(f.rule_ref, []).append(
+                    getattr(f, "category", ""))
         ma_trung: set[str] = set()
         for l in ds:
             refs = set(l.get("rule_ref") or [])
@@ -291,6 +365,11 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
             else:
                 ma_l = ma_finding
             chung = refs & ma_l
+            lo = loai_nhan(l.get("text"), label_id=l.get("label_id"))
+            if lo == "thu_tuc" and loai_nhan(l.get("text")) != "thu_tuc":
+                h.thu_tuc_dich_danh += 1
+            h.theo_loai_mau[lo] = h.theo_loai_mau.get(lo, 0) + 1
+            thuc_chat = False
             if chung:
                 h.trung += 1
                 h.trung_ids.append(l["label_id"])
@@ -300,20 +379,36 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
                                 for f in nguon)
                 if thuc_chat:
                     h.trung_thuc_chat += 1
-                lo = loai_nhan(l.get("text"))
-                h.theo_loai_mau[lo] = h.theo_loai_mau.get(lo, 0) + 1
                 # Nhãn "thiếu": finding "thiếu thông tin" là bắt ĐÚNG loại.
                 # Nhãn "khác": phải có finding thực chất mới tính.
                 # `menh_lenh` chấm như «thiếu» — nhưng ĐẾM RIÊNG để thấy được nó
                 # đóng góp bao nhiêu, và để người thẩm định xác nhận cách xếp.
-                if lo in ("thieu", "menh_lenh") or (lo == "khac" and thuc_chat):
+                # `thu_tuc` chấm như «thiếu» theo phán quyết 2026-09-09: công cụ
+                # chỉ cần nhắc *"hồ sơ còn thiếu thủ tục này"*.
+                if lo in ("thieu", "menh_lenh", "thu_tuc") \
+                        or (lo == "khac" and thuc_chat):
                     h.theo_loai_trung[lo] = h.theo_loai_trung.get(lo, 0) + 1
             else:
                 h.truot_ids.append(l["label_id"])
-                lo = loai_nhan(l.get("text"))
-                h.theo_loai_mau[lo] = h.theo_loai_mau.get(lo, 0) + 1
+            h.chi_tiet_nhan.append({
+                "label_id": l["label_id"],
+                "text": " ".join((l.get("text") or "").split()),
+                "rule_ref": sorted(refs), "loai": lo, "trung": bool(chung),
+                "thuc_chat": thuc_chat, "ma_khop": sorted(chung)})
         h.finding_khong_khop = sorted(ma_finding - ma_trung)
         kq.ho_so.append(h)
+
+    # Phán quyết đích danh neo vào VĂN BẢN nhãn, không chỉ `label_id`. Nếu nhãn
+    # được sinh lại và đổi chữ, phán quyết cũ có thể đang nói về một câu khác —
+    # thà không áp dụng và nói ra còn hơn im lặng xếp nhầm.
+    dd = _nhan_thu_tuc_dich_danh()
+    thay = {l.get("label_id"): " ".join((l.get("text") or "").split())
+            for l in labels}
+    for lid, txt in dd.items():
+        if lid in thay and thay[lid] != txt:
+            kq.canh_bao.append(
+                f"phán quyết 2026-09-09 ghi đích danh `{lid}` nhưng văn bản nhãn "
+                "đã đổi — KHÔNG áp dụng, nhãn này xếp nhóm theo từ khoá")
     return kq
 
 
@@ -321,11 +416,13 @@ def _bang_loai(kq: "KetQuaEval") -> str:
     """Bảng nhỏ: mỗi loại nhãn được chấm trên bao nhiêu và trúng bao nhiêu."""
     ten = {"thieu": "«chưa nêu / thiếu» — finding `thieu_thong_tin` tính là ĐÚNG",
            "menh_lenh": "«lập bảng / đề xuất / ghi rõ» — đòi trình bày, CHỜ XÁC NHẬN",
+           "thu_tuc": "«cam kết / checklist / QHDC» — THỦ TỤC, thẩm định chốt tách "
+                      "2026-09-09, công cụ chỉ cần nhắc",
            "khac": "thật sự đòi TÍNH hoặc SO số — đòi finding thực chất",
            "manh_vun": "quá ngắn, không biết đòi gì — KHÔNG vào mẫu số"}
     mau, trung = kq.theo_loai_mau, kq.theo_loai_trung
     d = ["| Loại nhãn | Nhãn | Trúng | Recall |", "|---|---:|---:|---:|"]
-    for k in ("thieu", "menh_lenh", "khac", "manh_vun"):
+    for k in ("thieu", "menh_lenh", "thu_tuc", "khac", "manh_vun"):
         m = mau.get(k, 0)
         if not m:
             continue
@@ -377,6 +474,20 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
          "đọc con số tổng mà bỏ qua tách nhóm là đọc sai.",
          "",
          _bang_loai(kq),
+         "",
+         "> **Phán quyết của đơn vị thẩm định, 2026-09-09** "
+         "(`docs/xin-y-kien-phan-loai-nhan-2026-09-09.md`): "
+         "**(1)** nhãn đòi THỦ TỤC tách khỏi nhóm quyết định — công cụ chỉ cần "
+         "nhắc *\"hồ sơ còn thiếu thủ tục này\"*; "
+         "**(2)** nhãn ĐÒI SỞ CỨ **ở lại** nhóm quyết định và **phải tính lại "
+         "con số mới tính là đạt** — chỉ trỏ được ảnh/bảng làm sở cứ là CHƯA ĐỦ; "
+         "**(3)** 7 nhãn chất vấn con số giữ nguyên nhóm quyết định. "
+         "Phán quyết (2) là hướng BẤT LỢI cho công cụ và đã được giữ nguyên: "
+         "mục 2.5 hiện mới neo được ảnh vào bảng, chưa tính lại số nào, nên 9 "
+         "nhãn ấy vẫn tính là TRƯỢT."
+         + (f" · {kq.thu_tuc_dich_danh} nhãn vào nhóm thủ tục theo phán quyết "
+            "ĐÍCH DANH (`data/phan_nhom_tham_dinh.json`), phần còn lại theo từ "
+            "khoá." if kq.thu_tuc_dich_danh else ""),
          "",
          "## Hạn chế phải nêu kèm mỗi khi công bố",
          "",

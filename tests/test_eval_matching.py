@@ -214,3 +214,94 @@ def test_dau_cach_dup_khong_duoc_lam_truot_tu_khoa():
     assert loai_nhan("Bổ  sung sở cứ cho Cấu hình server thực tế đang chạy") == "thieu"
     assert loai_nhan("Bổ sung sở cứ cho cấu hình") == "thieu"
     assert loai_nhan("Chưa\tnêu rõ cấu hình máy chủ ứng dụng") == "thieu"
+
+
+# --- nhóm THỦ TỤC (phán quyết thẩm định 2026-09-09) ------------------------
+def test_nhan_doi_THU_TUC_tach_khoi_nhom_quyet_dinh():
+    """«Bắt buộc phải có thời gian cam kết…», «Ký sizing phải đính kèm checklist»
+    — không phép tính nào trả lời được. Đơn vị thẩm định chốt tách, công cụ chỉ
+    cần nhắc *"hồ sơ còn thiếu thủ tục này"*."""
+    from eval.matching import loai_nhan
+    assert loai_nhan("Bắt buộc phải có thời gian cam kết hoàn thành triển khai "
+                     "và đổ tải thật, có sở cứ từ KD hoặc BGĐ") == "thu_tuc"
+    assert loai_nhan("- Ký sizing phải đính kèm thêm file checklist (đính kèm)") \
+        == "thu_tuc"
+    assert loai_nhan("Tài nguyên con này đã có trong QHDC nào chưa ạ") == "thu_tuc"
+
+
+def test_thu_tuc_xet_TRUOC_thieu_de_cung_doi_hoi_vao_cung_nhom():
+    """Trước phán quyết, cùng một đòi hỏi rơi hai nhóm chỉ vì hành văn: «Bắt buộc
+    phải có thời gian cam kết…» vào «khác» còn «Bổ sung thời gian cam kết…» vào
+    «thiếu». Cả hai đều là thủ tục."""
+    from eval.matching import loai_nhan
+    assert loai_nhan("Bổ sung thời gian cam kết triển khai và đổ tải trên bảng "
+                     "thông tin hệ thống") == "thu_tuc"
+
+
+def test_nhan_DOI_SO_CU_o_LAI_nhom_quyet_dinh():
+    """Câu 2 chốt NGƯỢC hướng có lợi cho công cụ: phải TÍNH LẠI con số mới tính
+    đạt, trỏ được sở cứ là chưa đủ. Hai nhãn dưới từng bị tín hiệu `rule_ref`
+    toàn mã `PRC-` kéo nhầm sang nhóm thủ tục."""
+    from eval.matching import loai_nhan
+    assert loai_nhan("Module Speech processing không rõ giá trị hệ thống hiện "
+                     "tại để định cỡ, cần sở cứ") == "khac"
+    assert loai_nhan("1. Thông tin hệ thống: Trang 27: sở cứ đây là ảnh chụp cho "
+                     "150 t/bị trong 1.5 tháng ?Sở cứ lưu 24 tháng") == "khac"
+
+
+def test_tu_khoa_thu_tuc_KHONG_duoc_bat_nhan_doi_tinh():
+    """«đính kèm» trần bắt cả «Bổ sung tính toán băng thông cho FW/LB (tham khảo
+    VD đính kèm)» — đó là đòi TÍNH. Test này khoá lại để không ai thêm nó."""
+    from eval.matching import loai_nhan, TU_KHOA_THU_TUC
+    assert "đính kèm" not in TU_KHOA_THU_TUC
+    assert "tại sao" not in TU_KHOA_THU_TUC
+    assert loai_nhan("Tổng hợp tính toán định cỡ: Bổ sung tính toán băng thông "
+                     "cho FW/LB (tham khảo VD đính kèm)") == "thieu"
+
+
+def test_phan_quyet_DICH_DANH_chi_ap_dung_khi_van_ban_con_khop(tmp_path):
+    """Neo vào văn bản chứ không chỉ `label_id`: nhãn sinh lại mà đổi chữ thì
+    phán quyết cũ có thể đang nói về câu khác — thà không áp dụng."""
+    from eval.matching import loai_nhan
+    lid = "PNX_CAMPAIGN_MANAGEMENT_v3|R1-04-03"
+    assert loai_nhan("Tại sao mô hình Kafka là 5 instances", label_id=lid) \
+        == "thu_tuc"
+    assert loai_nhan("Tại sao mô hình Kafka là 9 instances", label_id=lid) == "khac"
+    assert loai_nhan("Tại sao mô hình Kafka là 5 instances") == "khac"
+
+
+def test_bao_cao_dem_ra_so_nhan_vao_nhom_thu_tuc_DICH_DANH():
+    """Cơ chế đích danh là chỗ duy nhất thước đo can thiệp theo từng nhãn —
+    không được giấu."""
+    labels = [dict(_nhan("PNX_MySign_v2|R2-02-06", "HS1", ["BAK-01"]),
+                   text="Tổng tài nguyên data, log, backup giữ nguyên không chia ra à ?")]
+    kq = doi_chieu({"HS1": [_fc("BAK-01", "thieu_thong_tin")]}, labels)
+    assert kq.theo_loai_mau == {"thu_tuc": 1}
+    assert kq.thu_tuc_dich_danh == 1
+    bc = bang_markdown(kq)
+    assert "ĐÍCH DANH" in bc and "phải tính lại con số mới tính là đạt" in bc.lower()
+
+
+def test_van_ban_nhan_doi_thi_CANH_BAO_chu_khong_im_lang():
+    labels = [dict(_nhan("PNX_MySign_v2|R2-02-06", "HS1", ["BAK-01"]),
+                   text="Câu này đã bị sửa thành một nhận xét hoàn toàn khác")]
+    kq = doi_chieu({"HS1": [_fc("BAK-01", "thieu_thong_tin")]}, labels)
+    assert kq.thu_tuc_dich_danh == 0
+    assert any("đã đổi" in c for c in kq.canh_bao)
+
+
+def test_luu_chi_tiet_TUNG_nhan_de_cham_lai_khong_can_model():
+    """Lượt dev đầy đủ tốn ~7 giờ máy nội bộ. Chỉ lưu số tổng thì mỗi lần đổi
+    cách xếp nhóm là phải chạy lại — đã vấp đúng thế ngày 2026-09-09."""
+    labels = [dict(_nhan("l1", "HS1", ["PRC-01"]),
+                   text="Dự phòng theo KPI 75% sao lại ra 8000, đề nghị tính lại")]
+    kq = doi_chieu({"HS1": [_fc("PRC-01", "vuot_nguong"),
+                            _fc("STO-03", "thieu_thong_tin")]}, labels)
+    h = kq.ho_so[0]
+    assert h.chi_tiet_nhan == [{"label_id": "l1", "rule_ref": ["PRC-01"],
+                                "text": "Dự phòng theo KPI 75% sao lại ra 8000, "
+                                        "đề nghị tính lại",
+                                "loai": "khac", "trung": True, "thuc_chat": True,
+                                "ma_khop": ["PRC-01"]}]
+    assert h.ma_finding_loai == {"PRC-01": ["vuot_nguong"],
+                                 "STO-03": ["thieu_thong_tin"]}

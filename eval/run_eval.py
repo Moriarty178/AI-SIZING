@@ -424,8 +424,21 @@ def main() -> int:
     ra = THU_MUC_BAO_CAO / f"{ten}-{a.tap}-{time.strftime('%Y%m%d-%H%M%S')}.md"
     ra.parent.mkdir(parents=True, exist_ok=True)
     ra.write_text(bao_cao + "\n", encoding="utf-8")
+
+    # Bản chi tiết theo TỪNG nhãn, đi kèm file `.md`. Một lượt dev đầy đủ tốn
+    # ~7 giờ máy nội bộ; nếu chỉ lưu số tổng thì mỗi lần đổi cách xếp nhóm là
+    # phải chạy lại từ đầu. Đã vấp đúng chuyện đó ngày 2026-09-09.
+    ra_json = ra.with_suffix(".json")
+    ra_json.write_text(json.dumps(
+        {"tap": ev.tap, "bo_loc": ev.bo_loc, "dien_tap": ev.dien_tap,
+         "canh_bao": ev.canh_bao,
+         "ho_so": [{"dossier": h.dossier, "file_da_dung": h.file_da_dung,
+                    "ghi_chu": h.ghi_chu, "nhan": h.chi_tiet_nhan,
+                    "ma_finding_loai": h.ma_finding_loai}
+                   for h in ev.ho_so]},
+        ensure_ascii=False, indent=1), encoding="utf-8")
     print("\n" + bao_cao)
-    print(f"\nĐã ghi {ra}")
+    print(f"\nĐã ghi {ra}\nĐã ghi {ra_json} (chấm lại offline, không cần model)")
     return 0
 
 
