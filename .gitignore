@@ -25,3 +25,7 @@ docs/checklist/
 # Báo cáo DIỄN TẬP (model giả) — số vô nghĩa về chất lượng, giữ lại chỉ gây nhầm
 # với báo cáo eval thật. Sinh lại bất cứ lúc nào bằng `run_eval --gia-lap`.
 eval/reports/dien-tap-*.md
+.commit
+viettel-mitm-ca.pem
+data/jobs/
+data/tai_len/

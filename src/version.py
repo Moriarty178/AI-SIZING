@@ -25,7 +25,17 @@ def commit_hien_tai() -> str:
         ban += " (có sửa cục bộ)" if s.stdout.strip() else ""
         return ban or "?"
     except Exception:                       # không có git thì cũng không sao
-        return "?"
+        pass
+    # Trong image Docker không có git và không có .git — Dockerfile ghi commit vào
+    # /app/.commit lúc build. Thiếu cả hai thì "?" như cũ, không bịa (NT4).
+    try:
+        import pathlib
+        f = pathlib.Path(__file__).resolve().parents[1] / ".commit"
+        if f.exists():
+            return f.read_text(encoding="utf-8").strip() + " (image)"
+    except Exception:
+        pass
+    return "?"
 
 
 def in_phien_ban(ten: str = "") -> None:

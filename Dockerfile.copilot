@@ -2,21 +2,38 @@
 # Image lõi: KHÔNG nhóm `rag` (kéo torch ~2GB; C6 chưa làm) — xem PLAN.md B4/C1.
 # Chạy:  docker run --env-file .env -p 8902:8000 sizing-copilot
 #        (settings.yaml mount qua volume, API key qua biến môi trường)
+#
+# KHÔNG cài git: apt trong mạng nội bộ bị proxy chặn (Clearsigned NOSPLIT —
+# 2026-09-09). `src/version.py` đọc commit từ /app/.commit — Dockerfile sinh nó
+# lúc build, nên báo cáo vẫn truy vết được phiên bản như khi có git.
 FROM python:3.11-slim
-
-# git: src/version.py gọi `git rev-parse` để in phiên bản vào báo cáo — thiếu git
-# thì báo cáo mất vết commit, đúng loại lỗi "ba lượt chạy bằng mã cũ" đã gặp thật.
-RUN apt-get update && apt-get install -y --no-install-recommends git \
-    && rm -rf /var/lib/apt/lists/*
 
 # uv cài phụ thuộc nhanh và đúng theo pyproject.toml/uv.lock
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app
 
+# Commit build: vết "lượt chạy bằng mã nào" không phụ thuộc git CLI.
+COPY .commit ./
+
+# CA nội bộ của proxy TLS (Websecurity Gateway - VCS): proxy công ty MITM mọi
+# kết nối HTTPS, uv từ chối chứng chỉ với thông báo "UnknownIssuer"/"Missing
+# Authority Key Identifier" (2026-09-09). File .pem nằm ngoài git — sinh bằng
+# PowerShell từ Windows cert store, xem docs/3.5-build-image-noi-bo.md.
+ARG HTTP_PROXY=""
+ARG HTTPS_PROXY=""
+ENV http_proxy=${HTTP_PROXY} https_proxy=${HTTPS_PROXY} \
+    SSL_CERT_FILE=/app/viettel-mitm-ca.pem \
+    REQUESTS_CA_BUNDLE=/app/viettel-mitm-ca.pem
+COPY viettel-mitm-ca.pem ./
+
 # Tách layer phụ thuộc khỏi layer mã: sửa code không phải cài lại từ đầu
 COPY pyproject.toml uv.lock* ./
 RUN uv sync --frozen --no-dev --extra api
+# không để proxy/chứng chỉ MITM sót trong image lúc chạy (gateway nội bộ không
+# đi qua proxy; cả HTTPS của gateway là nội bộ thuần)
+ENV http_proxy="" https_proxy=""
+ENV SSL_CERT_FILE="" REQUESTS_CA_BUNDLE=""
 
 COPY src/ ./src/
 COPY api/ ./api/
@@ -30,11 +47,10 @@ COPY .streamlit/ ./.streamlit/
 RUN useradd -m copilot && mkdir -p /app/data && chown -R copilot /app
 USER copilot
 
-ENV UV_PROJECT_ENVIRONMENT=/app/.venv
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=15s \
-    CMD python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/health',timeout=3)" || exit 1
+    CMD /app/.venv/bin/python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/health',timeout=3)" || exit 1
 
 # API là điểm vào chính; UI Streamlit chạy riêng khi cần (docker exec hoặc compose)
 CMD ["/app/.venv/bin/uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
