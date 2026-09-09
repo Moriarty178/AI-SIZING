@@ -43,40 +43,48 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from src.llm.cache import BIEN_TAT                    # noqa: E402
-from src.llm.client import LLMClient, LLMError        # noqa: E402
+from src.llm.client import (DEFAULT_MAX_TOKENS, LLMClient, LLMError,  # noqa: E402
+                            PhanHoiRong)
 from src.version import in_phien_ban                  # noqa: E402
 
 MUC_MAC_DINH = "4,8,16,24"
 
 
-def _mot_luot(client: LLMClient, model: str | None) -> tuple[bool, float, str]:
-    """Một lời gọi nhỏ, nội dung DUY NHẤT để không bao giờ trúng đệm."""
-    t0 = time.time()
+def _mot_luot(client: LLMClient, model: str | None,
+              max_tokens: int) -> tuple[bool, float, str]:
+    """Một lời gọi, nội dung DUY NHẤT để không bao giờ trúng đệm."""
+    t0 = time.perf_counter()
     rieng = uuid.uuid4().hex[:8]
     try:
         client.chat(
             [{"role": "user",
               "content": f"Trả lời đúng một từ: OK. (mã {rieng})"}],
-            model=model, max_tokens=8)
-        return True, time.time() - t0, ""
+            model=model, max_tokens=max_tokens)
+        return True, time.perf_counter() - t0, ""
+    except PhanHoiRong as e:
+        # Đây KHÔNG phải lỗi tải — là ngân sách token quá nhỏ. Ghi kèm
+        # `finish_reason` để đọc log biết ngay, đừng bắt ai đoán.
+        return False, time.perf_counter() - t0, f"PhanHoiRong[{e.finish_reason}]"
     except LLMError as e:
-        return False, time.time() - t0, type(e).__name__
+        return False, time.perf_counter() - t0, type(e).__name__
     except Exception as e:                              # pragma: no cover
-        return False, time.time() - t0, type(e).__name__
+        return False, time.perf_counter() - t0, type(e).__name__
 
 
-def do_mot_muc(client: LLMClient, muc: int, n: int, model: str | None) -> dict:
-    t0 = time.time()
+def do_mot_muc(client: LLMClient, muc: int, n: int, model: str | None,
+               max_tokens: int) -> dict:
+    t0 = time.perf_counter()
     do_tre: list[float] = []
     loi: dict[str, int] = {}
     with ThreadPoolExecutor(max_workers=muc) as pool:
-        fut = [pool.submit(_mot_luot, client, model) for _ in range(n)]
+        fut = [pool.submit(_mot_luot, client, model, max_tokens)
+               for _ in range(n)]
         for f in as_completed(fut):
             ok, dt, ten = f.result()
             do_tre.append(dt)
             if not ok:
                 loi[ten] = loi.get(ten, 0) + 1
-    tong = time.time() - t0
+    tong = time.perf_counter() - t0
     xong = n - sum(loi.values())
     return {"muc": muc, "n": n, "giay": tong, "thanh_cong": xong,
             "luot_moi_phut": (xong / tong * 60) if tong else 0.0,
@@ -95,6 +103,10 @@ def main() -> int:
     ap.add_argument("--moi-muc", type=int, default=12,
                     help="số lời gọi mỗi mức (mặc định 12)")
     ap.add_argument("--model", default=None)
+    ap.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS,
+                    help=f"ngân sách token mỗi lời gọi (mặc định {DEFAULT_MAX_TOKENS}, "
+                         "bằng mức dùng thật). ĐỪNG hạ xuống vài chục: model dồn "
+                         "ngân sách vào reasoning rồi trả content rỗng")
     ap.add_argument("--luot-mot-tai-lieu", type=int, default=239,
                     help="số lượt gọi cho MỘT tài liệu, để quy ra phút/tài liệu")
     a = ap.parse_args()
@@ -104,8 +116,24 @@ def main() -> int:
     os.environ[BIEN_TAT] = "1"
     client = LLMClient()
 
+    # MỘT lời gọi thử trước khi bắn cả loạt. Lượt chạy 2026-09-09 đốt 36 lời gọi
+    # ở ba mức rồi mới lộ ra là ngân sách token quá nhỏ — đáng lẽ hỏng sau 2 giây.
+    ok, dt, vi_sao = _mot_luot(client, a.model, a.max_tokens)
+    if not ok:
+        print(f"\n✗ Lời gọi THỬ đã hỏng sau {dt:.1f}s: {vi_sao}")
+        print("  Chưa đo gì cả — sửa chỗ này trước, đừng bắn cả loạt.")
+        if vi_sao.startswith("PhanHoiRong"):
+            print(f"  `PhanHoiRong` KHÔNG phải lỗi tải: model tiêu hết "
+                  f"{a.max_tokens} token vào phần suy luận rồi trả `content` rỗng.")
+            print("  Chữa: tăng --max-tokens (mặc định của dự án là "
+                  f"{DEFAULT_MAX_TOKENS}), hoặc chọn --model khác.")
+        else:
+            print("  Kiểm `config/settings.yaml` và biến SIZING_COPILOT_API_KEY.")
+        return 2
+    print(f"\nLời gọi thử ĐẠT sau {dt:.1f}s · ngân sách {a.max_tokens} token")
+
     muc = [int(m) for m in a.muc.split(",") if m.strip()]
-    print(f"\n{a.moi_muc} lời gọi mỗi mức · đệm ĐÃ TẮT · "
+    print(f"{a.moi_muc} lời gọi mỗi mức · đệm ĐÃ TẮT · "
           f"quy đổi theo {a.luot_mot_tai_lieu} lượt/tài liệu\n")
     print(f"{'song song':>9} {'lượt/phút':>10} {'trễ giữa':>9} {'trễ p90':>8} "
           f"{'phút/tài liệu':>14}  lỗi")
@@ -113,7 +141,7 @@ def main() -> int:
 
     kq = []
     for m in muc:
-        r = do_mot_muc(client, m, a.moi_muc, a.model)
+        r = do_mot_muc(client, m, a.moi_muc, a.model, a.max_tokens)
         kq.append(r)
         phut_tl = (a.luot_mot_tai_lieu / r["luot_moi_phut"]
                    if r["luot_moi_phut"] else float("inf"))
@@ -122,6 +150,27 @@ def main() -> int:
               f"{r['do_tre_p90']:>7.1f}s {phut_tl:>13.0f}'  {loi}")
 
     tot = max(kq, key=lambda r: r["luot_moi_phut"])
+    # Điều kiện là KHÔNG CÓ LƯỢT NÀO THÀNH CÔNG, không phải "thông lượng bằng 0":
+    # `time.time()` trên Windows có độ phân giải ~15 ms, nên một loạt lời gọi
+    # nhanh mà thành công cũng có thể đo ra 0. Đã đổi sang `perf_counter`, nhưng
+    # điều kiện vẫn phải bám vào cái mình thật sự muốn nói.
+    if not any(r["thanh_cong"] for r in kq):
+        # Không được sập ở đây. Lượt 2026-09-09 ném `ZeroDivisionError` ngay sau
+        # khi in đủ ba dòng chẩn đoán — làm mất luôn kết luận, đúng lúc người
+        # chạy cần nó nhất.
+        gop: dict[str, int] = {}
+        for r in kq:
+            for k, v in r["loi"].items():
+                gop[k] = gop.get(k, 0) + v
+        print("\n✗ KHÔNG mức nào có lời gọi nào thành công — chưa đo được gì.")
+        print("  Lỗi: " + (", ".join(f"{k}×{v}" for k, v in gop.items()) or "?"))
+        return 2
+
+    if tot["luot_moi_phut"] <= 0:       # có lượt thành công nhưng nhanh quá để đo
+        print("\n⚠ Có lời gọi thành công nhưng nhanh hơn độ phân giải đồng hồ — "
+              "tăng --moi-muc rồi đo lại.")
+        return 0
+
     print(f"\nThông lượng cao nhất ở song song {tot['muc']}: "
           f"{tot['luot_moi_phut']:.1f} lượt/phút "
           f"⟹ {a.luot_mot_tai_lieu / tot['luot_moi_phut']:.0f} phút/tài liệu, "
@@ -130,8 +179,7 @@ def main() -> int:
     if any(r["loi"] for r in kq):
         print("\n⚠ Có lỗi ở một số mức — mức nào bắt đầu lỗi thì ĐỪNG dùng mức đó "
               "cho lượt chạy thật, kể cả khi thông lượng của nó cao hơn.")
-    xau = [r for r in kq if r["muc"] > tot["muc"]]
-    if xau:
+    if [r for r in kq if r["muc"] > tot["muc"]]:
         print("Các mức cao hơn KHÔNG nhanh hơn — đã bão hoà, tăng nữa chỉ tăng "
               "độ trễ đuôi.")
     return 0

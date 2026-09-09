@@ -45,6 +45,14 @@ py scripts/do_song_song.py --muc 6,12,24
 
 Gửi lại **toàn bộ bảng**. Rồi DỪNG, chờ chốt mức song song.
 
+Script bắn **một lời gọi thử** trước, và dừng ngay nếu nó hỏng — lượt 09-09 đốt
+36 lời gọi ở ba mức rồi mới lộ ra là ngân sách token quá nhỏ. Ngân sách mặc định
+nay bám `DEFAULT_MAX_TOKENS` (4000) của chính dự án, bằng mức dùng thật.
+
+Nếu thấy `PhanHoiRong[length]`: đó **không phải lỗi tải**, mà là model tiêu hết
+ngân sách token vào phần suy luận rồi trả `content` rỗng. Chữa bằng
+`--max-tokens` lớn hơn hoặc `--model` khác, đừng đi chỉnh mức song song.
+
 **Vì sao phải dừng ở đây:** một tài liệu tốn ~239 lượt gọi. Ở song song 6 (mức đo
 được hôm 09-09) đó là ~33 phút/tài liệu ⟹ **7 giờ cho lượt dev đầy đủ**. Thời
 gian gần như tỉ lệ nghịch với mức song song, nên nếu gateway chịu được 24 thì
