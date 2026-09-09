@@ -7,6 +7,7 @@ về chất lượng. Nên mọi script chạy thật đều IN phiên bản tr�
 """
 from __future__ import annotations
 
+import os
 import subprocess
 
 # Tăng số này mỗi khi đổi hành vi trích xuất, để người chạy đối chiếu được bằng mắt.
@@ -15,7 +16,17 @@ import subprocess
 PHIEN_BAN_C3 = "C3-v6 (hỏi theo CỘT bảng: mỗi cột một tham số)"
 
 
+BIEN_COMMIT = "SIZING_COPILOT_COMMIT"   # Dockerfile nướng vào lúc build
+
+
 def commit_hien_tai() -> str:
+    # Trong container KHÔNG có `.git`, nên `git rev-parse` trả "?" và ta mất đúng
+    # thứ module này sinh ra để giữ. Dockerfile đóng dấu commit vào biến môi
+    # trường lúc build; ưu tiên nó, và nói rõ là dấu lúc build chứ không phải
+    # trạng thái cây mã hiện tại.
+    dau = os.environ.get(BIEN_COMMIT, "").strip()
+    if dau and dau != "unknown":
+        return f"{dau} (đóng dấu lúc build)"
     try:
         r = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
                            capture_output=True, text=True, timeout=5)
