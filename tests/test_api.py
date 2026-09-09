@@ -133,3 +133,44 @@ def test_tai_lieu_nop_len_nam_dung_trong_thu_muc_thu(client, tmp_path):
     assert main.bo_chay.cho_rong(5)
     f = pathlib.Path(main.kho.lay(ma).duong_dan)
     assert tmp_path in f.parents, f"tài liệu bị ghi ra ngoài tmp_path: {f}"
+
+
+class TestTuyChon:
+    def test_tuy_chon_di_thang_vao_pipeline(self, client):
+        from api import main
+        nhan = {}
+
+        def chay(duong_dan, *, on_tien_do=None, song_song=1, **kw):
+            nhan.update({"song_song": song_song, **kw})
+            return _KetQua()
+
+        main.bo_chay.dung()
+        from src.cong_viec import BoChay
+        main.bo_chay = BoChay(main.kho, ham_chay=chay)
+        main.bo_chay.bat_dau()
+
+        r = client.post("/review", files={"file": ("a.docx", b"PK\x03\x04")},
+                        data={"nhom": "KPI, CPU", "vong": 2, "song_song": 8})
+        assert r.status_code == 202
+        assert main.bo_chay.cho_rong(5)
+        assert nhan == {"song_song": 8, "chi_nhom": ["KPI", "CPU"], "chi_vong": 2}
+
+    def test_khong_gui_tuy_chon_thi_dung_mac_dinh_do_duoc(self, client):
+        from src.cong_viec import SONG_SONG_MAC_DINH
+        from api import main
+        r = client.post("/review", files={"file": ("a.docx", b"PK\x03\x04")})
+        assert r.status_code == 202
+        assert main.kho.lay(r.json()["ma"]).tuy_chon == {}
+        assert main.bo_chay.song_song == SONG_SONG_MAC_DINH == 12
+
+    def test_song_song_qua_lon_bi_tu_choi(self, client):
+        """Đo 2026-09-09: mức 24 đã CHẬM HƠN mức 12. Cho người gọi đặt 64 là để
+        họ tự làm chậm mình VÀ cả người đang xếp hàng phía sau."""
+        r = client.post("/review", files={"file": ("a.docx", b"PK\x03\x04")},
+                        data={"song_song": 64})
+        assert r.status_code == 400 and "song_song" in r.json()["detail"]
+
+    def test_vong_khong_hop_le_bi_tu_choi(self, client):
+        r = client.post("/review", files={"file": ("a.docx", b"PK\x03\x04")},
+                        data={"vong": 7})
+        assert r.status_code == 400 and "vong" in r.json()["detail"]

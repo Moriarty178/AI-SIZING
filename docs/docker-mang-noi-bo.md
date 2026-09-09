@@ -94,6 +94,24 @@ sang môi trường khác sẽ không kéo theo địa chỉ proxy của một m
 
 ## 4. Chạy
 
+### Cách gọn nhất: cả hai dịch vụ bằng một lệnh
+
+```powershell
+copy config\settings.example.yaml config\settings.yaml   # điền endpoint trước
+docker compose -f docker-compose.copilot.yml up --build
+#  → API       http://localhost:8000/health
+#  → Giao diện http://localhost:8501
+```
+
+⚠️ **Tạo `config/settings.yaml` TRƯỚC.** Bind-mount một file chưa tồn tại thì
+Docker tạo một **thư mục** trùng tên. `load_settings` nay gọi tên lỗi này ra
+thay vì để `IsADirectoryError` trần trụi, nhưng tránh hẳn vẫn hơn.
+
+Giao diện **không tự chạy pipeline nữa**: nó nộp bài cho dịch vụ API và tra bằng
+mã việc, nên đóng tab không mất kết quả.
+
+### Hoặc chạy từng cái
+
 ```powershell
 # API (mặc định) — cổng 8000
 docker run --rm -p 8000:8000 `
@@ -108,6 +126,11 @@ docker run --rm -p 8501:8501 `
   sizing-copilot:dev `
   streamlit run ui/app.py --server.address=0.0.0.0 --server.headless=true
 ```
+
+Chạy tay thì phải chỉ cho giao diện biết API ở đâu:
+`-e SIZING_COPILOT_API=http://host.docker.internal:8000` (mặc định là
+`http://localhost:8000`, tức *bên trong* chính container giao diện — không có gì
+ở đó).
 
 ### Kiểm nhanh sau khi chạy
 

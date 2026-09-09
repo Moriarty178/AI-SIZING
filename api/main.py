@@ -29,7 +29,7 @@ import sys
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, Form, HTTPException, UploadFile, File
 from fastapi.responses import PlainTextResponse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -40,6 +40,11 @@ from src.version import PHIEN_BAN_C3, commit_hien_tai            # noqa: E402
 
 DUOI_CHO_PHEP = ".docx"
 CO_TOI_DA = 80 * 1024 * 1024        # 80 MB — bản sizing lớn nhất trong kho ~12 MB
+
+# Trần mức song song NHẬN từ người gọi. 12 là điểm bão hoà đo được 2026-09-09 và
+# mức 24 CHẬM HƠN, nên để người gọi đặt 64 là để họ tự làm chậm chính mình — và
+# làm chậm cả người đang xếp hàng phía sau.
+SONG_SONG_TOI_DA = 24
 
 kho = KhoCongViec()
 bo_chay = BoChay(kho)
@@ -70,7 +75,12 @@ def health() -> dict:
 
 
 @app.post("/review", status_code=202)
-async def review(file: UploadFile = File(...)) -> dict:
+async def review(
+    file: UploadFile = File(...),
+    nhom: str = Form("", description="giới hạn nhóm quy tắc C3, vd «KPI,CPU»"),
+    vong: int | None = Form(None, description="1 hoặc 2; để trống là cả hai"),
+    song_song: int | None = Form(None, description=f"1..{SONG_SONG_TOI_DA}"),
+) -> dict:
     ten = pathlib.Path(file.filename or "").name
     if not ten.lower().endswith(DUOI_CHO_PHEP):
         raise HTTPException(400, f"Chỉ nhận file {DUOI_CHO_PHEP}; nhận được «{ten}»")
@@ -81,8 +91,23 @@ async def review(file: UploadFile = File(...)) -> dict:
         raise HTTPException(413, f"File {len(noi_dung) / 1e6:.1f} MB, vượt "
                                  f"{CO_TOI_DA / 1e6:.0f} MB")
 
+    if vong not in (None, 1, 2):
+        raise HTTPException(400, "«vong» chỉ nhận 1, 2 hoặc để trống")
+    if song_song is not None and not 1 <= song_song <= SONG_SONG_TOI_DA:
+        raise HTTPException(400, f"«song_song» phải trong 1..{SONG_SONG_TOI_DA}")
+
+    # Danh sách khoá CHO PHÉP, không phải danh sách chặn: một trường lạ lọt vào
+    # `pipeline.chay` sẽ thành `TypeError` giữa chừng một lượt chạy 16 phút.
+    tuy_chon: dict = {}
+    if nhom.strip():
+        tuy_chon["chi_nhom"] = [x.strip() for x in nhom.split(",") if x.strip()]
+    if vong is not None:
+        tuy_chon["chi_vong"] = vong
+    if song_song is not None:
+        tuy_chon["song_song"] = song_song
+
     duong_dan = luu_tam(noi_dung, ten)
-    cv = kho.them(ten, str(duong_dan))
+    cv = kho.them(ten, str(duong_dan), tuy_chon)
     bo_chay.nop(cv)
     return {**cv.as_dict(),
             "ghi_chu": "Đã nhận. Một tài liệu tốn khoảng 16 phút; hỏi lại bằng "
