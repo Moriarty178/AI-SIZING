@@ -89,6 +89,27 @@ class QuantitativeValidator:
             return rule.name
 
     # ------------------------------------------------------------------
+    def _finding_dat(self, rule: Rule, doc: SizingCore, scope_key: str,
+                     env: dict, mo_ta_phep_tinh: str) -> Finding:
+        """Quy tắc ĐẠT, và code đã tính được để nói thế (người dùng chốt 2026-09-09).
+
+        Trước đây `dat` trả về lặng lẽ. Với người viết sizing thì đó là thông tin
+        bị mất: họ không biết chỗ nào đã được kiểm và không cần sửa. Nay nói ra,
+        kèm chính con số đã dùng.
+
+        **Nhóm này KHÔNG được tính vào tử số recall của 1.13** — xem
+        `eval/matching.py`. Đếm một lượt ĐẠT là "trúng nhãn" trong khi người thẩm
+        định đang nói chỗ đó SAI thì chỉ làm con số đẹp lên, đúng thứ `CLAUDE.md`
+        cấm. Nó ra báo cáo cho người dùng, không ra thước đo.
+        """
+        so = {i.name: env.get(i.name) for i in rule.inputs if i.name in env}
+        return self._finding(
+            rule, "dat_co_can_cu",
+            f"Đã kiểm {rule.id} ({rule.name}): ĐẠT.",
+            doc=doc, scope_key=scope_key,
+            computed_evidence=mo_ta_phep_tinh + f"{so}",
+            suggestion="", severity="info", confidence="cao")
+
     def check_rule(self, rule: Rule, doc: SizingCore, scope_key: str = "") -> RuleOutcome:
         why = rule.khong_danh_gia_duoc()
         if why:
@@ -149,7 +170,9 @@ class QuantitativeValidator:
                 return RuleOutcome(rule.id, scope_key, "khong_danh_gia_duoc", None,
                                    f"lỗi biểu thức `check`: {err}")
             if val:
-                return RuleOutcome(rule.id, scope_key, "dat")
+                return RuleOutcome(rule.id, scope_key, "dat",
+                                   self._finding_dat(rule, doc, scope_key, env,
+                                                     f"`{rule.check}` đúng với "))
             shown = {i.name: env.get(i.name) for i in rule.inputs if i.name in env}
             f = self._finding(
                 rule, "vuot_nguong", self._message(rule, env, {}),
@@ -170,7 +193,13 @@ class QuantitativeValidator:
         diff = abs(expected - declared)
         rel = diff / abs(expected) if expected else (0.0 if diff == 0 else float("inf"))
         if rel <= rule.tolerance:
-            return RuleOutcome(rule.id, scope_key, "dat")
+            return RuleOutcome(rule.id, scope_key, "dat",
+                               self._finding_dat(
+                                   rule, doc, scope_key, env,
+                                   f"tính lại `{rule.formula}` = {_fmt(expected)}, "
+                                   f"tài liệu khai {_fmt(declared)}, lệch "
+                                   f"{rel * 100:.1f}% (trong dung sai "
+                                   f"{rule.tolerance * 100:.0f}%) — "))
 
         extra = {"expected": _fmt(expected), "declared": _fmt(declared),
                  "diff_pct": f"{rel * 100:.1f}"}
