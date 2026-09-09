@@ -74,6 +74,30 @@ def tim_docx(duong_dan: str) -> pathlib.Path | None:
     return None
 
 
+def moi_nhat_moi_ho_so(files: list[pathlib.Path]) -> list[pathlib.Path]:
+    """Mỗi hồ sơ chỉ giữ báo cáo MỚI NHẤT.
+
+    Chạy lại 2.3 trên một hồ sơ sinh thêm một file chứ không đè file cũ, nên
+    `--tat-ca` sẽ chấm cả bản đã lỗi thời và in ra hai khối cho cùng một tài
+    liệu — bản cũ của CallBase có 0 số liệu, bản mới có 116. Hai dòng thống kê
+    mâu thuẫn cho cùng một hồ sơ là cách chắc chắn để đọc nhầm kết quả.
+    """
+    theo_docx: dict[str, tuple[float, pathlib.Path]] = {}
+    for f in files:
+        try:
+            dd = json.loads(f.read_text(encoding="utf-8")).get("docx", "")
+        except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+            continue                      # file ghi dở — `chay_mot` sẽ nói ra
+        khoa = pathlib.Path(dd).name or f.name
+        moc = f.stat().st_mtime
+        if khoa not in theo_docx or moc > theo_docx[khoa][0]:
+            theo_docx[khoa] = (moc, f)
+    bo = [f for f in files if f not in {v[1] for v in theo_docx.values()}]
+    for f in bo:
+        print(f"  ⤵ bỏ qua bản cũ hơn: {f.name}")
+    return sorted(v[1] for v in theo_docx.values())
+
+
 def chay_mot(bao_cao: pathlib.Path, docx_de: str | None, a) -> dict | None:
     try:
         duong_dan, ket_qua = nap_bao_cao(bao_cao)
@@ -206,7 +230,7 @@ def main() -> int:
     in_phien_ban("C2/2.5 neo số ảnh")
 
     if a.tat_ca:
-        bao_caos = sorted(THU_MUC_BAO_CAO.glob("doc-anh-*.json"))
+        bao_caos = moi_nhat_moi_ho_so(sorted(THU_MUC_BAO_CAO.glob("doc-anh-*.json")))
     elif a.bao_cao:
         bao_caos = [pathlib.Path(a.bao_cao)]
     else:
