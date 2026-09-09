@@ -38,11 +38,31 @@ T = TypeVar("T", bound=BaseModel)
 
 KEY_ENV = "SIZING_COPILOT_API_KEY"
 DEFAULT_MAX_TOKENS = 4000  # ≥2000: dưới ngưỡng này `content` có thể rỗng (0.10)
+# Trần khi LEO THANG sau `PhanHoiRong`. C3 đã phải nâng `TOKEN_NEN` lên 8000 vì
+# đúng lý do này (33/33 lượt hỏng là `finish_reason=length`); đường ảnh của 2.3
+# thì vẫn ở 4000 và hỏng y hệt trên CallBase.
+TRAN_MAX_TOKENS = 16000
 _FENCE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.IGNORECASE)
 
 
 class LLMError(RuntimeError):
     """Lỗi gọi model — mạng, khóa, hoặc phản hồi rỗng."""
+
+
+class PhanHoiRong(LLMError):
+    """Model tiêu hết ngân sách token trước khi viết `content`.
+
+    Tách riêng khỏi `LLMError` vì đây là lỗi có cách chữa XÁC ĐỊNH — cấp thêm
+    token — khác hẳn lỗi mạng vốn chỉ có thể thử lại y nguyên. Thử lại cùng một
+    `max_tokens` thì nhận lại đúng lỗi đó: lượt chạy CallBase 2026-09-08 đốt 9
+    lượt gọi cho 3 ảnh và cả 9 đều `finish_reason=length, max_tokens=4000`.
+    """
+
+    def __init__(self, finish_reason: str, max_tokens: int):
+        super().__init__(f"phản hồi rỗng (finish_reason={finish_reason}, "
+                         f"max_tokens={max_tokens}) — thử tăng max_tokens")
+        self.finish_reason = finish_reason
+        self.max_tokens = max_tokens
 
 
 class ExtractionFailed(LLMError):
@@ -127,10 +147,7 @@ class LLMClient:
         if not content:
             # Đã gặp thật: model dồn hết ngân sách token vào reasoning_content.
             # KHÔNG đệm ca này: đó là lỗi cần gọi lại, đệm sẽ đóng băng nó vĩnh viễn.
-            raise LLMError(
-                f"phản hồi rỗng (finish_reason={resp.choices[0].finish_reason}, "
-                f"max_tokens={max_tokens}) — thử tăng max_tokens"
-            )
+            raise PhanHoiRong(str(resp.choices[0].finish_reason), max_tokens)
         self.cache.luu(khoa, content, meta={"model": goi["model"]})
         return content
 
@@ -152,6 +169,13 @@ class LLMClient:
         self.last_attempts = 0
         self.last_schema_path = "json_schema"   # json_schema | prompt
         self.last_schema_error = ""
+        self.last_max_tokens = max_tokens
+
+        # Ngân sách token LEO THANG, không cố định. Xem `PhanHoiRong`: thử lại
+        # cùng một mức là nhận lại cùng một lỗi. Leo thang thay vì nâng mặc định
+        # cũng để GIỮ ĐỆM — lượt gọi đầu vẫn mang đúng khoá cũ, nên chỉ những lượt
+        # thật sự hỏng mới sinh khoá mới và phải gọi lại.
+        ngan_sach = max_tokens
 
         for attempt in range(1, max_retries + 1):
             self.last_attempts = attempt
@@ -159,7 +183,7 @@ class LLMClient:
                 if self.last_schema_path == "json_schema":
                     try:
                         raw = self.chat(
-                            convo, model=model, max_tokens=max_tokens,
+                            convo, model=model, max_tokens=ngan_sach,
                             response_format={
                                 "type": "json_schema",
                                 "json_schema": {"name": schema.__name__,
@@ -172,9 +196,14 @@ class LLMClient:
                         # và GHI LẠI, vì báo cáo phải nói rõ đã đi đường nào.
                         self.last_schema_path = "prompt"
                         self.last_schema_error = f"{type(e).__name__}: {e}"[:200]
-                        raw = self.chat(convo, model=model, max_tokens=max_tokens)
+                        raw = self.chat(convo, model=model, max_tokens=ngan_sach)
                 else:
-                    raw = self.chat(convo, model=model, max_tokens=max_tokens)
+                    raw = self.chat(convo, model=model, max_tokens=ngan_sach)
+            except PhanHoiRong as e:
+                last_err, last_raw = str(e), ""
+                ngan_sach = min(TRAN_MAX_TOKENS, ngan_sach * 2)
+                self.last_max_tokens = ngan_sach
+                continue
             except LLMError as e:
                 last_err, last_raw = str(e), ""
                 continue

@@ -16,8 +16,8 @@ from src.llm.client import ExtractionFailed
 from src.vision import doc_anh as da
 from src.vision.anh import Anh
 from src.vision.doc_anh import (LOAI_MAC_DINH, DocAnh, DocConsole, DocSoDo,
-                                SoLieuAnh, _thanh_so, dong_goi, neo_duoc,
-                                thanh_finding,
+                                KetQuaDocAnh, SoLieuAnh, _thanh_so, dong_goi,
+                                neo_duoc, thanh_finding,
                                 uoc_tinh_luot_goi_anh)
 from src.vision.phan_loai import co_pillow
 
@@ -352,3 +352,35 @@ def test_dem_rieng_so_chuoi_khong_phai_gia_tri():
     kq = d.doc_mot(_anh(), "console", _png(ANH_CONSOLE))
     assert d.tk.khong_phai_gia_tri == 1 and d.tk.trich_dan_bia == 0
     assert [x.gia_tri for x in kq.so_lieu] == [None, 32.0]
+
+
+# --- ảnh console "đọc được" nhưng KHÔNG nêu số nào -------------------------
+def test_console_khong_neu_so_nao_thi_KHONG_duoc_im_lang():
+    """Ca thật CallBase 2026-09-08: 5/9 ảnh console có `doc_duoc=True`, `so_lieu=[]`.
+
+    Trước bản vá, chuỗi sự kiện là IM LẶNG HOÀN TOÀN: `thanh_finding` sinh finding
+    với `computed_evidence` rỗng ⇒ `co_can_cu()` False ⇒ C7 lọc bỏ. Người dùng
+    không được báo gì về 5 ảnh đã xử lý — đúng thứ NT4 cấm.
+
+    Nhánh `so_do` đã có cổng này từ đầu; console thì thiếu.
+    """
+    c2 = DocAnh(ClientGia([DocConsole(doc_duoc=True, so_lieu=[])]))
+    kq = c2._doc_ket_qua(
+        KetQuaDocAnh(ma_anh="anh#51", loai="console", location="Mục III, trang 6"),
+        DocConsole(doc_duoc=True, so_lieu=[]))
+
+    assert kq.doc_duoc is False, "không nêu được số nào thì không phải đọc được"
+    assert kq.ly_do, "phải nói RÕ vì sao"
+    f = thanh_finding(kq)
+    assert f.category == "khong_kiem_chung_duoc"
+    assert f.co_can_cu(), "NT2: có căn cứ thì C7 mới không lọc bỏ"
+
+
+def test_console_bi_loai_het_vi_trich_dan_bia_giu_nguyen_ly_do_cu():
+    """Hai ca cùng cho `so_lieu` rỗng nhưng lý do khác nhau — không được gộp."""
+    kq = KetQuaDocAnh(ma_anh="a", loai="console")
+    kq.bo_vi_khong_neo = 4
+    c2 = DocAnh(ClientGia([DocConsole(doc_duoc=True, so_lieu=[])]))
+    ra = c2._doc_ket_qua(kq, DocConsole(doc_duoc=True, so_lieu=[]))
+    assert ra.doc_duoc is False
+    assert "trích dẫn của chính nó" in ra.ly_do

@@ -8,7 +8,8 @@ from pydantic import BaseModel
 
 from src.llm.cache import BoNhoDem
 from src.llm.client import (
-    ExtractionFailed, LLMClient, LLMError, extract_json_block, strip_fence,
+    TRAN_MAX_TOKENS, ExtractionFailed, LLMClient, LLMError, PhanHoiRong,
+    extract_json_block, strip_fence,
 )
 
 
@@ -45,6 +46,7 @@ class FakeClient(LLMClient):
     def __init__(self, replies):
         self.replies = list(replies)
         self.calls = []
+        self.ngan_sach = []          # max_tokens của từng lượt, để kiểm leo thang
         self.chat_model = "fake"
         self.vision_model = ""
         self.temperature = 0.1
@@ -52,6 +54,7 @@ class FakeClient(LLMClient):
 
     def chat(self, messages, *, model=None, max_tokens=4000, **extra):
         self.calls.append(messages)
+        self.ngan_sach.append(max_tokens)
         r = self.replies.pop(0)
         if isinstance(r, Exception):
             raise r
@@ -162,3 +165,37 @@ def test_loi_gateway_thanh_LLMError_de_vong_thu_lai_nuot_duoc():
     c.cache = BoNhoDem(bat=False)
     with pytest.raises(LLMError, match="APITimeoutError"):
         c.chat([{"role": "user", "content": "x"}])
+
+
+# --- ngân sách token phải LEO THANG khi phản hồi rỗng ----------------------
+def test_phan_hoi_rong_thi_cap_them_token_chu_khong_thu_lai_y_nguyen():
+    """Ca thật CallBase 2026-09-08: 3 ảnh × 3 lượt = 9 lượt gọi, cả 9 đều
+    `finish_reason=length, max_tokens=4000`.
+
+    Thử lại cùng một ngân sách là nhận lại cùng một lỗi — đốt lượt gọi của người
+    dùng để không học được gì. Thông báo lỗi đã nói "thử tăng max_tokens" từ đầu
+    mà không có chỗ nào làm việc đó.
+    """
+    c = FakeClient([PhanHoiRong("length", 4000),
+                    PhanHoiRong("length", 8000),
+                    '{"ten_he_thong": "MNP", "so_ccu": 300}'])
+    out = c.extract(Sizing, [{"role": "user", "content": "x"}], max_tokens=4000)
+    assert out.so_ccu == 300
+    assert c.ngan_sach == [4000, 8000, 16000]
+
+
+def test_leo_thang_khong_vuot_tran():
+    c = FakeClient([PhanHoiRong("length", 16000)] * 4)
+    with pytest.raises(ExtractionFailed):
+        c.extract(Sizing, [{"role": "user", "content": "x"}],
+                  max_tokens=TRAN_MAX_TOKENS, max_retries=4)
+    assert set(c.ngan_sach) == {TRAN_MAX_TOKENS}
+
+
+def test_loi_mang_KHONG_leo_thang():
+    """Chỉ `PhanHoiRong` mới có cách chữa bằng token. Lỗi mạng thì thử lại y nguyên
+    — nâng ngân sách ở đó chỉ làm mất đệm mà không sửa được gì."""
+    c = FakeClient([LLMError("APITimeoutError: hết giờ"),
+                    '{"ten_he_thong": "MNP", "so_ccu": 300}'])
+    c.extract(Sizing, [{"role": "user", "content": "x"}], max_tokens=4000)
+    assert c.ngan_sach == [4000, 4000]
