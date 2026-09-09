@@ -97,6 +97,16 @@ def load_settings(path: str = "config/settings.yaml") -> dict:
         raise FileNotFoundError(
             f"Chưa có {path}. Copy từ config/settings.example.yaml rồi điền."
         )
+    if os.path.isdir(path):
+        # Docker tạo THƯ MỤC khi bind-mount một file chưa tồn tại. Lỗi sau đó
+        # (`IsADirectoryError`, hoặc `PermissionError` trên Windows) không gợi
+        # được gì cho người triển khai, nên gọi tên nó ra ở đây.
+        raise IsADirectoryError(
+            f"{path} là một THƯ MỤC, không phải file. Docker tạo thư mục khi "
+            "bind-mount một file chưa tồn tại — hãy tạo file cấu hình TRƯỚC "
+            f"(copy từ config/settings.example.yaml), rồi xoá thư mục {path} và "
+            "chạy lại."
+        )
     return yaml.safe_load(open(path, encoding="utf-8"))
 
 

@@ -1,0 +1,60 @@
+# Chạy Sizing Copilot: dịch vụ thẩm định (API) + giao diện thử (Streamlit).
+#
+#   docker compose -f docker-compose.copilot.yml up --build
+#   → API      http://localhost:8000/health
+#   → Giao diện http://localhost:8501
+#
+# Tên file riêng vì `docker-compose.yml` ở gốc repo là của **web app nội bộ sẵn
+# có (Spring Boot)**, không liên quan tới Copilot. Gộp hai thứ vào một file sẽ
+# khiến `docker compose up` dựng cả những thứ không ai định dựng.
+#
+# Trên máy nội bộ cần proxy và CA — xem `docs/docker-mang-noi-bo.md`; truyền qua
+# `--build-arg` / `--secret` bằng `docker build` rồi `up` với image đã có sẵn.
+
+services:
+  api:
+    build:
+      context: .
+      args:
+        COMMIT: ${COMMIT:-unknown}
+    image: sizing-copilot:dev
+    container_name: sizing-copilot-api
+    ports:
+      - "8000:8000"
+    environment:
+      - SIZING_COPILOT_API_KEY=${SIZING_COPILOT_API_KEY:-}
+    volumes:
+      # Cấu hình có endpoint nội bộ — mount lúc chạy, KHÔNG nướng vào image.
+      #
+      # ⚠️ TẠO FILE NÀY TRƯỚC khi `up`. Bind-mount một file chưa tồn tại thì
+      # Docker tạo một THƯ MỤC trùng tên, và lỗi sau đó rất khó đoán:
+      #   copy config/settings.example.yaml config/settings.yaml
+      - ./config/settings.yaml:/app/config/settings.yaml:ro
+      # Trạng thái công việc + đệm lời gọi. Không mount thì một lượt 16 phút
+      # đang chạy sẽ mất khi container khởi động lại.
+      - copilot-cache:/app/.cache
+    restart: unless-stopped
+
+  ui:
+    image: sizing-copilot:dev
+    container_name: sizing-copilot-ui
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8501:8501"
+    environment:
+      # Giao diện KHÔNG tự chạy pipeline nữa; nó nộp bài cho `api` và tra bằng
+      # mã việc. Tên `api` là tên dịch vụ trong mạng của compose.
+      - SIZING_COPILOT_API=http://api:8000
+    command:
+      - streamlit
+      - run
+      - ui/app.py
+      - --server.address=0.0.0.0
+      - --server.port=8501
+      - --server.headless=true
+    restart: unless-stopped
+
+volumes:
+  copilot-cache:

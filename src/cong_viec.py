@@ -71,6 +71,9 @@ class CongViec:
     loi: str = ""
     so_finding: int = 0
     theo_muc_do: dict = field(default_factory=dict)
+    # Tuỳ chọn giới hạn chi phí, truyền thẳng vào `pipeline.chay`. Danh sách khoá
+    # cho phép nằm ở tầng API — kho việc không tự quyết cái gì hợp lệ.
+    tuy_chon: dict = field(default_factory=dict)
 
     @property
     def xong_roi(self) -> bool:
@@ -135,9 +138,10 @@ class KhoCongViec:
             pass                # không ghi được thì vẫn chạy, đừng làm hỏng lượt
 
     # --------------------------------------------------------------- API --
-    def them(self, ten_file: str, duong_dan: str) -> CongViec:
+    def them(self, ten_file: str, duong_dan: str,
+             tuy_chon: dict | None = None) -> CongViec:
         cv = CongViec(ma=uuid.uuid4().hex[:12], ten_file=ten_file,
-                      duong_dan=str(duong_dan))
+                      duong_dan=str(duong_dan), tuy_chon=dict(tuy_chon or {}))
         with self._khoa:
             self._viec[cv.ma] = cv
         self._ghi(cv)
@@ -274,9 +278,11 @@ class BoChay:
         def tien_do(giai_doan, i, tong, _nhan):
             self.kho.cap_nhat(ma, giai_doan=giai_doan, da_xong=i, tong=tong)
 
+        tuy_chon = dict(cv.tuy_chon)
+        song_song = int(tuy_chon.pop("song_song", None) or self.song_song)
         try:
             kq = self._chay_that()(cv.duong_dan, on_tien_do=tien_do,
-                                   song_song=self.song_song)
+                                   song_song=song_song, **tuy_chon)
             self.kho.luu_bao_cao(ma, kq.bao_cao())
             muc: dict[str, int] = {}
             for f in kq.findings:
