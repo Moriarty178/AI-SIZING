@@ -1153,8 +1153,18 @@ chứng minh công cụ có giá trị hay không.
 ## GIAI ĐOẠN 3 — Tích hợp & tinh chỉnh  (2 tuần)
 
 ### Tuần 7 — Tích hợp
-- [ ] 3.1 — Bọc pipeline thành REST API FastAPI (`POST /review`, `GET /result/{id}`)
-- [ ] 3.2 — Xử lý bất đồng bộ (job queue) vì thời gian chạy có thể vài phút
+- [x] 3.1 — REST API FastAPI — **XONG 2026-09-09.** `api/main.py` mỏng; mọi hành vi ở
+  `src/cong_viec.py` để test được không cần dựng máy chủ. `POST /review` (202 + mã việc) ·
+  `GET /result/{ma}` · `GET /result/{ma}/bao-cao` · `GET /jobs` · `DELETE /result/{ma}`
+  (xoá cả TÀI LIỆU đã nộp) · `GET /health`. **Không có đường chạy đồng bộ** và cố ý
+  không mở: một `POST` giữ 16 phút sẽ bị proxy cắt rồi người dùng bấm lại — nhân đôi
+  tải lên đúng cái cổng vốn là nút thắt. 11 test.
+- [x] 3.2 — Hàng đợi bất đồng bộ — **XONG 2026-09-09.** `src/cong_viec.py`: kho việc
+  ghi ra đĩa (sống qua restart), luồng chạy nền, tiến độ theo giai đoạn qua
+  `on_tien_do`. **Mỗi lúc một tài liệu** — đây là con số chứ không phải sở thích:
+  pipeline đã chạy 12 lượt gọi song song bên trong, hai tài liệu là 24 đồng thời, mà
+  đo 2026-09-09 cho thấy mức 24 CHẬM HƠN mức 12. Việc `dang_chay` lúc tiến trình chết
+  được nạp lại thành `gian_doan` chứ không treo mãi (NT4). 10 test.
 - [ ] 3.3 — Phối hợp thêm nút "Kiểm tra sizing" vào web nội bộ sẵn có
 - [ ] 3.4 — Thiết kế hiển thị báo cáo trên web: nhóm theo mức độ, hiện trích dẫn quy tắc
       → bố cục bám theo checklist thẩm định để người thẩm định đối chiếu 1:1
@@ -1346,3 +1356,7 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-09 | ⚠️ **`do_song_song.py` in ra "0,3 giờ cho lượt dev" — sai 16,6 lần, lỗi thiết kế của tôi** | Script bắn lời gọi *"Trả lời đúng một từ: OK"* (vài chục token) rồi **quy thẳng thông lượng ấy ra giờ**, trong khi lời gọi thật của C3/C5 mang cả ngữ cảnh tài liệu và sinh structured output. Cùng cổng, cùng song song 6: lời gọi nhỏ **119,7** lượt/phút vs lời gọi thật **7,2** (649 lượt / 90 phút) — **lệch 16,6 lần**. Nguy hiểm ở chỗ nó in con số ấy ra như một sự thật, ngay trước một lượt chạy nhiều giờ. Đã sửa: bảng chỉ báo **tỉ lệ giữa các mức** (thứ phép đo này đo ĐÚNG), phần quy ra giờ đi qua hằng `TOC_DO_THAT = 7.2` đo được, và nói rõ đó là **cận trên** vì lời gọi nặng làm cổng bão hoà sớm hơn. 2 test khoá lại, gồm một test đọc mã nguồn để chặn việc quy giờ thẳng từ lời gọi nhỏ |
 | 2026-09-09 | **Bộ ước lượng `--uoc-tinh` đang thấp hơn thực tế** | Nó báo 191 lượt/hồ sơ và ~5,0 giờ ở song song 6; đo thật là **216 lượt/hồ sơ** (649/3) và **~7 giờ**. Nguyên nhân nó tự khai: giả định 5 phân hệ, mà BCCS3 có **13**. Chưa sửa — ghi lại để đừng ai dùng con số của nó làm cam kết |
 | 2026-09-09 | **Điểm dừng eval đặt tên theo CHỮ KÝ, không chỉ theo tập** | Bước 3 (cả 14 hồ sơ) và bước 4 (3 hồ sơ đo biên độ) đều là `--tap dev`, mà tên file điểm dừng cũ chỉ có `tap` ⟹ **hai lượt chạy cùng lúc đè lên điểm dừng của nhau**, và vì chữ ký lệch nên `--tiep-tuc` sau đó TỪ CHỐI file và chạy lại từ đầu — lượt 5 giờ bị ngắt ở giờ thứ 4 là mất trắng. Nay tên file gồm hash chữ ký. **Có đường lùi đọc file theo lối đặt tên cũ**, vì bản vá này ra đời đúng lúc một lượt dev nhiều giờ đang chạy. Và giữ nguyên lời báo *"thuộc lượt chạy khác bộ lọc"* bằng cách soi các điểm dừng khác của cùng tập — im lặng chạy lại từ đầu là bước lùi về minh bạch |
+| 2026-09-09 | **B1/B2 xong: API + hàng đợi. Con số 16 phút quyết định kiến trúc, không phải sở thích** | Một tài liệu ~216 lượt gọi ở song song 12 ⟹ **~16 phút**. Nên: (a) KHÔNG có API đồng bộ, và cố ý không mở "cho tiện" vì nó sẽ được dùng — proxy cắt kết nối rồi người dùng bấm lại, nhân đôi tải lên đúng cái cổng đang là nút thắt; (b) trạng thái ghi ra đĩa vì 16 phút đủ dài để container restart; (c) **mỗi lúc một tài liệu** — hai tài liệu là 2×12 = 24 lượt đồng thời, mà đo được mức 24 chậm hơn mức 12. `src/cong_viec.py` tách khỏi `api/` để test offline, cùng lý do `giao_dien.py` tách khỏi `ui/app.py`. 21 test mới |
+| 2026-09-09 | **A1–A3 đã được một lượt BUILD THẬT kiểm chứng** | Trước đó Dockerfile chỉ mới viết. Nay build xong trên laptop: tự kiểm trong container **mã thoát 0**, dấu commit `f4b073a (đóng dấu lúc build)` đọc được, và **`/app` chỉ 1,2 MB** — `danh_sach_sizings_da_duyet`, `data`, `eval` đều KHÔNG có mặt, tức danh sách chặn-tất-rồi-mở hoạt động đúng. Chạy container, `GET /health` 200, nộp `.docx` → việc chạy nền → hỏng đúng lý do «chưa có settings.yaml» kèm thông điệp tiếng Việt đọc được |
+| 2026-09-09 | **Ba rào mạng nội bộ đã đưa vào mã, không chỉ vào đầu người vận hành** | (1) Proxy Docker Desktop phải đặt **thủ công** — chế độ `system` không đọc được PAC của Viettel. (2) `apt-get` luôn hỏng vì proxy trả rác (`Clearsigned … NOSPLIT`) ⟹ **Dockerfile không có `apt-get` nào và phải giữ vậy**; `git` bị bỏ, commit đóng dấu vào `/app/.commit` + biến môi trường, `version.py` đọc cả hai. (3) TLS MITM (Websecurity Gateway) ⟹ CA nội bộ đi qua **BuildKit secret**, KHÔNG qua `COPY` — file `COPY` nằm lại trong lớp image vĩnh viễn kể cả khi bước sau `rm` nó, tức chứng chỉ nội bộ sẽ theo image ra ngoài. Proxy để `ARG` chứ không `ENV` nên image không mang địa chỉ proxy của một mạng cụ thể đi nơi khác. `docs/docker-mang-noi-bo.md` |
+| 2026-09-09 | **Một cạm bẫy chẩn đoán, không phải lỗi sản phẩm** | `curl … \| python -m json.tool` trên Windows đọc stdin theo cp1252 nên tiếng Việt trong phản hồi API hiện ra như `ChÆ°a cÃ³`. Tôi đã kết luận nhầm là lỗi mã hoá của sản phẩm; kiểm lại trong container thì chuỗi hoàn toàn đúng, và API trả UTF-8 chuẩn. Ghi vào `docs/docker-mang-noi-bo.md` mục 6 kèm cách soi đúng |

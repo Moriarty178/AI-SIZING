@@ -13,6 +13,7 @@
 !src
 !config
 !ui
+!api
 !scripts
 
 # Chặn lại những thứ lọt vào qua các thư mục vừa mở
@@ -24,6 +25,11 @@
 # Cấu hình thật có endpoint nội bộ — mount lúc chạy, không nướng vào image.
 # (Khoá API luôn qua biến môi trường SIZING_COPILOT_API_KEY, không bao giờ ở đây.)
 config/settings.yaml
+
+# Chứng chỉ CA nội bộ KHÔNG cần vào ngữ cảnh build: nó đi qua BuildKit secret
+# (`--secret id=ca_noi_bo,src=...`), nên không nằm lại trong lớp image nào.
+*.pem
+*.crt
 
 # `eval/` CỐ Ý không có trong danh sách mở: nó cần `data/eval_set.json` — nhãn
 # thẩm định nội bộ. Đo eval chạy thẳng từ repo trên máy nội bộ, không chạy trong
