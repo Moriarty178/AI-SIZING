@@ -368,10 +368,20 @@ class DocAnh:
             self.tk.tang("so_lieu")
             if sd.gia_tri is None and sd.ghi_chu:
                 self.tk.tang("khong_phai_gia_tri")
-        if not kq.so_lieu and kq.bo_vi_khong_neo:
+        if not kq.so_lieu:
+            # "Đọc được" mà không nêu được số nào thì không dùng được — y như
+            # nhánh `so_do` phía trên. Trước đây console KHÔNG có cổng này, và hậu
+            # quả là IM LẶNG HOÀN TOÀN: `thanh_finding` sinh finding với
+            # `computed_evidence` rỗng, `co_can_cu()` trả False, C7 lọc bỏ. Lượt
+            # chạy CallBase 2026-09-08 có 5 ảnh như thế — người dùng không được
+            # báo gì về 5 ảnh console đã bị xử lý, đúng thứ NT4 cấm.
             kq.doc_duoc = False
-            kq.ly_do = (f"{kq.bo_vi_khong_neo} giá trị model đưa ra đều không nằm "
-                        f"trong trích dẫn của chính nó — không dùng được")
+            kq.ly_do = (
+                f"{kq.bo_vi_khong_neo} giá trị model đưa ra đều không nằm trong "
+                f"trích dẫn của chính nó — không dùng được"
+                if kq.bo_vi_khong_neo else
+                "model báo đọc được nhưng không nêu số liệu nào — chưa rõ ảnh "
+                "không chứa số đo tài nguyên hay model bỏ sót")
             self.tk.tang("doc_duoc", -1)
             self.tk.tang("khong_doc_duoc")
         return kq
