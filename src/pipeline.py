@@ -203,6 +203,14 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
     kq_dl = QuantitativeValidator(rs).run(core)
     findings += [o.finding for o in kq_dl if o.finding is not None]
 
+    # Hệ số dự phòng thông lượng FW/LB. Đọc thẳng công thức tài liệu tự viết ra,
+    # nên chạy được cả khi C3 không trích được tham số nào — đó chính là tình
+    # trạng của FWL-02/LBA-01 hiện nay. 0 lượt gọi model.
+    from .validators.he_so_du_phong import kiem_he_so_du_phong
+    f_hsdp, tk_hsdp = kiem_he_so_du_phong(doc, rs)
+    findings += f_hsdp
+    tk["c4_he_so_du_phong"] = dict(tk_hsdp.__dict__)
+
     kq_dt: list[RuleOutcome] = []
     if not bo_qua_dinh_tinh:
         c5 = QualitativeValidator(client or LLMClient(), rules=rs, model=model,
