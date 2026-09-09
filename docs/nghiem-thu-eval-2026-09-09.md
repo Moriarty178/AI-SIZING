@@ -24,7 +24,7 @@ mục 2.3 ngày 09-09 đã tái xác nhận model không cho kết quả lặp l
 
 ```powershell
 git pull
-py -m pytest -q                      # mong đợi: 477 passed
+py -m pytest -q                      # mong đợi: 481 passed
 py scripts/khoi_dong_thu.py          # mong đợi: mã thoát 0
 py -m eval.run_eval --uoc-tinh       # số lượt gọi dự kiến cho cả tập dev
 ```
