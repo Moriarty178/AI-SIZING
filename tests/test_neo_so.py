@@ -407,3 +407,38 @@ class TestByte:
                trich_dan="536G    /var/lib/postgresql/14")])
         r = neo_mot_anh(kq, kb, loai_nhan=("byte",))
         assert [n.scope_key for n in r.neo] == ["Postgres"]
+
+
+def test_thong_bao_NT4_goi_dung_ten_loai_bi_bo():
+    """Câu cũ nói cứng "đơn vị dung lượng không rõ 10⁹ hay 2³⁰" cho MỌI loại bị bỏ.
+
+    Đúng khi `byte` còn tắt. Sau 2026-09-09 `byte` đã bật, và câu ấy được đem gán
+    cho `TPS current [40543]` của CallBase — một thông báo TỰ MÔ TẢ SAI CHÍNH NÓ,
+    cùng loại lỗi đã sửa ở chuỗi chứng cứ.
+    """
+    kq = anh("anh#71", "Mục 3, trang 10", [
+        so("TPS current", "40543", trich_dan="15:57:33 INFO LogTPSProc: TPS current [40543]"),
+    ])
+    r = neo_mot_anh(kq, KB_VTAG, loai_nhan=("phan_tram", "byte"))
+    assert r.so_ngoai_loai_nhan == 1 and r.loai_bi_bo == {"dem"}
+    cc = thanh_finding(r).computed_evidence
+    assert "số đếm" in cc
+    assert "2³⁰" not in cc, "không được đổ cho đơn vị dung lượng"
+
+
+def test_chi_giu_bao_cao_moi_nhat_moi_ho_so(tmp_path):
+    """Chạy lại 2.3 sinh THÊM file chứ không đè. Hai dòng thống kê mâu thuẫn cho
+    cùng một hồ sơ (CallBase: bản cũ 0 số liệu, bản mới 116) là cách chắc chắn để
+    đọc nhầm kết quả."""
+    import json
+    import os
+    import sys
+    sys.path.insert(0, "scripts")
+    from neo_so_anh import moi_nhat_moi_ho_so
+
+    cu, moi = tmp_path / "doc-anh-x-01.json", tmp_path / "doc-anh-x-02.json"
+    for f in (cu, moi):
+        f.write_text(json.dumps({"docx": "hs/A.docx", "ket_qua": []}), encoding="utf-8")
+    os.utime(cu, (1, 1))
+    os.utime(moi, (2, 2))
+    assert moi_nhat_moi_ho_so([cu, moi]) == [moi]

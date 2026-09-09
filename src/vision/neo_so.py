@@ -181,6 +181,12 @@ _PHAN_TRAM_TRONG = re.compile(r"([\d]+(?:[.,][\d]+)?)\s*%")
 # "1" rồi mới tới "Test"; bảng Vtag tr.9 mở đầu thẳng bằng "Master"/"Worker".
 _CHI_LA_SO = re.compile(r"^\s*\d+([.,]\d+)?\s*$")
 
+# Tên người đọc hiểu được, cho thông báo NT4.
+TEN_LOAI: dict[str, str] = {
+    "phan_tram": "phần trăm", "byte": "dung lượng",
+    "milli_core": "millicore", "dem": "số đếm",
+}
+
 MAX_DAI_NHAN = 60
 
 # Nhãn dòng dài hơn thế thì không phải TÊN một phân hệ, mà là một câu. Ca thật
@@ -520,6 +526,7 @@ class KetQuaNeoAnh:
     so_da_doc: int = 0              # số liệu ảnh đọc được
     so_khong_xep_loai: int = 0      # không suy được đại lượng
     so_ngoai_loai_nhan: int = 0     # xếp được loại nhưng loại đó đang không nhận
+    loai_bi_bo: set = field(default_factory=set)   # ĐÚNG những loại nào đã bị bỏ
     so_khong_neo: int = 0           # có đại lượng nhưng không ô khai báo nào khớp
     lech_dai_luong: int = 0         # trùng số nhưng khác CPU/RAM/DISK ⇒ bỏ
     neo_yeu: int = 0                # giá trị mơ hồ, không có số cùng dòng chứng thực
@@ -613,6 +620,7 @@ def neo_mot_anh(kq: KetQuaDocAnh, khai_bao: list[OKhaiBao], *,
         loai, gt = uv
         if loai not in loai_nhan:
             ra.so_ngoai_loai_nhan += 1
+            ra.loai_bi_bo.add(loai)
             continue
 
         dl_anh = dai_luong_vat_ly(s.nhan, s.trich_dan)
@@ -808,8 +816,12 @@ def thanh_finding(r: KetQuaNeoAnh, *, source_doc: str = "") -> Finding | None:
         ly.append(f"{r.lech_dai_luong} số trùng giá trị với một ô khai báo nhưng "
                   f"khác đại lượng (CPU/RAM/dung lượng) nên không dùng")
     if r.so_ngoai_loai_nhan:
-        ly.append(f"{r.so_ngoai_loai_nhan} số thuộc đại lượng chưa nhận đối chiếu "
-                  f"(đơn vị dung lượng trong bảng không nói rõ 10⁹ hay 2³⁰)")
+        # Phải gọi ĐÚNG TÊN loại bị bỏ. Câu cũ nói cứng là "đơn vị dung lượng
+        # không rõ 10⁹ hay 2³⁰" — đúng khi `byte` còn tắt, nhưng sau 2026-09-09
+        # `byte` đã bật và câu ấy đem gán cho TPS 40543 của CallBase, tức là một
+        # thông báo TỰ MÔ TẢ SAI CHÍNH NÓ. Cùng loại lỗi đã sửa ở chứng cứ neo.
+        ly.append(f"{r.so_ngoai_loai_nhan} số thuộc đại lượng chưa đối chiếu "
+                  f"({', '.join(TEN_LOAI.get(x, x) for x in sorted(r.loai_bi_bo))})")
     if r.so_khong_xep_loai:
         ly.append(f"{r.so_khong_xep_loai} số không suy được đơn vị")
     return Finding(

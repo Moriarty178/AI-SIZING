@@ -1,0 +1,1477 @@
+{
+ "docx": "danh_sach_sizings_da_duyet\\cap moi CALLBASE 44087\\PL Sizing cap moi phan cung trien khai CallBase lay tin hieu qua Kafka_updated_v2.docx",
+ "commit": "81561f0 (có sửa cục bộ)",
+ "loai": [
+  "so_do",
+  "console"
+ ],
+ "giay": 120,
+ "thong_ke": {
+  "luot_goi": 9,
+  "luot_goi_hong": 0,
+  "doc_duoc": 8,
+  "khong_doc_duoc": 1,
+  "so_lieu": 116,
+  "trich_dan_bia": 3,
+  "khong_phai_gia_tri": 21,
+  "bo_qua_qua_lon": 0,
+  "bo_qua_dinh_dang": 0,
+  "loi": []
+ },
+ "ket_qua": [
+  {
+   "ma": "anh#9",
+   "loai": "console",
+   "location": "Mục I.2, trang 2",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "lenh": "",
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Tốc độ gói nhận trên card mạng em3 (pkts/s) — được khoanh đỏ trong ảnh",
+     "raw": "228332",
+     "gia_tri": 228332.0,
+     "don_vi": "pkts/s",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em3: 0 pkts/s rx em3 228332 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tốc độ gói nhận trên card mạng em4 (pkts/s) — được khoanh đỏ trong ảnh",
+     "raw": "171878",
+     "gia_tri": 171878.0,
+     "don_vi": "pkts/s",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em4: 0 pkts/s rx em4 171878 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tốc độ gói truyền trên em3",
+     "raw": "0",
+     "gia_tri": 0.0,
+     "don_vi": "pkts/s",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em3: 0 pkts/s rx em3 228332 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tốc độ gói truyền trên em4",
+     "raw": "0",
+     "gia_tri": 0.0,
+     "don_vi": "pkts/s",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em4: 0 pkts/s rx em4 171878 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Giao diện em1 — RX packets (tổng tích lũy)",
+     "raw": "168492603223",
+     "gia_tri": 168492603223.0,
+     "don_vi": "packets",
+     "trich_dan": "RX packets:168492603223 errors:0 dropped:13 overruns:0 frame:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Giao diện em1 — TX packets (tổng tích lũy)",
+     "raw": "165035871577",
+     "gia_tri": 165035871577.0,
+     "don_vi": "packets",
+     "trich_dan": "TX packets:165035871577 errors:0 dropped:0 overruns:0 carrier:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Giao diện em1 — RX bytes (tổng tích lũy)",
+     "raw": "159596862520573 (14.5 TiB)",
+     "gia_tri": 159596862520573.0,
+     "don_vi": "bytes",
+     "trich_dan": "RX bytes:159596862520573  (14.5 TiB)  TX bytes:28598128419458  (26.0 TiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Giao diện em1 — TX bytes (tổng tích lũy)",
+     "raw": "28598128419458 (26.0 TiB)",
+     "gia_tri": 28598128419458.0,
+     "don_vi": "bytes",
+     "trich_dan": "RX bytes:159596862520573  (14.5 TiB)  TX bytes:28598128419458  (26.0 TiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Giao diện em1 — dropped (RX)",
+     "raw": "13",
+     "gia_tri": 13.0,
+     "don_vi": "gói",
+     "trich_dan": "RX packets:168492603223 errors:0 dropped:13 overruns:0 frame:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Giao diện em1 — MTU",
+     "raw": "1500",
+     "gia_tri": 1500.0,
+     "don_vi": "",
+     "trich_dan": "UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Giao diện em1 — txqueuelen",
+     "raw": "1000",
+     "gia_tri": 1000.0,
+     "don_vi": "",
+     "trich_dan": "collisions:0 txqueuelen:1000",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Giao diện em1 — Interrupt",
+     "raw": "35",
+     "gia_tri": 35.0,
+     "don_vi": "",
+     "trich_dan": "Interrupt:35",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Địa chỉ IP giao diện em1",
+     "raw": "10.58.4.43",
+     "gia_tri": 1058443.0,
+     "don_vi": "",
+     "trich_dan": "inet addr:10.58.4.43  Bcast:10.58.4.255  Mask:255.255.255.0",
+     "luong_nghia": true,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Thời điểm đo (trên dòng log)",
+     "raw": "Fri Oct 25 16:31:26 ICT 2024",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em3: 0 pkts/s rx em3 228332 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    }
+   ]
+  },
+  {
+   "ma": "anh#14",
+   "loai": "so_do",
+   "location": "Mục II, trang 2",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "lenh": "",
+   "thanh_phan": [
+    "«Kafka topic» (biểu tượng hình trụ màu hồng/đỏ tươi, bên trái ảnh)",
+    "«CALLBASE» (khung lớn màu xanh lục bao ngoài)",
+    "«SIGNAL PARSER» (khung màu cam bên trong CALLBASE)",
+    "«SignalParser1»",
+    "«SignalParser2»",
+    "«SignalParser3»",
+    "«SignalParser4»",
+    "«Dispatcher»",
+    "«Airtime» (biểu tượng máy chủ bên phải)",
+    "«Antispam call» (biểu tượng máy chủ bên phải)",
+    "«TTOL» (biểu tượng máy chủ bên phải)"
+   ],
+   "luong": [
+    "«Kafka topic» — đường nối với «SignalParser1» (mũi tên thấy rõ hướng về phía «Kafka topic»)",
+    "«Kafka topic» — đường nối với «SignalParser2» (mũi tên thấy rõ hướng về phía «Kafka topic»)",
+    "«Kafka topic» — đường nối với «SignalParser3» (mũi tên thấy rõ hướng về phía «Kafka topic»)",
+    "«Kafka topic» — đường nối với «SignalParser4» (mũi tên thấy rõ hướng về phía «Kafka topic»)",
+    "«SignalParser1» → «Dispatcher», nhãn trên đường nối: «Data1»",
+    "«SignalParser2» → «Dispatcher», nhãn trên đường nối: «Data2»",
+    "«SignalParser3» → «Dispatcher», nhãn trên đường nối: «Data3»",
+    "«SignalParser4» → «Dispatcher», nhãn trên đường nối: «Data4»",
+    "«Dispatcher» → «Airtime», nhãn trên đường nối: «Socket»",
+    "«Dispatcher» → «Antispam call», nhãn trên đường nối: «Socket»",
+    "«Dispatcher» → «TTOL», nhãn trên đường nối: «Socket»"
+   ],
+   "mo_ta": "Sơ đồ gồm: một biểu tượng «Kafka topic» ở bên trái; một khung lớn «CALLBASE» chứa khung cam «SIGNAL PARSER» (bên trong có 4 khối «SignalParser1», «SignalParser2», «SignalParser3», «SignalParser4») và khối «Dispatcher»; bên phải là 3 biểu tượng máy chủ «Airtime», «Antispam call», «TTOL». Các đường nối từ Kafka topic tới 4 SignalParser có đầu mũi tên hướng về Kafka topic; các đường Data1–Data4 từ SignalParser tới Dispatcher có mũi tên hướng vào Dispatcher; các đường Socket từ Dispatcher tới 3 máy chủ có mũi tên hướng vào máy chủ.",
+   "so_lieu": []
+  },
+  {
+   "ma": "anh#51",
+   "loai": "console",
+   "location": "Mục III, trang 6",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "lenh": "",
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "em1 - RX packets",
+     "raw": "106942874113",
+     "gia_tri": 106942874113.0,
+     "don_vi": "",
+     "trich_dan": "RX packets:106942874113 errors:0 dropped:13 overruns:0 frame:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em1 - TX packets",
+     "raw": "165481141979",
+     "gia_tri": 165481141979.0,
+     "don_vi": "",
+     "trich_dan": "TX packets:165481141979 errors:0 dropped:0 overruns:0 carrier:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em1 - RX bytes",
+     "raw": "15593494253398 (14.5 TiB)",
+     "gia_tri": 15593494253398.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:15593494253398 (14.5 TiB)  TX bytes:28363949645228 (26.0 TiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em1 - TX bytes",
+     "raw": "28363949645228 (26.0 TiB)",
+     "gia_tri": 28363949645228.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:15593494253398 (14.5 TiB)  TX bytes:28363949645228 (26.0 TiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em1 - MTU",
+     "raw": "MTU:1500",
+     "gia_tri": 1500.0,
+     "don_vi": "",
+     "trich_dan": "UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em2 - RX packets",
+     "raw": "4074491568",
+     "gia_tri": 4074491568.0,
+     "don_vi": "",
+     "trich_dan": "RX packets:4074491568 errors:0 dropped:0 overruns:0 frame:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em2 - TX packets",
+     "raw": "11",
+     "gia_tri": 11.0,
+     "don_vi": "",
+     "trich_dan": "TX packets:11 errors:0 dropped:0 overruns:0 carrier:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em2 - RX bytes",
+     "raw": "352686322810 (328.4 GiB)",
+     "gia_tri": 352686322810.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:352686322810 (328.4 GiB)  TX bytes:990 (990.0 B)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em2 - TX bytes",
+     "raw": "990 (990.0 B)",
+     "gia_tri": 990.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:352686322810 (328.4 GiB)  TX bytes:990 (990.0 B)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em3 - RX packets",
+     "raw": "112675732845684",
+     "gia_tri": 112675732845684.0,
+     "don_vi": "",
+     "trich_dan": "RX packets:112675732845684 errors:1 dropped:2925592 overruns:0 frame:1",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em3 - TX packets",
+     "raw": "9",
+     "gia_tri": 9.0,
+     "don_vi": "",
+     "trich_dan": "TX packets:9 errors:0 dropped:0 overruns:0 carrier:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em3 - RX bytes",
+     "raw": "44743153545052894 (3.9 PiB)",
+     "gia_tri": 4.47431535450529e+16,
+     "don_vi": "",
+     "trich_dan": "RX bytes:44743153545052894 (3.9 PiB)  TX bytes:2346 (2.2 KiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em3 - TX bytes",
+     "raw": "2346 (2.2 KiB)",
+     "gia_tri": 2346.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:44743153545052894 (3.9 PiB)  TX bytes:2346 (2.2 KiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em4 - RX packets",
+     "raw": "10757194274114",
+     "gia_tri": 10757194274114.0,
+     "don_vi": "",
+     "trich_dan": "RX packets:10757194274114 errors:0 dropped:2308953 overruns:0 frame:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em4 - TX packets",
+     "raw": "3",
+     "gia_tri": 3.0,
+     "don_vi": "",
+     "trich_dan": "TX packets:3 errors:0 dropped:0 overruns:0 carrier:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em4 - RX bytes",
+     "raw": "2922280938748223 (2.5 PiB)",
+     "gia_tri": 2922280938748223.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:2922280938748223 (2.5 PiB)  TX bytes:270 (270.0 B)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "em4 - TX bytes",
+     "raw": "270 (270.0 B)",
+     "gia_tri": 270.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:2922280938748223 (2.5 PiB)  TX bytes:270 (270.0 B)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "lo - RX packets",
+     "raw": "613689724",
+     "gia_tri": 613689724.0,
+     "don_vi": "",
+     "trich_dan": "RX packets:613689724 errors:0 dropped:0 overruns:0 frame:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "lo - TX packets",
+     "raw": "613689724",
+     "gia_tri": 613689724.0,
+     "don_vi": "",
+     "trich_dan": "TX packets:613689724 errors:0 dropped:0 overruns:0 carrier:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "lo - RX bytes",
+     "raw": "103727512931 (96.6 GiB)",
+     "gia_tri": 103727512931.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:103727512931 (96.6 GiB)  TX bytes:103727512931 (96.6 GiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "lo - TX bytes",
+     "raw": "103727512931 (96.6 GiB)",
+     "gia_tri": 103727512931.0,
+     "don_vi": "",
+     "trich_dan": "RX bytes:103727512931 (96.6 GiB)  TX bytes:103727512931 (96.6 GiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    }
+   ]
+  },
+  {
+   "ma": "anh#54",
+   "loai": "console",
+   "location": "Mục III, trang 6",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 2,
+   "lenh": "",
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Tốc độ card em3 (kết quả max từ awk)",
+     "raw": "198465",
+     "gia_tri": 198465.0,
+     "don_vi": "",
+     "trich_dan": "[calbase@localhost log]$ awk 'BEGIN{max=0};{if(max < $14) max=$14;} END{print max;}' speed_em3.txt\n198465",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tốc độ card em4 (kết quả max từ awk)",
+     "raw": "120058",
+     "gia_tri": 120058.0,
+     "don_vi": "",
+     "trich_dan": "[calbase@localhost log]$ awk 'BEGIN{max=0};{if(max < $14) max=$14;} END{print max;}' speed_em4.txt\n120058",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tốc độ card em1 (kết quả max từ awk)",
+     "raw": "769",
+     "gia_tri": 769.0,
+     "don_vi": "",
+     "trich_dan": "[calbase@localhost log]$ awk 'BEGIN{max=0};{if(max < $14) max=$14;} END{print max;}' speed_em1.txt\n769",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Dòng grep xác nhận giá trị em3",
+     "raw": "TX em3: 0 kB/s RX em3: 198465 kB/s",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "[calbase@localhost log]$ grep --color 198465 speed_em3.txt\ndate Thu Oct 24 01:00:03 ICT 2024 TX em3: 0 kB/s RX em3: 198465 kB/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "Dòng grep xác nhận giá trị em4",
+     "raw": "TX em4: 0 kB/s RX em4: 120058 kB/s",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "[calbase@localhost log]$ grep --color 120058 speed_em4.txt\ndate Tue Nov  5 02:09:24 ICT 2024 TX em4: 0 kB/s RX em4: 120058 kB/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "Địa chỉ IP card mạng (ifconfig)",
+     "raw": "inet addr:10.58.4.3  Bcast:10.58.4.255  Mask:255.255.255.0",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "[calbase@localhost log]$ ifconfig | grep \"4.3\"\n        inet addr:10.58.4.3  Bcast:10.58.4.255  Mask:255.255.255.0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "RX/TX bytes (dòng 2)",
+     "raw": "RX bytes:103710742316 (96.5 GiB)  TX bytes:103710742316 (96.5 GiB)",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "RX bytes:103710742316 (96.5 GiB)  TX bytes:103710742316 (96.5 GiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "Đường dẫn thư mục hiện tại (pwd)",
+     "raw": "/u01/calbase/tool/log",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "[calbase@localhost log]$ pwd\n/u01/calbase/tool/log",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    }
+   ]
+  },
+  {
+   "ma": "anh#65",
+   "loai": "console",
+   "location": "Mục 1, trang 9",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 1,
+   "lenh": "",
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Tốc độ gói tin nhận vào (rx) card mạng em3",
+     "raw": "228332 pkts/s",
+     "gia_tri": 228332.0,
+     "don_vi": "",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em3: 0 pkts/s rx em3 228332 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tốc độ gói tin gửi đi (tx) card mạng em3",
+     "raw": "0 pkts/s",
+     "gia_tri": 0.0,
+     "don_vi": "",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em3: 0 pkts/s rx em3 228332 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tốc độ gói tin nhận vào (rx) card mạng em4",
+     "raw": "171878 pkts/s",
+     "gia_tri": 171878.0,
+     "don_vi": "",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em4: 0 pkts/s rx em4 171878 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tốc độ gói tin gửi đi (tx) card mạng em4",
+     "raw": "0 pkts/s",
+     "gia_tri": 0.0,
+     "don_vi": "",
+     "trich_dan": "date Fri Oct 25 16:31:26 ICT 2024 tx em4: 0 pkts/s rx em4 171878 pkts/s",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Địa chỉ IP / Broadcast / Subnet mask interface em1",
+     "raw": "inet addr:10.58.4.3  Bcast:10.58.4.255  Mask:255.255.255.0",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "inet addr:10.58.4.3  Bcast:10.58.4.255  Mask:255.255.255.0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "MTU interface em1",
+     "raw": "MTU:1500",
+     "gia_tri": 1500.0,
+     "don_vi": "",
+     "trich_dan": "UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Tổng số gói RX (nhận) tích lũy trên em1",
+     "raw": "RX packets:168492603223 errors:0 dropped:13 overruns:0 frame:0",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "RX packets:168492603223 errors:0 dropped:13 overruns:0 frame:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "Tổng số gói TX (gửi) tích lũy trên em1",
+     "raw": "TX packets:165035871577 errors:0 dropped:0 overruns:0 carrier:0",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "TX packets:165035871577 errors:0 dropped:0 overruns:0 carrier:0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "Tổng bytes RX / TX tích lũy trên em1",
+     "raw": "RX bytes:159596862520573 (14.5 TiB)  TX bytes:28598128419458 (26.0 TiB)",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "RX bytes:159596862520573 (14.5 TiB)  TX bytes:28598128419458 (26.0 TiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    }
+   ]
+  },
+  {
+   "ma": "anh#69",
+   "loai": "console",
+   "location": "Mục 2, trang 9",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "lenh": "",
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "Số CPU (lscpu)",
+     "raw": "16",
+     "gia_tri": 16.0,
+     "don_vi": "",
+     "trich_dan": "CPU(s):                16",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Danh sách CPU online (lscpu)",
+     "raw": "0-15",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "On-line CPU(s) list:   0-15",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "Thread mỗi core (lscpu)",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "Thread(s) per core:    1",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Core mỗi socket (lscpu)",
+     "raw": "4",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "Core(s) per socket:    4",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Số socket (lscpu)",
+     "raw": "4",
+     "gia_tri": 4.0,
+     "don_vi": "",
+     "trich_dan": "Socket(s):             4",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Số NUMA node (lscpu)",
+     "raw": "1",
+     "gia_tri": 1.0,
+     "don_vi": "",
+     "trich_dan": "NUMA node(s):          1",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "CPU family (lscpu)",
+     "raw": "6",
+     "gia_tri": 6.0,
+     "don_vi": "",
+     "trich_dan": "CPU family:            6",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Model (lscpu)",
+     "raw": "63",
+     "gia_tri": 63.0,
+     "don_vi": "",
+     "trich_dan": "Model:                 63",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "Model name (lscpu)",
+     "raw": "Intel(R) Xeon(R) CPU E5-2670 v3 @ 2.30GHz",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "Model name:            Intel(R) Xeon(R) CPU E5-2670 v3 @ 2.30GHz",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "Stepping (lscpu)",
+     "raw": "2",
+     "gia_tri": 2.0,
+     "don_vi": "",
+     "trich_dan": "Stepping:              2",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "CPU MHz (lscpu)",
+     "raw": "2297.339",
+     "gia_tri": 2297339.0,
+     "don_vi": "",
+     "trich_dan": "CPU MHz:               2297.339",
+     "luong_nghia": true,
+     "gia_tri_khac": 2297.339,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "BogoMIPS (lscpu)",
+     "raw": "4594.67",
+     "gia_tri": 4594.67,
+     "don_vi": "",
+     "trich_dan": "BogoMIPS:              4594.67",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "L1d cache (lscpu)",
+     "raw": "32K",
+     "gia_tri": 32.0,
+     "don_vi": "",
+     "trich_dan": "L1d cache:             32K",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "L1i cache (lscpu)",
+     "raw": "32K",
+     "gia_tri": 32.0,
+     "don_vi": "",
+     "trich_dan": "L1i cache:             32K",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "L2 cache (lscpu)",
+     "raw": "256K",
+     "gia_tri": 256.0,
+     "don_vi": "",
+     "trich_dan": "L2 cache:              256K",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "L3 cache (lscpu)",
+     "raw": "30720K",
+     "gia_tri": 30720.0,
+     "don_vi": "",
+     "trich_dan": "L3 cache:              30720K",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "NUMA node0 CPU(s) (lscpu)",
+     "raw": "0-15",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "NUMA node0 CPU(s):     0-15",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "Architecture (lscpu)",
+     "raw": "x86_64",
+     "gia_tri": 86.0,
+     "don_vi": "",
+     "trich_dan": "Architecture:          x86_64",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "CPU op-mode (lscpu)",
+     "raw": "32-bit, 64-bit",
+     "gia_tri": 32.0,
+     "don_vi": "",
+     "trich_dan": "CPU op-mode(s):        32-bit, 64-bit",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "MTU ens160 (ifconfig)",
+     "raw": "mtu 1500",
+     "gia_tri": 1500.0,
+     "don_vi": "",
+     "trich_dan": "ens160: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "IP ens160 (ifconfig)",
+     "raw": "inet 10.60.105.79  netmask 255.255.255.0  broadcast 10.60.105.255",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "inet 10.60.105.79  netmask 255.255.255.0  broadcast 10.60.105.255",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "RX packets/bytes ens160 (ifconfig)",
+     "raw": "RX packets 951338958  bytes 914046559084 (292.4 GiB)",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "RX packets 951338958  bytes 914046559084 (292.4 GiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "RX errors ens160 (ifconfig)",
+     "raw": "RX errors 0  dropped 1046  overruns 0  frame 0",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "RX errors 0  dropped 1046  overruns 0  frame 0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "TX packets/bytes ens160 (ifconfig)",
+     "raw": "TX packets 834041980  bytes 273255040104 (254.4 GiB)",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "TX packets 834041980  bytes 273255040104 (254.4 GiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "TX errors ens160 (ifconfig)",
+     "raw": "TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "MTU lo (ifconfig)",
+     "raw": "mtu 65536",
+     "gia_tri": 65536.0,
+     "don_vi": "",
+     "trich_dan": "lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "RX packets/bytes lo (ifconfig)",
+     "raw": "RX packets 2109138304  bytes 252902083438 (235.5 GiB)",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "RX packets 2109138304  bytes 252902083438 (235.5 GiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "TX packets/bytes lo (ifconfig)",
+     "raw": "TX packets 2109138304  bytes 252902083438 (235.5 GiB)",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "TX packets 2109138304  bytes 252902083438 (235.5 GiB)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "IP virbr0 (ifconfig)",
+     "raw": "inet 192.168.122.1  netmask 255.255.255.0  broadcast 192.168.122.255",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "inet 192.168.122.1  netmask 255.255.255.0  broadcast 192.168.122.255",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    },
+    {
+     "nhan": "RX/TX virbr0 (ifconfig)",
+     "raw": "RX packets 0  bytes 0 (0.0 B)",
+     "gia_tri": null,
+     "don_vi": "",
+     "trich_dan": "RX packets 0  bytes 0 (0.0 B)",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": "không có hình dạng của một giá trị — giữ nguyên văn, KHÔNG quy ra số"
+    }
+   ]
+  },
+  {
+   "ma": "anh#71",
+   "loai": "console",
+   "location": "Mục 3, trang 10",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "lenh": "",
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "TPS current",
+     "raw": "40543",
+     "gia_tri": 40543.0,
+     "don_vi": "",
+     "trich_dan": "15:57:33 INFO LogTPSProc: TPS current [40543]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "39357",
+     "gia_tri": 39357.0,
+     "don_vi": "",
+     "trich_dan": "15:57:34 INFO LogTPSProc: TPS current [39357]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "42731",
+     "gia_tri": 42731.0,
+     "don_vi": "",
+     "trich_dan": "15:57:35 INFO LogTPSProc: TPS current [42731]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "38859",
+     "gia_tri": 38859.0,
+     "don_vi": "",
+     "trich_dan": "15:57:36 INFO LogTPSProc: TPS current [38859]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "41360",
+     "gia_tri": 41360.0,
+     "don_vi": "",
+     "trich_dan": "15:57:37 INFO LogTPSProc: TPS current [41360]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "41360",
+     "gia_tri": 41360.0,
+     "don_vi": "",
+     "trich_dan": "15:57:38 INFO LogTPSProc: TPS current [41360]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "38860",
+     "gia_tri": 38860.0,
+     "don_vi": "",
+     "trich_dan": "15:57:39 INFO LogTPSProc: TPS current [38860]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "37358",
+     "gia_tri": 37358.0,
+     "don_vi": "",
+     "trich_dan": "15:57:40 INFO LogTPSProc: TPS current [37358]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "41860",
+     "gia_tri": 41860.0,
+     "don_vi": "",
+     "trich_dan": "15:57:41 INFO LogTPSProc: TPS current [41860]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "37859",
+     "gia_tri": 37859.0,
+     "don_vi": "",
+     "trich_dan": "15:57:42 INFO LogTPSProc: TPS current [37859]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current (được tô khung đỏ trong ảnh)",
+     "raw": "40356",
+     "gia_tri": 40356.0,
+     "don_vi": "",
+     "trich_dan": "15:57:43 INFO LogTPSProc: TPS current [40356]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "38482",
+     "gia_tri": 38482.0,
+     "don_vi": "",
+     "trich_dan": "15:57:45 INFO LogTPSProc: TPS current [38482]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "40223",
+     "gia_tri": 40223.0,
+     "don_vi": "",
+     "trich_dan": "15:57:46 INFO LogTPSProc: TPS current [40223]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "38983",
+     "gia_tri": 38983.0,
+     "don_vi": "",
+     "trich_dan": "15:57:47 INFO LogTPSProc: TPS current [38983]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "39723",
+     "gia_tri": 39723.0,
+     "don_vi": "",
+     "trich_dan": "15:57:48 INFO LogTPSProc: TPS current [39723]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "36484",
+     "gia_tri": 36484.0,
+     "don_vi": "",
+     "trich_dan": "15:57:49 INFO LogTPSProc: TPS current [36484]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "41353",
+     "gia_tri": 41353.0,
+     "don_vi": "",
+     "trich_dan": "15:57:50 INFO LogTPSProc: TPS current [41353]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "43723",
+     "gia_tri": 43723.0,
+     "don_vi": "",
+     "trich_dan": "15:57:51 INFO LogTPSProc: TPS current [43723]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "35854",
+     "gia_tri": 35854.0,
+     "don_vi": "",
+     "trich_dan": "15:57:52 INFO LogTPSProc: TPS current [35854]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "39355",
+     "gia_tri": 39355.0,
+     "don_vi": "",
+     "trich_dan": "15:57:53 INFO LogTPSProc: TPS current [39355]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "37483",
+     "gia_tri": 37483.0,
+     "don_vi": "",
+     "trich_dan": "15:57:54 INFO LogTPSProc: TPS current [37483]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "41223",
+     "gia_tri": 41223.0,
+     "don_vi": "",
+     "trich_dan": "15:57:55 INFO LogTPSProc: TPS current [41223]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "39355",
+     "gia_tri": 39355.0,
+     "don_vi": "",
+     "trich_dan": "15:57:56 INFO LogTPSProc: TPS current [39355]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "TPS current",
+     "raw": "37718",
+     "gia_tri": 37718.0,
+     "don_vi": "",
+     "trich_dan": "15:57:57 INFO LogTPSProc: TPS current [37718]",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    }
+   ]
+  },
+  {
+   "ma": "anh#73",
+   "loai": "console",
+   "location": "Mục 3, trang 10",
+   "doc_duoc": false,
+   "ly_do": "model báo đọc được nhưng không nêu số liệu nào — chưa rõ ảnh không chứa số đo tài nguyên hay model bỏ sót",
+   "bo_vi_khong_neo": 0,
+   "lenh": "",
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": []
+  },
+  {
+   "ma": "anh#77",
+   "loai": "console",
+   "location": "Mục 3, trang 11",
+   "doc_duoc": true,
+   "ly_do": "",
+   "bo_vi_khong_neo": 0,
+   "lenh": "",
+   "thanh_phan": [],
+   "luong": [],
+   "mo_ta": "",
+   "so_lieu": [
+    {
+     "nhan": "dung_luong_file_log_SignalParser",
+     "raw": "200Mb",
+     "gia_tri": 200.0,
+     "don_vi": "",
+     "trich_dan": "200Mb    full.log.2025-05-18.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_SignalParser",
+     "raw": "200Mb",
+     "gia_tri": 200.0,
+     "don_vi": "",
+     "trich_dan": "200Mb    full.log.2025-05-19.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_SignalParser",
+     "raw": "200Mb",
+     "gia_tri": 200.0,
+     "don_vi": "",
+     "trich_dan": "200Mb    full.log.2025-05-20.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_SignalParser",
+     "raw": "200Mb",
+     "gia_tri": 200.0,
+     "don_vi": "",
+     "trich_dan": "200Mb    full.log.2025-05-21.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_SignalParser",
+     "raw": "200Mb",
+     "gia_tri": 200.0,
+     "don_vi": "",
+     "trich_dan": "200Mb    full.log.2025-05-22.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_Dispatcher",
+     "raw": "97Mb",
+     "gia_tri": 97.0,
+     "don_vi": "",
+     "trich_dan": "97Mb    full.log.2025-05-18.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_Dispatcher",
+     "raw": "97Mb",
+     "gia_tri": 97.0,
+     "don_vi": "",
+     "trich_dan": "97Mb    full.log.2025-05-19.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_Dispatcher",
+     "raw": "97Mb",
+     "gia_tri": 97.0,
+     "don_vi": "",
+     "trich_dan": "97Mb    full.log.2025-05-20.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_Dispatcher",
+     "raw": "97Mb",
+     "gia_tri": 97.0,
+     "don_vi": "",
+     "trich_dan": "97Mb    full.log.2025-05-21.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    },
+    {
+     "nhan": "dung_luong_file_log_Dispatcher",
+     "raw": "97Mb",
+     "gia_tri": 97.0,
+     "don_vi": "",
+     "trich_dan": "97Mb    full.log.2025-05-22.1.zip",
+     "luong_nghia": false,
+     "gia_tri_khac": null,
+     "ghi_chu": ""
+    }
+   ]
+  }
+ ],
+ "finding": [
+  {
+   "id": "C2-ANH-anh#9",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 14 số liệu trong ảnh tại Mục I.2, trang 2. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục I.2, trang 2",
+   "computed_evidence": "Tốc độ gói nhận trên card mạng em3 (pkts/s) — được khoanh đỏ trong ảnh=228332 pkts/s · Tốc độ gói nhận trên card mạng em4 (pkts/s) — được khoanh đỏ trong ảnh=171878 pkts/s · Tốc độ gói truyền trên em3=0 pkts/s · Tốc độ gói truyền trên em4=0 pkts/s · Giao diện em1 — RX packets (tổng tích lũy)=168492603223 packets · Giao diện em1 — TX packets (tổng tích lũy)=165035871577 packets",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#14",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được sơ đồ tại Mục II, trang 2: 11 thành phần, 11 luồng. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục II, trang 2",
+   "computed_evidence": "«Kafka topic» (biểu tượng hình trụ màu hồng/đỏ tươi, bên trái ảnh); «CALLBASE» (khung lớn màu xanh lục bao ngoài); «SIGNAL PARSER» (khung màu cam bên trong CALLBASE); «SignalParser1»; «SignalParser2»; «SignalParser3»; «SignalParser4»; «Dispatcher»…",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#51",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 21 số liệu trong ảnh tại Mục III, trang 6. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục III, trang 6",
+   "computed_evidence": "em1 - RX packets=106942874113 · em1 - TX packets=165481141979 · em1 - RX bytes=15593494253398 (14.5 TiB) · em1 - TX bytes=28363949645228 (26.0 TiB) · em1 - MTU=MTU:1500 · em2 - RX packets=4074491568",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#54",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 8 số liệu trong ảnh tại Mục III, trang 6. (2 giá trị bị loại vì trích dẫn không chứa nó) Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục III, trang 6",
+   "computed_evidence": "Tốc độ card em3 (kết quả max từ awk)=198465 · Tốc độ card em4 (kết quả max từ awk)=120058 · Tốc độ card em1 (kết quả max từ awk)=769 · Dòng grep xác nhận giá trị em3=TX em3: 0 kB/s RX em3: 198465 kB/s · Dòng grep xác nhận giá trị em4=TX em4: 0 kB/s RX em4: 120058 kB/s · Địa chỉ IP card mạng (ifconfig)=inet addr:10.58.4.3  Bcast:10.58.4.255  Mask:255.255.255.0",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#65",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 9 số liệu trong ảnh tại Mục 1, trang 9. (1 giá trị bị loại vì trích dẫn không chứa nó) Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 1, trang 9",
+   "computed_evidence": "Tốc độ gói tin nhận vào (rx) card mạng em3=228332 pkts/s · Tốc độ gói tin gửi đi (tx) card mạng em3=0 pkts/s · Tốc độ gói tin nhận vào (rx) card mạng em4=171878 pkts/s · Tốc độ gói tin gửi đi (tx) card mạng em4=0 pkts/s · Địa chỉ IP / Broadcast / Subnet mask interface em1=inet addr:10.58.4.3  Bcast:10.58.4.255  Mask:255.255.255.0 · MTU interface em1=MTU:1500",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#69",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 30 số liệu trong ảnh tại Mục 2, trang 9. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 2, trang 9",
+   "computed_evidence": "Số CPU (lscpu)=16 · Danh sách CPU online (lscpu)=0-15 · Thread mỗi core (lscpu)=1 · Core mỗi socket (lscpu)=4 · Số socket (lscpu)=4 · Số NUMA node (lscpu)=1",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#71",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 24 số liệu trong ảnh tại Mục 3, trang 10. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 3, trang 10",
+   "computed_evidence": "TPS current=40543 · TPS current=39357 · TPS current=42731 · TPS current=38859 · TPS current=41360 · TPS current=41360",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#73",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Chưa đọc được nội dung ảnh tại Mục 3, trang 10: model báo đọc được nhưng không nêu số liệu nào — chưa rõ ảnh không chứa số đo tài nguyên hay model bỏ sót.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 3, trang 10",
+   "computed_evidence": "ảnh anh#73, loại console",
+   "suggestion": "Nêu lại nội dung ảnh bằng chữ trong tài liệu.",
+   "confidence": "cao",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  },
+  {
+   "id": "C2-ANH-anh#77",
+   "severity": "info",
+   "category": "khong_kiem_chung_duoc",
+   "finding": "Đọc được 10 số liệu trong ảnh tại Mục 3, trang 11. Nội dung này do model đọc từ ảnh, cần người kiểm chứng lại.",
+   "rule_ref": "",
+   "rule_quote": "",
+   "location": "Mục 3, trang 11",
+   "computed_evidence": "dung_luong_file_log_SignalParser=200Mb · dung_luong_file_log_SignalParser=200Mb · dung_luong_file_log_SignalParser=200Mb · dung_luong_file_log_SignalParser=200Mb · dung_luong_file_log_SignalParser=200Mb · dung_luong_file_log_Dispatcher=97Mb",
+   "suggestion": "Đối chiếu số liệu trong ảnh với bảng số liệu của tài liệu.",
+   "confidence": "vua",
+   "checklist_ref": [],
+   "vong": null,
+   "scope_key": "",
+   "source_doc": ""
+  }
+ ]
+}
