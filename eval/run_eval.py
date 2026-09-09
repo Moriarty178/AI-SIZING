@@ -124,6 +124,10 @@ def main() -> int:
     ap.add_argument("--tap", default="dev", choices=["dev", "test", "tat_ca"])
     ap.add_argument("--nhom", default="", help="lọc nhóm quy tắc cho C3, vd KPI,CPU")
     ap.add_argument("--chi-vong", type=int, default=None)
+    ap.add_argument("--doc-anh", action="store_true",
+                    help="bật C2/2.3 + 2.5 (đọc ảnh, neo số vào tham số). Tốn thêm "
+                         "~40 giây MỖI ẢNH. Xem `scripts/thu_neo_vao_c4.py`: hiện "
+                         "chỉ thêm finding nhóm ĐẠT, mà nhóm đó KHÔNG vào recall.")
     ap.add_argument("--chi", type=int, default=0,
                     help="chỉ chạy N hồ sơ ĐẦU TIÊN CÓ .docx")
     ap.add_argument("--gia-lap", action="store_true",
@@ -169,6 +173,7 @@ def main() -> int:
               "Recall KHÔNG đổi; chỉ phần cảnh báo ảnh bị gộp chung. "
               "Cài: uv sync  (pillow nay ở phần lõi)")
     labels = nap_nhan(a.tap)
+    t_bat_dau = time.time()
     ds = sorted({l["dossier"] for l in labels}, key=str.lower)
 
     # Hồ sơ không có `.docx` vẫn phải nằm trong mẫu số của một lượt chạy ĐẦY ĐỦ (bỏ ra
@@ -319,6 +324,7 @@ def main() -> int:
             try:
                 kq = chay(dd, client=client, rules=rules, model=a.model,
                           chi_nhom=chi_nhom, chi_vong=a.chi_vong, chi_ma_dt=ma_dt,
+                          doc_anh=a.doc_anh,
                           on_tien_do=tien_do, song_song=a.song_song)
             except Exception as e:                  # một bản hỏng không dừng cả lượt
                 canh_bao.append(
@@ -389,11 +395,19 @@ def main() -> int:
     ev.bo_loc = {"nhom C3": ",".join(chi_nhom) if chi_nhom else "",
                  "nhom C5": ",".join(ma_dt) if ma_dt else "",
                  "chi_vong": a.chi_vong or "", "chi N ho so": a.chi or "",
-                 "ho so": a.ho_so or "", "song song": a.song_song}
+                 "ho so": a.ho_so or "", "song song": a.song_song,
+                 "doc anh (2.3+2.5)": "BẬT" if a.doc_anh else ""}
     if a.gia_lap:
         canh_bao.insert(0, "⚠️ LƯỢT DIỄN TẬP BẰNG MODEL GIẢ — mọi con số trong báo "
                            "cáo này là VÔ NGHĨA về mặt chất lượng. Chỉ dùng để xác "
                            "nhận đường chạy không vỡ. " + client.tk.tom_tat())
+    # Thời gian phải nằm TRONG báo cáo, không chỉ in ra màn hình: người đọc lại
+    # file `.md` về sau không có cách nào biết lượt chạy tốn bao lâu, mà đó chính
+    # là con số để tính chi phí cho lượt kế tiếp.
+    phut = (time.time() - t_bat_dau) / 60
+    canh_bao.append(
+        f"thời gian: {phut:.0f} phút cho {len(ds)} hồ sơ "
+        f"({phut / max(1, len(ds)):.0f} phút/hồ sơ, song song {a.song_song})")
     tk_cache = client.cache.tk
     if tk_cache.trung or tk_cache.luu:
         canh_bao.append(
