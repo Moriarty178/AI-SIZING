@@ -1,0 +1,21 @@
+# Bối cảnh build giữ nhỏ: image chỉ cần mã + config. Hồ sơ thật (26 hồ sơ, dữ
+# liệu nhãn) KHÔNG thuộc image — người dùng upload qua API, không đóng vào image.
+.git
+.idea
+.venv
+__pycache__
+**/__pycache__
+*.log
+*.zip
+
+# Cấu hình + dữ liệu không đóng vào image (mount khi chạy)
+config/settings.yaml
+data/
+docs/
+danh_sach_sizings_da_duyet/
+.cache/
+eval/reports/
+
+# backend1/nginx là web app Java hiện hành — copilot không build chúng
+backend1/
+nginx/

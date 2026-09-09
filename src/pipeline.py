@@ -211,6 +211,7 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
         kq_dt = c5.run(doc, core, chi_vong=chi_vong, chi_ma=chi_ma_dt)
         findings += [o.finding for o in kq_dt if o.finding is not None]
         tk["c5"] = dict(c5.tk.__dict__)
+        tk["c5"].pop("_khoa", None)     # threading.Lock — không serialize được JSON
 
     findings += canh_bao_nt4(doc)
     # KHÔNG lọc NT2 ở đây — C7 lọc và ĐẾM số bị loại; lọc sớm sẽ giấu mất con số đó.

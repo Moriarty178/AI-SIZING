@@ -12,7 +12,7 @@
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
 | 1 | MVP chỉ xử lý text | 14 / 17 | 🔴 1.13 CHƯA đạt — đã có số thật, nút thắt là độ phủ trích xuất của C3 |
 | 2 | Đa phương thức & tái sử dụng | 6,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.3 · 2.5 · 2.12 xong (2.3 đã CHẠY THẬT 08-09; 2.5 đo offline trên chính đầu ra đó); 2.4 · 2.11 phần offline xong |
-| 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
+| 3 | Tích hợp & tinh chỉnh | 2 / 11 (3.5 mới được phần file) | 🟡 3.1 API + 3.2 job queue XONG 09-09 (450 test); 3.5 còn build trên server |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
 
 **Đang tập trung (2026-09-04):** Giai đoạn 1 đã xong **9/17** mục (1.1–1.6, 1.8, 1.9, 1.10) — nền tảng, C1, chuẩn hoá số/đơn vị, schema, bộ nạp quy tắc, C4 định lượng, C7 báo cáo Markdown; **88 unit test** chạy offline. Việc kế tiếp theo thứ tự: **1.7** C3 trích xuất (phần đo độ chính xác chờ `smoke_llm.py`), rồi 1.11 (RAG) · 1.12 (C5 — nguồn finding Vòng 1 cho C7). Song song, việc của người: (a) kiểm độc lập một lát cắt `eval_sheet_mau_kiem_daduyet.csv`; (b) chạy `scripts/smoke_llm.py` trong mạng công ty; (c) duyệt 8 mục `lookup:` cho `rules.yaml` và quy tắc "kiểm hợp lý"; (d) tìm cách đo false positive vì bản đã ký không sạch.
@@ -1153,12 +1153,55 @@ chứng minh công cụ có giá trị hay không.
 ## GIAI ĐOẠN 3 — Tích hợp & tinh chỉnh  (2 tuần)
 
 ### Tuần 7 — Tích hợp
-- [ ] 3.1 — Bọc pipeline thành REST API FastAPI (`POST /review`, `GET /result/{id}`)
-- [ ] 3.2 — Xử lý bất đồng bộ (job queue) vì thời gian chạy có thể vài phút
+- [x] 3.1 — Bọc pipeline thành REST API FastAPI (`POST /review`, `GET /result/{id}`)
+      **→ `api/main.py` — XONG 2026-09-09, test đầy đủ offline** bằng model giả
+      (`gia_lap=true`): upload BCCS3 thật → job → 123 finding → báo cáo Markdown.
+      → ✅ Endpoints: `POST /review` (upload + `chi_nhom`/`chi_vong`/`doc_anh`/
+      `song_song`/`gia_lap`) · `GET /result/{id}` (+`?chi_bao_cao=true` trả nguyên
+      Markdown) · `GET /jobs` · `GET /health` · `GET /uoc-luong` (ước lượng chi phí
+      theo bộ lọc, cùng công thức với 1.14).
+      → ✅ Chặn ở cửa: không phải `.docx` → 415 · tệp < 1KB → 422 · **read_docx
+      chạy TRƯỚC khi xếp hàng** — file hỏng bị từ chối ngay, không đốt một lượt
+      chạy 30 phút để rồi chết ở giây đầu.
+      → ✅ `python-multipart` thêm vào nhóm `api` (FastAPI cần cho Form/File —
+      RuntimeError khi import thiếu, đã gặp thật lần chạy đầu).
+- [x] 3.2 — Xử lý bất đồng bộ (job queue) — **→ `api/jobs.py` + `api/worker.py`
+      — XONG 2026-09-09.** Subprocess + thư mục, KHÔNG Redis (rate limit thoáng
+      đã xác minh ở 0.10; hàng đợi thực sự là hạ tầng cho nhu cầu chưa tồn tại).
+      → ✅ Lượt chạy 30 phút tách khỏi process API: pipeline chạy `python -m
+      api.worker <id>`; API sập/restart không giết lượt chạy, lỗi pipeline không
+      khoá API. Tiến độ từng lượt gọi ghi NGAY vào file job để `/result` xem.
+      → ✅ State machine qua **đổi tên file nguyên tử** (`cho-` → `chay-` →
+      `xong-`/`loi-`): ai rename được là người đó sở hữu job — hai worker không
+      bao giờ chạy đè. Ghi nội dung cũng nguyên tử (file tạm + `os.replace`).
+      → 🔴 **Ba lỗi lộ ra ở lần chạy đầu, đều có test khoá:** (a) worker KHÔNG
+      chiếm job trước khi chạy (`dat_cho` chưa ai gọi — hai worker có thể cùng
+      chạy một job); (b) `doi_ten_trang_thai` chỉ đổi tiền tố tên file mà **trường
+      `trang_thai` trong nội dung vẫn cũ** — `/result` trả `chay` dù file tên
+      `xong-`, nhánh `chi_bao_cao` không bao giờ vào; (c) `tk["c5"]` giữ
+      `threading.Lock` làm JSON serialize sập cả lượt chạy XONG (C2 pop `_khoa`
+      từ 2026-09-09, C5 quên) — vá ở `pipeline.py`, cả eval/Streamlit hưởng.
+      → ✅ Job xong/loi tự dọn sau 7 ngày; file ghi dở bị `danh_sach()` bỏ qua
+      thay vì giết cả danh sách (cùng khuôn với `BaoCaoChuaXong` của 2.5).
 - [ ] 3.3 — Phối hợp thêm nút "Kiểm tra sizing" vào web nội bộ sẵn có
 - [ ] 3.4 — Thiết kế hiển thị báo cáo trên web: nhóm theo mức độ, hiện trích dẫn quy tắc
       → bố cục bám theo checklist thẩm định để người thẩm định đối chiếu 1:1
-- [ ] 3.5 — Đóng gói Docker Compose, triển khai môi trường nội bộ
+- [~] 3.5 — Đóng gói Docker Compose, triển khai môi trường nội bộ — **phần file
+      XONG 2026-09-09, chưa build** (máy dev không có Docker; build trên server).
+      → ✅ `Dockerfile.copilot`: `python:3.11-slim` + git (src/version.py cần
+      `git rev-parse` — thiếu git là mất vết commit trong báo cáo, đúng loại lỗi
+      "ba lượt chạy bằng mã cũ") + `uv sync --frozen --no-dev --extra api`.
+      KHÔNG nhóm `rag` (torch ~2GB; C6 chưa làm). Layer phụ thuộc tách khỏi layer
+      mã; không root; HEALTHCHECK `/health`.
+      → ✅ `.dockerignore` mới: hồ sơ thật + data/ + docs/ KHÔNG đóng vào image
+      (người dùng upload qua API); settings.yaml không vào image (mount qua
+      volume); backend1/nginx là web app Java, copilot không build chúng.
+      → ✅ `docker-compose.yml`: thêm service `copilot` cạnh backend/nginx đang có
+      — port `8902:8000`, mount `settings.yaml` ro + volume `copilot-data` cho
+      data/ (job không mất khi dựng lại container), memory limit 4G, cùng network
+      `app-net`. YAML đã kiểm parse bằng PyYAML.
+      → ⬜ **Còn lại: build + chạy thật trên server** (C3 lộ trình deploy) — cần
+      máy có Docker, kèm smoke test 3 chế độ với `gia_lap=true`.
 
 ### Tuần 8 — Tinh chỉnh & bàn giao
 - [ ] 3.6 — Chạy trên tập kiểm tra GIỮ KÍN — đây mới là con số thật
