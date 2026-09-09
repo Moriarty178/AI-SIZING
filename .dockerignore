@@ -1,0 +1,30 @@
+# A1 — cái gì được vào ngữ cảnh build.
+#
+# CHẶN TẤT CẢ rồi mở lại đúng thứ cần, KHÔNG liệt kê từng thứ để chặn.
+# Lý do là an toàn dữ liệu chứ không phải dung lượng: repo đang chứa 176 MB hồ sơ
+# sizing THẬT của khách (`danh_sach_sizings_da_duyet/`), nhãn thẩm định PNX
+# (`data/`) và bản đã ký (`approved-sizing/`). Với danh sách chặn, thêm một thư
+# mục dữ liệu mới là mặc định LỌT VÀO image; với danh sách mở, thêm mới là mặc
+# định BỊ CHẶN. Chỉ một trong hai chiều sai là an toàn.
+*
+
+!pyproject.toml
+!README.md
+!src
+!config
+!ui
+!scripts
+
+# Chặn lại những thứ lọt vào qua các thư mục vừa mở
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+
+# Cấu hình thật có endpoint nội bộ — mount lúc chạy, không nướng vào image.
+# (Khoá API luôn qua biến môi trường SIZING_COPILOT_API_KEY, không bao giờ ở đây.)
+config/settings.yaml
+
+# `eval/` CỐ Ý không có trong danh sách mở: nó cần `data/eval_set.json` — nhãn
+# thẩm định nội bộ. Đo eval chạy thẳng từ repo trên máy nội bộ, không chạy trong
+# image sản phẩm.
