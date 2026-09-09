@@ -29,3 +29,4 @@ eval/reports/dien-tap-*.md
 viettel-mitm-ca.pem
 data/jobs/
 data/tai_len/
+.env
