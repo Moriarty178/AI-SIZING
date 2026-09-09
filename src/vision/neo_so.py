@@ -69,9 +69,28 @@ Biến thể lỏng (dung sai 2%) từng cho 124/228 riêng Vtag nhưng gần nh
 `1%` khớp `1`, `126G` (đĩa) khớp `125.48` (số bản ghi ở bảng khác), `706` khớp
 `715`. Nên **dung sai = 0**.
 
-`byte` TẮT mặc định vì «GB» trong bảng khai báo không nói rõ là 10⁹ hay 2³⁰, mà
-`df -h`/`du -h` thì luôn nhị phân. Đoán một trong hai là vi phạm NT4; bật bằng
-`loai_nhan=` khi đã có người xác nhận quy ước.
+### `byte` — bật 2026-09-09 sau khi quy ước được xác nhận
+
+Trước đó TẮT vì «GB» trong bảng không nói rõ 10⁹ hay 2³⁰, mà `df -h`/`du -h` thì
+luôn nhị phân; đoán một trong hai là vi phạm NT4. Người dùng xác nhận **2³⁰**,
+đúng như `config/units.yaml` đã ghi sẵn (`dung_luong.co_so: 1024`, kèm dẫn chứng
+một lỗi PNX từng bắt). Bội số nay ĐỌC TỪ file đó, không chép lại.
+
+Bật rồi thì thêm **2 neo, cả hai đúng, 0 khớp sai**: Vtag `du /var/lib/postgresql/14
+= 536G` ↔ ô khai báo «536 GB» dòng «Postgres» dải «DISK», mở được `anh#65`/`anh#146`
+vốn trước đó không neo nổi gì. Ít, vì dung lượng ĐO ĐƯỢC hầu như không bao giờ
+bằng đúng dung lượng CẤP PHÁT (`983G` đo vs `1000 GB` khai) — `%` mới là chỗ hai
+phía gặp nhau.
+
+Kèm theo, hai cổng phụ mà chính việc bật byte làm lộ ra:
+
+- **Đơn vị nằm ở TIÊU ĐỀ CỘT**, không trong ô: «Tổng dung lượng (GB)» rồi ô ghi
+  «1000». Không đọc tiêu đề thì 50/58 ô dung lượng của Vtag bị xếp nhầm là `dem`.
+- **Chuỗi đọc được hai cách KHÔNG được làm neo.** «15.712» dưới cột «RAM used
+  (GB)» ra 15712 hay 15,712? «32,000» dưới «(MB)» ra 32 hay 32000? Sai một lần là
+  lệch 1000 lần, và một giá trị lệch 1000 lần vẫn có thể TÌNH CỜ bằng một số đọc
+  từ ảnh. `units.yaml` đã ra lệnh sẵn: *"TUYỆT ĐỐI không im lặng chọn một cách rồi
+  tính tiếp"*. Cổng này loại 66 ô của VTracking và 8 ô của PBH.
 
 ## Số thật cho C4 đến từ đâu
 
@@ -93,30 +112,54 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Literal
+
+import yaml
 
 from ..extraction.bang import so_dong_tieu_de
 from ..ingestion.docx_reader import DocxDocument, Element
 from ..normalization.numbers import co_ve_la_gia_tri, parse_number
+from ..normalization.units import DEFAULT_UNITS_PATH
 from ..reporting.finding import Finding
 from .doc_anh import KetQuaDocAnh, SoDaDoc
 
 LoaiDaiLuong = Literal["phan_tram", "byte", "milli_core", "dem"]
 
-# Mặc định chỉ nhận phần trăm — xem bảng đo ở docstring module. Nới ra phải đo lại.
-LOAI_NHAN_MAC_DINH: tuple[LoaiDaiLuong, ...] = ("phan_tram",)
+# `%` và `byte`. `byte` được bật 2026-09-09 sau khi người dùng xác nhận «GB» trong
+# bảng định cỡ là 2³⁰ — trước đó tắt vì đoán quy ước là vi phạm NT4. Đo lại sau khi
+# bật: +2 neo, cả hai đúng, 0 khớp sai. `dem` và `milli_core` vẫn TẮT: chưa đo.
+LOAI_NHAN_MAC_DINH: tuple[LoaiDaiLuong, ...] = ("phan_tram", "byte")
 
 GAN_TRANG_MAC_DINH = 3
 DUNG_SAI_MAC_DINH = 0.0
 
-# Bội số về BYTE. `df -h`, `du -h`, `kubectl top` đều dùng nhị phân kể cả khi chỉ
-# in "G"/"M", nên không có bảng thập phân ở đây — và cũng vì thế mà phía khai báo
-# ghi "GB" là ô không quy đổi được, xem docstring.
-_BOI_BYTE: dict[str, int] = {
-    "k": 1024, "ki": 1024, "m": 1024**2, "mi": 1024**2,
-    "g": 1024**3, "gi": 1024**3, "t": 1024**4, "ti": 1024**4,
-    "p": 1024**5, "pi": 1024**5,
-}
+# Cơ sở luỹ thừa của K/M/G/T/P cho dung lượng. KHÔNG hard-code ở đây (NT3): lấy
+# từ `config/units.yaml`, nơi người nghiệp vụ sửa được. Người dùng xác nhận
+# 2026-09-09 rằng «GB» trong bảng định cỡ là 2³⁰ — đúng như file cấu hình đã ghi
+# sẵn, kèm dẫn chứng một lỗi PNX từng bắt: *"Đổi từ GB ra TB phải chia 1024 chứ
+# không phải 1000"*. Đọc từ đó thay vì chép lại để hai nơi không lặng lẽ lệch nhau.
+_CO_SO_MAC_DINH = 1024
+
+
+@lru_cache(maxsize=1)
+def co_so_dung_luong(duong_dan: str = DEFAULT_UNITS_PATH) -> int:
+    try:
+        cfg = yaml.safe_load(open(duong_dan, encoding="utf-8")) or {}
+        return int(cfg["nhom"]["dung_luong"]["co_so"])
+    except (OSError, KeyError, TypeError, ValueError):
+        return _CO_SO_MAC_DINH
+
+
+@lru_cache(maxsize=1)
+def _boi_byte() -> dict[str, int]:
+    cs = co_so_dung_luong()
+    ra: dict[str, int] = {}
+    for i, p in enumerate(("k", "m", "g", "t", "p"), start=1):
+        ra[p] = ra[p + "i"] = cs ** i
+    return ra
+
+
 # Hậu tố byte, PHÂN BIỆT HOA/THƯỜNG ở chữ cái đầu: "504M" là megabyte, "162m" là
 # millicore. Ca thật: Vtag `kubectl top nodes` có cả hai trên cùng một dòng.
 _HAU_TO_BYTE = re.compile(r"^\s*[\d.,]+\s*(K|Ki|M|Mi|G|Gi|T|Ti|P|Pi)B?\s*$")
@@ -215,22 +258,35 @@ def loai_dai_luong(raw: str, don_vi: str = "") -> LoaiDaiLuong | None:
     return None
 
 
-def gia_tri_chuan(raw: str, don_vi: str = "") -> float | None:
+def gia_tri_chuan(raw: str, don_vi: str = "", *,
+                  chat_che: bool = False) -> float | None:
     """Giá trị quy về đơn vị gốc của loại: điểm % · byte · millicore · đơn vị đếm.
 
     NT1: quy đổi do CODE làm, model chỉ đưa chuỗi nguyên văn.
+
+    `chat_che=True` ⇒ **từ chối chuỗi đọc được hai cách**. `config/units.yaml` nói
+    thẳng: *"khi vẫn còn LƯỠNG NGHĨA thì đánh dấu `ambiguous` […] TUYỆT ĐỐI không
+    im lặng chọn một cách rồi tính tiếp"*. Ở đây sai một lần là lệch 1000 lần, và
+    đã có thật trong bảng khai báo:
+
+        «15.712» dưới cột «RAM used (GB)»        → 15712 GiB hay 15,712 GiB?
+        «32,000» dưới cột «Tổng dung lượng (MB)» → 32 MiB hay 32000 MiB?
+
+    Một giá trị lệch 1000 lần vẫn có thể TÌNH CỜ bằng một số đọc từ ảnh, và khi
+    đó nó thành neo sai mà không dấu hiệu nào. Neo phải là chứng cứ chắc (NT2),
+    nên chuỗi lưỡng nghĩa không được làm neo.
     """
     loai = loai_dai_luong(raw, don_vi)
     if loai is None:
         return None
     r = (raw or "").strip()
     p = parse_number(r)
-    if p is None:
+    if p is None or (chat_che and p.ambiguous):
         return None
     if loai == "byte":
         m = _HAU_TO_BYTE.match(r)
         hau_to = (m.group(1) if m else (don_vi or "").rstrip("B")).lower()
-        boi = _BOI_BYTE.get(hau_to)
+        boi = _boi_byte().get(hau_to)
         return None if boi is None else p.value * boi
     return p.value
 
@@ -243,7 +299,7 @@ def ung_vien_gia_tri(raw: str, don_vi: str = "", *, tach_phan_tram: bool = True
     """
     loai = loai_dai_luong(raw, don_vi)
     if loai is not None:
-        gt = gia_tri_chuan(raw, don_vi)
+        gt = gia_tri_chuan(raw, don_vi, chat_che=True)
         return None if gt is None else (loai, gt)
     if not tach_phan_tram:
         return None
@@ -278,6 +334,20 @@ class OKhaiBao:
         if self.tieu_de_cot:
             phan.append(f"cột «{self.tieu_de_cot}»")
         return " · ".join(phan)
+
+
+# Đơn vị dung lượng nằm ở TIÊU ĐỀ CỘT, không ở trong ô: «Tổng dung lượng (GB)»
+# rồi ô chỉ ghi «1000». Không đọc tiêu đề thì mọi ô dung lượng khai báo đều bị
+# xếp là `dem`, và phía byte không bao giờ có gì để khớp.
+_DON_VI_COT = re.compile(r"\b(K|M|G|T|P)i?B\b|\((K|M|G|T|P)i?B\)", re.IGNORECASE)
+
+
+def _boi_cua_tieu_de(*phan: str) -> int | None:
+    """Bội số byte suy từ tiêu đề cột / nhãn dải, hoặc None nếu tiêu đề không nói."""
+    m = _DON_VI_COT.search(" ".join(x for x in phan if x))
+    if not m:
+        return None
+    return _boi_byte().get((m.group(1) or m.group(2)).lower())
 
 
 def _nhan_dong(row: list[str]) -> str:
@@ -397,9 +467,14 @@ def thu_thap_khai_bao(doc: DocxDocument) -> list[OKhaiBao]:
                 loai = loai_dai_luong(txt)
                 if loai is None:
                     continue
-                gt = gia_tri_chuan(txt)
+                gt = gia_tri_chuan(txt, chat_che=True)
                 if gt is None:
                     continue
+                if loai == "dem":
+                    # Ô trần dưới một cột có khai đơn vị dung lượng thì là BYTE.
+                    boi = _boi_cua_tieu_de(bc, td)
+                    if boi is not None:
+                        loai, gt = "byte", gt * boi
                 ra.append(OKhaiBao(gia_tri=gt, loai=loai, raw=txt, page=el.page,
                                    location=el.location, nhan_dong=nhan,
                                    tieu_de_cot=td, bang_con=bc,
