@@ -30,3 +30,9 @@ eval/reports/dien-tap-*.md
 # TLS MITM. KHÔNG commit: nó là hạ tầng của một mạng cụ thể.
 *.pem
 *.crt
+
+# Báo cáo sinh ra từ hồ sơ THẬT (scripts/do_bao_cao.py --ghi). Chúng chứa
+# tên hệ thống, tên phân hệ và số liệu của khách — là kết quả chạy thử,
+# không phải mã nguồn. KHÔNG commit.
+bao-cao-mau.md
+bao-cao-*.md
