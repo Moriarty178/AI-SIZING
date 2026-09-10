@@ -139,3 +139,47 @@ def test_trang_hien_o_TAI_TEP_khi_chua_chon_gi():
     at = _chay_app()
     assert not at.exception
     assert len(at.file_uploader) == 1
+
+
+# --- D3: nói thẳng giới hạn (2026-09-10) ------------------------------------
+class TestCauGioiHan:
+    def test_moi_cau_deu_co_noi_dung(self):
+        from src.giao_dien import cau_gioi_han
+        cs = cau_gioi_han()
+        assert len(cs) >= 5 and all(c.strip() for c in cs)
+
+    def test_KHONG_lam_tron_87_5_thanh_88(self):
+        """87,5% và 88% là hai điều khác nhau khi có người trích lại. `f"{:.0%}"`
+        làm tròn LÊN đúng con số sắp công bố."""
+        from src.giao_dien import _pt, cau_gioi_han
+        assert _pt(0.875) == "87,5%"
+        assert _pt(0.07, 0) == "7%"
+        assert any("87,5%" in c for c in cau_gioi_han())
+        assert not any("88%" in c for c in cau_gioi_han())
+
+    def test_neu_ca_con_so_YEU_chu_khong_chi_con_so_dep(self):
+        """Nêu 87,5% mà giấu 7% là để người đánh giá tự suy ra một công cụ khác
+        công cụ thật."""
+        from src.giao_dien import cau_gioi_han
+        van = " ".join(cau_gioi_han())
+        assert "7%" in van and "đòi TÍNH hoặc SO số" in van
+
+    def test_noi_ro_phan_nhieu_KHONG_phai_loi_cua_tai_lieu(self):
+        from src.giao_dien import cau_gioi_han
+        van = " ".join(cau_gioi_han())
+        assert "chưa đọc được" in van and "không phải** lỗi của bản sizing" in van
+
+    def test_noi_ro_CHUA_do_duoc_ti_le_bao_sai(self):
+        """Hạn chế lớn nhất còn lại. Im lặng về nó là để người dùng tưởng mọi
+        dòng đều đúng."""
+        from src.giao_dien import cau_gioi_han
+        assert any("Chưa đo được tỉ lệ báo sai" in c for c in cau_gioi_han())
+
+    def test_con_so_khop_voi_bao_cao_da_cong_bo(self):
+        """Mỗi con số phải kèm NGÀY và NGUỒN — để lần sau đo lại thì biết sửa ở
+        đâu, và để không ai trích một con số đã cũ."""
+        from src.giao_dien import DO_LUONG
+        assert DO_LUONG.ngay == "2026-09-09" and DO_LUONG.ho_so == 14
+        assert DO_LUONG.recall_chinh == 0.875
+        assert abs(DO_LUONG.recall_quyet_dinh - 5 / 71) < 0.005
+        assert DO_LUONG.nguon.startswith("eval/reports/")
