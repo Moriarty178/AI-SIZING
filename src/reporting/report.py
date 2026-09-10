@@ -362,6 +362,47 @@ def _o(s: str, toi_da: int = MAX_O_BANG) -> str:
     return t if len(t) <= toi_da else t[:toi_da - 1].rstrip() + "…"
 
 
+def _tom_tat_can_xu_ly(rep: "Report", labels: ReportLabels) -> list[str]:
+    """Mục đầu báo cáo: cái gì người viết phải SỬA, tách khỏi cái công cụ không đọc được.
+
+    Đo trên báo cáo thật (VTracking, 2026-09-10): sau khi đã cắt 88% số dòng, ba
+    phát hiện thật sự nói *"số của anh sai"* vẫn nằm ở **dòng 267/418** — sau 251
+    dòng checklist Vòng 1. Thứ đáng đọc nhất bị chôn ở 60% độ sâu.
+
+    KHÔNG đảo thứ tự các mục phía dưới: Vòng 1 đứng trước Vòng 2 là theo đúng
+    trình tự thẩm định (mục Vòng 1 trượt thì chặn Vòng 2). Chỉ NÊU LÊN ĐẦU.
+    """
+    nhieu = labels.vong2_chua_kiem
+    v1_thuc_chat = [f for f in rep.vong1 if f.category not in nhieu]
+    v1_nhieu = sum(1 for f in rep.vong1 if f.category in nhieu)
+    tong_nhieu = v1_nhieu + len(rep.vong2_chua_kiem)
+
+    L = ["## Cần xử lý trước khi nộp", ""]
+    if not rep.vong2_chua_dat and not v1_thuc_chat:
+        L += ["Trong phần đọc được, công cụ **không tìm thấy chỗ nào tính sai** và "
+              "**không thấy thành phần nào thiếu**.", ""]
+    if rep.vong2_chua_dat:
+        nhom = gop_pham_vi(rep.vong2_chua_dat)
+        L += [f"### {len(nhom)} chỗ số liệu CHƯA ĐẠT", "",
+              "_Công cụ tính lại được và thấy lệch. Đây là phần đáng xem trước nhất._",
+              ""]
+        for f, scopes in nhom:
+            vt = f" — {f.location}" if f.location else ""
+            L.append(f"1. **[{labels.severity_label(f.severity)}]** "
+                     f"{_o(f.finding, 220)}{vt}")
+        L += ["", "_Chi tiết kèm số liệu: mục «Vòng 2 → Chưa đạt» bên dưới._", ""]
+    if v1_thuc_chat:
+        L += [f"### {len(gop_pham_vi(v1_thuc_chat))} thành phần còn THIẾU", "",
+              "Checklist Vòng 1 — xem mục «Vòng 1» bên dưới.", ""]
+    if tong_nhieu:
+        L += [f"### {tong_nhieu} mục công cụ CHƯA ĐỌC ĐƯỢC", "",
+              "Xem bảng «Vòng 2 → Chưa kiểm được». **Đây không phải lỗi của bản "
+              "sizing** — công cụ không trích được số để kiểm. Nếu tài liệu CÓ "
+              "những số đó, trình bày chúng rõ hơn (thành bảng) sẽ giúp công cụ "
+              "đọc được; nếu CHƯA có thì đó là phần còn thiếu thật.", ""]
+    return L
+
+
 def _bang_chua_kiem(findings: list[Finding], labels: ReportLabels) -> list[str]:
     """Mục «chưa kiểm được» dựng thành BẢNG, không phải danh sách đầy đủ.
 
@@ -436,9 +477,12 @@ def to_markdown(rep: Report, labels: ReportLabels) -> str:
              f"**{len(rep.vong2_tam_hoan)}** tạm hoãn vì trượt Vòng 1")
     if rep.khac:
         L.append(f"- Cảnh báo khác: **{len(rep.khac)}**")
-    L.append(f"- Đã lọc bỏ **{rep.so_loc_khong_can_cu}** phát hiện không có căn cứ (NT2); "
-             f"gộp **{rep.so_khu_trung}** phát hiện trùng.")
+    L.append(f"- Đã lọc bỏ **{rep.so_loc_khong_can_cu}** phát hiện không có căn cứ (NT2)"
+             + (f"; gộp **{rep.so_khu_trung}** phát hiện trùng hệt nhau."
+                if rep.so_khu_trung else "."))
     L.append("")
+
+    L += _tom_tat_can_xu_ly(rep, labels)
 
     # --- Vòng 1 ---------------------------------------------------------
     L.append("## Vòng 1 — Kiểm thành phần theo checklist")

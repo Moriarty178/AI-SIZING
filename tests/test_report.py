@@ -227,3 +227,38 @@ def test_tong_quan_noi_ro_da_gop_bao_nhieu():
     van = build_report([_f_pham_vi(f"ph{i}") for i in range(13)])
     assert "Tổng số phát hiện: **13**" in van
     assert "trình bày thành **1** mục" in van
+
+
+class TestTomTatDauBaoCao:
+    def test_phat_hien_THAT_duoc_neu_len_dau(self):
+        """Đo trên báo cáo thật 2026-09-10: sau khi đã cắt 88% số dòng, ba phát
+        hiện nói *"số của anh sai"* vẫn nằm ở dòng 267/418 — chôn ở 60% độ sâu."""
+        from src.reporting.finding import Finding
+        from src.reporting.report import build_report
+        sai = Finding(id="LBA-01", severity="critical", category="sai_cong_thuc",
+                      finding="Công thức thông lượng thiếu hệ số 1.2",
+                      rule_ref="LBA-01", location="Mục 1.1, trang 18", vong=2)
+        van = build_report([sai] + [_f_pham_vi(f"ph{i}") for i in range(30)])
+        dau = van.index("Cần xử lý trước khi nộp")
+        assert dau < van.index("## Vòng 1"), "tóm tắt phải đứng TRƯỚC Vòng 1"
+        assert "1 chỗ số liệu CHƯA ĐẠT" in van
+        assert "Công thức thông lượng thiếu hệ số 1.2" in van[dau:van.index("## Vòng 1")]
+        assert "Mục 1.1, trang 18" in van
+
+    def test_noi_ro_phan_KHONG_doc_duoc_khong_phai_loi_cua_tai_lieu(self):
+        from src.reporting.report import build_report
+        van = build_report([_f_pham_vi(f"ph{i}") for i in range(13)])
+        assert "13 mục công cụ CHƯA ĐỌC ĐƯỢC" in van
+        assert "không phải lỗi của bản sizing" in van
+
+    def test_khong_co_gi_sai_thi_noi_thang_chu_khong_de_trong(self):
+        from src.reporting.report import build_report
+        van = build_report([_f_pham_vi("A")])
+        assert "không tìm thấy chỗ nào tính sai" in van
+
+    def test_KHONG_dao_thu_tu_cac_muc_ben_duoi(self):
+        """Vòng 1 đứng trước Vòng 2 là theo trình tự thẩm định (Vòng 1 trượt thì
+        chặn Vòng 2). Tóm tắt chỉ NÊU LÊN, không sắp xếp lại."""
+        from src.reporting.report import build_report
+        van = build_report([_f_pham_vi("A")])
+        assert van.index("## Vòng 1") < van.index("## Vòng 2")
