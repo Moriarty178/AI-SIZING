@@ -145,3 +145,85 @@ def test_bao_cao_rong_van_chay_khong_vo(labels):
     md = build_report([], labels=labels)
     assert md.strip().startswith("# Báo cáo")
     assert "Vòng 1" in md and "Vòng 2" in md
+
+
+# --- D2: cắt nhiễu báo cáo (2026-09-10) -------------------------------------
+def _f_pham_vi(scope, rule="ARC-03", cau="Chưa kiểm được ARC-03 vì thiếu: so_may",
+               cat="thieu_thong_tin"):
+    from src.reporting.finding import Finding
+    return Finding(id=rule, severity="major", category=cat, finding=cau,
+                   rule_ref=rule, rule_quote="TIÊU CHÍ DÀI " * 20,
+                   scope_key=scope, vong=2, suggestion="Bổ sung so_may.")
+
+
+class TestGopPhamVi:
+    def test_cung_mot_van_de_tren_nhieu_phan_he_noi_MOT_lan(self):
+        """Đo trên báo cáo thật VTracking 2026-09-10: 718 finding nhưng chỉ 151
+        câu khác nhau — mỗi quy tắc lặp đúng 13 lần cho 13 phân hệ, văn bản y
+        hệt. `khu_trung` không đụng được vì khoá của nó có `scope_key`."""
+        from src.reporting.report import gop_pham_vi
+        fs = [_f_pham_vi(f"phan-he-{i}") for i in range(13)]
+        nhom = gop_pham_vi(fs)
+        assert len(nhom) == 1
+        _, scopes = nhom[0]
+        assert len(scopes) == 13
+
+    def test_KHONG_gop_khi_van_de_khac_nhau(self):
+        from src.reporting.report import gop_pham_vi
+        fs = [_f_pham_vi("A"), _f_pham_vi("B", cau="Chưa kiểm được ARC-09"),
+              _f_pham_vi("C", rule="STO-18")]
+        assert len(gop_pham_vi(fs)) == 3
+
+    def test_moi_phan_he_van_con_nguyen_trong_bao_cao(self):
+        """Gộp KHÔNG phải giấu bớt (NT4): tên từng phân hệ và tổng số đều còn."""
+        from src.reporting.report import _render_list, load_labels
+        van = "\n".join(_render_list([_f_pham_vi(f"ph{i}") for i in range(5)],
+                                     load_labels()))
+        for i in range(5):
+            assert f"ph{i}" in van
+        assert "(5 phân hệ)" in van
+
+    def test_qua_nhieu_phan_he_thi_cat_bot_NHUNG_NOI_RA(self):
+        from src.reporting.report import _render_list, load_labels
+        van = "\n".join(_render_list([_f_pham_vi(f"ph{i}") for i in range(30)],
+                                     load_labels()))
+        assert "và 18 phân hệ nữa" in van and "(30 phân hệ)" in van
+
+    def test_trich_dan_quy_tac_chi_con_MOT_lan(self):
+        """Dòng «Căn cứ» chiếm 30% báo cáo thật vì trích nguyên tiêu chí 713 lần
+        thay vì 99."""
+        from src.reporting.report import _render_list, load_labels
+        van = "\n".join(_render_list([_f_pham_vi(f"ph{i}") for i in range(13)],
+                                     load_labels()))
+        assert van.count("TIÊU CHÍ DÀI") == 20      # một lần, không phải 13
+
+
+class TestBangChuaKiem:
+    def test_muc_chua_kiem_duoc_dung_thanh_BANG(self):
+        """586/724 phát hiện của một tài liệu thật nằm ở mục này, mà nó nói
+        *công cụ không đọc được*, KHÔNG nói *tài liệu sai*."""
+        from src.reporting.report import _bang_chua_kiem, load_labels
+        fs = [_f_pham_vi(f"ph{i}", rule=f"ARC-{i:02d}") for i in range(20)]
+        van = "\n".join(_bang_chua_kiem(fs, load_labels()))
+        assert "| Quy tắc | Mức | Vì sao chưa kiểm được | Phạm vi |" in van
+        assert "KHÔNG ĐỌC ĐƯỢC — không phải chỗ bản sizing sai" in van
+        assert "TIÊU CHÍ DÀI" not in van, "bảng KHÔNG lặp lại nguyên văn tiêu chí"
+        assert "config/rules.yaml" in van, "phải chỉ chỗ tra nguyên văn, không bỏ im"
+
+    def test_dau_gach_dung_trong_van_ban_khong_lam_vo_bang(self):
+        from src.reporting.report import _bang_chua_kiem, load_labels
+        fs = [_f_pham_vi("A", cau="Thiếu a|b|c")]
+        van = "\n".join(_bang_chua_kiem(fs, load_labels()))
+        assert r"a\|b\|c" in van
+
+    def test_rong_thi_noi_ro_chu_khong_ra_bang_trong(self):
+        from src.reporting.report import _bang_chua_kiem, load_labels
+        assert _bang_chua_kiem([], load_labels()) == \
+            ["_(không có mục nào thiếu thông tin để kiểm)_"]
+
+
+def test_tong_quan_noi_ro_da_gop_bao_nhieu():
+    from src.reporting.report import build_report
+    van = build_report([_f_pham_vi(f"ph{i}") for i in range(13)])
+    assert "Tổng số phát hiện: **13**" in van
+    assert "trình bày thành **1** mục" in van

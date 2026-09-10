@@ -971,7 +971,7 @@ chứng minh công cụ có giá trị hay không.
 > | 2.6 · 2.7 · 2.8 · 2.9 (C6) | ⬜ chưa làm | Chốt chặn 0.13 **đã lỗi thời**; nay chỉ cần **người dùng duyệt cài `sentence-transformers`** |
 > | 2.10 LangGraph | ⬜ không bắt buộc | Pipeline vẫn tuyến tính, chưa cần |
 > | 2.13 chạy lại eval | ⬜ chưa làm | **Chờ 1.13 (B1) có số nền để so** |
-> | 2.14 C7 chịu bản nháp | ⬜ chưa làm | Không phụ thuộc ai — làm được ngay ở laptop |
+> | 2.14 C7 chịu bản nháp | ✅ xong 2026-09-10 | báo cáo −90% dòng; xem nhật ký |
 >
 > ⚠️ **Ranh giới tự đặt cho phần offline**: không dựng thêm thành phần nào mà kết
 > quả của nó chỉ kiểm chứng được sau khi có model. 2.5 nằm đúng phía bên kia ranh
@@ -1141,7 +1141,10 @@ chứng minh công cụ có giá trị hay không.
       độ trễ bịa), `try_c3_on_dossier.py` in cảnh báo khi lượt chạy có lượt lấy từ đệm.
       Cùng loại bẫy với *"ba lượt chạy bằng mã cũ vì `git pull` chưa ăn"* ngày 04-09.
 - [ ] 2.13 — Chạy lại eval set đầy đủ, so sánh với GĐ 1
-- [ ] 2.14 — C7 chịu được **bản nháp chưa hoàn chỉnh**: phân biệt "người dùng chưa
+- [x] 2.14 / B4 / D2 — **XONG 2026-09-10.** C7 gộp cùng-một-vấn-đề-nhiều-phân-hệ và
+  dựng mục «chưa kiểm được» thành BẢNG. Đo trên báo cáo thật: **2.817 → 269 dòng
+  (−90%)**, 317 KB → 61 KB, và tách được **38 mục nói về tài liệu** khỏi 113 dòng
+  «công cụ không đọc được». Chính chỗ này là lời phân biệt "người dùng chưa
       viết tới" và "thiếu hẳn", để chạy kiểm nhiều lần trong lúc soạn mà không bị
       ngập cảnh báo giả. Yêu cầu của NT4, trực tiếp giảm rủi ro R6.
 
@@ -1376,3 +1379,5 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-10 | **`song song` KHÔNG còn bị tính là bộ lọc** | Lượt dev đầy đủ — đúng con số cần công bố — bị đóng dấu *"CÓ LỌC · KHÔNG được trích như recall thật"* chỉ vì chạy 12 luồng thay vì 6. Song song không đổi hồ sơ nào được chấm hay quy tắc nào được hỏi. Vẫn giữ trong báo cáo để lần lại chi phí, chỉ không còn là cờ vô hiệu hoá con số. **Một cảnh báo sai chỗ làm hỏng niềm tin vào cảnh báo đúng chỗ** |
 | 2026-09-10 | **CHỐT TRƯỚC ngưỡng nghiệm thu, trước khi chạy hai lượt còn lại** | `docs/nghiem-thu-va-duong-toi-demo-2026-09-10.md`. Đặt tiêu chí sau khi nhìn kết quả thì bao giờ cũng đặt vừa khít kết quả ấy, nên ghi trước: trúng **265–281** · recall bộ quy tắc **85,0–90,0%** · thực chất **28–40** · **nhóm quyết định 3–7 nhãn** · 13/14 hồ sơ chạy được · 0 hồ sơ lỗi. **ĐẠT khi ba lượt A·C·D đều trong dải VÀ nhóm quyết định lệch nhau ≤ 2 nhãn.** KHÔNG ĐẠT thì công bố DẢI chứ không công bố điểm; lệch quá 5 điểm % thì dừng và truy nguyên vì đó không còn là dao động model. Ghi luôn ba thứ ba lượt này KHÔNG trả lời được: false positive, tập test, và tính hữu ích thật sự |
 | 2026-09-10 | ⚠️ **Cái chặn demo KHÔNG phải recall — mà là 95,5% báo cáo là nhiễu** | Đếm trên lượt dev đầy đủ: pipeline sinh **200–717 finding cho MỘT tài liệu** (VTracking 717), tổng **4.381 finding trên 13 hồ sơ**, trong đó **4.184 = 95,5%** thuộc nhóm «không tìm thấy / không kiểm chứng được». Cả tập dev chỉ có **3 finding `sai_cong_thuc` + 1 `vuot_nguong`**. Đó là số TRƯỚC C7; C7 còn khử trùng và hoãn Vòng 2 nhưng **chưa ai đo báo cáo cuối dài bao nhiêu** — thêm `scripts/do_bao_cao.py` để đo, gần như miễn phí vì đệm còn ấm. **Một báo cáo 700 dòng toàn «không tìm thấy» sẽ khiến người đánh giá kết luận công cụ không chạy được, bất kể recall 87,5%** — nên D2 (gộp nhiễu theo nhóm) chặn demo, còn ba lượt eval thì không |
+| 2026-09-10 | **D1 đo báo cáo thật: 724 finding · 3.525 dòng · 349 KB cho MỘT tài liệu, và C7 gộp được ĐÚNG 0** | VTracking: Vòng 1 79 · Vòng 2 chưa đạt **3** · **chưa kiểm được 631** · tạm hoãn 6 · khác 5. **94,8% là nhiễu.** `khu_trung` vô dụng ở đây vì khoá của nó có `scope_key`, mà 13 phân hệ thì `scope_key` khác nhau thật. Hai nguồn phình đo được: **713 finding / 99 mã quy tắc** (mỗi mã lặp 13 lần, văn bản y hệt) và **dòng «Căn cứ» chiếm 103 KB = 30%** vì trích nguyên tiêu chí 713 lần thay vì 99 |
+| 2026-09-10 | **D2/B4: gộp theo VẤN ĐỀ, và dựng mục «chưa kiểm được» thành BẢNG** | (1) `gop_pham_vi` gộp các finding cùng `(quy tắc, nhóm, câu, mức, số liệu, gợi ý)` thành một mục kèm danh sách phân hệ — **718 → 151 mục**. (2) Mục «chưa kiểm được» (586/634 của Vòng 2) dựng thành bảng `Quy tắc · Mức · Vì sao · Phạm vi`, KHÔNG lặp nguyên văn tiêu chí. Kết quả đo lại trên chính báo cáo ấy: **2.817 → 269 dòng (−90%)**, 317 KB → 61 KB, và **38 mục nói về tài liệu** tách khỏi 113 dòng «công cụ không đọc được». **Gộp KHÔNG phải giấu**: tên từng phân hệ, tổng số, và chỗ tra nguyên văn (`config/rules.yaml`) đều còn — đúng NT4. Đây cũng chính là câu trả lời cho 2.14: bảng nói thẳng *"đây là chỗ công cụ không đọc được, không phải chỗ bản sizing sai"* |
