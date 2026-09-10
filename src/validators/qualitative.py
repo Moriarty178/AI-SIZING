@@ -42,6 +42,7 @@ from ..ingestion.anchor import neo
 from ..ingestion.docx_reader import DocxDocument
 from ..llm.client import ExtractionFailed, LLMClient, LLMError
 from ..reporting.finding import Finding
+from ..reporting.tham_so import cau_hoi_cho
 from .expressions import danh_gia, thu_thap
 from .quantitative import RuleOutcome
 from .rules_loader import Rule, RuleSet, load_rules
@@ -110,8 +111,13 @@ class QualitativeValidator:
                          for e in doc.elements if e.text)[:MAX_KY_TU_NGU_CANH]
 
     def _rule_quote(self, rule: Rule) -> str:
-        """Trích dẫn phía QUY TẮC — luôn từ `rules.yaml`, không bao giờ từ model."""
-        return (rule.criteria or rule.name)[:600]
+        """Trích dẫn phía QUY TẮC — luôn từ `rules.yaml`, không bao giờ từ model.
+
+        KHÔNG cắt: phụ lục báo cáo (C7) hiển thị nguyên văn đầy đủ, thân báo cáo
+        tự rút gọn ở biên từ. Cắt ở đây trước đây làm ARC-13 cụt giữa chữ
+        ('..."khá q') mà không còn bản đầy đủ nào để tra — mất căn cứ (NT2).
+        """
+        return rule.criteria or rule.name
 
     def _finding(self, rule: Rule, scope_key: str, *, category: str, text: str,
                  location: str = "", suggestion: str = "", severity: str | None = None,
@@ -159,12 +165,14 @@ class QualitativeValidator:
             if missing:
                 # Không biết quy tắc có áp dụng hay không thì KHÔNG chạy. Đoán là có
                 # sẽ cảnh báo về phần người dùng còn chưa viết tới (rủi ro R6).
+                goi_y = "; ".join(cau_hoi_cho(m, self.rules.goi_y_tham_so)
+                                  for m in missing)
                 f = self._finding(
                     rule, scope_key, category="thieu_thong_tin",
                     text=f"Chưa xác định được {rule.id} ({rule.name}) có áp dụng hay "
                          f"không vì tài liệu thiếu: {', '.join(missing)}.",
-                    suggestion=f"Bổ sung {', '.join(missing)} vào bản sizing.",
-                    severity="major")
+                    suggestion=goi_y,
+                    severity="minor")
                 return RuleOutcome(rule.id, scope_key, "khong_danh_gia_duoc", f,
                                    f"thiếu đầu vào cho `applies_when`: {missing}")
             val, err = danh_gia(rule.applies_when, env)
@@ -233,7 +241,10 @@ class QualitativeValidator:
             f = self._finding(
                 rule, scope_key, category=cat, text=nx.ly_do.strip() or rule.name,
                 location=el.location if el else "",
-                suggestion=f"Bổ sung/làm rõ theo tiêu chí: {rule.criteria[:200]}",
+                suggestion=(f"Bổ sung/làm rõ theo tiêu chí: {rule.criteria[:200]}"
+                            if rule.round == 1
+                            else f"Hoàn thiện theo tiêu chí của {rule.id} — xem "
+                                 f"phụ lục trích dẫn."),
                 confidence="cao" if el is not None else "vua")
             return RuleOutcome(rule.id, scope_key, "vi_pham", f)
 

@@ -13,17 +13,25 @@ Bốn việc C7 làm, theo thứ tự:
   4. **Xếp ưu tiên** theo `severity`; trình bày **Vòng 1 trước** (theo thứ tự
      checklist I → II → III), **Vòng 2 sau** (tách "chưa đạt" / "chưa kiểm được").
 
+Lượt HỆ THỐNG 2026-09-09 phình 388 finding / 191KB vì 302 finding "chưa kiểm được"
+là ~25 tham số thiếu × 6 phân hệ, trích dẫn nguyên văn lặp 47% dung lượng. Từ
+2026-09-10: phần "chưa kiểm được" Vòng 2 **gom theo THAM SỐ thiếu** (một dòng
+mỗi tham số), trích dẫn thân báo cáo rút ngắn và phần đầy đủ đưa vào phụ lục
+mỗi quy tắc một lần — không mất căn cứ nào (NT2), chỉ tổ chức lại trình bày.
+
 Nhãn hiển thị (tên phần, tên mức độ, thứ tự checklist, câu cố vấn) nằm trong
 `config/report_labels.yaml` — DỮ LIỆU người nghiệp vụ sửa được (tinh thần NT3),
 không hard-code ở đây.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 import yaml
 
 from .finding import Finding, loc_bo_khong_can_cu
+from .tham_so import cau_hoi_cho
 
 DEFAULT_LABELS_PATH = "config/report_labels.yaml"
 
@@ -217,11 +225,15 @@ class Report:
     ten_he_thong: str | None = None
     ma_pyc: str | None = None
     is_demo: bool = False
+    # gợi ý trích xuất từ rules.yaml (NT3) — để phần "chưa kiểm được" diễn đạt
+    # tham số thiếu theo câu người nghiệp vụ viết, không phải tên biến C3.
+    goi_y_tham_so: dict[str, str] = field(default_factory=dict)
 
 
 def xu_ly(findings: list[Finding], labels: ReportLabels, *,
           ten_he_thong: str | None = None, ma_pyc: str | None = None,
-          is_demo: bool = False) -> Report:
+          is_demo: bool = False,
+          goi_y_tham_so: dict[str, str] | None = None) -> Report:
     """Chạy trọn bốn bước C7, trả cấu trúc `Report` (chưa dựng Markdown)."""
     # 1 — NT2: lọc bỏ finding không có căn cứ, ĐẾM.
     co_can_cu, bo = loc_bo_khong_can_cu(findings)
@@ -254,7 +266,131 @@ def xu_ly(findings: list[Finding], labels: ReportLabels, *,
         ten_he_thong=ten_he_thong,
         ma_pyc=ma_pyc,
         is_demo=is_demo,
+        goi_y_tham_so=goi_y_tham_so or {},
     )
+
+
+# ---------------------------------------------------------------------------
+# Gom "chưa kiểm được" theo THAM SỐ thiếu (2026-09-10)
+# ---------------------------------------------------------------------------
+_RE_THIEU = re.compile(r"tài liệu thiếu: ([a-z0-9_, ]+)\.")
+
+
+def gom_theo_tham_so(findings: list[Finding],
+                     goi_y_rules: dict[str, str]) -> list[dict]:
+    """Gom các finding "chưa kiểm được vì thiếu X" theo từng tham số X.
+
+    Một tham số chặn nhiều quy tắc × nhiều phân hệ — trình bày tách dòng từng
+    cặp là 302 bullet nói cùng một việc (lượt 2026-09-09). Mục trả về:
+    `{tham_so, cau_hoi, rules, scopes, so}`. Finding không khớp mẫu câu thì
+    trả nguyên trạng qua khoá `tham_so=""` để không mất gì (NT4).
+    """
+    ra: list[dict] = []
+    thu_tu: list[str] = []
+    nhom: dict[str, dict] = {}
+    for f in findings:
+        m = _RE_THIEU.search(f.finding)
+        if not m or f.category != "thieu_thong_tin":
+            ra.append({"tham_so": "", "finding": f})
+            continue
+        # câu "Chưa xác định được … có áp dụng hay không" cũng khớp mẫu — nhóm cả
+        # hai lại theo tham số, phần tử `cho_ap_dung` giữ điều đó để diễn đạt đúng.
+        cho_ap_dung = f.finding.startswith("Chưa xác định được")
+        for ten in (x.strip() for x in m.group(1).split(",")):
+            if not ten:
+                continue
+            g = nhom.get(ten)
+            if g is None:
+                g = {"tham_so": ten, "cau_hoi": cau_hoi_cho(ten, goi_y_rules),
+                     "rules": [], "scopes": [], "cho_ap_dung": False}
+                nhom[ten] = g
+                thu_tu.append(ten)
+            if f.rule_ref and f.rule_ref not in g["rules"]:
+                g["rules"].append(f.rule_ref)
+            sk = f.scope_key or "(toàn hệ thống)"
+            if sk not in g["scopes"]:
+                g["scopes"].append(sk)
+            g["cho_ap_dung"] = g["cho_ap_dung"] or cho_ap_dung
+    # sắp: số quy tắc bị chặn giảm dần (tham số quan trọng nhất lên đầu),
+    # ngang điểm thì giữ thứ tự phát hiện. Sort ngoài để `thu_tu.index` ổn định.
+    thu_tu.sort(key=lambda t: -len(nhom[t]["rules"]))
+    for t in thu_tu:
+        g = nhom[t]
+        g["rules"].sort()
+        g["scopes"].sort()
+        ra.append(g)
+    return ra
+
+
+def _rut_quote(q: str, gioi_han: int = 160) -> str:
+    """Trích dẫn thân báo cáo: cắt ở biên từ, thêm dấu … — nguyên văn đầy đủ
+    ở phụ lục. Không cắt giữa chữ như `[:600]` trước đây (ARC-02 kết thúc
+    '...trạng thái bình thường, m')."""
+    q = " ".join(q.split())
+    if len(q) <= gioi_han:
+        return q
+    return q[:gioi_han].rsplit(" ", 1)[0] + "…"
+
+
+# ---------------------------------------------------------------------------
+# Gom cảnh báo ảnh (lượt 2026-09-09: 32 bullet cùng 3 mẫu câu, khác mỗi mã ảnh)
+# ---------------------------------------------------------------------------
+_RE_ANH_DOC = re.compile(r"Đọc được (\d+) số liệu trong ảnh tại (.+?)\. "
+                         r"Nội dung này do model đọc từ ảnh")
+_RE_ANH_SO_DO = re.compile(r"Đọc được sơ đồ tại (.+?): (\d+) thành phần, (\d+) luồng")
+_RE_ANH_DOC_KHONG = re.compile(r"Chưa đọc được nội dung ảnh tại (.+?):")
+_RE_ANH_KHONG_NEO = re.compile(r"Ảnh (\S+) đọc được (\d+) số liệu nhưng không đối "
+                               r"chiếu được với số nào trong bảng khai báo")
+
+
+def gom_canh_bao_anh(findings: list[Finding]) -> tuple[list[dict], list[Finding]]:
+    """Tách các cảnh báo ảnh cùng MẪU ra bảng tóm tắt; giữ nguyên cái lạ.
+
+    Mỗi ảnh chỉ khác nhau mã ảnh/vị trí/số đọc được — trình bày 32 bullet là
+    nhân bản trình bày (2026-09-10). Mẫu khớp thì gom; không khớp thì trả về
+    nguyên trạng để không mất cảnh báo (NT4).
+    """
+    gom: dict[str, dict] = {}
+    con: list[Finding] = []
+    for f in findings:
+        ghep = None
+        if m := _RE_ANH_KHONG_NEO.search(f.finding):
+            ghep = ("khong_neo", m.group(2))
+        elif m := _RE_ANH_DOC.search(f.finding):
+            ghep = ("doc_duoc", None)
+        elif m := _RE_ANH_SO_DO.search(f.finding):
+            ghep = ("so_do", None)
+        elif m := _RE_ANH_DOC_KHONG.search(f.finding):
+            ghep = ("doc_khong_duoc", None)
+        if ghep is None:
+            con.append(f)
+            continue
+        loai, so = ghep
+        g = gom.setdefault(loai, {"so_anh": 0, "so_lieu": 0, "vi_tri": [],
+                                  "finding_goc": f})
+        g["so_anh"] += 1
+        g["so_lieu"] += int(so or 0)
+        if f.location and f.location not in g["vi_tri"]:
+            g["vi_tri"].append(f.location)
+    # thứ tự ổn định theo mẫu
+    thu_tu = [k for k in ("khong_neo", "doc_duoc", "so_do", "doc_khong_duoc")
+              if k in gom]
+    return [gom[k] for k in thu_tu], con
+
+
+def _ten_mau_anh(g: dict) -> str:
+    """Tên nhóm ảnh — lấy từ câu gốc của đại diện nhóm (giữ đúng ngôn ngữ C2 sinh)."""
+    f: Finding = g["finding_goc"]
+    m = _RE_ANH_KHONG_NEO.search(f.finding)
+    if m:
+        return "Ảnh có số nhưng không đối chiếu được với bảng khai báo"
+    if _RE_ANH_DOC.search(f.finding):
+        return "Ảnh đọc được số liệu (cần người kiểm chứng lại)"
+    if _RE_ANH_SO_DO.search(f.finding):
+        return "Sơ đồ đọc được (cần người kiểm chứng lại)"
+    if _RE_ANH_DOC_KHONG.search(f.finding):
+        return "Ảnh chưa đọc được nội dung"
+    return "Cảnh báo ảnh khác"
 
 
 # ---------------------------------------------------------------------------
@@ -295,10 +431,11 @@ def _render_finding(f: Finding, labels: ReportLabels) -> list[str]:
         lines.append(f"  - Phân hệ: {f.scope_key}")
     if f.location:
         lines.append(f"  - Vị trí: {f.location}")
-    # Căn cứ (NT2): ưu tiên trích dẫn quy tắc, kèm mã checklist nếu có.
+    # Căn cứ (NT2): mã quy tắc + trích dẫn RÚT GỌN — nguyên văn đầy đủ nằm ở
+    # phụ lục theo quy tắc (lượt 2026-09-09: 47% dung lượng là quote lặp).
     can_cu = []
     if f.rule_ref:
-        quote = f' — “{f.rule_quote}”' if f.rule_quote else ""
+        quote = f' — “{_rut_quote(f.rule_quote)}”' if f.rule_quote else ""
         can_cu.append(f"quy tắc `{f.rule_ref}`{quote}")
     if f.checklist_ref:
         can_cu.append("checklist " + ", ".join(f"`{c}`" for c in f.checklist_ref))
@@ -383,10 +520,27 @@ def to_markdown(rep: Report, labels: ReportLabels) -> str:
     L.append("")
     L += _render_list(rep.vong2_chua_dat, labels, empty="_(không có phát hiện chưa đạt)_")
     L.append("")
-    L.append("### Chưa kiểm được")
+    L.append("### Chưa kiểm được — gom theo thông tin thiếu")
     L.append("")
-    L += _render_list(rep.vong2_chua_kiem, labels,
-                      empty="_(không có mục nào thiếu thông tin để kiểm)_")
+    L.append("Mỗi dòng là MỘT thông tin tài liệu chưa nêu; các quy tắc bị chặn vì "
+             "thiếu nó liệt kê kèm. Bổ sung thông tin ở cột «Cần bổ sung» là mở "
+             "được cả nhóm kiểm tra tương ứng.")
+    L.append("")
+    if not rep.vong2_chua_kiem:
+        L.append("_(không có mục nào thiếu thông tin để kiểm)_")
+    else:
+        for g in gom_theo_tham_so(rep.vong2_chua_kiem, rep.goi_y_tham_so):
+            if g["tham_so"] == "":
+                f: Finding = g["finding"]
+                L += _render_finding(f, labels)
+                continue
+            ds_r = ", ".join(f"`{r}`" for r in g["rules"])
+            loai = "chưa xác định được có áp dụng không" if g["cho_ap_dung"] \
+                else "chưa kiểm được"
+            L.append(f"- **Cần bổ sung:** {g['cau_hoi']}")
+            L.append(f"  - Thiếu: `{g['tham_so']}` — {len(g['rules'])} quy tắc "
+                     f"{loai}: {ds_r}")
+            L.append(f"  - Phạm vi: {', '.join(g['scopes'])}")
     L.append("")
 
     # Tạm hoãn: thay các finding Vòng 2 bị chặn bằng dòng tóm tắt, nhóm theo phân hệ.
@@ -413,7 +567,42 @@ def to_markdown(rep: Report, labels: ReportLabels) -> str:
     if rep.khac:
         L.append("## Cảnh báo khác")
         L.append("")
-        L += _render_list(rep.khac, labels)
+        nhom_anh, con_lai = gom_canh_bao_anh(rep.khac)
+        TEN_MAU = {
+            "khong_neo": "Ảnh có số nhưng không đối chiếu được với bảng khai báo",
+            "doc_duoc": "Ảnh đọc được số liệu (cần người kiểm chứng lại)",
+            "so_do": "Sơ đồ đọc được (cần người kiểm chứng lại)",
+            "doc_khong_duoc": "Ảnh chưa đọc được nội dung",
+        }
+        if nhom_anh:
+            L.append("Các cảnh báo ảnh cùng mẫu gom thành bảng; chi tiết từng ảnh "
+                     "giữ trong JSON kết quả:")
+            L.append("")
+            for g in nhom_anh:
+                ten = _ten_mau_anh(g)
+                vt = "; ".join(g["vi_tri"][:8]) + ("…" if len(g["vi_tri"]) > 8 else "")
+                L.append(f"- **{ten}**: {g['so_anh']} ảnh"
+                         + (f" · {g['so_lieu']} số liệu" if g["so_lieu"] else "")
+                         + f" · tại {vt}")
+            L.append("")
+        if con_lai:
+            L += _render_list(con_lai, labels)
+            L.append("")
+
+    # --- Phụ lục: trích dẫn đầy đủ, mỗi quy tắc MỘT lần -----------------
+    duyet = list(rep.vong1) + list(rep.vong2_chua_dat) + list(rep.vong2_chua_kiem)
+    quotes: dict[str, str] = {}
+    for f in duyet:
+        if f.rule_ref and f.rule_quote and f.rule_ref not in quotes:
+            quotes[f.rule_ref] = f.rule_quote
+    if quotes:
+        L.append("## Phụ lục — Trích dẫn nguyên văn quy tắc")
+        L.append("")
+        L.append("Căn cứ đầy đủ cho các mã quy tắc nêu trong báo cáo (trích từ "
+                 "tài liệu tiêu chí, mỗi quy tắc một lần):")
+        L.append("")
+        for ref in sorted(quotes):
+            L.append(f"- **`{ref}`** — “{quotes[ref].strip()}”")
         L.append("")
 
     return "\n".join(L).rstrip() + "\n"
@@ -421,13 +610,17 @@ def to_markdown(rep: Report, labels: ReportLabels) -> str:
 
 def build_report(findings: list[Finding], *, ten_he_thong: str | None = None,
                  ma_pyc: str | None = None, is_demo: bool = False,
-                 labels: ReportLabels | None = None) -> str:
+                 labels: ReportLabels | None = None,
+                 rules=None) -> str:
     """Đầu vào là `list[Finding]`, đầu ra là báo cáo Markdown tiếng Việt.
 
     `is_demo=True` khi dữ liệu (đặc biệt Vòng 1 từ C5 chưa có) được dựng tay —
     báo cáo sẽ ghi rõ là demo, không để ai nhầm là kết quả thật.
+    `rules` là `RuleSet` (tuỳ chọn) — mang `tham_so_goi_y` từ rules.yaml vào để
+    diễn đạt tham số thiếu theo câu người nghiệp vụ viết (NT3).
     """
     labels = labels or load_labels()
+    goi_y = dict(rules.goi_y_tham_so) if rules is not None else {}
     rep = xu_ly(findings, labels, ten_he_thong=ten_he_thong, ma_pyc=ma_pyc,
-                is_demo=is_demo)
+                is_demo=is_demo, goi_y_tham_so=goi_y)
     return to_markdown(rep, labels)

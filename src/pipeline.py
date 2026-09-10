@@ -51,10 +51,11 @@ class KetQuaChay:
     ket_qua_anh: list = field(default_factory=list)      # C2 mục 2.3, khi bật
     findings: list[Finding] = field(default_factory=list)
     thong_ke: dict = field(default_factory=dict)
+    rules: RuleSet | None = None
 
     def bao_cao(self) -> str:
         return build_report(self.findings, ten_he_thong=self.sizing.ten_he_thong,
-                            ma_pyc=self.sizing.ma_pyc)
+                            ma_pyc=self.sizing.ma_pyc, rules=self.rules)
 
 
 def _canh_bao_anh(doc: DocxDocument, anh: list) -> list[Finding]:
@@ -216,4 +217,4 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
     findings += canh_bao_nt4(doc)
     # KHÔNG lọc NT2 ở đây — C7 lọc và ĐẾM số bị loại; lọc sớm sẽ giấu mất con số đó.
     return KetQuaChay(doc=doc, sizing=core, ket_qua_dl=kq_dl, ket_qua_dt=kq_dt,
-                      ket_qua_anh=kq_anh, findings=findings, thong_ke=tk)
+                      ket_qua_anh=kq_anh, findings=findings, thong_ke=tk, rules=rs)

@@ -21,6 +21,7 @@ from dataclasses import dataclass
 
 from ..extraction.schema import ExtractedValue, SizingCore
 from ..reporting.finding import Finding
+from ..reporting.tham_so import cau_hoi_cho
 from .expressions import SAFE_FUNCS, danh_gia, thu_thap
 from .rules_loader import Rule, RuleSet, load_rules
 
@@ -139,13 +140,15 @@ class QuantitativeValidator:
 
         # --- thiếu đầu vào: KHÔNG đoán ---------------------------------
         if missing:
+            goi_y = "; ".join(cau_hoi_cho(m, self.rules.goi_y_tham_so)
+                              for m in missing)
             f = self._finding(
                 rule, "thieu_thong_tin",
                 f"Chưa kiểm được {rule.id} ({rule.name}) vì tài liệu thiếu: "
                 f"{', '.join(missing)}.",
                 doc=doc, scope_key=scope_key,
-                suggestion=f"Bổ sung {', '.join(missing)} vào bản sizing.",
-                severity="major", confidence="cao")
+                suggestion=goi_y,
+                severity="minor", confidence="cao")
             return RuleOutcome(rule.id, scope_key, "khong_danh_gia_duoc", f,
                                f"thiếu: {', '.join(missing)}")
 
