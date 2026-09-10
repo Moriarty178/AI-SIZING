@@ -305,3 +305,25 @@ def test_luu_chi_tiet_TUNG_nhan_de_cham_lai_khong_can_model():
                                 "ma_khop": ["PRC-01"]}]
     assert h.ma_finding_loai == {"PRC-01": ["vuot_nguong"],
                                  "STO-03": ["thieu_thong_tin"]}
+
+
+def test_song_song_KHONG_phai_bo_loc():
+    """Lượt dev ĐẦY ĐỦ 2026-09-09 — đúng con số cần công bố — bị đóng dấu "KHÔNG
+    được trích như recall thật" chỉ vì chạy 12 luồng thay vì 6.
+
+    Song song không đổi hồ sơ nào được chấm hay quy tắc nào được hỏi. Một cảnh
+    báo sai chỗ làm hỏng niềm tin vào cảnh báo đúng chỗ.
+    """
+    kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
+    kq.bo_loc = {"nhom C3": "", "chi N ho so": "", "ho so": "", "song song": 12,
+                 "doc anh (2.3+2.5)": ""}
+    assert not kq.da_loc
+    bc = bang_markdown(kq)
+    assert "KHÔNG được trích như recall thật" not in bc
+
+
+def test_van_giu_song_song_trong_bao_cao_de_lan_lai_chi_phi():
+    kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
+    kq.bo_loc = {"ho so": "campaign", "song song": 12}
+    assert kq.da_loc                        # `ho so` MỚI là bộ lọc thật
+    assert "song song` = 12" in bang_markdown(kq)
