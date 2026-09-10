@@ -16,9 +16,9 @@ import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.giao_dien import (CAN_MODEL, CHE_DO, che_do_kha_dung, chay_checklist,
-                           kiem_model, luu_tam, ten_file_ket_qua,
-                           tom_tat_tai_lieu, uoc_luong)
+from src.giao_dien import (CAN_MODEL, CHE_DO, cau_gioi_han, che_do_kha_dung,
+                           chay_checklist, kiem_model, luu_tam,
+                           ten_file_ket_qua, tom_tat_tai_lieu, uoc_luong)
 from src.ingestion.docx_reader import read_docx
 from src.khach_api import KhachAPI, LoiAPI, dia_chi_mac_dinh
 from src.version import PHIEN_BAN_C3, commit_hien_tai
@@ -41,8 +41,33 @@ def thanh_ben():
             "model tự dựng, chỉ với tới được từ máy trong mạng nội bộ."
         )
     st.sidebar.divider()
+    # D3 — giới hạn phải hiện SẴN, không giấu sau một cú bấm. Demo cho người
+    # ngoài mà không nêu chúng là để họ tự suy ra một công cụ khác công cụ thật.
+    st.sidebar.subheader("Công cụ này làm được gì")
+    for c in cau_gioi_han():
+        st.sidebar.caption(c)
+    st.sidebar.divider()
     st.sidebar.caption(f"{PHIEN_BAN_C3}  \ncommit `{commit_hien_tai()}`")
     return tt
+
+
+def mau_word():
+    """D4 — người đánh giá cần một file để thử NGAY, không phải đi xin hồ sơ thật."""
+    import io
+
+    from src.reporting.mau_word import doc_checklist, dung_mau
+    try:
+        d = dung_mau(doc_checklist())
+    except Exception as e:               # thiếu bảng checklist thì nói ra, đừng im
+        st.caption(f"(chưa dựng được mẫu Word: {type(e).__name__})")
+        return
+    buf = io.BytesIO()
+    d.save(buf)
+    st.download_button("⬇ Tải mẫu Word chuẩn để thử", buf.getvalue(),
+                       "mau-sizing-chuan.docx",
+                       "application/vnd.openxmlformats-officedocument."
+                       "wordprocessingml.document")
+    st.caption("Mẫu dựng từ 57 mục checklist thẩm định — điền vào rồi tải lên đây.")
 
 
 # --------------------------------------------------------------- các chế độ --
@@ -216,8 +241,8 @@ def main():
 
     f = st.file_uploader("Chọn bản sizing (.docx)", type=["docx"])
     if f is None:
-        st.caption("Chưa có tệp nào. Mẫu Word chuẩn sinh được bằng "
-                   "`python scripts/make_word_template.py`.")
+        st.caption("Chưa có tệp nào.")
+        mau_word()
         return
 
     noi_dung = f.getvalue()

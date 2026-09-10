@@ -38,6 +38,71 @@ CHE_DO = {
 CAN_MODEL = {"tham_dinh"}
 
 
+# --------------------------------------------------------------- giới hạn --
+# D3 — nói thẳng công cụ làm được gì và KHÔNG làm được gì, bằng số đã đo.
+#
+# Demo cho người ngoài mà không nêu những con số này là để họ tự suy ra một công
+# cụ khác với công cụ thật. Con số nào cũng phải kèm NGÀY và NGUỒN, để lần sau
+# đo lại thì biết sửa ở đâu — và để không ai trích một con số đã cũ.
+
+
+@dataclass(frozen=True)
+class ConSoDoDuoc:
+    """Kết quả đo thật, KHÔNG phải mục tiêu hay kỳ vọng."""
+
+    ngay: str
+    ho_so: int
+    recall_chinh: float             # thước đo hào phóng nhất
+    recall_quyet_dinh: float        # nhóm nhãn đòi TÍNH/SO số — chỗ khó thật
+    ty_le_chua_doc_duoc: float      # phần báo cáo là "công cụ không đọc được"
+    phut_moi_tai_lieu: int
+    nguon: str
+
+
+DO_LUONG = ConSoDoDuoc(
+    ngay="2026-09-09",
+    ho_so=14,
+    recall_chinh=0.875,
+    recall_quyet_dinh=0.07,         # 5/71
+    ty_le_chua_doc_duoc=0.949,      # đo trên báo cáo VTracking 2026-09-10
+    phut_moi_tai_lieu=16,
+    nguon="eval/reports/eval-dev-20260909-185006.md",
+)
+
+
+def _pt(x: float, le: int = 1) -> str:
+    """Phần trăm kiểu Việt: dấu phẩy thập phân, KHÔNG làm tròn mất chữ số.
+
+    `f"{0.875:.0%}"` cho «88%» — làm tròn LÊN đúng con số sắp công bố. 87,5% và
+    88% là hai điều khác nhau khi có người trích lại.
+    """
+    return f"{x * 100:.{le}f}".rstrip("0").rstrip(".").replace(".", ",") + "%"
+
+
+def cau_gioi_han(d: ConSoDoDuoc = DO_LUONG) -> list[str]:
+    """Những câu PHẢI hiện cho người dùng. Trả list để test được từng câu."""
+    return [
+        "Đây là công cụ **cố vấn**. Nó KHÔNG phê duyệt và KHÔNG từ chối — "
+        "người thẩm định vẫn quyết định cuối cùng.",
+
+        f"Đo trên **{d.ho_so} hồ sơ thật** ({d.ngay}): công cụ chạm tới "
+        f"**{_pt(d.recall_chinh)}** nhận xét của người thẩm định trên thước đo "
+        f"hào phóng nhất — nhưng chỉ **{_pt(d.recall_quyet_dinh, 0)}** ở nhóm nhận "
+        "xét đòi TÍNH hoặc SO số. Nhóm sau mới là chỗ khó, và là chỗ công cụ "
+        "còn yếu.",
+
+        f"Khoảng **{_pt(d.ty_le_chua_doc_duoc, 0)}** số dòng trong báo cáo là "
+        "*«công cụ chưa đọc được chỗ này»* — **không phải** lỗi của bản sizing. "
+        "Đọc mục «Cần xử lý trước khi nộp» ở đầu báo cáo trước.",
+
+        "**Chưa đo được tỉ lệ báo sai.** Một phát hiện không khớp nhận xét nào "
+        "của người thẩm định KHÔNG có nghĩa nó sai — nên đừng coi mọi dòng là "
+        "đúng, cũng đừng coi là nhiễu. Kiểm lại từng dòng.",
+
+        f"Một tài liệu tốn khoảng **{d.phut_moi_tai_lieu} phút**.",
+    ]
+
+
 @dataclass
 class TrangThaiModel:
     san_sang: bool
