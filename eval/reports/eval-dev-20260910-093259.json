@@ -1,0 +1,2858 @@
+{
+ "tap": "dev",
+ "bo_loc": {
+  "nhom C3": "",
+  "nhom C5": "",
+  "chi_vong": "",
+  "chi N ho so": "",
+  "ho so": "campaign,VTracking,APIGee",
+  "song song": 12,
+  "doc anh (2.3+2.5)": ""
+ },
+ "dien_tap": false,
+ "canh_bao": [
+  "`cap bo sung campaign 2.0 8964`: 1 bản sửa SAU vòng thẩm định cuối (2024-01-23) nên không thể là bản được đọc, đã bỏ ra: `Định cỡ hệ thống Campaign 2.0 bổ sungv3.docx`",
+  "`cap bo sung campaign 2.0 8964`: mọi bản đều sửa sau vòng thẩm định cuối (2024-01-23) — không loại được bản nào, giữ nguyên cả danh sách",
+  "`cap bo sung campaign 2.0 8964`: hồ sơ có 2 vòng nhận xét nhưng chỉ ghép được 1 bản — các vòng từ 2 trở đi dùng chung bản cuối `Định cỡ hệ thống Campaign 2.0 bổ sungv3.docx`, nên nhãn của chúng bị chấm trên bản ĐÃ SỬA",
+  "`cap bo sung campaign 2.0 8964`: 14 nhãn thuộc vòng 2 trở đi nhưng được chấm trên bản vòng 1 `Định cỡ hệ thống Campaign 2.0 bổ sungv3.docx` — dùng `--moi-phien-ban` để chấm đúng bản của từng vòng (tốn thêm lượt gọi model)",
+  "`cap bo sung VTracking 2.0.1 14716`: 1 nhãn thuộc vòng 2 trở đi nhưng được chấm trên bản vòng 1 `Thiet ke va dinh co he thong_VTracking 2.0.1.docx` — dùng `--moi-phien-ban` để chấm đúng bản của từng vòng (tốn thêm lượt gọi model)",
+  "`cap moi APIGee Mini App 64015`: 1 bản sửa SAU vòng thẩm định cuối (2026-01-30) nên không thể là bản được đọc, đã bỏ ra: `PL17_Thiet ke va dinh co he thong Apigee 53 `",
+  "TỔNG: 15/62 nhãn thuộc vòng 2 trở đi được chấm trên bản vòng 1 — recall của phần này THẤP GIẢ TẠO nếu lỗi đã được vá, hoặc CAO GIẢ TẠO nếu lỗi mới phát sinh ở bản sau.",
+  "thời gian: 44 phút cho 3 hồ sơ (15 phút/hồ sơ, song song 12)"
+ ],
+ "ho_so": [
+  {
+   "dossier": "cap bo sung VTracking 2.0.1 14716",
+   "file_da_dung": "Thiet ke va dinh co he thong_VTracking 2.0.1.docx",
+   "ghi_chu": "",
+   "nhan": [
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-01-03",
+     "text": "Bổ sung thông tin kết nối đến các hệ thống.",
+     "rule_ref": [
+      "ARC-15",
+      "ARC-16"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "ARC-15",
+      "ARC-16"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-01-04",
+     "text": "Tính toán lại số liệu",
+     "rule_ref": [
+      "EVD-10"
+     ],
+     "loai": "manh_vun",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-10"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-02-02",
+     "text": "1. Thông tin hệ thống: Bổ sung Mô tả hệ thống",
+     "rule_ref": [
+      "EVD-12"
+     ],
+     "loai": "thieu",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-02-03",
+     "text": "1. Thông tin hệ thống: Bổ sung đơn vị phát triển",
+     "rule_ref": [
+      "PRC-09"
+     ],
+     "loai": "thieu",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-02-04",
+     "text": "1. Thông tin hệ thống: Bổ sung đầu mối định cỡ",
+     "rule_ref": [
+      "PRC-09"
+     ],
+     "loai": "thieu",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-02-05",
+     "text": "1. Thông tin hệ thống: Bổ sung cơ sở định cỡ",
+     "rule_ref": [
+      "EVD-04",
+      "MTH-01",
+      "MTH-03",
+      "MTH-04"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-04",
+      "MTH-01",
+      "MTH-03",
+      "MTH-04"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-02-06",
+     "text": "1. Thông tin hệ thống: Bổ sung nguyên tắc định cỡ",
+     "rule_ref": [
+      "EVD-04",
+      "MTH-01",
+      "MTH-03",
+      "MTH-04"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-04",
+      "MTH-01",
+      "MTH-03",
+      "MTH-04"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-02-07",
+     "text": "1. Thông tin hệ thống: Bổ sung đơn vị quản lý dịch vụ",
+     "rule_ref": [
+      "PRC-09"
+     ],
+     "loai": "thieu",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-02-08",
+     "text": "1. Thông tin hệ thống: Bổ sung mục đích định cỡ",
+     "rule_ref": [
+      "PRC-11"
+     ],
+     "loai": "thieu",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-03-01",
+     "text": "1. Thông tin hệ thống: Bổ sung thông tin chi tiết đầu vào kèm sở cứ",
+     "rule_ref": [
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-03-02",
+     "text": "1. Thông tin hệ thống: Tính theo giá trị tuyệt đối, không tính theo giá trị làm tròn % CPU, RAM",
+     "rule_ref": [
+      "CPU-05",
+      "RAM-02"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "CPU-05",
+      "RAM-02"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-03-03",
+     "text": "1. Thông tin hệ thống: Cấu hình đề xuất đang vượt max VM",
+     "rule_ref": [
+      "ALC-02",
+      "ARC-05",
+      "CPU-03",
+      "CPU-04"
+     ],
+     "loai": "menh_lenh",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ALC-02",
+      "CPU-03",
+      "CPU-04"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-03-04",
+     "text": "1. Thông tin hệ thống: Tính thông lượng chỉ * K dự phòng 1.2, và mẫu test lấy giá trị trung bình",
+     "rule_ref": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-09"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-09"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-03-05",
+     "text": "1. Thông tin hệ thống: Tính TPS, dung lượng cho GPS theo từng khung giờ cao điểm và thấp điểm. Sao dung lượng này lại chỉ cần lưu trữ trong 1 ngày ?",
+     "rule_ref": [
+      "EVD-01",
+      "EVD-05",
+      "EVD-11",
+      "EVD-21",
+      "KPI-06",
+      "STO-04"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "EVD-05",
+      "EVD-11",
+      "EVD-21"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-03-06",
+     "text": "1. Thông tin hệ thống: Trang 27: sở cứ đây là ảnh chụp cho 150 t/bị trong 1.5 tháng ?Sở cứ lưu 24 tháng",
+     "rule_ref": [
+      "PRC-01"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-03-07",
+     "text": "1. Thông tin hệ thống: Tính thông lượng LB, FW chỉ có K dự phòng 1.2",
+     "rule_ref": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-09",
+      "FWL-02",
+      "FWL-04",
+      "LBA-01",
+      "LBA-02"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-09",
+      "FWL-02",
+      "LBA-01",
+      "LBA-02"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-03-08",
+     "text": "1. Thông tin hệ thống: Đề xuất tài nguyên 10k để làm gì ? Xóa nếu không dùng hoặc bổ sung cách tính nếu dùng",
+     "rule_ref": [
+      "EVD-03",
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-04-03",
+     "text": "Thực tế tải trên hệ thống đo đạc được: Bổ sung link tham chiếu CPU và ảnh chụp cấu hình ip tương ứng",
+     "rule_ref": [
+      "CPU-05",
+      "CPU-06",
+      "CPU-09"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "CPU-05",
+      "CPU-09"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-05-02",
+     "text": "Bổ sung sở cứ cho các thông số thực tế, thiết kế",
+     "rule_ref": [
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R1-05-03",
+     "text": "Bổ sung sở cứ cho 98%, 70%",
+     "rule_ref": [
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_vTracking 2.0_v2|R2-01-01",
+     "text": "Tính thông lượng chỉ * K dự phòng 1.2, và mẫu test lấy giá trị trung bình",
+     "rule_ref": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-09"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-09"
+     ]
+    }
+   ],
+   "ma_finding_loai": {
+    "KPI-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-09": [
+     "thieu_thong_tin"
+    ],
+    "KPI-10": [
+     "thieu_thong_tin"
+    ],
+    "KPI-12": [
+     "thieu_thong_tin"
+    ],
+    "KPI-13": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-14": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-01": [
+     "thieu_thong_tin"
+    ],
+    "ARC-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-04": [
+     "thieu_thong_tin"
+    ],
+    "ARC-08": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-19": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-20": [
+     "thieu_thong_tin"
+    ],
+    "ARC-21": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-22": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-23": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-24": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-25": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-26": [
+     "thieu_thong_tin"
+    ],
+    "ARC-27": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-07": [
+     "thieu_thong_tin"
+    ],
+    "STO-18": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-19": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-20": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-21": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-22": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-23": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "EVD-05": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "EVD-10": [
+     "thieu_thong_tin"
+    ],
+    "CPU-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-04": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-05": [
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-07": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-10": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "CPU-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-04": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-05": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-07": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "BAK-08": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-10": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ALC-01": [
+     "thieu_thong_tin"
+    ],
+    "ALC-02": [
+     "thieu_thong_tin"
+    ],
+    "SAN-01": [
+     "thieu_thong_tin"
+    ],
+    "SAN-02": [
+     "thieu_thong_tin"
+    ],
+    "LAN-01": [
+     "thieu_thong_tin"
+    ],
+    "LAN-02": [
+     "khong_kiem_chung_duoc"
+    ],
+    "LAN-03": [
+     "thieu_thong_tin"
+    ],
+    "FWL-01": [
+     "thieu_thong_tin"
+    ],
+    "FWL-02": [
+     "thieu_thong_tin"
+    ],
+    "FWL-03": [
+     "thieu_thong_tin"
+    ],
+    "LBA-01": [
+     "thieu_thong_tin",
+     "sai_cong_thuc",
+     "sai_cong_thuc",
+     "sai_cong_thuc"
+    ],
+    "LBA-02": [
+     "thieu_thong_tin"
+    ],
+    "RCK-01": [
+     "khong_kiem_chung_duoc"
+    ],
+    "RCK-02": [
+     "thieu_thong_tin"
+    ],
+    "RCK-03": [
+     "thieu_thong_tin"
+    ],
+    "ARC-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-10": [
+     "thieu_thong_tin"
+    ],
+    "MTH-04": [
+     "thieu_thong_tin"
+    ],
+    "ARC-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "MTH-03": [
+     "thieu_thong_tin"
+    ],
+    "ARC-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "MTH-01": [
+     "thieu_thong_tin"
+    ],
+    "MTH-02": [
+     "thieu_thong_tin"
+    ],
+    "ARC-14": [
+     "thieu_thong_tin",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "ARC-15": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc"
+    ],
+    "ARC-13": [
+     "khong_kiem_chung_duoc"
+    ],
+    "ARC-16": [
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc"
+    ],
+    "STO-17": [
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc"
+    ],
+    "EVD-04": [
+     "thieu_thong_tin"
+    ],
+    "EVD-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "EVD-08": [
+     "thieu_thong_tin"
+    ],
+    "EVD-02": [
+     "thieu_thong_tin"
+    ],
+    "EVD-15": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-11": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-17": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-18": [
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-19": [
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-20": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-21": [
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc"
+    ],
+    "BAK-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "PRC-02": [
+     "thieu_thong_tin"
+    ],
+    "PRC-03": [
+     "thieu_thong_tin"
+    ],
+    "PRC-05": [
+     "thieu_thong_tin"
+    ],
+    "PRC-06": [
+     "thieu_thong_tin"
+    ],
+    "PRC-07": [
+     "thieu_thong_tin"
+    ],
+    "PRC-10": [
+     "thieu_muc"
+    ],
+    "ALC-04": [
+     "thieu_thong_tin"
+    ],
+    "TST-02": [
+     "thieu_thong_tin"
+    ],
+    "TST-03": [
+     "thieu_thong_tin"
+    ],
+    "ALC-05": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-22": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "PRC-01": [
+     "thieu_thong_tin"
+    ]
+   }
+  },
+  {
+   "dossier": "cap bo sung campaign 2.0 8964",
+   "file_da_dung": "Định cỡ hệ thống Campaign 2.0 bổ sungv3.docx",
+   "ghi_chu": "",
+   "nhan": [
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-01-02",
+     "text": "Bổ sung sở cứ tăng trưởng là 20%",
+     "rule_ref": [
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-01-03",
+     "text": "Sao không có thông tin CPU",
+     "rule_ref": [
+      "CPU-05",
+      "CPU-06",
+      "CPU-09"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "CPU-09"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-01-04",
+     "text": "Lấy tải thực tế và tính cụ thể thông số CPU, RAM",
+     "rule_ref": [
+      "CPU-05",
+      "CPU-06",
+      "CPU-09",
+      "KPI-01",
+      "KPI-10",
+      "RAM-01",
+      "RAM-02"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "CPU-09",
+      "KPI-10",
+      "RAM-01",
+      "RAM-02"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-01-05",
+     "text": "Sở cứ cần sử dụng SSD",
+     "rule_ref": [
+      "KPI-07",
+      "PRC-01",
+      "STO-03",
+      "STO-14",
+      "STO-15"
+     ],
+     "loai": "thu_tuc",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-01-06",
+     "text": "Tính toán thông lượng FW, LB giao tiếp với các hệ thống/cụm tài nguyên khác",
+     "rule_ref": [
+      "FWL-02",
+      "FWL-04",
+      "LBA-01",
+      "LBA-02"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "FWL-02",
+      "LBA-01",
+      "LBA-02"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-01-07",
+     "text": "Trình bày rõ p/án thay thế cụm tài nguyên IDC, Datalake ntn (toàn bộ hay 1 phần) qua mail",
+     "rule_ref": [
+      "PRC-11"
+     ],
+     "loai": "thu_tuc",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-01-08",
+     "text": "Áp dụng đúng các KPI khi tính toán CPU, RAM, Disk",
+     "rule_ref": [
+      "CPU-05",
+      "CPU-06",
+      "CPU-09",
+      "KPI-02",
+      "KPI-03",
+      "KPI-04",
+      "KPI-14",
+      "RAM-01",
+      "RAM-02"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "CPU-09",
+      "KPI-02",
+      "KPI-03",
+      "KPI-14",
+      "RAM-01",
+      "RAM-02"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-02-02",
+     "text": "Bổ sung thêm hàng mục đích sizing vào bảng (định cỡ mới, định cỡ cho nâng cấp ...)",
+     "rule_ref": [
+      "PRC-11"
+     ],
+     "loai": "thieu",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-02-03",
+     "text": "Bổ sung thông tin: kết nối hệ thống",
+     "rule_ref": [
+      "ARC-15",
+      "ARC-16"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "ARC-16"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-02-04",
+     "text": "Tại sao chỉ lưu 8TB/1sv",
+     "rule_ref": [
+      "EVD-01",
+      "EVD-10",
+      "KPI-06",
+      "STO-04"
+     ],
+     "loai": "manh_vun",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-10"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-03-02",
+     "text": "Trang 7: Bổ sung sở cứ cần 256GB RAM",
+     "rule_ref": [
+      "EVD-01",
+      "KPI-06",
+      "PRC-01",
+      "RAM-01",
+      "RAM-02",
+      "STO-04"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01",
+      "RAM-01",
+      "RAM-02"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-04-02",
+     "text": "Trang 8: Bổ sung sở cứ cần 256GB RAM",
+     "rule_ref": [
+      "EVD-01",
+      "KPI-06",
+      "PRC-01",
+      "RAM-01",
+      "RAM-02",
+      "STO-04"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01",
+      "RAM-01",
+      "RAM-02"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-04-03",
+     "text": "Tại sao mô hình Kafka là 5 instances",
+     "rule_ref": [
+      "ARC-23",
+      "ARC-24",
+      "ARC-25",
+      "CPU-11",
+      "EVD-10",
+      "STO-21",
+      "STO-22"
+     ],
+     "loai": "thu_tuc",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ARC-23",
+      "ARC-24",
+      "ARC-25",
+      "CPU-11",
+      "EVD-10",
+      "STO-21",
+      "STO-22"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-05-02",
+     "text": "Trang 12: Bổ sung sở cứ cần 256GB RAM",
+     "rule_ref": [
+      "EVD-01",
+      "KPI-06",
+      "PRC-01",
+      "RAM-01",
+      "RAM-02",
+      "STO-04"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01",
+      "RAM-01",
+      "RAM-02"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-01-02",
+     "text": "Làm rõ lại thông tin, bổ sung sở cứ, tính toán lại số liệu.",
+     "rule_ref": [
+      "EVD-10",
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-10",
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-01-04",
+     "text": "Đề xuất lưu ý Giá trị N+1",
+     "rule_ref": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-09"
+     ],
+     "loai": "menh_lenh",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-09"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-02-02",
+     "text": "Sửa lại thông tin cpu, cint 2017, link tham chiếu (trang 7)",
+     "rule_ref": [
+      "CPU-01",
+      "PRC-01"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "CPU-01",
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-02-03",
+     "text": "Bổ sung sở cứ cho: Dung lượng log + file cài đặt cụm Hadoop trong vòng 6 tháng là: 3TB (trang 8)",
+     "rule_ref": [
+      "ALC-01",
+      "EVD-01",
+      "KPI-06",
+      "PRC-01",
+      "STO-04"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ALC-01",
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-02-04",
+     "text": "Đề xuất bổ sung cấp phát tài nguyên thay thế cụm BigData trên hạ tầng IDC: (trang 9)",
+     "rule_ref": [
+      "PRC-07"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-07"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-02-05",
+     "text": "Bổ sung lại sở cứ sử dụng SSD",
+     "rule_ref": [
+      "PRC-01",
+      "STO-14"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-02-06",
+     "text": "Hiện tại số lượng server trong cụm là bao nhiêu Làm rõ số liệu cpu 684.2 cint 2017, tính toán lại đề xuất, Giá trị N+1",
+     "rule_ref": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-08",
+      "ARC-09",
+      "CPU-01",
+      "CPU-02",
+      "CPU-05",
+      "CPU-06",
+      "CPU-09",
+      "CPU-10",
+      "EVD-10"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-08",
+      "ARC-09",
+      "CPU-01",
+      "CPU-09",
+      "CPU-10",
+      "EVD-10"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-03-02",
+     "text": "Sửa lại thông tin cpu, cint 2017, link tham chiếu (trang 9)",
+     "rule_ref": [
+      "CPU-01",
+      "PRC-01"
+     ],
+     "loai": "khac",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "CPU-01",
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-03-03",
+     "text": "Làm rõ thông tin tại sao: Mô hình cài đặt cụm với 5 instances.(trang 11)",
+     "rule_ref": [
+      "EVD-10"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-10"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-03-04",
+     "text": "Hiện tại số lượng server trong cụm là bao nhiêu tính toán lại số liệu đề xuất, Giá trị N+1",
+     "rule_ref": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-08",
+      "ARC-09",
+      "EVD-10"
+     ],
+     "loai": "menh_lenh",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ARC-02",
+      "ARC-03",
+      "ARC-08",
+      "ARC-09",
+      "EVD-10"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-04-02",
+     "text": "Làm rõ số liệu này ở đâu: (C)Tổng dung lượng bảng Campaign trên Datalake (TB): 25TB (trang 14), B+C sai 129 +25= 154 không phải 151 tính toán lại",
+     "rule_ref": [
+      "EVD-01",
+      "EVD-10",
+      "KPI-06",
+      "STO-04"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-10"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-04-03",
+     "text": "Đề xuất bổ sung cấp phát tài nguyên thay thế cụm BigData trên hạ tầng IDC Tính toán lại số liệu (trang 15)",
+     "rule_ref": [
+      "EVD-10",
+      "PRC-07"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-10",
+      "PRC-07"
+     ]
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-05-02",
+     "text": "Tổng dung lượng dữ liệu trên ngày = Tổng dung lượng lữu trữ chưa có replicate Hadoop (Mục 1.3) bảng dữ liệu là trong khoảng thời gian nhiêu ?",
+     "rule_ref": [
+      "EVD-01",
+      "KPI-06",
+      "STO-04"
+     ],
+     "loai": "thieu",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R2-05-03",
+     "text": "= 151.4TB/ 365 tại sao chưa có replicate mà lấy tổng đã X3",
+     "rule_ref": [
+      "EVD-01",
+      "EVD-10",
+      "KPI-06",
+      "STO-04"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-10"
+     ]
+    }
+   ],
+   "ma_finding_loai": {
+    "KPI-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-09": [
+     "thieu_thong_tin"
+    ],
+    "KPI-10": [
+     "thieu_thong_tin"
+    ],
+    "KPI-12": [
+     "thieu_thong_tin"
+    ],
+    "KPI-13": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-14": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-01": [
+     "thieu_thong_tin"
+    ],
+    "ARC-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-04": [
+     "thieu_thong_tin"
+    ],
+    "ARC-08": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-19": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-21": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-22": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-23": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-24": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-25": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-26": [
+     "thieu_thong_tin"
+    ],
+    "ARC-27": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-07": [
+     "thieu_thong_tin"
+    ],
+    "STO-18": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-19": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-20": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-21": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-22": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-23": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "EVD-05": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "EVD-10": [
+     "thieu_thong_tin"
+    ],
+    "CPU-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-04": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-07": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-10": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "CPU-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-04": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-05": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-07": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "BAK-08": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-10": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ALC-01": [
+     "thieu_thong_tin"
+    ],
+    "ALC-02": [
+     "thieu_thong_tin"
+    ],
+    "SAN-01": [
+     "thieu_thong_tin"
+    ],
+    "SAN-02": [
+     "thieu_thong_tin"
+    ],
+    "LAN-01": [
+     "thieu_thong_tin"
+    ],
+    "LAN-02": [
+     "khong_kiem_chung_duoc"
+    ],
+    "LAN-03": [
+     "thieu_thong_tin"
+    ],
+    "FWL-01": [
+     "thieu_thong_tin"
+    ],
+    "FWL-02": [
+     "thieu_thong_tin"
+    ],
+    "FWL-03": [
+     "thieu_thong_tin"
+    ],
+    "LBA-01": [
+     "thieu_thong_tin"
+    ],
+    "LBA-02": [
+     "thieu_thong_tin"
+    ],
+    "RCK-01": [
+     "khong_kiem_chung_duoc"
+    ],
+    "RCK-02": [
+     "thieu_thong_tin"
+    ],
+    "RCK-03": [
+     "thieu_thong_tin"
+    ],
+    "ARC-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "MTH-01": [
+     "thieu_thong_tin"
+    ],
+    "MTH-04": [
+     "thieu_thong_tin"
+    ],
+    "ARC-10": [
+     "thieu_thong_tin"
+    ],
+    "MTH-02": [
+     "thieu_thong_tin"
+    ],
+    "MTH-03": [
+     "thieu_thong_tin"
+    ],
+    "ARC-16": [
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc"
+    ],
+    "STO-17": [
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc"
+    ],
+    "EVD-04": [
+     "thieu_thong_tin"
+    ],
+    "EVD-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-02": [
+     "thieu_thong_tin"
+    ],
+    "EVD-08": [
+     "thieu_thong_tin"
+    ],
+    "EVD-11": [
+     "khong_kiem_chung_duoc"
+    ],
+    "ARC-13": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-09": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-18": [
+     "thieu_muc"
+    ],
+    "EVD-14": [
+     "khong_kiem_chung_duoc"
+    ],
+    "ARC-14": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-19": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-21": [
+     "thieu_muc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc"
+    ],
+    "BAK-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "PRC-02": [
+     "thieu_thong_tin"
+    ],
+    "PRC-03": [
+     "thieu_thong_tin"
+    ],
+    "PRC-05": [
+     "thieu_thong_tin"
+    ],
+    "PRC-06": [
+     "thieu_thong_tin"
+    ],
+    "PRC-07": [
+     "thieu_thong_tin"
+    ],
+    "PRC-10": [
+     "thieu_muc"
+    ],
+    "ALC-04": [
+     "thieu_thong_tin"
+    ],
+    "TST-02": [
+     "thieu_thong_tin"
+    ],
+    "TST-03": [
+     "thieu_thong_tin"
+    ],
+    "PRC-01": [
+     "thieu_thong_tin"
+    ],
+    "EVD-15": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-20": [
+     "thieu_muc"
+    ],
+    "ALC-05": [
+     "thieu_thong_tin"
+    ]
+   }
+  },
+  {
+   "dossier": "cap moi APIGee Mini App 64015",
+   "file_da_dung": "PL17_Thiet ke va dinh co he thong Apigee 53 nodes_miniapp.docx",
+   "ghi_chu": "",
+   "nhan": [
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-01-02",
+     "text": "Bổ sung sở cứ",
+     "rule_ref": [
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-01-03",
+     "text": "Tính toán lại số liệu",
+     "rule_ref": [
+      "EVD-10"
+     ],
+     "loai": "manh_vun",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "EVD-10"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-01-04",
+     "text": "Bổ sung đánh giá mức độ quan trọng của hệ thống (thêm 1 dòng vào phần đầu sizing): GL đính kèm --> hệ thống ĐBQT bắt buộc phải có DR",
+     "rule_ref": [
+      "ARC-12",
+      "ARC-13",
+      "ARC-26",
+      "PRC-01",
+      "PRC-05"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "ARC-13",
+      "ARC-26",
+      "PRC-01",
+      "PRC-05"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-01-05",
+     "text": "- Bắt buộc phải có thời gian cam kết hoàn thành triển khai và đổ tải thật (thêm 1 dòng vào phần đầu của sizing), có sở cứ từ KD hoặc BGĐ",
+     "rule_ref": [
+      "PRC-01",
+      "PRC-10"
+     ],
+     "loai": "thu_tuc",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "PRC-01",
+      "PRC-10"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-01-06",
+     "text": "- Ký sizing phải đính kèm thêm file checklist (đính kèm)",
+     "rule_ref": [
+      "PRC-01",
+      "PRC-05"
+     ],
+     "loai": "thu_tuc",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-01",
+      "PRC-05"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-02-01",
+     "text": "Bổ sung mục đích sizing",
+     "rule_ref": [
+      "PRC-11"
+     ],
+     "loai": "thieu",
+     "trung": false,
+     "thuc_chat": false,
+     "ma_khop": []
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-03-01",
+     "text": "Tài nguyên con này đã có trong QHDC nào chưa ạ",
+     "rule_ref": [
+      "PRC-07"
+     ],
+     "loai": "thu_tuc",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "PRC-07"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-04-01",
+     "text": "Bổ sung mô hình logic, luồng nghiệp vụ",
+     "rule_ref": [
+      "EVD-13",
+      "EVD-15",
+      "EVD-19"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "EVD-19"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-05-02",
+     "text": "Bổ sung sở cứ: TB active/ngày: 4.000.000, TPM: 300.000,TPS(max): 20.000",
+     "rule_ref": [
+      "EVD-05",
+      "EVD-11",
+      "EVD-21",
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "EVD-05",
+      "EVD-11",
+      "EVD-21",
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-06-02",
+     "text": "Bổ sung sở cứ 432 triệu request mỗi ngày ~ 5000 TPS, TPS peak lên tới 20,000 TPS",
+     "rule_ref": [
+      "EVD-05",
+      "EVD-11",
+      "EVD-21",
+      "PRC-01"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "EVD-05",
+      "EVD-11",
+      "EVD-21",
+      "PRC-01"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-07-01",
+     "text": "Bổ sung thông tin kết nối đến các hệ thống khác",
+     "rule_ref": [
+      "ARC-15",
+      "ARC-16"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "ARC-15",
+      "ARC-16"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-08-01",
+     "text": "Tính thông lượng FW,LB",
+     "rule_ref": [
+      "FWL-02",
+      "FWL-04",
+      "LBA-01",
+      "LBA-02"
+     ],
+     "loai": "manh_vun",
+     "trung": true,
+     "thuc_chat": false,
+     "ma_khop": [
+      "FWL-02",
+      "LBA-01",
+      "LBA-02"
+     ]
+    },
+    {
+     "label_id": "PNX_APIGee Mini Appv2|R1-09-01",
+     "text": "LB bổ sung thêm các thông tin: từng luồng nghiệp vụ của hệ thống tới các vùng mạng khác: concurent session, peak concurent session, new concurent session, duration session với băng thông tương ứng",
+     "rule_ref": [
+      "ARC-15",
+      "ARC-16",
+      "EVD-15",
+      "FWL-02",
+      "LAN-02",
+      "LAN-03",
+      "LBA-02"
+     ],
+     "loai": "thieu",
+     "trung": true,
+     "thuc_chat": true,
+     "ma_khop": [
+      "ARC-15",
+      "ARC-16",
+      "FWL-02",
+      "LAN-02",
+      "LAN-03",
+      "LBA-02"
+     ]
+    }
+   ],
+   "ma_finding_loai": {
+    "KPI-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-09": [
+     "thieu_thong_tin"
+    ],
+    "KPI-10": [
+     "thieu_thong_tin"
+    ],
+    "KPI-12": [
+     "thieu_thong_tin"
+    ],
+    "KPI-13": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "KPI-14": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-01": [
+     "thieu_thong_tin"
+    ],
+    "ARC-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-04": [
+     "thieu_thong_tin"
+    ],
+    "ARC-08": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-19": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-21": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-22": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-23": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-24": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-25": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-26": [
+     "thieu_thong_tin"
+    ],
+    "ARC-27": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-07": [
+     "thieu_thong_tin"
+    ],
+    "STO-18": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-19": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-20": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-21": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-22": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-23": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "EVD-05": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "EVD-10": [
+     "thieu_thong_tin"
+    ],
+    "CPU-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-04": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-07": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "CPU-10": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "CPU-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "RAM-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-01": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-03": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-04": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-05": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-07": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "BAK-08": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-10": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "BAK-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ALC-01": [
+     "thieu_thong_tin"
+    ],
+    "ALC-02": [
+     "thieu_thong_tin"
+    ],
+    "SAN-01": [
+     "thieu_thong_tin"
+    ],
+    "SAN-02": [
+     "thieu_thong_tin"
+    ],
+    "LAN-01": [
+     "thieu_thong_tin"
+    ],
+    "LAN-02": [
+     "khong_kiem_chung_duoc"
+    ],
+    "LAN-03": [
+     "thieu_thong_tin"
+    ],
+    "FWL-01": [
+     "thieu_thong_tin"
+    ],
+    "FWL-02": [
+     "thieu_thong_tin"
+    ],
+    "FWL-03": [
+     "thieu_thong_tin"
+    ],
+    "LBA-01": [
+     "thieu_thong_tin"
+    ],
+    "LBA-02": [
+     "thieu_thong_tin"
+    ],
+    "RCK-01": [
+     "khong_kiem_chung_duoc"
+    ],
+    "RCK-02": [
+     "thieu_thong_tin"
+    ],
+    "RCK-03": [
+     "thieu_thong_tin"
+    ],
+    "ARC-02": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-11": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "ARC-10": [
+     "thieu_thong_tin"
+    ],
+    "ARC-15": [
+     "thieu_muc"
+    ],
+    "ARC-14": [
+     "thieu_thong_tin",
+     "thieu_thong_tin",
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-06": [
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "STO-17": [
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc"
+    ],
+    "ARC-16": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-02": [
+     "thieu_thong_tin"
+    ],
+    "EVD-04": [
+     "thieu_thong_tin"
+    ],
+    "EVD-08": [
+     "thieu_thong_tin"
+    ],
+    "ARC-13": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-11": [
+     "thieu_thong_tin"
+    ],
+    "EVD-17": [
+     "thieu_muc",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-09": [
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-18": [
+     "khong_kiem_chung_duoc",
+     "thieu_muc"
+    ],
+    "EVD-19": [
+     "khong_kiem_chung_duoc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-21": [
+     "thieu_muc",
+     "thieu_muc",
+     "thieu_muc",
+     "khong_kiem_chung_duoc"
+    ],
+    "EVD-20": [
+     "khong_kiem_chung_duoc",
+     "khong_kiem_chung_duoc"
+    ],
+    "BAK-09": [
+     "thieu_thong_tin",
+     "thieu_thong_tin"
+    ],
+    "PRC-02": [
+     "thieu_thong_tin"
+    ],
+    "PRC-03": [
+     "thieu_thong_tin"
+    ],
+    "PRC-05": [
+     "thieu_thong_tin"
+    ],
+    "PRC-06": [
+     "thieu_thong_tin"
+    ],
+    "PRC-07": [
+     "thieu_thong_tin"
+    ],
+    "EVD-22": [
+     "khong_kiem_chung_duoc"
+    ],
+    "ALC-04": [
+     "thieu_thong_tin"
+    ],
+    "TST-02": [
+     "thieu_thong_tin"
+    ],
+    "TST-03": [
+     "thieu_thong_tin"
+    ],
+    "PRC-10": [
+     "thieu_muc"
+    ],
+    "ALC-05": [
+     "thieu_thong_tin"
+    ],
+    "PRC-01": [
+     "khong_kiem_chung_duoc"
+    ]
+   }
+  }
+ ]
+}

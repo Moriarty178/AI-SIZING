@@ -212,6 +212,9 @@ CAT_MEM = frozenset({"thieu_thong_tin", "khong_kiem_chung_duoc"})
 # trong báo cáo.
 CAT_KHONG_TINH_RECALL = frozenset({"dat_co_can_cu"})
 
+# Khoá trong `bo_loc` KHÔNG làm con số mất khả năng so sánh — xem `da_loc`.
+KHONG_PHAI_LOC = frozenset({"song song"})
+
 
 @dataclass
 class KetQuaEval:
@@ -229,7 +232,18 @@ class KetQuaEval:
 
     @property
     def da_loc(self) -> bool:
-        return any(v for v in self.bo_loc.values())
+        """Có bộ lọc nào làm con số KHÔNG so sánh được với lượt chạy đầy đủ không?
+
+        `song song` KHÔNG tính: nó là nút hiệu năng, không đổi hồ sơ nào được
+        chấm hay quy tắc nào được hỏi. Trước 2026-09-10 nó bị tính, nên lượt dev
+        ĐẦY ĐỦ đầu tiên — đúng con số cần công bố — bị đóng dấu *"KHÔNG được
+        trích như recall thật"* chỉ vì chạy 12 luồng thay vì 6. Một cảnh báo sai
+        chỗ làm hỏng niềm tin vào cảnh báo đúng chỗ.
+
+        Vẫn GIỮ `song song` trong `bo_loc` để in ra báo cáo: nó là thông tin cần
+        cho việc lần lại chi phí, chỉ không phải cờ vô hiệu hoá con số.
+        """
+        return any(v for k, v in self.bo_loc.items() if k not in KHONG_PHAI_LOC)
 
     @property
     def nhan_co_rule(self) -> int:
