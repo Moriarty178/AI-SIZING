@@ -190,6 +190,20 @@ def main() -> int:
         return 2
 
     in_phien_ban()
+
+    # Phán quyết thẩm định quyết định MẪU SỐ nhóm quyết định. Nạp hỏng thì phải
+    # biết NGAY — không phải sau 4 giờ gọi model. Lượt dev 2026-09-11 mất phán
+    # quyết đích danh mà không ai biết cho tới khi soi từng nhãn.
+    from eval.matching import nap_phan_quyet
+    _pq, _loi = nap_phan_quyet()
+    if _loi and not a.gia_lap:
+        print(f"\n✗ {_loi}")
+        print("  Phán quyết thẩm định 2026-09-09 không nạp được, nên mẫu số nhóm "
+              "quyết định sẽ SAI.")
+        print("  Kiểm `git status` — file này nằm trong repo, thiếu hoặc hỏng nghĩa "
+              "là bản mã đang chạy không khớp bản đã commit.")
+        return 2
+    print(f"  phán quyết thẩm định: {len(_pq)} nhãn ghi đích danh — nạp được")
     if not co_pillow():
         # Không dừng: recall khớp theo `rule_ref`, mà cảnh báo ảnh không có
         # `rule_ref` nên CON SỐ KHÔNG ĐỔI. Nhưng phần ảnh trong báo cáo sẽ gộp
@@ -416,7 +430,11 @@ def main() -> int:
             f"hoặc CAO GIẢ TẠO nếu lỗi mới phát sinh ở bản sau.")
     ev = doi_chieu(theo_ho_so, labels, tap=a.tap, file_da_dung=da_dung,
                    findings_theo_vong=theo_vong_ho_so or None)
-    ev.canh_bao = canh_bao
+    # GỘP, không ghi đè. Trước 2026-09-11 dòng này là `ev.canh_bao = canh_bao`
+    # và vứt mất mọi cảnh báo `doi_chieu` vừa thêm — gồm cả cảnh báo phán quyết
+    # thẩm định không áp dụng được. Lượt dev 2026-09-11 mất 4 nhãn phán quyết
+    # đích danh mà báo cáo không nói một chữ.
+    ev.canh_bao = canh_bao + ev.canh_bao
     ev.dien_tap = bool(a.gia_lap)
     ev.bo_loc = {"nhom C3": ",".join(chi_nhom) if chi_nhom else "",
                  "nhom C5": ",".join(ma_dt) if ma_dt else "",
