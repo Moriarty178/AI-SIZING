@@ -106,13 +106,31 @@ def _nhan_thu_tuc_dich_danh(duong_dan: str = DUONG_DAN_PHAN_NHOM) -> dict[str, s
     Cơ chế CỐ Ý hẹp: chỉ chuyển nhãn VÀO nhóm thủ tục, chỉ áp dụng khi văn bản
     nhãn còn khớp nguyên vẹn, và `doi_chieu` đếm ra để báo cáo không giấu được.
     """
+    return nap_phan_quyet(duong_dan)[0]
+
+
+def nap_phan_quyet(duong_dan: str = DUONG_DAN_PHAN_NHOM) -> tuple[dict[str, str], str]:
+    """(phán quyết đích danh, lỗi). Lỗi rỗng nghĩa là nạp được.
+
+    Trước 2026-09-11 hàm này nuốt MỌI lỗi và trả `{}` im lặng. Lượt dev ngày ấy
+    xếp 4 nhãn phán quyết đích danh về lại nhóm quyết định — mẫu số nhảy 71 → 75
+    — mà báo cáo không nói một chữ nào. Phán quyết của người thẩm định biến mất
+    không để lại dấu vết.
+
+    `utf-8-sig` để chịu được BOM: sửa file bằng Notepad trên Windows là chèn BOM,
+    và `json.load` với `utf-8` thường sẽ ném lỗi ngay ký tự đầu.
+    """
     try:
-        with open(duong_dan, encoding="utf-8") as f:
+        with open(duong_dan, encoding="utf-8-sig") as f:
             d = json.load(f)
-    except (OSError, json.JSONDecodeError):
-        return {}
-    return {n["label_id"]: " ".join(n["text"].split())
-            for n in d.get("cau_1_thu_tuc", {}).get("nhan_dich_danh", [])}
+    except FileNotFoundError:
+        return {}, f"KHÔNG TÌM THẤY `{duong_dan}`"
+    except (OSError, json.JSONDecodeError) as e:
+        return {}, f"KHÔNG ĐỌC ĐƯỢC `{duong_dan}`: {type(e).__name__}: {e}"[:200]
+    ds = (d.get("cau_1_thu_tuc") or {}).get("nhan_dich_danh")
+    if not ds:
+        return {}, f"`{duong_dan}` không có mục `cau_1_thu_tuc.nhan_dich_danh`"
+    return {n["label_id"]: " ".join(n["text"].split()) for n in ds}, ""
 
 
 def loai_nhan(text: str | None, *, label_id: str | None = None) -> str:
@@ -164,6 +182,8 @@ class KetQuaHoSo:
     # Nhãn xếp vào nhóm THỦ TỤC nhờ phán quyết ĐÍCH DANH (không phải từ khoá).
     # Đếm ra vì đây là cơ chế duy nhất trong thước đo can thiệp theo từng nhãn.
     thu_tuc_dich_danh: int = 0
+    # Nhãn nhóm quyết định trúng nhờ finding CODE TÍNH ra (`CAT_TINH`).
+    qd_tinh: int = 0
     # Trong số `trung`, bao nhiêu nhãn trúng nhờ một finding THỰC CHẤT — tức không
     # phải chỉ vì công cụ nói "không tìm thấy trường này". Xem `CAT_MEM`.
     trung_thuc_chat: int = 0
@@ -211,6 +231,18 @@ CAT_MEM = frozenset({"thieu_thong_tin", "khong_kiem_chung_duoc"})
 # sở cứ", đó là quyết định của họ, KHÔNG phải của công cụ — sửa ở đây và nói rõ
 # trong báo cáo.
 CAT_KHONG_TINH_RECALL = frozenset({"dat_co_can_cu"})
+
+# Finding mà CODE tính ra được (C4): thật sự so ngưỡng hoặc tính lại công thức.
+#
+# Vì sao cần tách riêng khỏi `thuc_chat`: đo 2026-09-11, trong 5 nhãn nhóm quyết
+# định mà công cụ "bắt thực chất" ở nhiệt độ 0,1, chỉ **1** là nhờ code tính —
+# 4 còn lại nhờ C5 phán `thieu_muc` ("thiếu thành phần"), khớp nhãn qua
+# `rule_ref` hào phóng. Ví dụ nhãn *«Tính toán lại số liệu Ram, cint, HDD»* được
+# tính trúng vì công cụ nói *"thiếu mục EVD-22"* — không tính gì về RAM cả.
+#
+# Phán quyết Câu 2 của người thẩm định (2026-09-09) là *"phải tính lại con số
+# mới tính là đạt"*. Con số này đo đúng điều đó.
+CAT_TINH = frozenset({"vuot_nguong", "sai_cong_thuc", "khong_nhat_quan"})
 
 # Khoá trong `bo_loc` KHÔNG làm con số mất khả năng so sánh — xem `da_loc`.
 KHONG_PHAI_LOC = frozenset({"song song"})
@@ -269,6 +301,10 @@ class KetQuaEval:
     @property
     def thu_tuc_dich_danh(self) -> int:
         return sum(h.thu_tuc_dich_danh for h in self.ho_so)
+
+    @property
+    def qd_tinh(self) -> int:
+        return sum(h.qd_tinh for h in self.ho_so)
 
     @property
     def theo_loai_mau(self) -> dict:
@@ -383,7 +419,7 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
             if lo == "thu_tuc" and loai_nhan(l.get("text")) != "thu_tuc":
                 h.thu_tuc_dich_danh += 1
             h.theo_loai_mau[lo] = h.theo_loai_mau.get(lo, 0) + 1
-            thuc_chat = False
+            thuc_chat = tinh = False
             if chung:
                 h.trung += 1
                 h.trung_ids.append(l["label_id"])
@@ -393,6 +429,10 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
                                 for f in nguon)
                 if thuc_chat:
                     h.trung_thuc_chat += 1
+                tinh = any(f.rule_ref in chung and f.category in CAT_TINH
+                           for f in nguon)
+                if lo == "khac" and tinh:
+                    h.qd_tinh += 1
                 # Nhãn "thiếu": finding "thiếu thông tin" là bắt ĐÚNG loại.
                 # Nhãn "khác": phải có finding thực chất mới tính.
                 # `menh_lenh` chấm như «thiếu» — nhưng ĐẾM RIÊNG để thấy được nó
@@ -408,14 +448,19 @@ def doi_chieu(findings_theo_ho_so: dict[str, list], labels: list[dict], *,
                 "label_id": l["label_id"],
                 "text": " ".join((l.get("text") or "").split()),
                 "rule_ref": sorted(refs), "loai": lo, "trung": bool(chung),
-                "thuc_chat": thuc_chat, "ma_khop": sorted(chung)})
+                "thuc_chat": thuc_chat, "tinh": tinh, "ma_khop": sorted(chung)})
         h.finding_khong_khop = sorted(ma_finding - ma_trung)
         kq.ho_so.append(h)
 
     # Phán quyết đích danh neo vào VĂN BẢN nhãn, không chỉ `label_id`. Nếu nhãn
     # được sinh lại và đổi chữ, phán quyết cũ có thể đang nói về một câu khác —
     # thà không áp dụng và nói ra còn hơn im lặng xếp nhầm.
-    dd = _nhan_thu_tuc_dich_danh()
+    dd, loi = nap_phan_quyet()
+    if loi:
+        kq.canh_bao.append(
+            f"⚠️ PHÁN QUYẾT THẨM ĐỊNH 2026-09-09 KHÔNG ÁP DỤNG ĐƯỢC — {loi}. Các "
+            "nhãn ghi đích danh đã bị xếp theo từ khoá, nên MẪU SỐ nhóm quyết "
+            "định SAI. KHÔNG trích con số nhóm quyết định của lượt này.")
     thay = {l.get("label_id"): " ".join((l.get("text") or "").split())
             for l in labels}
     for lid, txt in dd.items():
@@ -461,6 +506,8 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
          f"| Trúng nhờ finding THỰC CHẤT | {kq.trung_thuc_chat} |",
          f"| **Recall thực chất** (sàn) | **{kq.recall_thuc_chat:.1%}** |",
          f"| **Recall theo LOẠI nhãn** | **{kq.recall_theo_loai:.1%}** |",
+         f"| **Nhóm quyết định — TÍNH bằng code** | **{kq.qd_tinh}/"
+         f"{kq.theo_loai_mau.get('khac', 0)}** |",
          "",
          "> **Hai con số này KHÔNG thay thế nhau.** Con số dưới là con số nói với "
          "người dùng: so với người thẩm định, công cụ bắt được bao nhiêu. Con số trên "
@@ -488,6 +535,14 @@ def bang_markdown(kq: KetQuaEval, *, meta: dict | None = None) -> str:
          "đọc con số tổng mà bỏ qua tách nhóm là đọc sai.",
          "",
          _bang_loai(kq),
+         "",
+         "> **Nhóm quyết định — TÍNH bằng code** chỉ tính nhãn trúng nhờ finding "
+         "mà CODE tính ra (`vuot_nguong`, `sai_cong_thuc`, `khong_nhat_quan`). "
+         "Cột «thực chất» ở bảng trên còn tính cả `thieu_muc` — C5 phán *\"thiếu "
+         "thành phần\"* — khớp nhãn qua `rule_ref` hào phóng: nhãn *«Tính toán lại "
+         "số liệu Ram, cint, HDD»* từng được tính trúng vì công cụ nói *\"thiếu mục "
+         "EVD-22\"*. Phán quyết Câu 2 là *\"phải tính lại con số mới tính là "
+         "đạt\"*; con số này đo đúng điều đó.",
          "",
          "> **Phán quyết của đơn vị thẩm định, 2026-09-09** "
          "(`docs/xin-y-kien-phan-loai-nhan-2026-09-09.md`): "

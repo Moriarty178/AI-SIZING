@@ -302,7 +302,7 @@ def test_luu_chi_tiet_TUNG_nhan_de_cham_lai_khong_can_model():
                                 "text": "Dự phòng theo KPI 75% sao lại ra 8000, "
                                         "đề nghị tính lại",
                                 "loai": "khac", "trung": True, "thuc_chat": True,
-                                "ma_khop": ["PRC-01"]}]
+                                "tinh": True, "ma_khop": ["PRC-01"]}]
     assert h.ma_finding_loai == {"PRC-01": ["vuot_nguong"],
                                  "STO-03": ["thieu_thong_tin"]}
 
@@ -327,3 +327,64 @@ def test_van_giu_song_song_trong_bao_cao_de_lan_lai_chi_phi():
     kq.bo_loc = {"ho so": "campaign", "song song": 12}
     assert kq.da_loc                        # `ho so` MỚI là bộ lọc thật
     assert "song song` = 12" in bang_markdown(kq)
+
+
+# --- 2026-09-11: phán quyết không được biến mất im lặng ---------------------
+def test_file_phan_quyet_MAT_thi_bao_cao_PHAI_noi_ra(tmp_path, monkeypatch):
+    """Lượt dev 2026-09-11 xếp 4 nhãn phán quyết đích danh về lại nhóm quyết
+    định — mẫu số 71 → 75 — mà báo cáo không nói một chữ."""
+    import eval.matching as m
+    monkeypatch.setattr(m, "DUONG_DAN_PHAN_NHOM", str(tmp_path / "khong_co.json"))
+    monkeypatch.setattr(m.nap_phan_quyet, "__defaults__", (str(tmp_path / "khong_co.json"),))
+    kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
+    assert any("PHÁN QUYẾT THẨM ĐỊNH" in c and "KHÔNG ÁP DỤNG" in c
+               for c in kq.canh_bao)
+
+
+def test_file_phan_quyet_co_BOM_van_doc_duoc(tmp_path):
+    """Sửa file bằng Notepad trên Windows là chèn BOM."""
+    from eval.matching import nap_phan_quyet
+    p = tmp_path / "pq.json"
+    p.write_text('{"cau_1_thu_tuc": {"nhan_dich_danh": '
+                 '[{"label_id": "x", "text": "a  b"}]}}', encoding="utf-8-sig")
+    dd, loi = nap_phan_quyet(str(p))
+    assert loi == "" and dd == {"x": "a b"}
+
+
+def test_file_phan_quyet_HONG_thi_tra_loi_ro_rang(tmp_path):
+    from eval.matching import nap_phan_quyet
+    p = tmp_path / "pq.json"
+    p.write_text("{ khong phai json", encoding="utf-8")
+    dd, loi = nap_phan_quyet(str(p))
+    assert dd == {} and "KHÔNG ĐỌC ĐƯỢC" in loi
+
+
+def test_phan_quyet_that_trong_repo_nap_duoc():
+    """File nằm trong repo; không nạp được nghĩa là bản mã lệch bản đã commit."""
+    from eval.matching import nap_phan_quyet
+    dd, loi = nap_phan_quyet()
+    assert loi == "" and len(dd) == 4
+
+
+class TestQuyetDinhTinhBangCode:
+    def test_thieu_muc_KHONG_tinh_la_da_tinh_lai_con_so(self):
+        """Nhãn «Tính toán lại số liệu Ram, cint, HDD» từng được tính trúng vì
+        công cụ nói "thiếu mục EVD-22" — không tính gì về RAM cả."""
+        labels = [dict(_nhan("l1", "HS1", ["EVD-22"]),
+                       text="Tính toán lại số liệu Ram, cint, HDD cho cụm này")]
+        kq = doi_chieu({"HS1": [_fc("EVD-22", "thieu_muc")]}, labels)
+        assert kq.theo_loai_trung.get("khac") == 1      # thước đo cũ: trúng
+        assert kq.qd_tinh == 0                           # thước đo chặt: KHÔNG
+
+    def test_vuot_nguong_la_da_tinh(self):
+        labels = [dict(_nhan("l1", "HS1", ["KPI-02"]),
+                       text="CPU vượt ngưỡng 75%, đề nghị tính lại số máy chủ")]
+        kq = doi_chieu({"HS1": [_fc("KPI-02", "vuot_nguong")]}, labels)
+        assert kq.qd_tinh == 1
+
+    def test_bao_cao_in_ca_hai_con_so(self):
+        labels = [dict(_nhan("l1", "HS1", ["EVD-22"]),
+                       text="Tính toán lại số liệu Ram, cint, HDD cho cụm này")]
+        bc = bang_markdown(doi_chieu({"HS1": [_fc("EVD-22", "thieu_muc")]}, labels))
+        assert "Nhóm quyết định — TÍNH bằng code** | **0/1**" in bc
+        assert "phải tính lại con số mới tính là" in bc
