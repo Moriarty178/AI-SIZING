@@ -48,25 +48,31 @@ CAN_MODEL = {"tham_dinh"}
 
 @dataclass(frozen=True)
 class ConSoDoDuoc:
-    """Kết quả đo thật, KHÔNG phải mục tiêu hay kỳ vọng."""
+    """Kết quả đo thật, KHÔNG phải mục tiêu hay kỳ vọng. Dải = min–max các lượt."""
 
     ngay: str
     ho_so: int
-    recall_chinh: float             # thước đo hào phóng nhất
-    recall_quyet_dinh: float        # nhóm nhãn đòi TÍNH/SO số — chỗ khó thật
-    ty_le_chua_doc_duoc: float      # phần báo cáo là "công cụ không đọc được"
+    so_luot: int
+    recall_chinh: tuple[float, float]       # thước đo hào phóng nhất
+    recall_quyet_dinh: tuple[float, float]  # nhóm nhãn đòi TÍNH/SO số
+    quyet_dinh_tinh: float                  # …trong đó CODE thật sự tính lại được
+    ty_le_chua_doc_duoc: float              # phần báo cáo là "không đọc được"
     phut_moi_tai_lieu: int
     nguon: str
 
 
+# Nghiệm thu 1.13 ngày 2026-09-11: ba lượt dev độc lập ở nhiệt độ 0,1, xếp nhóm
+# theo phán quyết 2026-09-09. Xem `docs/nghiem-thu-1.13-2026-09-11.md`.
 DO_LUONG = ConSoDoDuoc(
-    ngay="2026-09-09",
+    ngay="2026-09-11",
     ho_so=14,
-    recall_chinh=0.875,
-    recall_quyet_dinh=0.07,         # 5/71
+    so_luot=3,
+    recall_chinh=(0.865, 0.875),
+    recall_quyet_dinh=(5 / 71, 6 / 71),
+    quyet_dinh_tinh=1 / 71,
     ty_le_chua_doc_duoc=0.949,      # đo trên báo cáo VTracking 2026-09-10
     phut_moi_tai_lieu=16,
-    nguon="eval/reports/eval-dev-20260909-185006.md",
+    nguon="docs/nghiem-thu-1.13-2026-09-11.md",
 )
 
 
@@ -79,17 +85,24 @@ def _pt(x: float, le: int = 1) -> str:
     return f"{x * 100:.{le}f}".rstrip("0").rstrip(".").replace(".", ",") + "%"
 
 
+def _dai(ab: tuple[float, float]) -> str:
+    """«86,5–87,5%» — nêu DẢI đo được, không nêu một điểm đẹp nhất."""
+    a, b = (_pt(x).rstrip("%") for x in ab)
+    return f"{a}%" if a == b else f"{a}–{b}%"
+
+
 def cau_gioi_han(d: ConSoDoDuoc = DO_LUONG) -> list[str]:
     """Những câu PHẢI hiện cho người dùng. Trả list để test được từng câu."""
     return [
         "Đây là công cụ **cố vấn**. Nó KHÔNG phê duyệt và KHÔNG từ chối — "
         "người thẩm định vẫn quyết định cuối cùng.",
 
-        f"Đo trên **{d.ho_so} hồ sơ thật** ({d.ngay}): công cụ chạm tới "
-        f"**{_pt(d.recall_chinh)}** nhận xét của người thẩm định trên thước đo "
-        f"hào phóng nhất — nhưng chỉ **{_pt(d.recall_quyet_dinh, 0)}** ở nhóm nhận "
-        "xét đòi TÍNH hoặc SO số. Nhóm sau mới là chỗ khó, và là chỗ công cụ "
-        "còn yếu.",
+        f"Đo trên **{d.ho_so} hồ sơ thật**, {d.so_luot} lượt độc lập ({d.ngay}): "
+        f"công cụ chạm tới **{_dai(d.recall_chinh)}** nhận xét của người thẩm "
+        f"định trên thước đo hào phóng nhất — nhưng chỉ "
+        f"**{_dai(d.recall_quyet_dinh)}** ở nhóm nhận xét đòi TÍNH hoặc SO số, và "
+        f"phần công cụ **thật sự tính lại được con số chỉ {_pt(d.quyet_dinh_tinh)}**. "
+        "Nhóm sau mới là chỗ khó, và là chỗ công cụ còn rất yếu.",
 
         f"Khoảng **{_pt(d.ty_le_chua_doc_duoc, 0)}** số dòng trong báo cáo là "
         "*«công cụ chưa đọc được chỗ này»* — **không phải** lỗi của bản sizing. "

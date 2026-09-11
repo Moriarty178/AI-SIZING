@@ -32,7 +32,7 @@ def test_D3_gioi_han_hien_SAN_o_thanh_ben(app):
     """Giấu giới hạn sau một cú bấm là để phần lớn người xem không bao giờ thấy."""
     van = " ".join(str(c.value) for c in app.sidebar.caption)
     assert "87,5%" in van, "phải nêu con số đo được, không làm tròn thành 88%"
-    assert "7%" in van, "phải nêu cả con số YẾU, không chỉ con số đẹp"
+    assert "1,4%" in van, "phải nêu cả con số YẾU NHẤT, không chỉ con số đẹp"
     assert "Chưa đo được tỉ lệ báo sai" in van
     assert "không phải** lỗi của bản sizing" in van
 

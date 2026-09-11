@@ -435,6 +435,12 @@ def main() -> int:
     # thẩm định không áp dụng được. Lượt dev 2026-09-11 mất 4 nhãn phán quyết
     # đích danh mà báo cáo không nói một chữ.
     ev.canh_bao = canh_bao + ev.canh_bao
+    # …VÀ trỏ tên cũ vào danh sách của báo cáo. Bản vá đầu (2026-09-11 sáng) chỉ
+    # có dòng trên, nên các dòng thêm SAU đây — thời gian, đệm lời gọi, cảnh báo
+    # diễn tập — rơi vào danh sách cũ và biến mất. Lượt dev 15:06 cùng ngày ra
+    # báo cáo không có dòng thời gian và không có dòng đệm, tức không kiểm được
+    # nó có chạy đúng giao thức "đệm tắt" hay không.
+    canh_bao = ev.canh_bao
     ev.dien_tap = bool(a.gia_lap)
     ev.bo_loc = {"nhom C3": ",".join(chi_nhom) if chi_nhom else "",
                  "nhom C5": ",".join(ma_dt) if ma_dt else "",
