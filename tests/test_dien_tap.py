@@ -144,3 +144,18 @@ def test_dau_bao_cao_dien_tap_khac_HAN_bao_cao_that(chay_dien_tap):
     dong = bc[0].read_text(encoding="utf-8").splitlines()
     assert "DIỄN TẬP" in dong[0] and "MODEL GIẢ" in dong[0]
     assert "KHÔNG PHẢI KẾT QUẢ THẬT" in "\n".join(dong[:5])
+
+
+def test_cac_dong_them_SAU_doi_chieu_van_toi_bao_cao(chay_dien_tap):
+    """Hồi quy 2026-09-11. Bản vá «gộp chứ đừng ghi đè cảnh báo» tạo DANH SÁCH
+    MỚI cho báo cáo, nên mọi dòng `run_eval` thêm sau đó — thời gian, đệm lời gọi,
+    cảnh báo diễn tập — rơi vào danh sách cũ và biến mất. Lượt dev 15:06 ra báo
+    cáo không có dòng thời gian, tức không kiểm được nó có chạy đúng giao thức
+    "đệm tắt" hay không. 552 test khi ấy vẫn xanh."""
+    ma, bc = chay_dien_tap("--gia-lap", "--ho-so", HO_SO_MAU, "--song-song", "4")
+    assert ma == 0
+    van = bc[-1].read_text(encoding="utf-8")
+    assert "thời gian:" in van, "dòng thời gian phải nằm TRONG báo cáo"
+    assert "LƯỢT DIỄN TẬP BẰNG MODEL GIẢ" in van
+    json_ = bc[-1].with_suffix(".json").read_text(encoding="utf-8")
+    assert "thời gian:" in json_, "bản .json chi tiết cũng phải có"

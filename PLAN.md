@@ -10,7 +10,7 @@
 | GĐ | Tên | Tiến độ | Trạng thái |
 |----|-----|---------|------------|
 | 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
-| 1 | MVP chỉ xử lý text | 14 / 17 | 🔴 1.13 CHƯA đạt — đã có số thật, nút thắt là độ phủ trích xuất của C3 |
+| 1 | MVP chỉ xử lý text | 15 / 17 | 🟢 1.13 ĐẠT 2026-09-11 — nhưng code chỉ tính-và-bắt được 1,4% nhóm đòi tính; nút thắt là độ phủ trích xuất của C3 |
 | 2 | Đa phương thức & tái sử dụng | 6,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.3 · 2.5 · 2.12 xong (2.3 đã CHẠY THẬT 08-09; 2.5 đo offline trên chính đầu ra đó); 2.4 · 2.11 phần offline xong |
 | 3 | Tích hợp & tinh chỉnh | 0 / 11 | ⬜ Chưa bắt đầu |
 | 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
@@ -769,7 +769,10 @@
       thứ C7 cần nhất.
       → ⬜ **CHƯA đo trên tài liệu thật** (cần model). Con số phải nhìn là
       **`trích dẫn không neo được`**, cùng loại rủi ro với C3.
-- [ ] 🟡 1.13 — Eval harness — **HẾT BỊ CHẶN. Phần code XONG 2026-09-04, chờ chạy thật.**
+- [x] 1.13 — Eval harness — **NGHIỆM THU ĐẠT 2026-09-11.** Ba lượt dev độc lập ở nhiệt
+  độ 0,1 đều trong dải chốt trước: recall bộ quy tắc **86,5–87,5%** · nhóm quyết định
+  **5–6/71** · trong đó **code tính lại được 1/71 = 1,4%**. Chi tiết và ba điều phải nói
+  kèm: `docs/nghiem-thu-1.13-2026-09-11.md`. (Mô tả gốc bên dưới giữ nguyên.)
       → ✅ **2.5 đã nối vào C4 (2026-09-09)** — `src/vision/tham_so_anh.py` +
       `pipeline.chay()` nay chạy C2 TRƯỚC C4. Cấp `cpu_95th`/`ram_95th` theo phân hệ
       từ ô bảng mà 2.5 neo được, KHÔNG cấp số đo trong ảnh (lát cắt `kubectl top`
@@ -1396,3 +1399,6 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-11 | 🐛 **HAI lỗi của tôi làm phán quyết thẩm định biến mất không dấu vết** | Lượt D xếp 4 nhãn phán quyết đích danh về nhóm QĐ dù văn bản khớp hoàn toàn; mẫu số 71 → 75; báo cáo im lặng. (1) `_nhan_thu_tuc_dich_danh` nuốt mọi lỗi đọc file, trả `{}`. (2) `run_eval` dòng `ev.canh_bao = canh_bao` **ghi đè và vứt** cảnh báo `doi_chieu` vừa thêm — tức cảnh báo lệch văn bản viết ngày 09-09 CHƯA TỪNG tới được báo cáo. Sửa: `nap_phan_quyet` trả kèm lỗi và báo cáo NÓI RA; gộp chứ không ghi đè; đọc `utf-8-sig` chịu BOM; **`run_eval` kiểm phán quyết TRƯỚC khi gọi model**, hỏng thì dừng. Docstring cũ hứa *"báo cáo không giấu được"* — đúng trường hợp quan trọng nhất thì nó giấu. Nguyên nhân gốc trên máy nội bộ chưa rõ |
 | 2026-09-11 | **Nhiệt độ 0,0: KHÔNG đổi dựa trên một lượt — giữ 0,1** | +7 nhãn QĐ ở t=0,0, nhưng: +3 là CÙNG MỘT finding `CPU-01 vuot_nguong` của APIGW-Meta khớp 3 nhãn; +4 là C5 `thieu_muc`. Trên toàn tập, t=0,0 sinh thêm **58 finding "thiếu thành phần" trên 38 cặp (hồ sơ, quy tắc)**, chỉ vài cái khớp nhãn — phần còn lại đúng hay sai không ai biết. Đó là kiểu báo sai `CLAUDE.md` cảnh báo nặng nhất. Lập bảng 38 dòng để người kiểm: **phép đo báo sai đầu tiên của dự án** |
 | 2026-09-11 | **Tôi ước lượng thời gian sai lần nữa — 110–130 phút dự đoán, lượt C thực tế 243 phút** | Tốc độ 16,6 lượt/phút lấy từ lượt A; lượt C (đệm tắt, chạy buổi tối) chỉ đạt khoảng một nửa. Tốc độ cổng dao động ±2× theo thời điểm — ước lượng thời gian từ nay phải nêu dải rộng, không nêu một con số |
+| 2026-09-11 | ✅ **NGHIỆM THU 1.13: ĐẠT** — ba lượt t=0,1 (A · C · E) đều trong dải chốt trước | Trúng 273 · 270 · 273 · recall bộ quy tắc 87,5 · 86,5 · 87,5% · thực chất 34 · 32 · 34 · **nhóm QĐ 5 · 5 · 6** (lệch 1 ≤ 2). Biên độ từng cặp: 5 · 6 · 8 nhãn / 312. E thay cho D đúng như tài liệu nghiệm thu đã ghi **trước** khi có số của E. **Câu công bố:** *86,5–87,5% trên thước đo hào phóng nhất · 7,0–8,5% ở nhóm đòi tính/so số · trong đó code thật sự tính lại được 1,4%.* Ba điều nói kèm: A bật đệm một phần; không xác nhận được từ báo cáo rằng E tắt đệm (bằng chứng gián tiếp: A↔E lệch 6, ngang A↔C); D bị loại vì không phải phép lặp, không vì số xấu |
+| 2026-09-11 | 🐛 **Lỗi thứ BA của tôi trong cùng chuỗi: bản vá "gộp cảnh báo" làm mất dòng thời gian và dòng đệm** | `ev.canh_bao = canh_bao + ev.canh_bao` tạo DANH SÁCH MỚI, nên mọi dòng `run_eval` thêm sau đó rơi vào danh sách cũ. Lượt E ra báo cáo không có dòng thời gian và dòng đệm — đúng thứ cần để kiểm giao thức "đệm tắt". **Sửa một lỗi nuốt cảnh báo bằng cách tạo lỗi nuốt cảnh báo khác**; 552 test vẫn xanh vì bài diễn tập chạy trọn `run_eval` mà không ai kiểm dòng thời gian. Sửa bằng cách trỏ tên cũ vào danh sách của báo cáo; test hồi quy mới **đã chứng minh đỏ khi gỡ bản vá**. Bài học: một bản vá cho lỗi im lặng phải có test đi qua ĐƯỜNG CHẠY THẬT, không chỉ test đơn vị của hàm vừa sửa |
+| 2026-09-11 | **Giao diện nêu con số đã nghiệm thu — dạng DẢI, và nêu con số yếu nhất** | `DO_LUONG` đổi sang ba lượt: *"86,5–87,5% … nhưng chỉ 7–8,5% ở nhóm đòi TÍNH hoặc SO số, và phần công cụ thật sự tính lại được con số chỉ 1,4%"*. Test bắt buộc có «1,4%» ở cả `cau_gioi_han()` lẫn thanh bên giao diện thật (`AppTest`), và bắt buộc `nguon` trỏ tới một file có thật |

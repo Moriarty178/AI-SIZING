@@ -150,3 +150,55 @@ Kiểm hết ~45–60 phút. Kiểm 10 dòng đầu có số lượt lớn nhấ
 | 1 | `git pull`, `git status`, mở thử `data/phan_nhom_tham_dinh.json` | máy nội bộ | 2 phút |
 | 2 | Một lượt dev t=0,1, đệm TẮT — hoàn tất nghiệm thu theo tiêu chí đã chốt | máy nội bộ | ~2–4 giờ |
 | 3 | Kiểm bảng mục 6 (ít nhất 10 dòng) — phép đo báo sai đầu tiên | người | 15–60 phút |
+
+---
+
+## 8. KẾT LUẬN CUỐI — lượt E (2026-09-11 15:06, nhiệt độ 0,1): **ĐẠT**
+
+Mục 2 đã ghi TRƯỚC khi có số: *"thêm MỘT lượt nhiệt độ 0,1, đệm TẮT"* để hoàn tất
+theo đúng tiêu chí. Lượt E là lượt đó.
+
+| Chỉ số | Dải chốt trước | A | C | E |
+|---|---|---:|---:|---:|
+| Trúng | 265–281 | 273 ✓ | 270 ✓ | 273 ✓ |
+| Recall bộ quy tắc | 85–90% | 87,5% ✓ | 86,5% ✓ | 87,5% ✓ |
+| Thực chất | 28–40 | 34 ✓ | 32 ✓ | 34 ✓ |
+| Nhóm quyết định | 3–7 | 5 ✓ | 5 ✓ | 6 ✓ |
+| Hồ sơ chạy / lỗi | 13/14 · 0 | ✓ | ✓ | ✓ |
+| QĐ lệch ≤ 2 nhãn | | **5 · 5 · 6 → lệch 1 ✓** | | |
+
+Biên độ từng cặp (số nhãn đổi kết quả trên 312): A↔C **5** · A↔E **6** · C↔E **8**.
+
+### Câu công bố
+
+> *Trên tập dev 14 hồ sơ, nhiệt độ 0,1, xếp nhóm theo phán quyết thẩm định
+> 2026-09-09, ba lượt độc lập:*
+> - *recall so với bộ quy tắc **86,5–87,5%**; so với mọi yêu cầu 85,2–86,1%;*
+> - *recall theo loại nhãn 69,3–70,7%;*
+> - ***nhóm nhận xét đòi tính/so số: 5–6/71 = 7,0–8,5%;***
+> - ***trong đó phần công cụ thật sự tính lại được con số: 1/71 = 1,4%*** *(cả ba lượt).*
+
+Luôn kèm ba hạn chế ở đầu mọi báo cáo eval: recall hào phóng vì `rule_ref` dư mã ·
+chưa đo được báo sai · nhãn chưa qua kiểm định độc lập.
+
+### Ba điều phải nói kèm kết luận này
+
+1. **Lượt A bật đệm một phần** (475 lượt, từ lượt `--chi 3` trên 3 hồ sơ). A↔C (5)
+   xấp xỉ A↔E (6), nên A hành xử như một mẫu độc lập — nhưng không hoàn toàn.
+2. **Không xác nhận được từ báo cáo rằng lượt E đã tắt đệm** — vì một lỗi của tôi làm
+   mất dòng đệm và dòng thời gian khỏi báo cáo (mục 9). Bằng chứng gián tiếp: nếu đệm
+   bật ở t=0,1, E sẽ phát lại câu trả lời đã lưu của A và lệch gần 0; thực tế A↔E lệch
+   6, ngang A↔C.
+3. **Lượt D (t=0,0) bị loại khỏi phép nghiệm thu** vì không phải phép lặp — không
+   phải vì số của nó xấu. Nó vẫn là dữ liệu cho câu hỏi nhiệt độ (mục 5).
+
+## 9. Lỗi thứ ba của tôi trong cùng một chuỗi
+
+Bản vá *"gộp chứ đừng ghi đè cảnh báo"* (mục 4) đổi `ev.canh_bao = canh_bao` thành
+`ev.canh_bao = canh_bao + ev.canh_bao`. Dòng mới tạo **một danh sách khác**, nên mọi
+dòng `run_eval` thêm SAU đó — thời gian, đệm lời gọi, cảnh báo diễn tập — rơi vào
+danh sách cũ và biến mất.
+
+Tôi sửa một lỗi nuốt cảnh báo bằng cách tạo ra một lỗi nuốt cảnh báo khác. 552 test
+khi ấy vẫn xanh, vì bài diễn tập chạy trọn `run_eval` thật nhưng không ai kiểm dòng
+thời gian. Đã sửa, và đã chứng minh test hồi quy mới **đỏ khi gỡ bản vá**.
