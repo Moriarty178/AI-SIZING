@@ -13,6 +13,7 @@ from src.reporting.report import (
     khu_trung,
     load_labels,
     muc_truot_vong1,
+    xuat_findings,
     xu_ly,
 )
 
@@ -265,3 +266,62 @@ class TestTomTatDauBaoCao:
         from src.reporting.report import build_report
         van = build_report([_f_pham_vi("A")])
         assert van.index("## Vòng 1") < van.index("## Vòng 2")
+
+
+# --- bảng ghi chú người thẩm định (2026-09-14) -------------------------------
+class TestXuatFindings:
+    def test_khong_can_cu_bi_loc_VA_dem(self):
+        ok = _f("KPI-02#App", vong=2, category="vuot_nguong", rule_ref="KPI-02",
+                scope_key="App")
+        bad = Finding(id="X", severity="major", category="vuot_nguong", finding="z")
+        d = xuat_findings([ok, bad])
+        assert d["so_loc_khong_can_cu"] == 1
+        assert [f["id"] for f in d["findings"]] == ["KPI-02#App"]
+
+    def test_trung_bi_khu_va_dem(self):
+        a = _f("KPI-02#App", vong=2, category="vuot_nguong", rule_ref="KPI-02",
+               scope_key="App", finding="CPU vượt ngưỡng")
+        b = _f("KPI-02#App", vong=2, category="vuot_nguong", rule_ref="KPI-02",
+               scope_key="App", finding="CPU vượt ngưỡng")
+        d = xuat_findings([a, b])
+        assert d["so_khu_trung"] == 1
+        assert len(d["findings"]) == 1
+
+    def test_gan_dung_nhom_theo_bucket(self):
+        truot = _f("CL", vong=1, category="thieu_muc", checklist_ref=["CL-3.x.13"],
+                   scope_key="App", rule_ref="X-01")
+        v2 = _f("CPU#App", vong=2, category="sai_cong_thuc", checklist_ref=["CL-3.x.13"],
+                scope_key="App", rule_ref="CPU-05")
+        v1 = _f("PRC", vong=1, category="thieu_thong_tin", rule_ref="PRC-11")
+        d = xuat_findings([truot, v2, v1])
+        nhom = {f["id"]: f["nhom"] for f in d["findings"]}
+        assert nhom["PRC"] == "vong1"
+        assert nhom["CPU#App"] == "vong2_tam_hoan"
+        assert nhom["CL"] == "vong1"
+
+    def test_id_trung_duoc_dinh_hau_tu(self):
+        # cùng rule + scope nhưng khác category -> id trùng trong JSON
+        a = _f("KPI-02#App", vong=2, category="vuot_nguong", rule_ref="KPI-02",
+               scope_key="App", finding="lệch A")
+        b = _f("KPI-02#App", vong=2, category="khong_nhat_quan", rule_ref="KPI-02",
+               scope_key="App", finding="lệch B")
+        d = xuat_findings([a, b])
+        ids = [f["id"] for f in d["findings"]]
+        assert len(set(ids)) == 2
+        assert ids[1].startswith("KPI-02#App#")
+
+    def test_rong_thi_findings_la_danh_sach_rong(self):
+        d = xuat_findings([])
+        assert d["findings"] == []
+        assert d["so_loc_khong_can_cu"] == 0 and d["so_khu_trung"] == 0
+
+    def test_findings_giu_nguyen_cac_truong_finding(self):
+        f = _f("STO-01#DB", vong=2, category="vuot_nguong", rule_ref="STO-01",
+               scope_key="DB", severity="critical", finding="RAM vượt 80%")
+        d = xuat_findings([f])
+        row = d["findings"][0]
+        assert row["severity"] == "critical"
+        assert row["rule_ref"] == "STO-01"
+        assert row["scope_key"] == "DB"
+        assert row["finding"] == "RAM vượt 80%"
+        assert row["vong"] == 2

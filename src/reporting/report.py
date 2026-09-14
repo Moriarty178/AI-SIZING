@@ -741,6 +741,45 @@ def to_markdown(rep: Report, labels: ReportLabels) -> str:
     return "\n".join(L).rstrip() + "\n"
 
 
+def xuat_findings(findings: list[Finding], *, ten_he_thong: str | None = None,
+                  ma_pyc: str | None = None, rules=None,
+                  labels: ReportLabels | None = None) -> dict:
+    """Xuất tập finding ĐÃ QUA C7 (cùng một `xu_ly()` với báo cáo) thành dict JSON-được.
+
+    Dùng cho bảng ghi chú người thẩm định: họ chỉ đánh giá được thứ họ đã ĐỌC trong
+    báo cáo, nên bảng phản hồi phải khớp chính xác tập đó — kèm số bị lọc NT2/khử
+    trùng để không im lặng (NT4).
+    """
+    labels = labels or load_labels()
+    goi_y = dict(rules.goi_y_tham_so) if rules is not None else {}
+    rep = xu_ly(findings, labels, ten_he_thong=ten_he_thong, ma_pyc=ma_pyc,
+                goi_y_tham_so=goi_y)
+
+    ra: list[dict] = []
+    da_thay: dict[str, int] = {}
+    for nhom, bucket in [("vong1", rep.vong1), ("vong2_chua_dat", rep.vong2_chua_dat),
+                         ("vong2_chua_kiem", rep.vong2_chua_kiem),
+                         ("vong2_tam_hoan", rep.vong2_tam_hoan), ("khac", rep.khac)]:
+        for f in bucket:
+            d = f.as_dict()
+            # `id` = "{rule}#{scope}" về lý thuyết có thể trùng giữa hai validator —
+            # ép duy nhất để bảng phản hồi có khoá truy ổn định. Chỉ ở đây, không
+            # đụng Markdown đã dựng.
+            if d["id"] in da_thay:
+                da_thay[d["id"]] += 1
+                d["id"] = f"{d['id']}#{da_thay[d['id']] + 1}"
+            else:
+                da_thay[d["id"]] = 1
+            d["nhom"] = nhom
+            ra.append(d)
+    return {"phien_ban": 1,
+            "ten_he_thong": rep.ten_he_thong,
+            "ma_pyc": rep.ma_pyc,
+            "so_loc_khong_can_cu": rep.so_loc_khong_can_cu,
+            "so_khu_trung": rep.so_khu_trung,
+            "findings": ra}
+
+
 def build_report(findings: list[Finding], *, ten_he_thong: str | None = None,
                  ma_pyc: str | None = None, is_demo: bool = False,
                  labels: ReportLabels | None = None,
