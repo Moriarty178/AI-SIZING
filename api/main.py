@@ -5,8 +5,12 @@
     POST   /review          nộp .docx  -> 202 kèm mã việc
     GET    /result/{ma}     trạng thái + tiến độ; xong thì kèm báo cáo
     GET    /result/{ma}/bao-cao   báo cáo Markdown thô
+    GET    /result/{ma}/findings  tập finding C7 dạng JSON (cho bảng ghi chú)
+    GET    /result/{ma}/phan-hoi  ghi chú người thẩm định đã lưu cho việc này
+    POST   /result/{ma}/phan-hoi  lưu ghi chú mới/thay đổi (patch-merge)
+    GET    /phan-hoi/nhat-ky      nhật ký phản hồi CSV (append-only)
     GET    /jobs            danh sách việc
-    DELETE /result/{ma}     xoá việc, báo cáo VÀ tài liệu đã nộp
+    DELETE /result/{ma}     xoá việc, báo cáo VÀ tài liệu đã nộp (KHÔNG đụng nhật ký)
     GET    /health          cho healthcheck của container
 
 ## Vì sao KHÔNG có API chạy đồng bộ
@@ -26,11 +30,13 @@ from __future__ import annotations
 
 import pathlib
 import sys
+from typing import Literal
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Form, HTTPException, UploadFile, File
+from fastapi import FastAPI, Form, HTTPException, Response, UploadFile, File
 from fastapi.responses import PlainTextResponse
+from pydantic import BaseModel, Field
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
@@ -139,6 +145,70 @@ def bao_cao(ma: str) -> str:
 @app.get("/jobs")
 def jobs() -> dict:
     return {"cong_viec": [c.as_dict() for c in kho.danh_sach()]}
+
+
+# ------------------------------------------------- phản hồi thẩm định ------
+class MucPhanHoiVao(BaseModel):
+    finding_id: str = Field(min_length=1, max_length=300)
+    ghi_chu: str = Field(default="", max_length=2000)
+    phan_loai: Literal["", "chap_nhan", "bao_sai", "can_ban"] = ""
+
+
+class PhanHoiVao(BaseModel):
+    phan_hoi: list[MucPhanHoiVao] = Field(min_length=1, max_length=2000)
+
+
+def _viec_xong(ma: str):
+    cv = kho.lay(ma)
+    if cv is None:
+        raise HTTPException(404, f"Không có việc nào mã «{ma}»")
+    if cv.trang_thai != "xong":
+        raise HTTPException(409, f"Việc đang ở trạng thái «{cv.trang_thai}», "
+                                 "chưa có kết quả")
+    return cv
+
+
+@app.get("/result/{ma}/findings")
+def findings(ma: str) -> dict:
+    _viec_xong(ma)
+    d = kho.findings(ma)
+    if d is None:
+        # NT4: không giả vờ trả bảng rỗng — nói rõ bảng không tạo được cho việc này
+        raise HTTPException(409, "Việc này không có tập findings để lập bảng "
+                                 "(chạy trước khi tính năng có mặt, hoặc ghi file lỗi)")
+    return d
+
+
+@app.get("/result/{ma}/phan-hoi")
+def doc_phan_hoi(ma: str) -> dict:
+    _viec_xong(ma)
+    return {"phan_hoi": kho.phan_hoi(ma) or {}}
+
+
+@app.post("/result/{ma}/phan-hoi")
+def luu_phan_hoi(ma: str, vao: PhanHoiVao) -> dict:
+    _viec_xong(ma)
+    tap_f = {f["id"] for f in (kho.findings(ma) or {}).get("findings", [])}
+    if not tap_f:
+        raise HTTPException(409, "Việc này không có tập findings — không lưu được ghi chú")
+    la = [m.finding_id for m in vao.phan_hoi if m.finding_id not in tap_f]
+    if la:
+        hien = ", ".join(f"`{x}`" for x in la[:10])
+        raise HTTPException(400, f"finding_id không thuộc việc này: {hien}")
+    try:
+        return kho.luu_phan_hoi(ma, {m.finding_id: {"ghi_chu": m.ghi_chu,
+                                                    "phan_loai": m.phan_loai}
+                                     for m in vao.phan_hoi})
+    except OSError:
+        raise HTTPException(500, "Ghi phản hồi vào đĩa thất bại")
+
+
+@app.get("/phan-hoi/nhat-ky")
+def nhat_ky() -> Response:
+    csv = kho.doc_nhat_ky()
+    if csv is None:
+        raise HTTPException(404, "Chưa có ghi chú nào được lưu")
+    return Response(csv, media_type="text/csv; charset=utf-8")
 
 
 @app.delete("/result/{ma}")

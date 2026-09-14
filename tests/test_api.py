@@ -7,6 +7,8 @@ fastapi = pytest.importorskip("fastapi", reason="cài với: uv sync --extra api
 pytest.importorskip("multipart", reason="python-multipart thiếu -> upload hỏng")
 from fastapi.testclient import TestClient        # noqa: E402
 
+from src.reporting.finding import Finding        # noqa: E402
+
 
 class _KetQua:
     findings = []
@@ -174,3 +176,106 @@ class TestTuyChon:
         r = client.post("/review", files={"file": ("a.docx", b"PK\x03\x04")},
                         data={"vong": 7})
         assert r.status_code == 400 and "vong" in r.json()["detail"]
+
+
+# --------------------------------------------------- phản hồi thẩm định ----
+class TestFindingsVaPhanHoi:
+    _F = {"id": "KPI-02#App", "severity": "major", "category": "vuot_nguong",
+          "finding": "CPU vượt ngưỡng", "rule_ref": "KPI-02", "rule_quote": "",
+          "location": "", "computed_evidence": "", "suggestion": "",
+          "confidence": "cao", "checklist_ref": [], "vong": 2, "scope_key": "App",
+          "source_doc": "", "nhom": "vong2_chua_dat"}
+
+    def _nop_xong(self, client):
+        """Nộp bài và chờ hàm chạy giả hoàn tất — đọc kết quả sớm là 409 đúng
+        (việc vẫn đang chạy), không phải lỗi endpoint."""
+        from api import main
+        ma = _nop(client).json()["ma"]
+        assert main.bo_chay.cho_rong(5)
+        return ma
+
+    def test_xong_thi_co_findings_dang_json(self, client):
+        from api import main
+        ma = self._nop_xong(client)
+        main.kho.luu_findings(ma, {"phien_ban": 1, "findings": [self._F],
+                                   "so_loc_khong_can_cu": 0, "so_khu_trung": 0})
+        r = client.get(f"/result/{ma}/findings")
+        assert r.status_code == 200
+        assert r.json()["findings"][0]["id"] == "KPI-02#App"
+
+    def test_thieu_findings_thi_409_KHONG_tra_rong(self, client, tmp_path):
+        """Trả [] cho 'không có file' là nói dối: người gọi không phân biệt được
+        'không có phát hiện' với 'chưa lưu được tập findings' (NT4)."""
+        from api import main
+        ma = self._nop_xong(client)
+        # Mô phỏng việc chạy TRƯỚC khi có tính năng / ghi findings lỗi: xoá file
+        # mà _luu_findings vừa tạo tự động.
+        (tmp_path / "cv" / f"{ma}.findings.json").unlink()
+        r = client.get(f"/result/{ma}/findings")
+        assert r.status_code == 409 and "findings" in r.json()["detail"]
+
+    def test_post_phan_hoi_hop_le_va_id_la_thuoc_viec(self, client):
+        from api import main
+        ma = self._nop_xong(client)
+        main.kho.luu_findings(ma, {"phien_ban": 1, "findings": [self._F],
+                                   "so_loc_khong_can_cu": 0, "so_khu_trung": 0})
+        r = client.post(f"/result/{ma}/phan-hoi", json={"phan_hoi": [{
+            "finding_id": "KPI-02#App", "ghi_chu": "quy tắc áp nhầm",
+            "phan_loai": "bao_sai"}]})
+        assert r.status_code == 200 and r.json()["da_luu"] == 1
+        assert client.get(f"/result/{ma}/phan-hoi").json()["phan_hoi"] == {
+            "KPI-02#App": {"ghi_chu": "quy tắc áp nhầm", "phan_loai": "bao_sai"}}
+
+    def test_post_lai_y_nguyen_da_luu_0(self, client):
+        from api import main
+        ma = self._nop_xong(client)
+        main.kho.luu_findings(ma, {"phien_ban": 1, "findings": [self._F],
+                                   "so_loc_khong_can_cu": 0, "so_khu_trung": 0})
+        body = {"phan_hoi": [{"finding_id": "KPI-02#App", "ghi_chu": "ok",
+                              "phan_loai": "chap_nhan"}]}
+        client.post(f"/result/{ma}/phan-hoi", json=body)
+        r = client.post(f"/result/{ma}/phan-hoi", json=body)
+        assert r.status_code == 200 and r.json()["da_luu"] == 0
+
+    def test_post_id_la_thu_tu_400(self, client):
+        from api import main
+        ma = self._nop_xong(client)
+        main.kho.luu_findings(ma, {"phien_ban": 1, "findings": [self._F],
+                                   "so_loc_khong_can_cu": 0, "so_khu_trung": 0})
+        r = client.post(f"/result/{ma}/phan-hoi", json={"phan_hoi": [
+            {"finding_id": "BEA-99#May", "ghi_chu": "x", "phan_loai": ""}]})
+        assert r.status_code == 400 and "BEA-99#May" in r.json()["detail"]
+
+    def test_post_phan_loai_sai_gia_tri_422(self, client):
+        from api import main
+        ma = self._nop_xong(client)
+        main.kho.luu_findings(ma, {"phien_ban": 1, "findings": [self._F],
+                                   "so_loc_khong_can_cu": 0, "so_khu_trung": 0})
+        r = client.post(f"/result/{ma}/phan-hoi", json={"phan_hoi": [
+            {"finding_id": "KPI-02#App", "ghi_chu": "x", "phan_loai": "sai"}]})
+        assert r.status_code == 422
+
+    def test_nhat_ky_lay_duoc_va_song_sot_delete_viec(self, client):
+        from api import main
+        ma = self._nop_xong(client)
+        main.kho.luu_findings(ma, {"phien_ban": 1, "findings": [self._F],
+                                   "so_loc_khong_can_cu": 0, "so_khu_trung": 0})
+        client.post(f"/result/{ma}/phan-hoi", json={"phan_hoi": [
+            {"finding_id": "KPI-02#App", "ghi_chu": "x", "phan_loai": "can_ban"}]})
+        r = client.get("/phan-hoi/nhat-ky")
+        assert r.status_code == 200
+        assert "thoi_gian" in r.text and "KPI-02#App" in r.text
+        assert "text/csv" in r.headers["content-type"]
+
+        client.delete(f"/result/{ma}")               # xoá việc
+        assert client.get("/phan-hoi/nhat-ky").status_code == 200
+
+    def test_chua_co_ghi_chu_thi_nhat_ky_404(self, client):
+        assert client.get("/phan-hoi/nhat-ky").status_code == 404
+
+    def test_phan_hoi_viec_chua_xong_409(self, client):
+        from api import main
+        cv = main.kho.them("a.docx", "a.docx")       # không chạy
+        assert client.get(f"/result/{cv.ma}/phan-hoi").status_code == 409
+        assert client.post(f"/result/{cv.ma}/phan-hoi", json={"phan_hoi": [
+            {"finding_id": "x", "ghi_chu": "", "phan_loai": ""}]}).status_code == 409
