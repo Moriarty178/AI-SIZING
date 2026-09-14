@@ -92,3 +92,36 @@ class TestCompose:
         env = COMPOSE["services"]["copilot"]["environment"]
         assert any(x == "SIZING_COPILOT_API_KEY=${SIZING_COPILOT_API_KEY}"
                    for x in env), env
+
+
+    def test_giao_dien_KHONG_giu_khoa_model(self):
+        """Giao diện nộp bài cho API (B3), không gọi gateway — nên không cần khoá.
+
+        Ngày 2026-09-14 thanh bên trong container `copilot-ui` báo «Chưa gọi được
+        model» và GIẤU chế độ «Thẩm định đầy đủ», dù API bên cạnh chạy tốt: nó tự
+        dựng client tại chỗ. Cách sửa ĐÚNG là hỏi `/health` của API, không phải
+        rải khoá thêm một chỗ nữa.
+        """
+        env = COMPOSE["services"]["copilot-ui"].get("environment", [])
+        assert not any("SIZING_COPILOT_API_KEY" in x for x in env), env
+
+
+def test_moi_bien_compose_dung_deu_co_trong_env_example():
+    """`docker compose build copilot` in `WARN … SPRING_DATASOURCE_URL is not set`
+    dù Spring chẳng liên quan gì: compose nội suy biến của TOÀN BỘ file dù chỉ
+    build một dịch vụ. Khai đủ biến ở `.env.example` thì hết nhắc.
+
+    Test này để lần sau ai thêm một `${BIEN_MOI}` vào compose thì nhớ khai luôn.
+    """
+    import re
+    tho = (GOC / "docker-compose.yml").read_text(encoding="utf-8")
+    dung = set(re.findall(r"\$\{([A-Z_][A-Z0-9_]*)", tho))
+    mau = (GOC / ".env.example").read_text(encoding="utf-8")
+    khai = {d.split("=")[0].strip() for d in mau.splitlines()
+            if "=" in d and not d.lstrip().startswith("#")}
+    assert dung <= khai, f"chưa khai trong .env.example: {sorted(dung - khai)}"
+
+
+def test_env_that_KHONG_duoc_commit():
+    """`.env` chứa khoá gọi model và mật khẩu CSDL."""
+    assert ".env\n" in (GOC / ".gitignore").read_text(encoding="utf-8")

@@ -144,6 +144,29 @@ def kiem_model(settings_path: str = "config/settings.yaml") -> TrangThaiModel:
     return TrangThaiModel(True, f"Sẵn sàng, model `{c.chat_model}`", c.chat_model)
 
 
+def kiem_model_qua_dich_vu(sk) -> TrangThaiModel:
+    """Trạng thái model là của DỊCH VỤ THẨM ĐỊNH, không phải của tiến trình vẽ giao diện.
+
+    Từ mục B3 (2026-09-09) giao diện KHÔNG gọi model — nó nộp file cho API rồi
+    tra theo mã việc. Nên container `copilot-ui` không có `SIZING_COPILOT_API_KEY`
+    và **không nên có**: khoá chỉ cần ở nơi thật sự gọi gateway.
+
+    Hỏi `kiem_model()` ngay trong container giao diện thì luôn nhận
+    «Chưa đặt biến môi trường SIZING_COPILOT_API_KEY», và `che_do_kha_dung` GIẤU
+    LUÔN chế độ «Thẩm định đầy đủ» — tức giấu đúng thứ người dùng mở giao diện để
+    làm, dù API bên cạnh vẫn chạy tốt. Xảy ra thật trên máy nội bộ 2026-09-14.
+
+    `sk` là `src.khach_api.SucKhoe`; nhận kiểu lỏng để `src/giao_dien.py` không
+    phải kéo theo mô-đun khách API chỉ vì một chú thích kiểu.
+    """
+    if not sk.song:
+        return TrangThaiModel(False, f"Chưa gọi được dịch vụ thẩm định — {sk.thong_diep}")
+    if not sk.model_san_sang:
+        return TrangThaiModel(
+            False, f"Dịch vụ chạy nhưng chưa gọi được model — {sk.ghi_chu_model}")
+    return TrangThaiModel(True, sk.ghi_chu_model or "Dịch vụ thẩm định sẵn sàng")
+
+
 def che_do_kha_dung(tt: TrangThaiModel) -> list[str]:
     return [k for k in CHE_DO if k not in CAN_MODEL or tt.san_sang]
 

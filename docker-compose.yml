@@ -105,6 +105,10 @@ services:
       # là `http://localhost:8000`, tức BÊN TRONG chính container giao diện —
       # không có gì ở đó.
       - SIZING_COPILOT_API=http://copilot:8000
+      # ⚠️ CỐ Ý KHÔNG có `SIZING_COPILOT_API_KEY` ở đây. Giao diện nộp bài cho
+      # API chứ không gọi model (mục B3), nên khoá chỉ đặt ở dịch vụ `copilot`.
+      # Thanh bên lấy trạng thái model TỪ `/health` của API — trước 2026-09-14 nó
+      # tự dựng client tại chỗ, thiếu khoá là giấu luôn chế độ «Thẩm định đầy đủ».
     volumes:
       - ./config/settings.yaml:/app/config/settings.yaml:ro
     command:

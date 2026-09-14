@@ -9,7 +9,8 @@ import pathlib
 import pytest
 
 from src.giao_dien import (CAN_MODEL, CHE_DO, TrangThaiModel, chay_checklist,
-                           che_do_kha_dung, kiem_model, luu_tam,
+                           che_do_kha_dung, kiem_model,
+                           kiem_model_qua_dich_vu, luu_tam,
                            ten_file_ket_qua, tom_tat_tai_lieu, uoc_luong)
 from src.ingestion.docx_reader import DocxDocument, Element
 
@@ -107,6 +108,34 @@ def test_luu_tam_chan_duong_dan_lo_ra_ngoai(tmp_path):
 def test_ten_file_ket_qua():
     assert ten_file_ket_qua("a/b/Sizing X.docx", "checklist", "csv") == \
         "Sizing X-checklist.csv"
+
+
+# --- trạng thái model đến TỪ DỊCH VỤ, không từ tiến trình giao diện --------
+class TestKiemModelQuaDichVu:
+    """Container `copilot-ui` không có khoá model và không nên có (B3)."""
+
+    def test_dich_vu_chet_thi_noi_ro_la_DICH_VU_chet(self):
+        from src.khach_api import SucKhoe
+        tt = kiem_model_qua_dich_vu(SucKhoe(song=False, thong_diep="không kết nối được"))
+        assert tt.san_sang is False
+        assert "dịch vụ" in tt.thong_diep.lower()
+
+    def test_dich_vu_song_nhung_chua_cau_hinh_model(self):
+        from src.khach_api import SucKhoe
+        tt = kiem_model_qua_dich_vu(SucKhoe(
+            song=True, model_san_sang=False,
+            ghi_chu_model="Chưa đặt biến môi trường SIZING_COPILOT_API_KEY"))
+        assert tt.san_sang is False
+        assert "SIZING_COPILOT_API_KEY" in tt.thong_diep
+
+    def test_dich_vu_san_sang_thi_MO_che_do_tham_dinh(self):
+        """Đây là ca hỏng thật 2026-09-14: API có khoá, giao diện thì không, và
+        giao diện giấu mất chế độ chính."""
+        from src.khach_api import SucKhoe
+        tt = kiem_model_qua_dich_vu(SucKhoe(
+            song=True, model_san_sang=True, ghi_chu_model="Sẵn sàng, model `x`"))
+        assert tt.san_sang is True
+        assert "tham_dinh" in che_do_kha_dung(tt)
 
 
 # ------------------------------------------------- chính trang Streamlit ---

@@ -103,6 +103,7 @@ Copilot nằm trong `docker-compose.yml` cùng `backend`/`nginx` sẵn có, dùn
 | `copilot-ui` | `8903 → 8501` | giao diện nộp bài |
 
 ```powershell
+copy .env.example .env                                    # điền khoá + proxy
 copy config\settings.example.yaml config\settings.yaml   # điền endpoint TRƯỚC
 $env:COMMIT = (git rev-parse --short HEAD)
 docker compose build copilot
@@ -111,12 +112,39 @@ docker compose up -d copilot copilot-ui
 #  → Giao diện http://localhost:8903
 ```
 
+**Vì sao cần `.env`.** Compose nội suy biến của **toàn bộ** `docker-compose.yml`
+dù bạn chỉ build một dịch vụ, nên thiếu `SPRING_DATASOURCE_*` của web app sẵn có
+cũng sinh `WARN … is not set` khi build Copilot. Đó chỉ là cảnh báo — nó KHÔNG
+build Spring và KHÔNG chặn gì — nhưng khai đủ biến ở `.env` thì hết nhắc.
+
 ⚠️ **Tạo `config/settings.yaml` TRƯỚC.** Bind-mount một file chưa tồn tại thì
 Docker tạo một **thư mục** trùng tên. `load_settings` nay gọi tên lỗi này ra
 thay vì để `IsADirectoryError` trần trụi, nhưng tránh hẳn vẫn hơn.
 
 Giao diện **không tự chạy pipeline nữa**: nó nộp bài cho dịch vụ API và tra bằng
 mã việc, nên đóng tab không mất kết quả.
+
+### Đặt khoá model khi đã đóng vào container
+
+Chạy Streamlit bằng tay thì đặt `$env:SIZING_COPILOT_API_KEY` trước khi chạy là
+xong. Trong container thì **`.env` cạnh `docker-compose.yml`** thay chỗ đó —
+compose tự đọc file này, không cần `--env-file`:
+
+```powershell
+notepad .env                      # SIZING_COPILOT_API_KEY=<khoá được cấp>
+docker compose up -d copilot      # đọc lại .env; KHÔNG cần build lại
+docker compose exec copilot printenv SIZING_COPILOT_API_KEY   # kiểm đã vào chưa
+curl.exe http://localhost:8902/health          # "model_san_sang": true
+```
+
+`docker compose restart` **không** đọc lại `.env` — nó khởi động lại đúng
+container cũ với đúng biến cũ. Phải `up -d` để compose dựng lại container.
+
+Khoá chỉ vào dịch vụ `copilot`. **Giao diện `copilot-ui` cố ý không có khoá**:
+từ mục B3 nó nộp bài cho API chứ không gọi model. Thanh bên lấy trạng thái model
+từ `/health` của API — trước 2026-09-14 nó tự dựng client tại chỗ, nên trong
+container luôn báo «Chưa gọi được model» và **giấu luôn** chế độ «Thẩm định đầy
+đủ», dù API bên cạnh chạy tốt.
 
 ### Hoặc chạy từng cái
 

@@ -17,7 +17,7 @@ import streamlit as st
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from src.giao_dien import (CAN_MODEL, CHE_DO, cau_gioi_han, che_do_kha_dung,
-                           chay_checklist, kiem_model, luu_tam,
+                           chay_checklist, kiem_model_qua_dich_vu, luu_tam,
                            ten_file_ket_qua, tom_tat_tai_lieu, uoc_luong)
 from src.ingestion.docx_reader import read_docx
 from src.khach_api import KhachAPI, LoiAPI, dia_chi_mac_dinh
@@ -33,12 +33,17 @@ def thanh_ben():
         "Công cụ **cố vấn**: giúp tự kiểm bản định cỡ trước khi nộp. "
         "KHÔNG phê duyệt, KHÔNG từ chối — người thẩm định vẫn quyết định cuối cùng."
     )
-    tt = kiem_model()
+    # Hỏi DỊCH VỤ, không tự dựng client tại chỗ: giao diện không giữ khoá model
+    # (xem `kiem_model_qua_dich_vu`).
+    kh = _khach()
+    tt = kiem_model_qua_dich_vu(kh.suc_khoe())
     (st.sidebar.success if tt.san_sang else st.sidebar.warning)(tt.nhan)
     if not tt.san_sang:
         st.sidebar.caption(
-            "Hai chế độ đầu vẫn dùng được bình thường. Chế độ thẩm định đầy đủ cần "
-            "model tự dựng, chỉ với tới được từ máy trong mạng nội bộ."
+            f"Hai chế độ đầu vẫn dùng được bình thường. Chế độ thẩm định đầy đủ "
+            f"gọi dịch vụ tại `{kh.dia_chi}` — khoá `SIZING_COPILOT_API_KEY` đặt ở "
+            "**dịch vụ đó** (file `.env` cạnh `docker-compose.yml`), không phải ở "
+            "giao diện."
         )
     st.sidebar.divider()
     # D3 — giới hạn phải hiện SẴN, không giấu sau một cú bấm. Demo cho người

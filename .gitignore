@@ -36,3 +36,6 @@ eval/reports/dien-tap-*.md
 # không phải mã nguồn. KHÔNG commit.
 bao-cao-mau.md
 bao-cao-*.md
+
+# Khoá gọi model, mật khẩu CSDL, địa chỉ proxy. Mẫu ở `.env.example`.
+.env
