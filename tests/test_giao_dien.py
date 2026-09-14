@@ -224,3 +224,80 @@ class TestCauGioiHan:
         from src.giao_dien import _dai
         assert _dai((0.865, 0.875)) == "86,5–87,5%"
         assert _dai((0.5, 0.5)) == "50%"
+
+
+# ------------------------------------------------- bảng ghi chú thẩm định --
+class TestBangPhanHoi:
+    @staticmethod
+    def _f(id="KPI-02#App", severity="major", rule_ref="KPI-02", finding="CPU vượt ngưỡng",
+           location="Mục IV.1, trang 8", scope_key="App", nhom="vong2_chua_dat"):
+        return {"id": id, "severity": severity, "rule_ref": rule_ref,
+                "finding": finding, "location": location, "scope_key": scope_key,
+                "nhom": nhom}
+
+    def test_1_finding_1_dong_du_cot(self):
+        from src.giao_dien import chuan_bi_bang
+        rows = chuan_bi_bang([self._f()])
+        assert len(rows) == 1
+        r = rows[0]
+        assert r["finding_id"] == "KPI-02#App"
+        assert r["mức độ"] == "Quan trọng"
+        assert r["mã quy tắc"] == "KPI-02"
+        assert r["nội dung"] == "CPU vượt ngưỡng"
+        assert r["phân hệ"] == "App"
+        assert r["ghi_chu"] == "" and r["phân loại"] == "(chưa phân loại)"
+
+    def test_prefill_ghi_chu_cu(self):
+        from src.giao_dien import chuan_bi_bang
+        rows = chuan_bi_bang([self._f()], {"KPI-02#App": {
+            "ghi_chu": "đúng, quy tắc áp nhầm", "phan_loai": "bao_sai"}})
+        assert rows[0]["ghi_chu"] == "đúng, quy tắc áp nhầm"
+        assert rows[0]["phân loại"] == "Báo sai"
+
+    def test_noi_dung_dai_bi_cat_va_gop_dong(self):
+        from src.giao_dien import NOI_DUNG_TOI_DA, chuan_bi_bang
+        f = self._f(finding="từ " * 300)
+        rows = chuan_bi_bang([f])
+        assert len(rows[0]["nội dung"]) <= NOI_DUNG_TOI_DA
+        f2 = self._f(id="x", finding="dòng 1\ndòng 2")
+        assert chuan_bi_bang([f2])[0]["nội dung"] == "dòng 1 dòng 2"
+
+    def test_khong_co_rule_ref_thi_gach(self):
+        from src.giao_dien import chuan_bi_bang
+        f = self._f(id="CANH_BAO#anh", rule_ref="", nhom="khac")
+        rows = chuan_bi_bang([f])
+        assert rows[0]["mã quy tắc"] == "—"
+        assert rows[0]["nhóm"] == "Khác"
+
+    def test_findings_rong_thi_bang_rong(self):
+        from src.giao_dien import chuan_bi_bang
+        assert chuan_bi_bang([]) == []
+
+    def test_loc_va_thu_tu_severity_truoc(self):
+        from src.giao_dien import chuan_bi_bang, loc_bang
+        fs = [self._f(id="a", severity="minor", rule_ref="A-01"),
+              self._f(id="b", severity="critical", rule_ref="B-01"),
+              self._f(id="c", severity="major", rule_ref="C-01"),
+              self._f(id="d", severity="major", rule_ref="B-02")]
+        rows = loc_bang(chuan_bi_bang(fs), "Tất cả")
+        # nghiêm trọng trước; ngang mức thì theo mã quy tắc (B-02 trước C-01)
+        assert [r["finding_id"] for r in rows] == ["b", "d", "c", "a"]
+
+        rows_major = loc_bang(chuan_bi_bang(fs), "Quan trọng")
+        assert [r["finding_id"] for r in rows_major] == ["d", "c"]
+
+    def test_gom_thay_doi_chi_tra_dong_khac(self):
+        from src.giao_dien import chuan_bi_bang, gom_thay_doi
+        fs = [self._f(id="a"), self._f(id="b", rule_ref="B-01")]
+        goc = chuan_bi_bang(fs)
+        sau = [dict(r) for r in goc]
+        sau[0]["ghi_chu"] = "đã ghi"
+        sau[0]["phân loại"] = "Chấp nhận"
+        kq = gom_thay_doi(goc, sau)
+        assert kq == [{"finding_id": "a", "ghi_chu": "đã ghi",
+                       "phan_loai": "chap_nhan"}]
+
+    def test_gom_thay_doi_luu_lai_y_nguyen_tra_rong(self):
+        from src.giao_dien import chuan_bi_bang, gom_thay_doi
+        goc = chuan_bi_bang([self._f()])
+        assert gom_thay_doi(goc, [dict(r) for r in goc]) == []

@@ -258,6 +258,108 @@ def chay_checklist(doc: DocxDocument, ten_tai_lieu: str = "") -> KetQuaChecklist
         thay=sum(1 for v in kq if v.tim_thay), tong=len(kq))
 
 
+# ------------------------------------------------- bảng ghi chú thẩm định --
+# Dữ liệu phản hồi người thẩm định (PLAN.md 4.1): cột đọc-only dựng từ findings
+# đã persist, cột ghi_chu + phân loại do người điền. Logic thuần Python ở đây để
+# test được offline; `ui/app.py` chỉ vẽ.
+PHAN_LOAI = {"": "(chưa phân loại)", "chap_nhan": "Chấp nhận",
+             "bao_sai": "Báo sai", "can_ban": "Cần bàn"}
+NHAN_PHAN_LOAI = list(PHAN_LOAI.values())
+THU_TU_MUC_DO = ["critical", "major", "minor", "info"]
+NOI_DUNG_TOI_DA = 200
+
+_NHOM_NHAN = {"vong1": "Vòng 1", "vong2_chua_dat": "Vòng 2 — chưa đạt",
+              "vong2_chua_kiem": "Vòng 2 — chưa kiểm được",
+              "vong2_tam_hoan": "Vòng 2 — tạm hoãn", "khac": "Khác"}
+
+
+def chuan_bi_bang(findings: list[dict],
+                  phan_hoi_cu: dict[str, dict] | None = None,
+                  labels=None) -> list[dict]:
+    """1 finding đã persist → 1 dòng bảng. Prefill ghi chú cũ nếu có.
+
+    KHÔNG đưa `rule_quote`/`computed_evidence` vào bảng: tràn cột với hàng trăm
+    dòng; nguyên văn vẫn còn đầy đủ trong findings.json và báo cáo.
+    """
+    from .reporting.report import load_labels
+    labels = labels or load_labels()
+    phan_hoi_cu = phan_hoi_cu or {}
+    rows: list[dict] = []
+    for f in findings:
+        cu = phan_hoi_cu.get(f["id"]) or {}
+        ghi = str(cu.get("ghi_chu") or "")
+        loai = str(cu.get("phan_loai") or "")
+        noi = " ".join(str(f.get("finding") or "").split())
+        if len(noi) > NOI_DUNG_TOI_DA:
+            noi = noi[:NOI_DUNG_TOI_DA - 1] + "…"
+        rows.append({
+            "finding_id": f["id"],
+            "mức độ": labels.severity_label(f.get("severity", "")),
+            "mã quy tắc": f.get("rule_ref") or "—",
+            "nội dung": noi,
+            "vị trí": f.get("location") or "—",
+            "phân hệ": f.get("scope_key") or "cả hệ thống",
+            "nhóm": _NHOM_NHAN.get(f.get("nhom", ""), f.get("nhom", "")),
+            "ghi_chu": ghi,
+            "phân loại": PHAN_LOAI.get(loai, PHAN_LOAI[""]),
+        })
+    return rows
+
+
+def loc_bang(rows: list[dict], muc: str, labels=None) -> list[dict]:
+    """Lọc theo nhãn mức độ rồi sắp: nghiêm trọng trước, ngang mức thì theo mã
+    quy tắc — để dòng cần xử lý nhất luôn trên cùng."""
+    from .reporting.report import load_labels
+    labels = labels or load_labels()
+    if muc != "Tất cả":
+        rows = [r for r in rows if r["mức độ"] == muc]
+    thu_tu = {k: i for i, k in enumerate(THU_TU_MUC_DO)}
+
+    def khoá(r):
+        key = next((k for k in THU_TU_MUC_DO
+                    if labels.severity_label(k) == r["mức độ"]), "")
+        return (thu_tu.get(key, len(THU_TU_MUC_DO)), r["mã quy tắc"])
+    return sorted(rows, key=khoá)
+
+
+def gom_thay_doi(rows_goc: list[dict], rows_sau: list[dict]) -> list[dict]:
+    """So theo finding_id, trả payload POST chỉ gồm dòng THAY ĐỔI.
+
+    Người bấm Lưu hai lần thì lần hai payload rỗng — không nhân bản dòng nhật ký.
+    """
+    goc = {r["finding_id"]: r for r in rows_goc}
+    ds: list[dict] = []
+    for r in rows_sau:
+        o = goc.get(r["finding_id"])
+        if o is None:
+            continue
+        loai_sau = next((k for k, v in PHAN_LOAI.items() if v == r["phân loại"]), "")
+        if o["ghi_chu"] != r["ghi_chu"] or (o["phân loại"] != r["phân loại"]):
+            ds.append({"finding_id": r["finding_id"],
+                       "ghi_chu": r["ghi_chu"],
+                       "phan_loai": loai_sau})
+    return ds
+
+
+COT_DOC_ONLY = ["finding_id", "mức độ", "mã quy tắc", "nội dung", "vị trí",
+                "phân hệ", "nhóm"]
+COT_RONG = ["nội dung", "ghi_chu"]        # cột cho phép rộng — text dài
+COT_TUY_CHON = ["phân loại"]
+
+
+def spec_cot_bang() -> dict:
+    """Cấu hình cột cho `st.data_editor`. Tách hàm vì nó cần module streamlit
+    (chỉ cài cùng giao diện) — ui/app.py gọi, test offline bỏ qua."""
+    import streamlit as st
+    return {
+        c: st.column_config.TextColumn(width="medium") for c in COT_DOC_ONLY
+    } | {
+        "nội dung": st.column_config.TextColumn(width="large"),
+        "ghi_chu": st.column_config.TextColumn(width="large"),
+        "phân loại": st.column_config.SelectboxColumn(options=NHAN_PHAN_LOAI),
+    }
+
+
 # ------------------------------------------------------------ tệp tải lên --
 def luu_tam(noi_dung: bytes, ten: str, thu_muc: str | None = None) -> pathlib.Path:
     """Ghi tệp tải lên ra đĩa vì `python-docx` cần đường dẫn thật.
