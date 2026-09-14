@@ -1,0 +1,1331 @@
+# Báo cáo tự kiểm bản định cỡ — HỆ THỐNG V-TRACKING 2.0
+
+> ⚠️ **Công cụ cố vấn.** Đây là công cụ CỐ VẤN, giúp người xin cấp tài nguyên tự kiểm bản định cỡ trước khi nộp. Công cụ KHÔNG tự phê duyệt hay từ chối — người thẩm định vẫn là người quyết định cuối cùng. Mọi phát hiện dưới đây là gợi ý cần người đọc kiểm chứng lại, không phải kết luận.
+
+## Tổng quan
+
+- Tổng số phát hiện trình bày: **902**
+- Vòng 1 (checklist thành phần): **100** mục chưa đạt
+- Vòng 2 (Guideline): **0** chưa đạt · **791** chưa kiểm được · **6** tạm hoãn vì trượt Vòng 1
+- Cảnh báo khác: **5**
+- Đã lọc bỏ **0** phát hiện không có căn cứ (NT2); gộp **0** phát hiện trùng.
+
+## Vòng 1 — Kiểm thành phần theo checklist
+
+_Vòng 1 chỉ hỏi: thành phần cần có đã có thông tin thực chất chưa? Chưa xét đúng/sai — việc đó ở Vòng 2._
+
+### I. Checklist SR/ITBrain
+
+- **[Nhẹ]** Chưa xác định được PRC-07 (Phải nêu nguồn tài nguyên cấp phát) có áp dụng hay không vì tài liệu thiếu: la_ho_so_xin_cap_phat.  _(nhóm: Thiếu thông tin)_
+  - Căn cứ: quy tắc `PRC-07` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: tài liệu nêu nguồn tài nguyên dùng để cấp phát. KHÔNG ĐẠT khi không có thông tin nào về nguồn…”; checklist `CL-1.1`
+  - Gợi ý: Hồ sơ này là yêu cầu cấp phát mới hay chỉ xin thẩm định bản định cỡ?
+
+### II. Checklist tổng quan
+
+- **[Thông tin]** Chưa kết luận được EVD-15 (Phải có luồng nghiệp vụ tổng quan, gồm nội bộ và giao tiếp ngoài): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Căn cứ: quy tắc `EVD-15` — “TIÊU CHÍ RIÊNG (nguyên văn, mục 2.6–2.9): "Gồm đầy đủ các thành phần đang chạy và thêm mới (nếu có)". ĐẠT khi có phần luồng nghiệp vụ tổng quan, thể hiện cả…”; checklist `CL-2.8`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu không nêu thời gian cam kết triển khai hệ thống và không nêu thời gian bắt đầu đổ tải. Mốc thời gian duy nhất xuất hiện là 'Thời gian hiệu lực sizing 12/2025' (chỉ là thời hạn hiệu lực của bản định cỡ, không phải mốc triển khai hay đổ tải); các nội dung về đổ tải chỉ mô tả tần suất tải thử (318 TPS) mà không kèm mốc thời gian nào.  _(nhóm: Thiếu thành phần)_
+  - Căn cứ: quy tắc `PRC-10` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: tài liệu nêu thời gian cam kết triển khai hệ thống và thời gian bắt đầu đổ tải. KHÔNG ĐẠT khi…”; checklist `CL-2.10a`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: tài liệu nêu thời gian cam kết triển khai hệ thống và thời gian bắt đầu đổ tải. KHÔNG ĐẠT khi không có mốc thời gian nào cho việc triển
+
+### III. Checklist chi tiết theo phân hệ
+
+- **[Thông tin]** Chưa kết luận được EVD-17 (Phải có mô tả chi tiết từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: File storage
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu không có phần mô tả phân hệ FrontEnd làm gì hoặc vai trò của nó trong hệ thống. Với phân hệ FrontEnd, tài liệu chỉ có tiêu đề 'Định cỡ phân hệ FrontEnd' kèm các bảng số liệu định cỡ (CPU, RAM, dung lượng log, số user online), không có nội dung mô tả thực chất nào. Do đó không đạt theo tiêu chí Vòng 1.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: FrontEnd
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi không có mục này cho phân hệ đang xét, hoặc 
+- **[Quan trọng]** Phần về MinIO trong tài liệu chỉ gồm mục định cỡ tài nguyên (CPU, RAM, dung lượng lưu trữ, số node) kèm các bảng tính; không có phần mô tả phân hệ MinIO làm gì/vai trò trong hệ thống. MinIO cũng không xuất hiện trong danh sách module có mô tả ở mục 'Mô hình triển khai hệ thống' (chỉ có Kafka, Video Processing, IoT Core, Tracking, Database, Protocol Adaptor). Thiếu mô tả chức năng/vai trò của phân hệ theo tiêu chí.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: MinIO
+  - Vị trí: Mục 1.1, trang 16
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi không có mục này cho phân hệ đang xét, hoặc 
+- **[Thông tin]** Chưa kết luận được EVD-17 (Phải có mô tả chi tiết từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Mongo
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-17 (Phải có mô tả chi tiết từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: NGINX
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu không có phần mô tả phân hệ Redis làm gì hoặc vai trò của Redis trong hệ thống. Redis chỉ xuất hiện ở bảng quy hoạch IP (Redis | 172.21.5.243) và phần 'Định cỡ module Redis' (trang 17-18) với các thông số đo đạc CPU/RAM/TPS, không có nội dung mô tả chức năng. Redis cũng không được liệt kê trong danh sách các module có mô tả ở mục 'Mô hình triển khai hệ thống' (trang 2).  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Redis
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi không có mục này cho phân hệ đang xét, hoặc 
+- **[Thông tin]** Chưa kết luận được EVD-17 (Phải có mô tả chi tiết từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-17 (Phải có mô tả chi tiết từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-17 (Phải có mô tả chi tiết từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Tủ rack
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-17 (Phải có mô tả chi tiết từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-17 (Phải có mô tả chi tiết từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Căn cứ: quy tắc `EVD-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi…”; checklist `CL-3.x.1`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu chỉ mô tả chức năng của phân hệ Protocol Adaptor (giao tiếp với thiết bị, encode/decode bản tin) và các thông số định cỡ CPU/RAM/ổ cứng, không nêu bất kỳ công nghệ nào (framework, ngôn ngữ, middleware, cơ sở dữ liệu...) mà phân hệ này sử dụng.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Protocol Adaptor (module xử lý luồng thiết bị)
+  - Vị trí: trang 2
+  - Căn cứ: quy tắc `EVD-18` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG…”; checklist `CL-3.x.2`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG ĐẠT khi không có thông tin công nghệ nào
+- **[Thông tin]** Chưa kết luận được EVD-18 (Phải nêu công nghệ sử dụng của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `EVD-18` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG…”; checklist `CL-3.x.2`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-18 (Phải nêu công nghệ sử dụng của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `EVD-18` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG…”; checklist `CL-3.x.2`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu chỉ trình bày định cỡ tài nguyên cho module Worker (module xử lý nghiệp vụ): số cores, Cint, RAM, TPS, kết quả đổ tải 318 TPS. Không có bất kỳ thông tin nào về công nghệ mà phân hệ Worker sử dụng (không nêu framework, ngôn ngữ lập trình, middleware hay thành phần công nghệ nào của phân hệ này), nên không đạt tiêu chí EVD-18.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Căn cứ: quy tắc `EVD-18` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG…”; checklist `CL-3.x.2`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG ĐẠT khi không có thông tin công nghệ nào
+- **[Quan trọng]** Phần «Định cỡ vLB (Virtual Load Balancer)» (trang 18) chỉ nêu thông lượng luồng FLV, luồng Camera và bản tin lên Protocol Adaptor (tính KB/s), không nêu công nghệ nào mà vLB sử dụng (ví dụ Nginx, HAProxy, F5...). Mục «Định cỡ NGINX» được tách riêng, không gán cho phân hệ vLB, nên không có thông tin công nghệ cho phân hệ đang xét.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Căn cứ: quy tắc `EVD-18` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG…”; checklist `CL-3.x.2`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG ĐẠT khi không có thông tin công nghệ nào
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: File storage
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: FrontEnd
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu không có mô hình logic riêng cho phân hệ Kafka. Kafka chỉ được nhắc bằng một dòng trong phần mô hình triển khai tổng quan của cả hệ thống («Hệ queue trao đổi thông tin giữa thiết bị và hệ thống core IoT»), phần còn lại chỉ là số liệu định cỡ, đo đạc tải (CPU, RAM, IOPS) và quy hoạch IP; không có sơ đồ/mô tả cấu trúc, thành phần hay luồng dữ liệu riêng của Kafka, và mục «Các luồng nghiệp vụ» ghi N/A.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Kafka
+  - Vị trí: trang 2
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT khi không có mô hình logic cho phân hệ đ
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: MinIO
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Mongo
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Không có mô hình logic riêng cho phân hệ Postgres. Postgres chỉ được nhắc trong mô hình triển khai tổng quan của cả hệ thống (mô tả chung về Database) và trong phần định cỡ tài nguyên (CPU, RAM, IOPS, SSD, IP vật lý); tài liệu không trình bày kiến trúc/mô hình logic riêng (thành phần, luồng dữ liệu, mô hình dữ liệu) của phân hệ Postgres.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Postgres
+  - Vị trí: trang 2
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT khi không có mô hình logic cho phân hệ đ
+- **[Quan trọng]** Tài liệu chỉ có một dòng mô tả chức năng Protocol Adaptor nằm trong phần mô hình triển khai tổng quan của cả hệ thống, cùng các bảng định cỡ tài nguyên (CPU/RAM/ổ cứng) cho module này; không có mô hình logic riêng (sơ đồ, luồng xử lý, thành phần nội bộ) dành riêng cho phân hệ Protocol Adaptor.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Protocol Adaptor (module xử lý luồng thiết bị)
+  - Vị trí: trang 2
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT khi không có mô hình logic cho phân hệ đ
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Redis
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Tủ rack
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Video Streaming
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-19 (Phải có mô hình logic của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Căn cứ: quy tắc `EVD-19` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT…”; checklist `CL-3.x.4`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-20 (Phải có mô hình vật lý của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `EVD-20` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình vật lý riêng — số node, cách bố trí, kết nối. KHÔNG ĐẠT khi không có mô…”; checklist `CL-3.x.5`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-20 (Phải có mô hình vật lý của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `EVD-20` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình vật lý riêng — số node, cách bố trí, kết nối. KHÔNG ĐẠT khi không có mô…”; checklist `CL-3.x.5`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-20 (Phải có mô hình vật lý của từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Căn cứ: quy tắc `EVD-20` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình vật lý riêng — số node, cách bố trí, kết nối. KHÔNG ĐẠT khi không có mô…”; checklist `CL-3.x.5`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Trong phạm vi phân hệ FrontEnd (trang 18-19), tài liệu chỉ nêu thông số CPU, RAM, Cint/TPS, RAM/TPS, dung lượng log và cấu hình node; không có bất kỳ thông tin nào về lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin) kèm đơn vị, nên không đạt tiêu chí EVD-21.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: FrontEnd
+  - Căn cứ: quy tắc `EVD-21` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi…”; checklist `CL-3.x.8`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi không có thông tin nào về lưu lượng dữ li
+- **[Quan trọng]** Phần định cỡ phân hệ Master (K8s Control plane) chỉ nêu vai trò các thành phần (API Server, etcd, Controller Manager, Scheduler), nhận xét về mô hình tối thiểu và cấu hình node (4 vCPU, 8GB RAM, 100 GB HDD). Không có bất kỳ thông tin nào về lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin) kèm đơn vị, nên không đạt tiêu chí EVD-21.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Master (K8s Control plane)
+  - Căn cứ: quy tắc `EVD-21` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi…”; checklist `CL-3.x.8`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi không có thông tin nào về lưu lượng dữ li
+- **[Quan trọng]** Phần định cỡ module Mongo chỉ nêu TPS (318 TPS), mức tiêu thụ CPU/RAM, Cint/RAM cho 17,284 TPS và dung lượng lưu trữ (~964 MB, mỗi thiết bị lưu trữ 1 bản ghi); không có bất kỳ thông tin nào về lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin) kèm đơn vị.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Mongo
+  - Căn cứ: quy tắc `EVD-21` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi…”; checklist `CL-3.x.8`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi không có thông tin nào về lưu lượng dữ li
+- **[Quan trọng]** Phần định cỡ module Redis (trang 17-18) chỉ có tiêu đề hình 'Thông số kích cỡ bản tin cache' mà không kèm bất kỳ giá trị lưu lượng dữ liệu/kích thước bản tin cho mỗi request nào (không có con số, không có đơn vị). Các bảng định cỡ Redis chỉ nêu Cint/TPS, RAM/TPS, RAM cần cho 17,284 TPS và dung lượng cài đặt 100 GB, không có thông tin về lưu lượng dữ liệu mỗi request. Do đó không đạt tiêu chí EVD-21.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Redis
+  - Vị trí: Mục 1.1, trang 17
+  - Căn cứ: quy tắc `EVD-21` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi…”; checklist `CL-3.x.8`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi không có thông tin nào về lưu lượng dữ li
+- **[Thông tin]** Chưa kết luận được EVD-21 (Phải nêu lưu lượng dữ liệu mỗi request): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `EVD-21` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi…”; checklist `CL-3.x.8`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-21 (Phải nêu lưu lượng dữ liệu mỗi request): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `EVD-21` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi…”; checklist `CL-3.x.8`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Mục 'Định cỡ tủ rack' chỉ nêu hệ thống dùng hạ tầng ảo hóa không cần tủ rack kèm bảng tổng hợp tài nguyên (số node, vCPU, Cint, RAM, HDD, SSD, storage dùng chung), không có bất kỳ thông tin nào về lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin) kèm đơn vị.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Tủ rack
+  - Vị trí: Mục 1.1, trang 20
+  - Căn cứ: quy tắc `EVD-21` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi…”; checklist `CL-3.x.8`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi không có thông tin nào về lưu lượng dữ li
+- **[Quan trọng]** Phần định cỡ module Worker (module xử lý nghiệp vụ, trang 5) chỉ nêu TPS (318 TPS, 106 TPS/server), mức tiêu thụ CPU (Milicore) và RAM (MB), cùng các thông số Cint/TPS và RAM/TPS. Không có bất kỳ thông tin nào về lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin) kèm đơn vị, nên không đạt tiêu chí EVD-21.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Căn cứ: quy tắc `EVD-21` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi…”; checklist `CL-3.x.8`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi không có thông tin nào về lưu lượng dữ li
+- **[Thông tin]** Chưa kết luận được ARC-15 (Phải nêu nguồn request — từ nội bộ hay từ bên ngoài): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: FrontEnd
+  - Căn cứ: quy tắc `ARC-15` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.9`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tại mục 'Định cỡ module Master' (trang 18), tài liệu chỉ mô tả vai trò Control plane của Master node (API Server, etcd, Controller Manager, Scheduler), tham chiếu quy định 1033/QĐ-CNVTQĐ để chọn mô hình tối thiểu và nêu cấu hình lựa chọn 3 node. Không có bất kỳ thông tin nào nêu request của phân hệ Master đến từ đâu — từ phân hệ nội bộ khác hay từ bên ngoài/internet. Không có nội dung liên quan đến nguồn request nên trích dẫn để trống.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Master (K8s Control plane)
+  - Căn cứ: quy tắc `ARC-15` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.9`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass 
+- **[Thông tin]** Chưa kết luận được ARC-15 (Phải nêu nguồn request — từ nội bộ hay từ bên ngoài): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Mongo
+  - Căn cứ: quy tắc `ARC-15` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.9`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-15 (Phải nêu nguồn request — từ nội bộ hay từ bên ngoài): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Redis
+  - Căn cứ: quy tắc `ARC-15` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.9`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-15 (Phải nêu nguồn request — từ nội bộ hay từ bên ngoài): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `ARC-15` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.9`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-15 (Phải nêu nguồn request — từ nội bộ hay từ bên ngoài): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `ARC-15` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.9`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-15 (Phải nêu nguồn request — từ nội bộ hay từ bên ngoài): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Tủ rack
+  - Căn cứ: quy tắc `ARC-15` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.9`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-16 (Phải nêu giao thức của request và port sử dụng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: File storage
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu không có thông tin nào về giao thức của request (HTTP, HTTPS, gRPC...) và port sử dụng cho phân hệ FrontEnd. Mục 'Định cỡ phân hệ FrontEnd' (trang 18-19) chỉ nêu thông số CPU, RAM, dung lượng log, số user online và kết quả định cỡ; không có giao thức hay port nào được đề cập.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: FrontEnd
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Quan trọng]** Tài liệu phần phân hệ Kafka chỉ nêu mô tả chức năng ("Hệ queue trao đổi thông tin giữa thiết bị và hệ thống core IoT"), danh sách IP máy chủ (Kafka1/2/3) và các thông số định cỡ CPU, RAM, IOPS, dung lượng lưu trữ; KHÔNG có thông tin nào về giao thức của request (HTTP, HTTPS, gRPC...) và KHÔNG nêu port sử dụng. Không có tiêu đề mục nào về giao thức/port cho Kafka. Do đó không đạt tiêu chí ARC-16.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Kafka
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Quan trọng]** Phần định cỡ module Master (K8s Control plane) chỉ nêu vai trò các thành phần (API Server, etcd, Controller Manager, Scheduler) và cấu hình tài nguyên (3 node, 4 vCPU, 8GB RAM, 100GB HDD), không có bất kỳ thông tin nào về giao thức của request (HTTP, HTTPS, gRPC, JDBC…) và không nêu port sử dụng, nên không đạt tiêu chí ARC-16.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Master (K8s Control plane)
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Quan trọng]** Phần định cỡ module MinIO (trang 16) chỉ nêu thông số CPU, RAM, dung lượng lưu trữ, số node và link tham khảo blog.min.io; không có bất kỳ thông tin nào về giao thức của request (HTTP, HTTPS, gRPC...) và không nêu port sử dụng. Do đó không đạt tiêu chí ARC-16.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: MinIO
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Quan trọng]** Tài liệu không nêu giao thức của request và port sử dụng cho phân hệ Mongo. Nội dung về Mongo chỉ gồm: quy hoạch IP (MongoDB | 172.21.5.242) và các bảng định cỡ CPU/RAM/dung lượng lưu trữ (Cint/TPS, RAM/TPS, lựa chọn N=2, 3 node). Không có bất kỳ thông tin nào về giao thức (HTTP, HTTPS, gRPC, JDBC…) hay port, nên không đạt theo tiêu chí ARC-16.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Mongo
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Thông tin]** Chưa kết luận được ARC-16 (Phải nêu giao thức của request và port sử dụng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: NGINX
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Phần định cỡ module Postgres (trang 10-11) chỉ nêu thông số CPU, RAM, IOPS, TPS, dung lượng lưu trữ và cấu hình node; không có bất kỳ thông tin nào về giao thức của request (HTTP, HTTPS, gRPC, JDBC...) và không nêu port sử dụng. Toàn bộ tài liệu cũng không có mục nào khai báo giao thức/port cho phân hệ Postgres, nên không đạt theo tiêu chí ARC-16.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Postgres
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Quan trọng]** Tài liệu chỉ mô tả Protocol Adaptor là phân hệ giao tiếp với thiết bị và thực hiện encode/decode bản tin; toàn bộ phần định cỡ Protocol Adaptor (trang 5-6) và mục 'Bản tin lên Protocol Adaptor' (trang 18) chỉ nêu thông số CPU, RAM, thông lượng, kích thước bản tin mà KHÔNG nêu giao thức của request (HTTP, HTTPS, gRPC, TCP/UDP...) và KHÔNG nêu port sử dụng.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Protocol Adaptor (module xử lý luồng thiết bị)
+  - Vị trí: trang 2
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Quan trọng]** Tài liệu không có thông tin nào về giao thức của request và port sử dụng cho phân hệ Redis. Phần 'Định cỡ module Redis' (trang 17-18) chỉ nêu thông số CPU, RAM, Cint/TPS, dung lượng cài đặt; bảng quy hoạch IP (trang 3) chỉ ghi 'Redis | 172.21.5.243' mà không kèm port hay giao thức. Thiếu cả hai yếu tố theo tiêu chí nên KHÔNG ĐẠT.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Redis
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Thông tin]** Chưa kết luận được ARC-16 (Phải nêu giao thức của request và port sử dụng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-16 (Phải nêu giao thức của request và port sử dụng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Mục 'Định cỡ tủ rack' chỉ ghi 'Hệ thống dùng hạ tầng ảo hóa không cần tủ rack' kèm bảng tài nguyên (số node, vCPU, RAM, HDD, SSD), không nêu giao thức của request (HTTP, HTTPS, gRPC, JDBC…) và không nêu port sử dụng nào.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Tủ rack
+  - Vị trí: Mục 1.1, trang 20
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Quan trọng]** Tài liệu không có mục nào khai báo giao thức request và port sử dụng cho phân hệ Video Streaming. Giao thức RTSP chỉ xuất hiện trong tiêu đề hình minh họa băng thông đo tải, còn port sử dụng hoàn toàn không được nêu ở bất kỳ đâu. Tiêu chí yêu cầu phải có CẢ giao thức VÀ port, nên thiếu port là không đạt.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Video Streaming
+  - Vị trí: Mục 1, trang 7
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Quan trọng]** Tài liệu không nêu giao thức của request (HTTP, HTTPS, gRPC, JDBC...) và không nêu port sử dụng cho phân hệ Worker. Mục 'Định cỡ module Worker (N + 1)' chỉ trình bày thông số đổ tải TPS, mức tiêu thụ CPU/RAM và kết quả định cỡ, không có thông tin về giao thức hay port. Cụm 'giao tiếp API' chỉ xuất hiện ở mô tả phân hệ Tracking và không chỉ định giao thức cụ thể lẫn port.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức h
+- **[Thông tin]** Chưa kết luận được ARC-16 (Phải nêu giao thức của request và port sử dụng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Căn cứ: quy tắc `ARC-16` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT…”; checklist `CL-3.x.10`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được STO-17 (Phải nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: File storage
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được STO-17 (Phải nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: FrontEnd
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được STO-17 (Phải nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Kafka
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu chỉ nêu dung lượng HDD 100 GB (ứng dụng) cho module Master (K8s Control plane), không hề nêu loại lưu trữ sử dụng (Block, Object, File local hay File NAS). Mục 'Định cỡ SAN Switch' chỉ ghi 'Không sử dụng SAN Storage' nhưng đó là mục riêng về SAN Switch, không phải thông tin nêu loại lưu trữ của phân hệ Master. Thiếu thông tin về loại lưu trữ nên không đạt tiêu chí vòng 1.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Master (K8s Control plane)
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass 
+- **[Thông tin]** Chưa kết luận được STO-17 (Phải nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Mongo
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Phần NGINX trong tài liệu (mục 'Định cỡ NGINX', trang 18) chỉ nêu số lượng người dùng đồng thời và lưu lượng đi qua NGINX (1,020,250 KB/s), hoàn toàn không có thông tin nào về loại lưu trữ (Block, Object, File local hay File NAS) mà phân hệ NGINX sử dụng. Bảng tổng hợp tài nguyên (trang 20-21) cũng không có dòng NGINX kèm thông tin lưu trữ. Do thiếu toàn bộ thông tin về loại lưu trữ nên không đạt tiêu chí STO-17.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: NGINX
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass 
+- **[Thông tin]** Chưa kết luận được STO-17 (Phải nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Postgres
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Tài liệu chỉ nêu dung lượng ổ cứng của Protocol Adaptor (100 GB cho cài đặt OS & cloud bases, HDD 100 GB mỗi node) nhưng không hề nêu loại lưu trữ sử dụng (Block, Object, File local hay File NAS) cho phân hệ này. Các mục liên quan khác (Định cỡ file storage, MinIO, 'Không sử dụng SAN Storage') không gắn với Protocol Adaptor và cũng không nêu loại lưu trữ của phân hệ này. Thiếu thông tin về loại lưu trữ nên không đạt tiêu chí vòng 1.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Protocol Adaptor (module xử lý luồng thiết bị)
+  - Vị trí: Mục 1, trang 6
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass 
+- **[Thông tin]** Chưa kết luận được STO-17 (Phải nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Redis
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được STO-17 (Phải nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Kiểm tay mục này.
+- **[Quan trọng]** Mục 'Định cỡ tủ rack' chỉ có duy nhất một câu nêu hệ thống dùng hạ tầng ảo hóa, không cần tủ rack; toàn mục không có thông tin nào về loại lưu trữ (Block, Object, File local hay File NAS) mà phân hệ sử dụng, nên không đạt tiêu chí vòng 1.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Tủ rack
+  - Vị trí: Mục 1.1, trang 20
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass 
+- **[Quan trọng]** Tài liệu chỉ nêu dung lượng lưu trữ (HDD 100 GB ứng dụng) cho module Video Streaming nhưng không nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS. Mục 'Định cỡ file storage' chỉ thống kê dung lượng, không chỉ rõ loại lưu trữ; thông tin 'Không sử dụng SAN Storage' chỉ mang tính loại trừ, không xác định được loại lưu trữ phân hệ dùng. Không đánh trượt vì tối ưu hay không — chỉ đánh trượt vì thiếu thông tin về loại lưu trữ.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Video Streaming
+  - Vị trí: Mục 1, trang 9
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass 
+- **[Quan trọng]** Tài liệu chỉ nêu dung lượng lưu trữ của module Worker (HDD 100 GB ứng dụng) nhưng không hề nêu loại lưu trữ sử dụng (Block, Object, File local hay File NAS). Câu 'Không sử dụng SAN Storage' chỉ mang tính loại trừ SAN chung cho hệ thống, không xác định loại lưu trữ mà phân hệ Worker sử dụng. Thiếu thông tin về loại lưu trữ nên không đạt tiêu chí STO-17.  _(nhóm: Thiếu thành phần)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Vị trí: Mục 1, trang 6
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Bổ sung/làm rõ theo tiêu chí: TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass 
+- **[Thông tin]** Chưa kết luận được STO-17 (Phải nêu loại lưu trữ sử dụng — Block, Object, File local hay File NAS): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Căn cứ: quy tắc `STO-17` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn…”; checklist `CL-3.x.18`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-22 (Phải có bảng tổng hợp đề xuất cấu hình cho từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: NGINX
+  - Căn cứ: quy tắc `EVD-22` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có bảng tổng hợp đề xuất cấu hình — số node và tài nguyên mỗi node. KHÔNG ĐẠT khi…”; checklist `CL-3.x.20`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-22 (Phải có bảng tổng hợp đề xuất cấu hình cho từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `EVD-22` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có bảng tổng hợp đề xuất cấu hình — số node và tài nguyên mỗi node. KHÔNG ĐẠT khi…”; checklist `CL-3.x.20`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-22 (Phải có bảng tổng hợp đề xuất cấu hình cho từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `EVD-22` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có bảng tổng hợp đề xuất cấu hình — số node và tài nguyên mỗi node. KHÔNG ĐẠT khi…”; checklist `CL-3.x.20`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được EVD-22 (Phải có bảng tổng hợp đề xuất cấu hình cho từng phân hệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Căn cứ: quy tắc `EVD-22` — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có bảng tổng hợp đề xuất cấu hình — số node và tài nguyên mỗi node. KHÔNG ĐẠT khi…”; checklist `CL-3.x.20`
+  - Gợi ý: Kiểm tay mục này.
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: File storage
+  - Vị trí: Mục 1.1, trang 12
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: FrontEnd
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Kafka
+  - Vị trí: Mục 1.1, trang 14
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Master (K8s Control plane)
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: MinIO
+  - Vị trí: Mục 1.1, trang 16
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Mongo
+  - Vị trí: Mục 1.1, trang 16
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: NGINX
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Postgres
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Protocol Adaptor (module xử lý luồng thiết bị)
+  - Vị trí: Mục 1, trang 6
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Redis
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: SAN Switch
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Thiết bị mạng
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Tủ rack
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Video Streaming
+  - Vị trí: Mục 1, trang 9
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Vị trí: Mục 1, trang 6
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+- **[Nhẹ]** Chưa kiểm được STO-18 (Phân hệ Database phải đảm bảo 3 phân vùng /data, /log, /backup) vì tài liệu thiếu: co_phan_vung_data, co_phan_vung_log, co_phan_vung_backup.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `STO-18`; checklist `CL-3.2.7a`
+  - Gợi ý: Có phân vùng dữ liệu (data) riêng không?; Có phân vùng log riêng không?; Có phân vùng backup riêng không?
+
+## Vòng 2 — Kiểm cách tính theo Guideline
+
+### Chưa đạt
+
+_(không có phát hiện chưa đạt)_
+
+### Chưa kiểm được — gom theo thông tin thiếu
+
+Mỗi dòng là MỘT thông tin tài liệu chưa nêu; các quy tắc bị chặn vì thiếu nó liệt kê kèm. Bổ sung thông tin ở cột «Cần bổ sung» là mở được cả nhóm kiểm tra tương ứng.
+
+- **[Quan trọng]** Số SSD 1300 GB/node cho Postgres (quy đổi từ ~1285 GB dữ liệu GPS, công thức chỉ áp hệ số 0.8) không được ghi nhãn 'khả dụng/sau RAID' hay 'thô/trước RAID', và tài liệu không nêu đồng thời hai giá trị kèm tỷ lệ RAID để quy đổi, nên không phân biệt được dung lượng khả dụng với dung lượng thô.  _(nhóm: Thiếu thông tin)_
+  - Phân hệ: Postgres/ssd
+  - Vị trí: Mục 1, trang 11
+  - Căn cứ: quy tắc `EVD-01` — “Với MỖI con số dung lượng trong tài liệu, phải xác định được nó là loại nào — ĐẠT khi một trong hai: (1) ghi rõ nhãn "khả dụng" / "sau RAID" hoặc "thô" /…”; checklist `CL-2.5`, `CL-3.x.17`
+  - Gợi ý: Hoàn thiện theo tiêu chí của EVD-01 — xem phụ lục trích dẫn.
+- **[Quan trọng]** Tài liệu chỉ trình bày kết quả đo đạc và định cỡ tài nguyên cho từng module (Worker, Protocol Adaptor, Video Streaming, Postgres, Kafka, Mongo, MinIO, Redis, FrontEnd...) ở mức tải thiết kế, cùng đề xuất mô hình triển khai N+1. Toàn bộ tài liệu không có nội dung nào nêu kịch bản mở rộng khi tải tăng: không chỉ rõ module nào phải mở rộng, không nói module mở rộng theo chiều dọc hay chiều ngang, và không đề cập Load Balancing khi thêm node cũng như mức suy giảm hiệu năng % do overhead đồng bộ. Thiếu cả ba yêu cầu của tiêu chí EVD-02, nên để trích dẫn rỗng và kết luận KHÔNG ĐẠT.  _(nhóm: Thiếu thông tin)_
+  - Căn cứ: quy tắc `EVD-02` — “Phải trả lời được CẢ BA: (1) khi tải tăng, MODULE NÀO phải mở rộng; (2) mỗi module mở rộng theo CHIỀU DỌC hay CHIỀU NGANG; (3) với module scale out, thêm node…”
+  - Gợi ý: Hoàn thiện theo tiêu chí của EVD-02 — xem phụ lục trích dẫn.
+- **[Quan trọng]** Tài liệu không có bất kỳ nội dung nào về tính sẵn sàng hay thời gian downtime cho phép: bảng thông số đầu vào (Bảng 1 - Các thông số đăng ký theo CTKT sản phẩm) không có dòng nào về tính sẵn sàng/downtime, toàn bộ tài liệu chỉ nêu thông số TPS, CPU, RAM, lưu trữ, băng thông. Thiếu cả hai con số yêu cầu: downtime cho phép mỗi tháng (phút/tháng) và downtime cho phép mỗi sự cố (phút); cũng không có tỷ lệ phần trăm (99,9%) nào được nêu.  _(nhóm: Thiếu thông tin)_
+  - Căn cứ: quy tắc `EVD-08` — “Phải có CẢ HAI con số, kèm đơn vị: (1) TÍNH SẴN SÀNG — thời gian cho phép downtime MỖI THÁNG, tính bằng phút/tháng; (2) THỜI GIAN DOWNTIME CHO PHÉP CHO MỖI SỰ…”; checklist `CL-2.5`
+  - Gợi ý: Hoàn thiện theo tiêu chí của EVD-08 — xem phụ lục trích dẫn.
+- **[Thông tin]** Chưa kết luận được ALC-05 (Quy hoạch cấp phát tránh lưu lượng vòng và an toàn khi lỗi phần cứng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Căn cứ: quy tắc `ALC-05` — “Phải đạt CẢ HAI VẾ của trích dẫn. VẾ ĐƯỜNG ĐI LƯU LƯỢNG: mô hình vật lý cho thấy vị trí đặt LB và thiết bị lưu trữ so với các phân hệ dùng chúng, đủ để thấy…”; checklist `CL-2.7`, `CL-3.x.5`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-13 (Mức độ dự phòng phải căn cứ phân loại hệ thống, không tự đặt): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Căn cứ: quy tắc `ARC-13` — “Phải có đủ ba: (1) nêu MỨC ĐỘ QUAN TRỌNG của hệ thống, đúng một trong bốn giá trị "đặc biệt quan trọng / rất quan trọng / quan trọng / bình thường"; (2) nêu…”; checklist `CL-2.10`, `CL-2.11`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: File storage
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Master (K8s Control plane)
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: MinIO
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Mongo
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: NGINX
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Postgres
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kiểm được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng) vì lỗi gọi mô hình.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Protocol Adaptor (module xử lý luồng thiết bị)
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Chạy lại phần kiểm định tính.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Redis
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Tủ rack
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kết luận được ARC-14 (Module đã đủ năng lực giao dịch vẫn phải thiết kế cho sẵn sàng và dự phòng): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Căn cứ: quy tắc `ARC-14` — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2)…”; checklist `CL-3.x.19`, `CL-3.x.6`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: File storage
+  - Vị trí: Mục 1.1, trang 12
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: FrontEnd
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Kafka
+  - Vị trí: Mục 1.1, trang 14
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Master (K8s Control plane)
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: MinIO
+  - Vị trí: Mục 1.1, trang 16
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Mongo
+  - Vị trí: Mục 1.1, trang 16
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: NGINX
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Postgres
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Protocol Adaptor (module xử lý luồng thiết bị)
+  - Vị trí: Mục 1, trang 6
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Redis
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Tủ rack
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Video Streaming
+  - Vị trí: Mục 1, trang 9
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Vị trí: Mục 1, trang 6
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc BAK-07 (Dung lượng và tốc độ tape theo thế hệ LTO): cần bảng tra cho the_he_lto nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `BAK-07`; checklist `CL-3.2.19`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: File storage
+  - Vị trí: Mục 1.1, trang 14
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: FrontEnd
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Kafka
+  - Vị trí: Mục 1.1, trang 14
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Master (K8s Control plane)
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: MinIO
+  - Vị trí: Mục 1.1, trang 16
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Mongo
+  - Vị trí: Mục 1.1, trang 16
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: NGINX
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Postgres
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Protocol Adaptor (module xử lý luồng thiết bị)
+  - Vị trí: Mục 1, trang 6
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Redis
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: SAN Switch
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Thiết bị mạng
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Tủ rack
+  - Vị trí: Mục 1.1, trang 19
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Video Streaming
+  - Vị trí: Mục 1, trang 9
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Worker (module xử lý nghiệp vụ)
+  - Vị trí: Mục 1, trang 6
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc CPU-10 (Chọn chỉ số Cint_rated hay Cfp_rated theo loại hệ thống): cần bảng tra cho loai_he_thong nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: vLB (Virtual Load Balancer)
+  - Vị trí: Mục 1.1, trang 18
+  - Căn cứ: quy tắc `CPU-10`; checklist `CL-3.x.13`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được EVD-09 (Phải nêu các yếu tố ảnh hưởng thông số tài nguyên máy chủ) vì lỗi gọi mô hình.  _(nhóm: Chưa kiểm chứng được)_
+  - Căn cứ: quy tắc `EVD-09` — “ĐẠT khi cả hai: (1) MỌI yếu tố mà chính bản sizing dùng làm đầu vào cho một phép tính đều được khai trong bảng thông số đầu vào, có giá trị và đơn vị — nói…”; checklist `CL-2.5`, `CL-3.x.7`
+  - Gợi ý: Chạy lại phần kiểm định tính.
+- **[Thông tin]** Chưa kết luận được EVD-11 (Bảng thông số đầu vào phải tách tải theo loại nghiệp vụ kèm tỉ lệ): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Căn cứ: quy tắc `EVD-11` — “Phải có đủ CẢ BA: (1) TỔNG SỐ THUÊ BAO/NGƯỜI DÙNG sử dụng dịch vụ, có đơn vị; (2) TỔNG SỐ GIAO DỊCH ĐỒNG THỜI TẠI THỜI ĐIỂM PEAK, theo TPS (hoặc TPM), hoặc…”; checklist `CL-2.5`, `CL-3.x.7`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kiểm được quy tắc LAN-02 (Chọn bandwidth port LAN theo lưu lượng trung bình mỗi port): cần bảng tra cho luu_luong_port_tb_mbps nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Căn cứ: quy tắc `LAN-02`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kết luận được PRC-01 (Thông số đầu vào phải được lãnh đạo xác nhận bằng văn bản): đoạn được dẫn làm bằng chứng không tìm thấy trong tài liệu.  _(nhóm: Chưa kiểm chứng được)_
+  - Căn cứ: quy tắc `PRC-01` — “ĐẠT khi một trong hai: (1) tài liệu DẪN CHIẾU CỤ THỂ văn bản xác nhận thông số đầu vào — nêu được SỐ HIỆU / NGÀY / NGƯỜI KÝ hoặc CHỨC DANH người ký; (2) tài…”; checklist `CL-2.5`
+  - Gợi ý: Kiểm tay mục này.
+- **[Thông tin]** Chưa kiểm được quy tắc RCK-01 (Số RU chuẩn theo từng loại thiết bị): cần bảng tra cho loai_thiet_bi nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Căn cứ: quy tắc `RCK-01`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc STO-02 (Ổ NL-SAS / SATA 7.2k nên dùng RAID 6): cần bảng tra cho cap_raid nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Postgres/ssd
+  - Vị trí: Mục 1, trang 11
+  - Căn cứ: quy tắc `STO-02`; checklist `CL-3.x.18`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc STO-03 (IOPS tối đa theo loại ổ): cần bảng tra cho loai_o nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Postgres/ssd
+  - Vị trí: Mục 1, trang 11
+  - Căn cứ: quy tắc `STO-03`; checklist `CL-3.x.15`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc STO-09 (Write penalty theo cấp RAID: 0/1 → 1 · RAID 5 → 5 · RAID 6 → 6): cần bảng tra cho cap_raid nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Postgres/ssd
+  - Vị trí: Mục 1, trang 11
+  - Căn cứ: quy tắc `STO-09`; checklist `CL-3.x.15`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **[Thông tin]** Chưa kiểm được quy tắc STO-13 (Dung lượng mỗi ổ nên nằm trong dải thông dụng của loại ổ): cần bảng tra cho loai_o nhưng `rules.yaml` chưa số hoá (bảng đang nằm trong `note` dạng văn xuôi).  _(nhóm: Chưa kiểm chứng được)_
+  - Phân hệ: Postgres/ssd
+  - Vị trí: Mục 1, trang 11
+  - Căn cứ: quy tắc `STO-13`; checklist `CL-3.x.18`
+  - Gợi ý: Bổ sung mục `lookup:` cho quy tắc này trong `rules.yaml`.
+- **Cần bổ sung:** Đang định cỡ cho tải hiện tại hay tải dự kiến tương lai?
+  - Thiếu: `dang_dinh_co` — 5 quy tắc chưa xác định được có áp dụng không: `EVD-04`, `MTH-01`, `MTH-02`, `MTH-03`, `MTH-04`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ dung lượng đang sử dụng (GB).
+  - Thiếu: `dung_luong_dung_gb` — 5 quy tắc chưa kiểm được: `KPI-04`, `KPI-06`, `KPI-07`, `KPI-08`, `KPI-11`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ dung lượng khả dụng sau RAID (GB).
+  - Thiếu: `dung_luong_kha_dung_gb` — 5 quy tắc chưa kiểm được: `KPI-04`, `KPI-06`, `KPI-07`, `KPI-08`, `KPI-11`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ hệ số replica (số bản sao dữ liệu) của cụm.
+  - Thiếu: `he_so_replica` — 3 quy tắc chưa kiểm được: `ARC-23`, `STO-21`, `STO-22`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Số broker Kafka trong cụm, ví dụ «cluster 3 broker», «Kafka 5 node». Không lấy số node của phân hệ khác trong cùng tài liệu.
+  - Thiếu: `so_broker` — 3 quy tắc chưa kiểm được: `ARC-23`, `ARC-24`, `ARC-25`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số bản sao lưu (số copy backup) định tạo.
+  - Thiếu: `so_ban` — 3 quy tắc chưa kiểm được: `BAK-03`, `BAK-04`, `BAK-06`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ thông lượng (MB/s) dùng làm sở cứ định cỡ.
+  - Thiếu: `throughput_mbs` — 3 quy tắc chưa kiểm được: `CPU-11`, `STO-21`, `STO-23`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Số máy chủ DỰ PHÒNG, không phải tổng số máy. Thường viết dạng «N+1», «N+2», «(N + 1)» ngay sau tên phân hệ, hoặc «dự phòng 1 máy», «1 node standby». Với «N+1» thì giá trị cần lấy là 1.
+  - Thiếu: `so_may_du_phong` — 2 quy tắc chưa kiểm được: `ARC-03`, `ARC-09`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số thiết bị mạng (switch/firewall/LB) dự kiến lắp đặt.
+  - Thiếu: `so_thiet_bi` — 2 quy tắc chưa kiểm được: `ARC-04`, `SAN-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ số máy chủ hoạt động (không tính dự phòng).
+  - Thiếu: `so_may_hoat_dong` — 2 quy tắc chưa kiểm được: `ARC-08`, `ARC-09`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số slave/worker cho mỗi master?
+  - Thiếu: `so_slave_moi_master` — 2 quy tắc chưa kiểm được: `ARC-21`, `ARC-22`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ RAM cho mỗi broker Kafka.
+  - Thiếu: `ram_broker_khai` — 2 quy tắc chưa kiểm được: `ARC-23`, `ARC-25`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng sao lưu toàn bộ (full backup, GB).
+  - Thiếu: `dung_luong_toan_bo_gb` — 2 quy tắc chưa kiểm được: `BAK-02`, `BAK-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng sao lưu gia tăng (GB).
+  - Thiếu: `dung_luong_gia_tang_gb` — 2 quy tắc chưa kiểm được: `BAK-02`, `BAK-04`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng lưu trữ của một băng từ (GB).
+  - Thiếu: `dung_luong_1_tape_gb` — 2 quy tắc chưa kiểm được: `BAK-03`, `BAK-04`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng sao lưu đã dùng khi tính (GB).
+  - Thiếu: `dung_luong_backup_khai_gb` — 2 quy tắc chưa kiểm được: `BAK-10`, `BAK-11`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số core của một CPU vật lý.
+  - Thiếu: `so_core_1_cpu` — 2 quy tắc chưa kiểm được: `CPU-03`, `CPU-09`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ IOPS 95th đo được làm sở cứ.
+  - Thiếu: `iops_95th` — 2 quy tắc chưa kiểm được: `KPI-05`, `KPI-11`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ IOPS tối đa yêu cầu.
+  - Thiếu: `iops_toi_da` — 2 quy tắc chưa kiểm được: `KPI-05`, `KPI-11`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ hệ số so sánh với hệ tham chiếu.
+  - Thiếu: `he_so_so_sanh` — 2 quy tắc chưa kiểm được: `KPI-13`, `STO-19`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tổng cổng dịch vụ cần kết nối.
+  - Thiếu: `tong_port_dich_vu` — 2 quy tắc chưa kiểm được: `LAN-01`, `SAN-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Có hệ tham chiếu (định cỡ tương tự đã duyệt) làm sở cứ không?
+  - Thiếu: `co_he_tham_chieu` — 2 quy tắc chưa xác định được có áp dụng không: `MTH-01`, `MTH-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thời gian giữ dữ liệu giờ cao điểm (để tính peak).
+  - Thiếu: `thoi_gian_giu_gio` — 2 quy tắc chưa kiểm được: `STO-21`, `STO-22`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ hệ số nén dữ liệu áp dụng.
+  - Thiếu: `he_so_nen` — 2 quy tắc chưa kiểm được: `STO-21`, `STO-22`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Có kết quả kiểm thử hiệu năng (bản kiểm thử, báo cáo đo) không?
+  - Thiếu: `co_kiem_thu_hieu_nang` — 2 quy tắc chưa xác định được có áp dụng không: `TST-02`, `TST-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ hệ số overcommit CPU của hạ tầng ảo hoá (ví dụ 4:1).
+  - Thiếu: `or_cpu_khai` — 1 quy tắc chưa kiểm được: `ALC-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ hệ số overcommit RAM của hạ tầng ảo hoá (ví dụ 1.5:1).
+  - Thiếu: `or_ram_khai` — 1 quy tắc chưa kiểm được: `ALC-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Hồ sơ này có phải hồ sơ thu hồi tài nguyên không?
+  - Thiếu: `la_ho_so_thu_hoi` — 1 quy tắc chưa xác định được có áp dụng không: `ALC-04`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ số cổng thiết kế của thiết bị mạng.
+  - Thiếu: `port_thiet_ke` — 1 quy tắc chưa kiểm được: `ARC-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ số cổng đang sử dụng.
+  - Thiếu: `port_dung` — 1 quy tắc chưa kiểm được: `ARC-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thông lượng thiết kế của thiết bị.
+  - Thiếu: `throughput_thiet_ke` — 1 quy tắc chưa kiểm được: `ARC-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thông lượng đang sử dụng.
+  - Thiếu: `throughput_dung` — 1 quy tắc chưa kiểm được: `ARC-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ số node của phân hệ (bao nhiêu máy hoạt động + bao nhiêu dự phòng)?
+  - Thiếu: `so_node` — 1 quy tắc chưa xác định được có áp dụng không: `ARC-02`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Tài nguyên cấp phát theo hình thức nào (máy ảo/ảo hoá, máy chủ vật lý, container)?
+  - Thiếu: `hinh_thuc_cap_phat` — 1 quy tắc chưa xác định được có áp dụng không: `ARC-06`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tổng tài nguyên cần cấp (CPU/RAM/disk) trước khi chia máy.
+  - Thiếu: `tong_tai_nguyen` — 1 quy tắc chưa kiểm được: `ARC-08`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ cấu hình đề xuất cho mỗi máy chủ (CPU/RAM/disk).
+  - Thiếu: `cau_hinh_moi_may_khai` — 1 quy tắc chưa kiểm được: `ARC-08`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ tổng số máy chủ (hoạt động + dự phòng).
+  - Thiếu: `tong_may_khai` — 1 quy tắc chưa kiểm được: `ARC-09`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Hệ thống chạy nội bộ hay hướng ra ngoài internet?
+  - Thiếu: `la_he_thong_noi_bo` — 1 quy tắc chưa xác định được có áp dụng không: `ARC-10`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Hệ thống có chạy trên cloud tập đoàn không?
+  - Thiếu: `tren_cloud_tap_doan` — 1 quy tắc chưa xác định được có áp dụng không: `ARC-11`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tổng dung lượng dữ liệu hiện có (GB).
+  - Thiếu: `tong_du_lieu_gb` — 1 quy tắc chưa kiểm được: `ARC-19`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Redis triển khai theo mô hình nào (standalone, sentinel, cluster)?
+  - Thiếu: `mo_hinh_redis` — 1 quy tắc chưa kiểm được: `ARC-19`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Số slave/worker tối thiểu yêu cầu là bao nhiêu?
+  - Thiếu: `so_slave_yeu_cau` — 1 quy tắc chưa kiểm được: `ARC-21`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số node master (ví dụ cụm k8s: bao nhiêu master)?
+  - Thiếu: `so_master` — 1 quy tắc chưa kiểm được: `ARC-22`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** tong_server_redis_khai
+  - Thiếu: `tong_server_redis_khai` — 1 quy tắc chưa kiểm được: `ARC-22`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng dữ liệu sinh ra trong 30 phút (GB).
+  - Thiếu: `du_lieu_30_phut_gb` — 1 quy tắc chưa kiểm được: `ARC-23`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ mức độ quan trọng của hệ thống.
+  - Thiếu: `muc_do_quan_trong` — 1 quy tắc chưa kiểm được: `ARC-26`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Có quy hoạch dự phòng liên cơ sở (DR) không?
+  - Thiếu: `co_dc_dr` — 1 quy tắc chưa kiểm được: `ARC-26`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Có khai báo dự phòng nội site (trong cùng trạm) không?
+  - Thiếu: `co_khai_du_phong_noi_site` — 1 quy tắc chưa kiểm được: `ARC-27`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng cần sao lưu (GB).
+  - Thiếu: `dung_luong_backup_gb` — 1 quy tắc chưa kiểm được: `BAK-01`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ băng thông đường sao lưu (GB/s).
+  - Thiếu: `bang_thong_backup_gbs` — 1 quy tắc chưa kiểm được: `BAK-01`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ thời gian yêu cầu hoàn thành restore (giây).
+  - Thiếu: `thoi_gian_yeu_cau_giay` — 1 quy tắc chưa kiểm được: `BAK-01`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** tong_dung_luong_sao_luu_khai
+  - Thiếu: `tong_dung_luong_sao_luu_khai` — 1 quy tắc chưa kiểm được: `BAK-02`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số băng từ (tape) cho sao lưu toàn bộ.
+  - Thiếu: `so_tape_toan_bo_khai` — 1 quy tắc chưa kiểm được: `BAK-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số băng từ cho sao lưu gia tăng.
+  - Thiếu: `so_tape_gia_tang_khai` — 1 quy tắc chưa kiểm được: `BAK-04`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ lượng dữ liệu sinh ra mỗi ngày (MB/s quy đổi).
+  - Thiếu: `dung_luong_giay_mbs` — 1 quy tắc chưa kiểm được: `BAK-05`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tốc độ đọc/ghi của một băng từ (MB/s).
+  - Thiếu: `toc_do_1_tape_mbs` — 1 quy tắc chưa kiểm được: `BAK-05`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tốc độ của một đường kết nối lưu trữ (MB/s).
+  - Thiếu: `toc_do_1_duong_mbs` — 1 quy tắc chưa kiểm được: `BAK-05`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số drive (ổ đĩa) của hệ lưu trữ.
+  - Thiếu: `so_driver_khai` — 1 quy tắc chưa kiểm được: `BAK-05`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số đường kết nối (link) tới thiết bị lưu trữ.
+  - Thiếu: `so_duong_ket_noi_khai` — 1 quy tắc chưa kiểm được: `BAK-05`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số đầu đọc băng (tape drive) dự kiến.
+  - Thiếu: `so_dau_doc` — 1 quy tắc chưa kiểm được: `BAK-08`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số băng từ làm sạch (cleaning tape).
+  - Thiếu: `so_cleaning_tape_khai` — 1 quy tắc chưa kiểm được: `BAK-08`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Liệt kê phân hệ có dữ liệu cần sao lưu.
+  - Thiếu: `phan_he_co_du_lieu_can_sao_luu` — 1 quy tắc chưa xác định được có áp dụng không: `BAK-09`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng phân vùng dữ liệu (GB).
+  - Thiếu: `dung_luong_data_gb` — 1 quy tắc chưa kiểm được: `BAK-10`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số bản backup cần giữ.
+  - Thiếu: `so_ban_backup` — 1 quy tắc chưa kiểm được: `BAK-10`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tỷ lệ nén dữ liệu áp dụng.
+  - Thiếu: `ty_le_nen` — 1 quy tắc chưa kiểm được: `BAK-10`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng NAS cần cấp (GB).
+  - Thiếu: `dung_luong_nas_khai_gb` — 1 quy tắc chưa kiểm được: `BAK-11`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Dùng chuẩn SPEC nào để quy đổi hiệu năng CPU (SPECcpu 2006/2017)?
+  - Thiếu: `chuan_spec` — 1 quy tắc chưa kiểm được: `CPU-01`
+  - Phạm vi: File storage, Kafka, Master (K8s Control plane), Mongo, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Có dùng kết quả benchmark 2017 làm sở cứ không?
+  - Thiếu: `co_ket_qua_2017` — 1 quy tắc chưa kiểm được: `CPU-01`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ điểm SPEC của một CPU vật lý (để quy đổi hiệu năng).
+  - Thiếu: `spec_1_cpu` — 1 quy tắc chưa kiểm được: `CPU-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ hệ số overcommit của hạ tầng (CPU/RAM).
+  - Thiếu: `ty_le_overcommit` — 1 quy tắc chưa kiểm được: `CPU-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ điểm SPEC mỗi vCPU dùng làm sở cứ.
+  - Thiếu: `spec_1_vcpu_khai` — 1 quy tắc chưa kiểm được: `CPU-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Có máy ảo nào thuộc nhóm hiệu năng cao không?
+  - Thiếu: `vm_hieu_nang_cao` — 1 quy tắc chưa kiểm được: `CPU-04`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ hệ số overcommit CPU đã dùng khi tính.
+  - Thiếu: `ty_le_overcommit_khai` — 1 quy tắc chưa kiểm được: `CPU-04`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ số core dành cho hệ điều hành (không tính cho VM).
+  - Thiếu: `core_danh_cho_hdh` — 1 quy tắc chưa kiểm được: `CPU-07`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ RAM (GB) dành cho hệ điều hành.
+  - Thiếu: `ram_danh_cho_hdh_gb` — 1 quy tắc chưa kiểm được: `CPU-07`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tổng điểm SPEC của các thành phần để quy đổi CPU.
+  - Thiếu: `tong_spec_thanh_phan` — 1 quy tắc chưa kiểm được: `CPU-09`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ điểm SPECrate của một CPU (để quy đổi Cint).
+  - Thiếu: `cint_rated_1_cpu` — 1 quy tắc chưa kiểm được: `CPU-09`
+  - Phạm vi: File storage, Kafka, MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số thread mỗi core CPU.
+  - Thiếu: `so_thread_1_core` — 1 quy tắc chưa kiểm được: `CPU-09`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số vCPU cấp cho máy ảo.
+  - Thiếu: `so_vcpu_khai` — 1 quy tắc chưa kiểm được: `CPU-09`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ vCPU cho mỗi broker Kafka.
+  - Thiếu: `vcpu_broker_khai` — 1 quy tắc chưa kiểm được: `CPU-11`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tải đỉnh (peak) đã dùng khi tính.
+  - Thiếu: `tong_tai_peak_khai` — 1 quy tắc chưa kiểm được: `EVD-05`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Liệt kê tải của từng nghiệp vụ (để tổng ra tải toàn hệ).
+  - Thiếu: `tong_tai_cac_nghiep_vu` — 1 quy tắc chưa kiểm được: `EVD-05`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Tài nguyên dành riêng cho hệ thống hay dùng chung với hệ khác?
+  - Thiếu: `dung_tai_nguyen_danh_rieng` — 1 quy tắc chưa xác định được có áp dụng không: `EVD-06`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming
+- **Cần bổ sung:** Có thành phần nào tiêu thụ RAM đặc biệt lớn không?
+  - Thiếu: `dung_nhieu_ram` — 1 quy tắc chưa xác định được có áp dụng không: `EVD-06`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming
+- **Cần bổ sung:** Có thành phần nào yêu cầu hiệu năng cao đặc biệt không?
+  - Thiếu: `he_hieu_nang_cao` — 1 quy tắc chưa xác định được có áp dụng không: `EVD-07`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ tổng tải toàn hệ thống.
+  - Thiếu: `tong_toan_he` — 1 quy tắc chưa kiểm được: `EVD-10`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Liệt kê tải từng phân hệ để tổng ra toàn hệ.
+  - Thiếu: `tong_cac_phan_he` — 1 quy tắc chưa kiểm được: `EVD-10`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Liệt kê tải của các thành phần dùng chung.
+  - Thiếu: `tong_thanh_phan_dung_chung` — 1 quy tắc chưa kiểm được: `EVD-10`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ tổng cổng của các zone.
+  - Thiếu: `tong_port_cac_zone` — 1 quy tắc chưa kiểm được: `FWL-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ số cổng dự phòng (HA) của thiết bị.
+  - Thiếu: `port_ha` — 1 quy tắc chưa kiểm được: `FWL-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ số cổng firewall cần cấp.
+  - Thiếu: `so_port_firewall_khai` — 1 quy tắc chưa kiểm được: `FWL-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ lưu lượng zone hướng lên (Mbps).
+  - Thiếu: `tong_luu_luong_zone_up` — 1 quy tắc chưa kiểm được: `FWL-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ lưu lượng zone hướng xuống (Mbps).
+  - Thiếu: `tong_luu_luong_zone_down` — 1 quy tắc chưa kiểm được: `FWL-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thông lượng firewall đã dùng khi tính.
+  - Thiếu: `thong_luong_firewall_khai` — 1 quy tắc chưa kiểm được: `FWL-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ kích cỡ gói dữ liệu (byte) dùng khi tính.
+  - Thiếu: `kich_co_goi_do_byte` — 1 quy tắc chưa kiểm được: `FWL-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Tải CPU dùng làm sở cứ định cỡ, thường viết «tải CPU 60%», «CPU 95th 72%», «% tiêu thụ CPU». Là phần trăm, không phải số core hay điểm Cint.
+  - Thiếu: `cpu_95th` — 1 quy tắc chưa kiểm được: `KPI-02`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ RAM đang sử dụng thực tế (GB).
+  - Thiếu: `ram_su_dung_gb` — 1 quy tắc chưa kiểm được: `KPI-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ RAM cấu hình đề xuất cho máy chủ.
+  - Thiếu: `ram_cau_hinh_gb` — 1 quy tắc chưa kiểm được: `KPI-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, MinIO, Mongo, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ hệ số sai số cho phép khi tính.
+  - Thiếu: `he_so_sai_so_khai` — 1 quy tắc chưa kiểm được: `KPI-09`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ số ngày đo tải làm sở cứ.
+  - Thiếu: `so_ngay_do` — 1 quy tắc chưa kiểm được: `KPI-10`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thông số của hệ mới (hệ đang định cỡ).
+  - Thiếu: `thong_so_he_moi` — 1 quy tắc chưa kiểm được: `KPI-12`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thông số của hệ tham chiếu để so sánh.
+  - Thiếu: `thong_so_he_tham_chieu` — 1 quy tắc chưa kiểm được: `KPI-12`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ hệ số so sánh đã dùng khi tính.
+  - Thiếu: `he_so_so_sanh_khai` — 1 quy tắc chưa kiểm được: `KPI-12`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ tổng mức sử dụng tài nguyên hiện tại.
+  - Thiếu: `tong_su_dung` — 1 quy tắc chưa kiểm được: `KPI-13`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ hệ số KPI (cấu hình đề xuất = tải đo được × hệ số).
+  - Thiếu: `he_so_kpi` — 1 quy tắc chưa kiểm được: `KPI-13`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tổng tài nguyên đã dùng khi tính cấu hình.
+  - Thiếu: `tong_tai_nguyen_khai` — 1 quy tắc chưa kiểm được: `KPI-13`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ hệ số KPI dùng cho CPU.
+  - Thiếu: `he_so_kpi_cpu_khai` — 1 quy tắc chưa kiểm được: `KPI-14`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ hệ số KPI dùng cho RAM.
+  - Thiếu: `he_so_kpi_ram_khai` — 1 quy tắc chưa kiểm được: `KPI-14`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ hệ số KPI dùng cho dung lượng đĩa.
+  - Thiếu: `he_so_kpi_dia_khai` — 1 quy tắc chưa kiểm được: `KPI-14`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ số cổng theo kiến trúc mạng.
+  - Thiếu: `port_kien_truc_mang` — 1 quy tắc chưa kiểm được: `LAN-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ số cổng LAN cần cấp.
+  - Thiếu: `so_port_lan_khai` — 1 quy tắc chưa kiểm được: `LAN-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ băng thông mỗi cổng (Mbps).
+  - Thiếu: `bandwidth_port_mbps` — 1 quy tắc chưa kiểm được: `LAN-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ số cổng (port) thiết bị mạng cần cấp.
+  - Thiếu: `so_port` — 1 quy tắc chưa kiểm được: `LAN-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thông lượng thiết bị đã dùng khi tính (Mbps).
+  - Thiếu: `thong_luong_thiet_bi_khai_mbps` — 1 quy tắc chưa kiểm được: `LAN-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** TỔNG thông lượng dịch vụ đi qua FW/LB, ví dụ «tổng thông lượng 2 Gbps», «băng thông yêu cầu 500 Mbps». Không lấy thông lượng của một cổng lẻ hay của một phân hệ đơn.
+  - Thiếu: `tong_luu_luong_dich_vu` — 1 quy tắc chưa kiểm được: `LBA-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thông lượng load balancer đã dùng khi tính.
+  - Thiếu: `thong_luong_lb_khai` — 1 quy tắc chưa kiểm được: `LBA-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ số kết nối mỗi giây (CPS) làm sở cứ định cỡ firewall/LB.
+  - Thiếu: `cps` — 1 quy tắc chưa kiểm được: `LBA-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ lưu lượng tương ứng mỗi CPS.
+  - Thiếu: `luu_luong_1_cps` — 1 quy tắc chưa kiểm được: `LBA-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ số giao dịch mỗi giây (TPS) làm sở cứ định cỡ.
+  - Thiếu: `tps` — 1 quy tắc chưa kiểm được: `LBA-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ lưu lượng tương ứng mỗi TPS.
+  - Thiếu: `luu_luong_1_tps` — 1 quy tắc chưa kiểm được: `LBA-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ thông lượng dịch vụ đã dùng khi tính.
+  - Thiếu: `luu_luong_dich_vu_khai` — 1 quy tắc chưa kiểm được: `LBA-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Số liệu định cỡ có lấy từ đo kiểm thử thực tế không?
+  - Thiếu: `co_dung_so_lieu_kiem_thu` — 1 quy tắc chưa xác định được có áp dụng không: `PRC-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Hồ sơ này là yêu cầu cấp phát mới hay chỉ xin thẩm định bản định cỡ?
+  - Thiếu: `la_ho_so_xin_cap_phat` — 1 quy tắc chưa xác định được có áp dụng không: `PRC-06`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Hệ số overcommit RAM mà bản sizing KHAI, ví dụ «overcommit 1.5», «tỷ lệ overcommit RAM = 1», «không overcommit» (khi đó là 1). Là một hệ số, không phải dung lượng.
+  - Thiếu: `ty_le_overcommit_ram_khai` — 1 quy tắc chưa kiểm được: `RAM-01`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ % tải RAM 95th làm sở cứ.
+  - Thiếu: `ram_95th_ty_le` — 1 quy tắc chưa kiểm được: `RAM-02`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng RAM cần cấp (GB).
+  - Thiếu: `dung_luong_ram_gb` — 1 quy tắc chưa kiểm được: `RAM-02`
+  - Phạm vi: File storage, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ RAM sử dụng thực tế (GB) và thời điểm đo.
+  - Thiếu: `ram_su_dung_khai_gb` — 1 quy tắc chưa kiểm được: `RAM-02`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ số key/license cấp phát.
+  - Thiếu: `so_key` — 1 quy tắc chưa kiểm được: `RAM-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ kích thước bản ghi (byte) dùng khi tính.
+  - Thiếu: `kich_thuoc_ban_ghi_byte` — 1 quy tắc chưa kiểm được: `RAM-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng dữ liệu đã dùng khi tính (GB).
+  - Thiếu: `dung_luong_du_lieu_khai_gb` — 1 quy tắc chưa kiểm được: `RAM-03`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ tổng chiều cao thiết bị (RU) cần cấp.
+  - Thiếu: `tong_ru` — 1 quy tắc chưa kiểm được: `RCK-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ số rack cần cấp.
+  - Thiếu: `so_rack_khai` — 1 quy tắc chưa kiểm được: `RCK-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ chiều cao (U) của rack.
+  - Thiếu: `chieu_cao_u` — 1 quy tắc chưa kiểm được: `RCK-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ chiều rộng (mm) của rack/thiết bị.
+  - Thiếu: `chieu_rong_mm` — 1 quy tắc chưa kiểm được: `RCK-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ chiều sâu (mm) của rack/thiết bị.
+  - Thiếu: `chieu_sau_mm` — 1 quy tắc chưa kiểm được: `RCK-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ số bộ PDU cần cấp.
+  - Thiếu: `so_bo_pdu` — 1 quy tắc chưa kiểm được: `RCK-03`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Khai rõ số cổng sẵn có đang dùng.
+  - Thiếu: `so_port_san_khai` — 1 quy tắc chưa kiểm được: `SAN-01`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ số cổng active trên mỗi thiết bị.
+  - Thiếu: `port_active_1_thiet_bi` — 1 quy tắc chưa kiểm được: `SAN-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ loại cổng switch dùng (1G/10G/25G…).
+  - Thiếu: `loai_switch_port` — 1 quy tắc chưa kiểm được: `SAN-02`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Tài liệu có nêu IOPS không?
+  - Thiếu: `co_neu_iops` — 1 quy tắc chưa kiểm được: `STO-01`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Tài liệu có nêu latency không?
+  - Thiếu: `co_neu_latency` — 1 quy tắc chưa kiểm được: `STO-01`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ tổng dung lượng cần thiết (GB).
+  - Thiếu: `tong_can_thiet_gb` — 1 quy tắc chưa kiểm được: `STO-04`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ hệ số RAID dùng khi tính dung lượng thô.
+  - Thiếu: `ty_le_raid` — 1 quy tắc chưa kiểm được: `STO-04`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** dung_luong_tho_khai
+  - Thiếu: `dung_luong_tho_khai` — 1 quy tắc chưa kiểm được: `STO-04`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ hệ số RAID đã dùng khi tính.
+  - Thiếu: `ty_le_raid_khai` — 1 quy tắc chưa kiểm được: `STO-05`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ tổng số ổ đĩa của hệ lưu trữ.
+  - Thiếu: `tong_so_o` — 1 quy tắc chưa kiểm được: `STO-05`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ số ổ đĩa lưu trữ dữ liệu.
+  - Thiếu: `so_o_luu_du_lieu` — 1 quy tắc chưa kiểm được: `STO-05`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ hệ số định dạng (format) đã dùng khi tính.
+  - Thiếu: `ty_le_format_khai` — 1 quy tắc chưa kiểm được: `STO-05`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ hệ số sai số đã dùng khi tính.
+  - Thiếu: `ty_le_sai_so_khai` — 1 quy tắc chưa kiểm được: `STO-05`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ hệ số dự phòng đã dùng khi tính.
+  - Thiếu: `ty_le_du_phong_khai` — 1 quy tắc chưa kiểm được: `STO-05`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ số bản lưu (số copy) của dữ liệu.
+  - Thiếu: `so_ban_luu` — 1 quy tắc chưa kiểm được: `STO-06`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ dung lượng của một bản sao lưu (GB).
+  - Thiếu: `dung_luong_1_ban_gb` — 1 quy tắc chưa kiểm được: `STO-06`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ dung lượng cần phục hồi (restore, GB).
+  - Thiếu: `dung_luong_restore_gb` — 1 quy tắc chưa kiểm được: `STO-06`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** dung_luong_phuc_hoi_khai
+  - Thiếu: `dung_luong_phuc_hoi_khai` — 1 quy tắc chưa kiểm được: `STO-06`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ số ngày đo IOPS làm sở cứ.
+  - Thiếu: `so_ngay_do_iops` — 1 quy tắc chưa kiểm được: `STO-07`
+  - Phạm vi: (toàn hệ thống)
+- **Cần bổ sung:** Nêu rõ IOPS tầng frontend của hệ lưu trữ.
+  - Thiếu: `frontend_iops` — 1 quy tắc chưa kiểm được: `STO-08`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ write penalty của cấp RAID dùng.
+  - Thiếu: `write_penalty` — 1 quy tắc chưa kiểm được: `STO-08`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** backend_iops_khai
+  - Thiếu: `backend_iops_khai` — 1 quy tắc chưa kiểm được: `STO-08`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ tỷ lệ đọc áp dụng khi tính IOPS.
+  - Thiếu: `ty_le_doc_khai` — 1 quy tắc chưa kiểm được: `STO-10`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ tỷ lệ ghi áp dụng khi tính IOPS.
+  - Thiếu: `ty_le_ghi_khai` — 1 quy tắc chưa kiểm được: `STO-10`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Có số liệu đo tải thực tế (monitoring, load test) không?
+  - Thiếu: `co_so_lieu_do_thuc_te` — 1 quy tắc chưa kiểm được: `STO-10`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ số ổ tính theo nhu cầu dung lượng.
+  - Thiếu: `so_o_theo_dung_luong` — 1 quy tắc chưa kiểm được: `STO-11`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ số ổ tính theo nhu cầu hiệu năng (IOPS).
+  - Thiếu: `so_o_theo_hieu_nang` — 1 quy tắc chưa kiểm được: `STO-11`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ số ổ hot-spare dự phòng.
+  - Thiếu: `so_o_hotspare` — 1 quy tắc chưa kiểm được: `STO-11`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** so_o_khai
+  - Thiếu: `so_o_khai` — 1 quy tắc chưa kiểm được: `STO-11`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ số ổ theo dung lượng đã dùng khi tính.
+  - Thiếu: `so_o_theo_dung_luong_khai` — 1 quy tắc chưa kiểm được: `STO-12`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ dung lượng thô của hệ lưu trữ (GB).
+  - Thiếu: `dung_luong_tho_gb` — 1 quy tắc chưa kiểm được: `STO-12`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ dung lượng của một ổ đĩa (GB).
+  - Thiếu: `dung_luong_1_o_gb` — 1 quy tắc chưa kiểm được: `STO-12`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ số ổ theo hiệu năng đã dùng khi tính.
+  - Thiếu: `so_o_theo_hieu_nang_khai` — 1 quy tắc chưa kiểm được: `STO-12`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ IOPS tầng backend của hệ lưu trữ.
+  - Thiếu: `backend_iops` — 1 quy tắc chưa kiểm được: `STO-12`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Nêu rõ IOPS của loại ổ đĩa dùng làm sở cứ.
+  - Thiếu: `iops_loai_o` — 1 quy tắc chưa kiểm được: `STO-12`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Ổ có chế độ đọc/ghi ngẫu nhiên cao không?
+  - Thiếu: `doc_ghi_ngau_nhien_cao` — 1 quy tắc chưa xác định được có áp dụng không: `STO-14`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Khai rõ số ổ cùng loại trong hệ lưu trữ.
+  - Thiếu: `so_o_cung_loai` — 1 quy tắc chưa kiểm được: `STO-16`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** so_o_hotspare_khai
+  - Thiếu: `so_o_hotspare_khai` — 1 quy tắc chưa kiểm được: `STO-16`
+  - Phạm vi: Postgres/ssd
+- **Cần bổ sung:** Số key/TPS dùng cho POC là bao nhiêu?
+  - Thiếu: `so_key_poc` — 1 quy tắc chưa kiểm được: `STO-19`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Số key dùng cho chạy thật là bao nhiêu?
+  - Thiếu: `so_key_khai` — 1 quy tắc chưa kiểm được: `STO-19`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ RAM cho mỗi node.
+  - Thiếu: `ram_moi_node_gb` — 1 quy tắc chưa kiểm được: `STO-20`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Khai rõ dung lượng đĩa cho mỗi node.
+  - Thiếu: `disk_moi_node_khai` — 1 quy tắc chưa kiểm được: `STO-20`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng dữ liệu Kafka đã dùng khi tính (MB).
+  - Thiếu: `dung_luong_kafka_khai_mb` — 1 quy tắc chưa kiểm được: `STO-21`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+- **Cần bổ sung:** Nêu rõ dung lượng dữ liệu 30 phút đã dùng khi tính Kafka.
+  - Thiếu: `du_lieu_30_phut_khai_gb` — 1 quy tắc chưa kiểm được: `STO-23`
+  - Phạm vi: File storage, FrontEnd, Kafka, Master (K8s Control plane), MinIO, Mongo, NGINX, Postgres, Protocol Adaptor (module xử lý luồng thiết bị), Redis, SAN Switch, Thiết bị mạng, Tủ rack, Video Streaming, Worker (module xử lý nghiệp vụ), vLB (Virtual Load Balancer)
+
+### Tạm hoãn vì mục checklist tương ứng chưa có thông tin
+
+Các kiểm tra Vòng 2 dưới đây **chưa chạy** vì mục checklist tương ứng chưa có thông tin ở Vòng 1 — chưa đánh giá được, thiếu thông tin:
+
+- (toàn hệ thống): `PRC-03`, `PRC-05`, `ALC-01`
+- Protocol Adaptor (module xử lý luồng thiết bị): `EVD-06`
+- Worker (module xử lý nghiệp vụ): `EVD-06`
+- vLB (Virtual Load Balancer): `EVD-06`
+
+## Cảnh báo khác
+
+- **[Thông tin]** Tài liệu có 28 ảnh chụp màn hình dòng lệnh (thường là kết quả `top`, `free`, `lscpu`, `kubectl` — nơi đặt SỐ ĐO TẢI dùng làm sở cứ định cỡ). Bản này chưa đọc được nội dung ảnh, nên phần nằm trong chúng CHƯA được kiểm.  _(nhóm: Chưa kiểm chứng được)_
+  - Số liệu: 28/58 ảnh, phân loại bằng đặc trưng ảnh (C2 mục 2.2), tại: Mục 1, trang 5; Mục 1, trang 5; Mục 1, trang 5; Mục 1, trang 5; Mục 1, trang 5 và 23 ảnh khác
+  - Gợi ý: Chép các số đo trong ảnh ra thành bảng để công cụ đối chiếu được.
+- **[Thông tin]** Tài liệu có 18 ảnh chụp biểu đồ giám sát (Grafana/APM — số chính xác chỉ có ở ô KPI và đồng hồ, phần đồ thị chỉ đọc được xu hướng). Bản này chưa đọc được nội dung ảnh, nên phần nằm trong chúng CHƯA được kiểm.  _(nhóm: Chưa kiểm chứng được)_
+  - Số liệu: 18/58 ảnh, phân loại bằng đặc trưng ảnh (C2 mục 2.2), tại: Mục 1, trang 7; Mục 1, trang 7; Mục 1, trang 10; Mục 1, trang 10; Mục 1, trang 10 và 13 ảnh khác
+  - Gợi ý: Ghi rõ giá trị đỉnh và giá trị trung bình kèm khoảng thời gian đo.
+- **[Thông tin]** Tài liệu có 5 ảnh chụp bảng hoặc văn bản (bảng số liệu, thư trao đổi, trang kết quả benchmark chụp lại). Bản này chưa đọc được nội dung ảnh, nên phần nằm trong chúng CHƯA được kiểm.  _(nhóm: Chưa kiểm chứng được)_
+  - Số liệu: 5/58 ảnh, phân loại bằng đặc trưng ảnh (C2 mục 2.2), tại: trang 2; trang 2; Mục 1, trang 4; Mục 1.1, trang 18; Mục 1.1, trang 18
+  - Gợi ý: Đưa nội dung ảnh vào tài liệu dưới dạng bảng hoặc đoạn văn.
+- **[Thông tin]** Tài liệu có 7 ảnh chưa phân loại được (tín hiệu không đủ để đoán chắc ảnh thuộc loại nào). Bản này chưa đọc được nội dung ảnh, nên phần nằm trong chúng CHƯA được kiểm.  _(nhóm: Chưa kiểm chứng được)_
+  - Số liệu: 7/58 ảnh, phân loại bằng đặc trưng ảnh (C2 mục 2.2), tại: Mục 1, trang 4; Mục 1, trang 4; Mục 1, trang 11; Mục 1, trang 11; Mục 1.1, trang 16 và 2 ảnh khác
+  - Gợi ý: Nếu ảnh chứa số liệu hoặc sở cứ, hãy nêu lại bằng chữ trong tài liệu.
+- **[Thông tin]** Cảnh báo khi đọc tài liệu: Chỉ có ngắt trang thủ công, không có dấu Word kết xuất — số trang là ƯỚC LƯỢNG, có thể lệch so với bản in.  _(nhóm: Chưa kiểm chứng được)_
+  - Số liệu: nguồn: C1 đọc C:\Users\PHONGN~1\AppData\Local\Temp\sizing-copilot-fizan59l\Thiet ke va dinh co he thong_VTracking 2.0.1.docx
+
+## Phụ lục — Trích dẫn nguyên văn quy tắc
+
+Căn cứ đầy đủ cho các mã quy tắc nêu trong báo cáo (trích từ tài liệu tiêu chí, mỗi quy tắc một lần):
+
+- **`ALC-04`** — “ĐẠT khi đủ ba: (1) có SO SÁNH HAI PHƯƠNG ÁN — giảm số máy chủ so với giảm cấu hình từng máy; (2) với máy chủ ứng dụng chạy ảo hóa, chọn GIẢM SỐ MÁY CHỦ, hoặc giải trình vì sao không; (3) với cụm cluster (điển hình là DB), nêu rõ SỐ MÁY TỐI THIỂU theo mô hình cụm và không cắt xuống dưới mức đó. KHÔNG ĐẠT khi: cắt cấu hình từng máy mà không xét phương án giảm số máy; hoặc cắt số node cụm DB xuống dưới mức tối thiểu của mô hình (ví dụ cụm 3 node quorum cắt còn 2). KHÔNG ÁP DỤNG với hồ sơ xin cấp phát mới hoặc mở rộng — tức PHẦN LỚN bản sizing.”
+- **`ALC-05`** — “Phải đạt CẢ HAI VẾ của trích dẫn. VẾ ĐƯỜNG ĐI LƯU LƯỢNG: mô hình vật lý cho thấy vị trí đặt LB và thiết bị lưu trữ so với các phân hệ dùng chúng, đủ để thấy lưu lượng không phải đi vòng qua nhiều lớp mạng; hoặc tài liệu nêu rõ yêu cầu đặt cùng zone / cùng lớp mạng. VẾ AN TOÀN KHI LỖI PHẦN CỨNG: các node ảo hóa dự phòng của cùng một cụm (điển hình là cặp DB) được nêu rõ là PHÂN BỔ TRÊN CÁC MÁY CHỦ VẬT LÝ KHÁC NHAU, hoặc nêu yêu cầu anti-affinity tương đương khi cấp phát. KHÔNG ĐẠT khi: có cặp DB dự phòng nhưng không nói gì về việc đặt trên host vật lý khác nhau (vi phạm cùng lúc ARC-07, vốn là quy tắc định lượng); mô hình vật lý không thể hiện vị trí LB/lưu trữ so với các phân hệ dùng chúng; hoặc đề xuất cấp phát nêu số lượng tài nguyên mà không có yêu cầu quy hoạch vị trí nào.”
+- **`ARC-02`** — “Tài liệu phải cho thấy đã tính đến kịch bản MẤT 1 NODE, gồm cả ba: (1) nêu rõ mô hình dự phòng của phân hệ (active-active hay active-standby); (2) có phép tính hoặc lập luận cho thấy tải dồn về các node còn lại VẪN DƯỚI ngưỡng KPI (CPU 75%, RAM 90%, ổ cứng 80% — theo KPI-02/03/04); (3) với active-active N node, tải mỗi node khi mất 1 node là tổng_tải/(N-1), và giá trị đó phải được đối chiếu với ngưỡng. KHÔNG ĐẠT khi: chỉ khai "có dự phòng" mà không có phép tính kịch bản mất node; tính tải chia đều cho N node nhưng không xét trường hợp còn N-1; hoặc cấu hình vừa khít ở trạng thái bình thường, mất 1 node là vượt ngưỡng.”
+- **`ARC-06`** — “ĐẠT khi một trong hai: (1) cấu hình mỗi VM nằm trong giới hạn ảo hóa (tối đa 32 vCPU và 128 GB RAM, theo ARC-05); hoặc (2) vượt giới hạn nhưng tài liệu ĐÃ chuyển sang định cỡ máy chủ vật lý VÀ nêu rõ lý do. KHÔNG ĐẠT khi: khai VM trên 32 vCPU hoặc trên 128 GB RAM mà vẫn để hình thức cấp phát là ảo hóa; hoặc nhu cầu tính ra vượt giới hạn nhưng tài liệu "ép" xuống cho vừa ngưỡng mà không giải trình.”
+- **`ARC-10`** — “ĐẠT khi một trong hai: (1) tài liệu nêu rõ hệ thống triển khai trên hạ tầng Cloud Tập đoàn; hoặc (2) KHÔNG triển khai trên Cloud nhưng nêu rõ thuộc ngoại lệ nào — triển khai phân tán ở vị trí không có hạ tầng Cloud, cô lập về hạ tầng, hoặc thiết bị đặc chủng — kèm lý do cụ thể. KHÔNG ĐẠT khi: không nói gì về hình thức hạ tầng triển khai; hoặc đề xuất hạ tầng riêng mà chỉ nói chung chung "do yêu cầu đặc thù", không chỉ ra thuộc ngoại lệ nào trong ba ngoại lệ Guideline liệt kê.”
+- **`ARC-11`** — “ĐẠT khi: phân hệ Big data (Hadoop, Spark, HDFS, Kafka quy mô lớn, xử lý dữ liệu phân tán) khai Bare-Metal; phân hệ còn lại khai máy chủ ảo hóa; và mọi trường hợp lệch khỏi hai quy tắc trên đều có giải trình. KHÔNG ĐẠT khi: hệ Big data khai chạy trên VM mà không giải trình; hệ thường xin cấp Bare-Metal mà không nêu lý do (thường là dấu hiệu xin dư tài nguyên); hoặc không khai hình thức cấp phát.”
+- **`ARC-13`** — “Phải có đủ ba: (1) nêu MỨC ĐỘ QUAN TRỌNG của hệ thống, đúng một trong bốn giá trị "đặc biệt quan trọng / rất quan trọng / quan trọng / bình thường"; (2) nêu MỨC ĐỘ DỰ PHÒNG tương ứng cho từng hệ thống, thiết bị; (3) NỐI được hai thứ đó với nhau — tài liệu chỉ ra mức dự phòng được chọn VÌ hệ thuộc phân loại nào, hoặc dẫn chiếu quy định dự phòng hiện hành của Tập đoàn. KHÔNG ĐẠT khi: có mức độ quan trọng nhưng không nói gì về mức dự phòng, hoặc ngược lại; có cả hai nhưng KHÔNG có liên hệ nào (mức dự phòng khai như một lựa chọn kỹ thuật độc lập); hoặc mức độ quan trọng ghi bằng chữ tự đặt ("khá quan trọng", "mức trung bình") không thuộc bốn giá trị chuẩn. GIỚI HẠN KIỂM — câu finding BẮT BUỘC nêu rõ: "các quy định về dự phòng hiện hành" trỏ tới 849/QĐ-CNVTQĐ mà Copilot CHƯA CÓ văn bản, nên chỉ kiểm được tài liệu có nêu và có nối hay không, KHÔNG đối chiếu được với nội dung 849/QĐ.”
+- **`ARC-14`** — “Phần định cỡ của phân hệ phải cho thấy HAI BƯỚC TÁCH BẠCH: (1) con số tài nguyên đủ đáp ứng tải giao dịch (kết quả của KPI-13 và các công thức CPU/RAM); (2) con số đó ĐƯỢC NÂNG LÊN hoặc nhân số node để đáp ứng tính sẵn sàng và dự phòng — ví dụ từ "cần 24 vCPU" thành "3 node × 16 vCPU active-active" — và nêu rõ căn cứ (mức dự phòng theo ARC-12/ARC-13, chỉ tiêu kỹ thuật đã ban hành). KHÔNG ĐẠT khi: bảng cấu hình đề xuất ĐÚNG BẰNG nhu cầu tính ra theo tải, không có phần cho dự phòng; có nhiều node nhưng không nói vì sao chọn số node đó (không phân biệt được là chia tải hay dự phòng); hoặc không nhắc gì tới chỉ tiêu kỹ thuật của hệ thống trong phần định cỡ phân hệ.”
+- **`ARC-15`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass vòng này để đánh giá sâu hơn về mặt cấp phát thông qua các rules trong Guiline định cỡ". Cụ thể ở mục này: tài liệu có nêu request của phân hệ đến TỪ ĐÂU — từ phân hệ nội bộ khác, hay từ bên ngoài / internet. KHÔNG ĐẠT khi: không có thông tin nào về nguồn request; hoặc chỉ có tiêu đề mục mà bỏ trống nội dung. KHÔNG được đánh trượt vì thấy số liệu vô lý — việc đó thuộc Vòng 2.”
+- **`ARC-16`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 (nguyên văn ở ARC-15). Cụ thể ở mục này: tài liệu có nêu GIAO THỨC của request (HTTP, HTTPS, gRPC, JDBC…) VÀ PORT sử dụng. KHÔNG ĐẠT khi: không có thông tin nào về giao thức hoặc port; hoặc chỉ có tiêu đề mục mà bỏ trống nội dung. KHÔNG được đánh trượt vì thấy lựa chọn giao thức chưa tối ưu — việc đó thuộc Vòng 2.”
+- **`BAK-09`** — “ĐẠT khi cả hai: (1) tài liệu CÓ PHẦN GIẢI PHÁP SAO LƯU PHỤC HỒI — nêu được đối tượng sao lưu, chu kỳ, nơi lưu bản sao (thiết bị/hệ thống khác), và cách phục hồi; (2) cấu hình máy chủ đề xuất CÓ TÍNH THÊM phần tài nguyên cho tác vụ sao lưu — nêu rõ phần cộng thêm là bao nhiêu (CPU/RAM/IOPS/băng thông trong cửa sổ backup), HOẶC nêu giải pháp sao lưu không tiêu tốn tài nguyên máy chủ (ví dụ snapshot ở tầng lưu trữ) và giải thích vì sao. KHÔNG ĐẠT khi: không có phần sao lưu nào trong tài liệu; có nêu sao lưu nhưng cấu hình máy chủ KHÔNG cộng thêm gì và cũng không giải thích vì sao không cần; hoặc chỉ nói "sử dụng hệ thống backup tập trung của Tập đoàn" mà không cho biết tác vụ sao lưu chiếm bao nhiêu tài nguyên của máy chủ nguồn. KHÔNG ÁP DỤNG khi phân hệ không lưu trạng thái và tài liệu nêu rõ không cần sao lưu (ví dụ node stateless thuần tính toán).”
+- **`EVD-01`** — “Với MỖI con số dung lượng trong tài liệu, phải xác định được nó là loại nào — ĐẠT khi một trong hai: (1) ghi rõ nhãn "khả dụng" / "sau RAID" hoặc "thô" / "trước RAID"; (2) nêu đồng thời cả hai giá trị kèm tỷ lệ RAID dùng để quy đổi. KHÔNG ĐẠT khi: bảng chỉ ghi "Dung lượng: 6 TB" không rõ loại (ca phổ biến nhất); trộn hai loại trong cùng một bảng mà không phân biệt; hoặc lấy dung lượng THÔ đem so với ngưỡng 80% — ngưỡng đó áp cho dung lượng KHẢ DỤNG.”
+- **`EVD-02`** — “Phải trả lời được CẢ BA: (1) khi tải tăng, MODULE NÀO phải mở rộng; (2) mỗi module mở rộng theo CHIỀU DỌC hay CHIỀU NGANG; (3) với module scale out, thêm node có kèm Load Balancing không, và hiệu năng SUY GIẢM BAO NHIÊU % khi thêm node (do overhead đồng bộ). Cách trình bày đạt yêu cầu là nêu một kịch bản cụ thể CÓ SỐ, như ví dụ 100 TPS → 200 TPS trong chính tài liệu. KHÔNG ĐẠT khi: chỉ nói chung "hệ thống có khả năng mở rộng ngang" mà không chỉ ra module nào; nêu module nhưng không nói dọc hay ngang; hoặc không đề cập mức suy giảm hiệu năng khi scale out.”
+- **`EVD-04`** — “Phải có đủ CẢ BỐN: (1) CPU — nêu SỐ LƯỢNG và DÒNG/MODEL cụ thể (ví dụ "2 × Intel Xeon Gold 6248R"); chỉ ghi số lượng mà không có model là chưa đạt. (2) RAM — nêu dung lượng theo GB. (3) Ổ cứng — nêu dung lượng KHẢ DỤNG SAU RAID, hoặc nêu rõ là không dùng RAID. (4) IOPS và latency của TỪNG PHÂN VÙNG phục vụ mục đích/nghiệp vụ khác nhau — không phải một con số gộp cho cả máy. KHÔNG ĐẠT khi: bảng cấu hình chỉ có số lượng CPU, không có model; ổ cứng chỉ ghi dung lượng thô hoặc không nói rõ đã trừ RAID chưa; có nhiều phân vùng nhưng chỉ nêu một giá trị IOPS/latency chung; hoặc thiếu hẳn IOPS hay latency. SẮC THÁI PHẢI GIỮ: tài liệu dùng "cần chỉ rõ" (bắt buộc) cho CPU, ổ cứng, IOPS/latency — nhưng dùng "NÊN chỉ rõ" (khuyến nghị) riêng cho phần vCPU tương ứng model pCPU. Thiếu phần vCPU↔pCPU thì hạ xuống mức `minor`, KHÔNG tính là không đạt.”
+- **`EVD-06`** — “Hai nhánh, xét riêng. NHÁNH (a) phân hệ dùng tài nguyên dành riêng (DPDK, CPU pinning, dedicate RAM như Storm): ĐẠT khi nêu rõ LOẠI tài nguyên dành riêng và SỐ LƯỢNG (bao nhiêu core pinning, bao nhiêu GB RAM dành riêng), TÁCH khỏi phần tài nguyên dùng chung. NHÁNH (b) phân hệ dùng nhiều RAM (IMDB, Redis, Memcached, cache in-memory): ĐẠT khi nêu rõ CÓ BẬT SWAP KHÔNG; nếu có thì NGƯỠNG %RAM bắt đầu dùng swap; và có dùng HUGE-PAGE không. KHÔNG ĐẠT khi: phân hệ Redis/IMDB chỉ khai tổng RAM, không nói gì về swap và huge-page; hoặc khai dùng DPDK nhưng không tách số core dành riêng khỏi tổng vCPU. KHÔNG ÁP DỤNG khi phân hệ không thuộc cả hai nhánh — ứng dụng web/API thông thường, DB quan hệ tiêu chuẩn.”
+- **`EVD-07`** — “ĐẠT khi đủ ba: (1) có phần tính HIỆU NĂNG (IOPS, latency) cho thiết bị lưu trữ, không chỉ dung lượng; (2) tính RIÊNG CHO TỪNG PHÂN VÙNG theo loại dữ liệu — tối thiểu tách được phân vùng DB, phân vùng backup, phân vùng archive nếu hệ thống có; (3) mỗi phân vùng có IOPS và latency riêng, không gộp một con số cho cả thiết bị. KHÔNG ĐẠT khi: chỉ tính dung lượng, bỏ hẳn phần hiệu năng; có nhiều phân vùng nhưng chỉ một giá trị IOPS chung; hoặc gộp phân vùng DB và backup làm một khi hai loại có đặc tính I/O khác hẳn nhau. PHẠM VI: hệ thuộc một trong các loại tài liệu liệt kê — VDI, lưu trữ dùng chung cho nhiều hệ hiệu năng cao, CSDL OLTP, ảo hóa số lượng lớn, media, dữ liệu lớn.”
+- **`EVD-08`** — “Phải có CẢ HAI con số, kèm đơn vị: (1) TÍNH SẴN SÀNG — thời gian cho phép downtime MỖI THÁNG, tính bằng phút/tháng; (2) THỜI GIAN DOWNTIME CHO PHÉP CHO MỖI SỰ CỐ, tính bằng phút. Khai theo tỷ lệ phần trăm (99,9%) được chấp nhận NẾU quy đổi ra phút/tháng ngay tại chỗ, hoặc con số phút/tháng xuất hiện ở nơi khác trong tài liệu; nếu chỉ có "99,9%" đơn độc thì hạ xuống mức `minor` và đề nghị bổ sung, không tính là không đạt. KHÔNG ĐẠT khi: bảng thông số đầu vào không có dòng nào về tính sẵn sàng/downtime; chỉ có một trong hai con số (thường chỉ có tính sẵn sàng tháng, thiếu downtime mỗi sự cố); nêu bằng lời không có số ("đảm bảo hoạt động liên tục 24/7"); hoặc có số nhưng sai đơn vị so với tài liệu.”
+- **`EVD-09`** — “ĐẠT khi cả hai: (1) MỌI yếu tố mà chính bản sizing dùng làm đầu vào cho một phép tính đều được khai trong bảng thông số đầu vào, có giá trị và đơn vị — nói cách khác, không có con số nào xuất hiện lần đầu ngay trong công thức mà không có nguồn ở phần đầu vào; (2) bảng thông số đầu vào nêu được ít nhất các yếu tố ứng với MỤC ĐÍCH SỬ DỤNG MÁY CHỦ đã khai (CSDL / ứng dụng / media / SAN). KHÔNG ĐẠT khi: bảng thông số đầu vào không có yếu tố nào trong danh sách Guideline liệt kê; công thức định cỡ dùng một con số mà con số đó không có ở phần thông số đầu vào (không truy được nguồn); hoặc chỉ khai một yếu tố tổng ("5 triệu thuê bao") rồi tính thẳng, không phân biệt đăng ký / active / đồng thời — ba con số khác nhau nhiều bậc, gộp lại là mất căn cứ.”
+- **`EVD-11`** — “Phải có đủ CẢ BA: (1) TỔNG SỐ THUÊ BAO/NGƯỜI DÙNG sử dụng dịch vụ, có đơn vị; (2) TỔNG SỐ GIAO DỊCH ĐỒNG THỜI TẠI THỜI ĐIỂM PEAK, theo TPS (hoặc TPM), hoặc CCU/RPS như tài liệu cho phép; (3) PHÂN TÁCH THEO LOẠI NGHIỆP VỤ — liệt kê các loại tải chính, mỗi loại có TỈ LỆ % trên tổng số giao dịch, và TỔNG CÁC TỈ LỆ BẰNG 100%, kèm một câu về căn cứ của tỉ lệ giả định (số liệu hệ đang chạy, thống kê, hoặc hệ tham chiếu). KHÔNG ĐẠT khi: chỉ có một con số TPS tổng, không tách loại nghiệp vụ nào, trong khi phần mô tả hệ thống cho thấy có nhiều nhóm chức năng khác nhau; có tách loại nghiệp vụ nhưng không có tỉ lệ %, hoặc tổng các tỉ lệ khác 100%; tỉ lệ đưa ra không kèm bất kỳ căn cứ nào; hoặc thiếu tổng số thuê bao/người dùng. KHÔNG ÁP DỤNG phần tách nghiệp vụ cho hệ CHỈ CÓ MỘT LOẠI GIAO DỊCH duy nhất — nhưng tài liệu phải nói rõ điều đó, và hai dòng tổng vẫn bắt buộc.”
+- **`EVD-15`** — “TIÊU CHÍ RIÊNG (nguyên văn, mục 2.6–2.9): "Gồm đầy đủ các thành phần đang chạy và thêm mới (nếu có)". ĐẠT khi có phần luồng nghiệp vụ tổng quan, thể hiện cả luồng NỘI BỘ giữa các phân hệ lẫn luồng GIAO TIẾP RA NGOÀI hệ thống. KHÔNG ĐẠT khi: không có phần luồng nghiệp vụ; hoặc chỉ mô tả luồng nội bộ mà không nói gì tới giao tiếp với hệ thống bên ngoài.”
+- **`EVD-17`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có phần mô tả chi tiết — phân hệ làm gì, vai trò trong hệ thống. KHÔNG ĐẠT khi không có mục này cho phân hệ đang xét, hoặc chỉ có tiêu đề trống. KHÔNG được đánh trượt vì mô tả ngắn — Vòng 1 chỉ hỏi CÓ hay KHÔNG.”
+- **`EVD-18`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu công nghệ mà phân hệ sử dụng (ví dụ Spring Boot, MariaDB, Redis, Kafka, Kubernetes). KHÔNG ĐẠT khi không có thông tin công nghệ nào cho phân hệ đang xét.”
+- **`EVD-19`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình logic riêng, không chỉ dựa vào mô hình tổng quan của cả hệ thống. KHÔNG ĐẠT khi không có mô hình logic cho phân hệ đang xét.”
+- **`EVD-20`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: phân hệ có mô hình vật lý riêng — số node, cách bố trí, kết nối. KHÔNG ĐẠT khi không có mô hình vật lý cho phân hệ đang xét.”
+- **`EVD-21`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: nêu lưu lượng dữ liệu trao đổi cho mỗi request (kích thước bản tin), có đơn vị. KHÔNG ĐẠT khi không có thông tin nào về lưu lượng dữ liệu mỗi request.”
+- **`EVD-22`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: mỗi phân hệ có bảng tổng hợp đề xuất cấu hình — số node và tài nguyên mỗi node. KHÔNG ĐẠT khi không có bảng đề xuất cấu hình cho phân hệ đang xét. Vòng 1 KHÔNG kiểm con số trong bảng có đúng không — việc đó là KPI-13, ARC-08.”
+- **`MTH-01`** — “Tài liệu phải nêu đặc điểm tương đồng giữa hệ định cỡ và hệ tham chiếu trên CẢ NĂM phương diện mà Guideline liệt kê: (1) kiến trúc, (2) công nghệ, (3) các chức năng, (4) luồng nghiệp vụ chính, (5) đối tượng sử dụng. Nêu TÊN hệ tham chiếu thôi là CHƯA ĐẠT — Guideline yêu cầu "nêu các đặc điểm tương đồng", tức phải có so sánh. KHÔNG ĐẠT khi: chỉ nêu tên hệ tham chiếu mà không so sánh phương diện nào; so sánh qua loa một hai phương diện (thường chỉ "cùng dùng Java/Oracle") rồi kết luận tương đồng; hoặc hệ tham chiếu khác hẳn về đối tượng sử dụng hay luồng nghiệp vụ chính nhưng vẫn được dùng làm cơ sở (ví dụ lấy hệ nội bộ vài trăm người dùng làm tham chiếu cho hệ phục vụ hàng triệu khách hàng).”
+- **`MTH-02`** — “Tài liệu phải thừa nhận không có hệ tham chiếu tương đồng, VÀ nêu rõ kế hoạch hoàn thiện sản phẩm cộng kiểm thử hiệu năng trước khi xin cấp phát chính thức. KHÔNG ĐẠT khi: không có hệ tham chiếu nhưng vẫn đưa ra con số tài nguyên cụ thể như thể đã đo được; hoặc lấy một hệ KHÔNG tương đồng làm tham chiếu để né yêu cầu kiểm thử (trường hợp này MTH-01 bắt phần "không tương đồng", quy tắc này bắt phần "chưa kiểm thử").”
+- **`MTH-03`** — “Phải có đủ BA điều: (1) nêu rõ đã đo trên MÔI TRƯỜNG KIỂM THỬ, không phải ước lượng; (2) đo theo NHIỀU MẪU ĐẦU VÀO khác nhau (liên hệ TST-01 / R41: tối thiểu 5 mẫu, mỗi mẫu 5 lần); (3) tính ra BÌNH QUÂN tài nguyên trên mỗi người dùng hoặc mỗi giao dịch, rồi mới nhân lên theo quy mô mục tiêu. KHÔNG ĐẠT — trường hợp quan trọng nhất: đã có phần mềm nhưng vẫn định cỡ theo hệ tham chiếu tương đồng (cách của Dạng I); Guideline cấm rõ điều này. Cũng KHÔNG ĐẠT khi: có đo nhưng chỉ một mẫu đầu vào duy nhất; hoặc nhảy thẳng từ số liệu đo sang tổng tài nguyên mà không qua bước bình quân trên mỗi giao dịch.”
+- **`MTH-04`** — “Phải có CẢ HAI VẾ. Vế hiện trạng: tải thực tế đang chạy (giá trị 95th, khoảng đo tối thiểu 01 tháng theo KPI-10 / R36), số người dùng hiện tại, chất lượng dịch vụ hiện tại. Vế yêu cầu mở rộng: con số mục tiêu cụ thể — số người dùng, CCU/TPS/RPS, latency yêu cầu. Thiếu một trong hai vế thì không tính được hệ số so sánh Ksosánh (KPI-12 / R40), tức không có cơ sở tính toán. KHÔNG ĐẠT khi: chỉ nêu cấu hình đang chạy mà không nêu tải thực tế đo được; chỉ nêu mục tiêu mở rộng mà không nêu hiện trạng; hoặc nêu cả hai nhưng lấy tải đỉnh tuyệt đối / trung bình thay vì 95th.”
+- **`PRC-01`** — “ĐẠT khi một trong hai: (1) tài liệu DẪN CHIẾU CỤ THỂ văn bản xác nhận thông số đầu vào — nêu được SỐ HIỆU / NGÀY / NGƯỜI KÝ hoặc CHỨC DANH người ký; (2) tài liệu ĐÍNH KÈM văn bản đó và có nhắc tới trong phần sở cứ. Nếu yêu cầu đến từ đơn vị kinh doanh: phải có THÊM xác nhận của đơn vị/bộ phận liên quan, không chỉ lãnh đạo đơn vị chủ trì sản phẩm. KHÔNG ĐẠT khi: không nhắc gì tới việc thông số đầu vào đã được xác nhận; chỉ nói chung chung "đã được lãnh đạo phê duyệt" mà không có số hiệu, ngày hoặc chức danh người ký (không đủ để người thẩm định truy được văn bản); hoặc nguồn thông số đầu vào ghi là "theo ước tính của nhóm dự án" mà không có xác nhận. GIỚI HẠN KIỂM — câu finding BẮT BUỘC nêu: Copilot chỉ kiểm được tài liệu CÓ NÊU hoặc DẪN CHIẾU văn bản xác nhận hay không; KHÔNG xác minh được văn bản có thật, chữ ký có hợp lệ, người ký có đúng thẩm quyền.”
+- **`PRC-02`** — “ĐẠT khi: dẫn chiếu được biên bản kiểm thử với SỐ HIỆU / NGÀY / NGƯỜI KÝ hoặc CHỨC DANH, hoặc đính kèm biên bản và nhắc tới trong phần sở cứ. KHÔNG ĐẠT khi: trình bày kết quả kiểm thử nhưng không nhắc tới biên bản nào; hoặc chỉ nói "đã kiểm thử và được lãnh đạo thông qua" mà không có số hiệu, ngày, người ký. PHẠM VI: bản sizing có dùng SỐ LIỆU KIỂM THỬ HIỆU NĂNG làm cơ sở — tức Dạng II, và Dạng I khi đã kiểm thử. KHÔNG áp dụng khi bản sizing hoàn toàn dựa trên hệ tham chiếu đang vận hành (Dạng III thuần), không dùng số liệu kiểm thử nào. GIỚI HẠN KIỂM — câu finding BẮT BUỘC nêu: chỉ kiểm được tài liệu CÓ DẪN CHIẾU biên bản hay không; không xác minh được biên bản có thật, ai ký, ký có đúng thẩm quyền.”
+- **`PRC-06`** — “ĐẠT khi một trong hai: (1) tài liệu nêu HÌNH THỨC CẤP PHÁT đã thống nhất (vật lý tách biệt / Bare-Metal / VM / container) VÀ dẫn chiếu được việc thống nhất với TCT VTNet — nêu buổi làm việc, văn bản, hoặc ý kiến thẩm định đã có; (2) tài liệu ghi rõ ĐANG TRONG QUÁ TRÌNH thống nhất với TCT VTNet và nêu phương án đang đề xuất. KHÔNG ĐẠT khi: chọn hình thức cấp phát (đặc biệt là Bare-Metal hoặc vật lý tách biệt) mà không nhắc gì tới việc trao đổi/thống nhất với TCT VTNet; hoặc không nêu hình thức cấp phát nào. GIỚI HẠN KIỂM — câu finding BẮT BUỘC nêu: chỉ kiểm được tài liệu CÓ NÊU / DẪN CHIẾU việc đã thống nhất; không xác minh được cuộc thống nhất có thật hay biên bản có hợp lệ.”
+- **`PRC-07`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: tài liệu nêu nguồn tài nguyên dùng để cấp phát. KHÔNG ĐẠT khi không có thông tin nào về nguồn tài nguyên cấp phát. CHỈ ÁP DỤNG khi hồ sơ là YÊU CẦU CẤP PHÁT; hồ sơ chỉ xin thẩm định bản định cỡ thì bỏ qua mục này.”
+- **`PRC-10`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1: có thông tin thực chất là ĐẠT. Cụ thể: tài liệu nêu thời gian cam kết triển khai hệ thống và thời gian bắt đầu đổ tải. KHÔNG ĐẠT khi không có mốc thời gian nào cho việc triển khai và đổ tải.”
+- **`STO-14`** — “ĐẠT khi cả hai: (1) loại ổ chọn là 10krpm, 15krpm hoặc SSD; (2) dung lượng mỗi ổ dưới 1 TB. Lệch một trong hai thì cần giải trình (ví dụ đã dùng SSD dung lượng lớn nhưng có lý do về mật độ rack). KHÔNG ĐẠT khi: hệ OLTP nhưng chọn ổ NL-SAS/SATA 7.2k; chọn ổ tốc độ cao nhưng dung lượng 4–8 TB (thời gian rebuild rất lâu, đúng điều tài liệu muốn tránh); hoặc không nêu loại ổ nào cả. PHẠM VI: chỉ áp cho phân hệ thuộc nhóm đọc/ghi ngẫu nhiên cao — VAS, CSDL OLTP, File server nhiều file nhỏ. KHÔNG áp cho lưu trữ tuần tự, dữ liệu lớn ít truy cập, archive, media, backup.”
+- **`STO-17`** — “TIÊU CHÍ MẶC ĐỊNH VÒNG 1 — nguyên văn cột Ghi chú của checklist: "Yêu cầu chỉ cần có thông tin là được đánh giá OK. OK chỉ mang tính pass vòng checklist còn đúng sai chi tiết sẽ đánh giá sau khi pass vòng này để đánh giá sâu hơn về mặt cấp phát thông qua các rules trong Guiline định cỡ". Cụ thể ở mục này: tài liệu có nêu loại lưu trữ mà phân hệ dùng — Block, Object, File local hoặc File NAS. KHÔNG ĐẠT khi: không có thông tin nào về loại lưu trữ; hoặc chỉ có tiêu đề mục mà bỏ trống nội dung. KHÔNG được đánh trượt vì cho rằng loại lưu trữ chọn chưa tối ưu — việc đó thuộc Vòng 2.”
+- **`TST-02`** — “ĐẠT khi đủ ba: (1) nêu TÊN CÔNG CỤ đã dùng; (2) công cụ PHÙ HỢP VỚI ĐỐI TƯỢNG ĐO — CSDL nguồn mở dùng sysbench hoặc tương đương, ứng dụng dùng công cụ benchmark end-to-end như JMeter, ab; (3) nêu CHỈ SỐ ĐO ĐƯỢC đúng loại — CCU, RPS, TPS, latency. KHÔNG ĐẠT khi: không nêu công cụ; dùng công cụ đo tầng ứng dụng để kết luận năng lực CSDL hoặc ngược lại; hoặc nêu công cụ nhưng không có chỉ số đo nào kèm theo. KHÔNG ÁP DỤNG khi không có kiểm thử (Dạng I chưa hoàn thiện sản phẩm).”
+- **`TST-03`** — “ĐẠT khi cả hai: (1) nêu TÊN CÔNG CỤ dùng để đo và nói rõ ĐÃ THỐNG NHẤT với đơn vị quy hoạch định cỡ / triển khai; (2) nêu NƠI LƯU VẾT công thức, kịch bản kiểm thử và kết quả — để lần nâng cấp sau đo lại theo đúng cách. KHÔNG ĐẠT khi: nêu kết quả đo nhưng không nói dùng công cụ gì; nêu công cụ nhưng không nói đã thống nhất với ai (lần mở rộng sau đo bằng công cụ khác sẽ không so sánh được); hoặc không nói gì về việc lưu vết. GIỚI HẠN KIỂM — câu finding BẮT BUỘC nêu: chỉ kiểm được tài liệu CÓ NÊU công cụ đã thống nhất và nơi lưu vết; không xác minh được việc thống nhất có thật hay chữ ký có hợp lệ.”
