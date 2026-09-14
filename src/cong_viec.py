@@ -178,6 +178,28 @@ class KhoCongViec:
         except OSError:
             return None
 
+    def luu_findings(self, ma: str, du_lieu: dict) -> None:
+        """Lưu tập finding C7 dùng cho bảng ghi chú người thẩm định.
+
+        Ghi nguyên tử như `_ghi` để một lần ghi hỏng không để lại file dở.
+        """
+        try:
+            self.thu_muc.mkdir(parents=True, exist_ok=True)
+            tam = self._tep(ma, ".findings.json.tmp")
+            tam.write_text(json.dumps(du_lieu, ensure_ascii=False),
+                           encoding="utf-8")
+            tam.replace(self._tep(ma, ".findings.json"))
+        except (OSError, ValueError, TypeError):
+            traceback.print_exc()   # NT4: hỏng thì nói ra, đừng im lặng
+
+    def findings(self, ma: str) -> dict | None:
+        try:
+            d = json.loads(self._tep(ma, ".findings.json").read_text(
+                encoding="utf-8"))
+            return d if isinstance(d, dict) else None
+        except (OSError, ValueError):
+            return None
+
     def xoa(self, ma: str) -> bool:
         """Xoá hẳn việc, báo cáo VÀ tài liệu đã nộp.
 
@@ -189,6 +211,7 @@ class KhoCongViec:
         if cv is None:
             return False
         for p in (self._tep(ma, ".json"), self._tep(ma, ".md"),
+                  self._tep(ma, ".findings.json"),
                   pathlib.Path(cv.duong_dan) if cv.duong_dan else None):
             try:
                 if p is not None:
@@ -269,6 +292,24 @@ class BoChay:
                 ma = self._hang.popleft()
             self._lam(ma)
 
+    def _luu_findings(self, ma: str, kq) -> None:
+        """Lưu tập finding cho bảng ghi chú; hỏng thì việc vẫn XONG.
+
+        Việc thẩm định đã hoàn thành — thiếu bảng ghi chú là xuống cấp có thể
+        nói được (UI hiện cảnh báo), không phải lý do đánh mất kết quả 16 phút.
+        """
+        try:
+            from .reporting.report import xuat_findings
+            sizing = getattr(kq, "sizing", None)
+            du_lieu = xuat_findings(
+                kq.findings,
+                ten_he_thong=getattr(sizing, "ten_he_thong", None),
+                ma_pyc=getattr(sizing, "ma_pyc", None),
+                rules=getattr(kq, "rules", None))
+            self.kho.luu_findings(ma, du_lieu)
+        except Exception:
+            traceback.print_exc()
+
     def _lam(self, ma: str) -> None:
         cv = self.kho.lay(ma)
         if cv is None:
@@ -284,6 +325,7 @@ class BoChay:
             kq = self._chay_that()(cv.duong_dan, on_tien_do=tien_do,
                                    song_song=song_song, **tuy_chon)
             self.kho.luu_bao_cao(ma, kq.bao_cao())
+            self._luu_findings(ma, kq)
             muc: dict[str, int] = {}
             for f in kq.findings:
                 muc[f.severity] = muc.get(f.severity, 0) + 1

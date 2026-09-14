@@ -175,3 +175,70 @@ class TestChinhSach:
         assert not f.exists()
         assert kho.lay(cv.ma) is None and kho.bao_cao(cv.ma) is None
         assert kho.xoa(cv.ma) is False
+
+
+class TestLuuFindings:
+    def test_xong_thi_co_file_findings_doc_lai_duoc(self, kho):
+        bo = BoChay(kho, ham_chay=_chay_gia([
+            _f("critical"),
+            Finding(id="y", severity="major", category="vuot_nguong",
+                    finding="lỗi y", rule_ref="CPU-05")]))
+        bo.bat_dau()
+        cv = kho.them("a.docx", "a.docx")
+        bo.nop(cv)
+        assert bo.cho_rong(5)
+        bo.dung()
+
+        d = kho.findings(cv.ma)
+        assert d is not None
+        # 2 finding khác id nên cả hai giữ; khử trùng theo (rule, scope, category,
+        # finding) — 2 id khác nhau vẫn 2 dòng
+        assert {f["id"] for f in d["findings"]} == {"x", "y"}
+        assert d["so_loc_khong_can_cu"] == 0
+
+    def test_findings_song_sot_restart(self, tmp_path):
+        kho1 = KhoCongViec(tmp_path / "cv")
+        bo = BoChay(kho1, ham_chay=_chay_gia([_f()]))
+        bo.bat_dau()
+        cv = kho1.them("a.docx", "a.docx")
+        bo.nop(cv)
+        assert bo.cho_rong(5)
+        bo.dung()
+
+        assert KhoCongViec(tmp_path / "cv").findings(cv.ma) is not None
+
+    def test_finding_khong_can_cu_duoc_dem_khong_xuat_hien(self, kho):
+        bad = Finding(id="x", severity="major", category="vuot_nguong",
+                      finding="không căn cứ")       # không rule_ref/evidence
+        bo = BoChay(kho, ham_chay=_chay_gia([bad]))
+        bo.bat_dau()
+        cv = kho.them("a.docx", "a.docx")
+        bo.nop(cv)
+        assert bo.cho_rong(5)
+        bo.dung()
+
+        d = kho.findings(cv.ma)
+        assert d["so_loc_khong_can_cu"] == 1
+        assert d["findings"] == []
+
+    def test_ham_chay_thieu_sizing_van_khong_no(self, kho):
+        """Hàm chạy giả trong test không có `sizing`/`rules` — persist findings
+        không được vì thế làm hỏng lượt chạy."""
+        bo = BoChay(kho, ham_chay=_chay_gia([_f()]))
+        bo.bat_dau()
+        cv = kho.them("a.docx", "a.docx")
+        bo.nop(cv)
+        assert bo.cho_rong(5)
+        bo.dung()
+        assert kho.lay(cv.ma).trang_thai == XONG
+
+    def test_xoa_viec_don_ca_file_findings(self, kho):
+        bo = BoChay(kho, ham_chay=_chay_gia([_f()]))
+        bo.bat_dau()
+        cv = kho.them("a.docx", "a.docx")
+        bo.nop(cv)
+        assert bo.cho_rong(5)
+        bo.dung()
+
+        assert kho.xoa(cv.ma) is True
+        assert kho.findings(cv.ma) is None
