@@ -132,6 +132,20 @@ class KhachAPI:
     def bao_cao(self, ma: str) -> str:
         return self._goi(f"/result/{ma}/bao-cao", tho=True)
 
+    def findings(self, ma: str) -> dict:
+        return self._goi(f"/result/{ma}/findings")
+
+    def phan_hoi(self, ma: str) -> dict:
+        return self._goi(f"/result/{ma}/phan-hoi")
+
+    def luu_phan_hoi(self, ma: str, ds: list[dict]) -> dict:
+        du_lieu = json.dumps({"phan_hoi": ds}, ensure_ascii=False).encode("utf-8")
+        return self._goi(f"/result/{ma}/phan-hoi", method="POST",
+                         du_lieu=du_lieu, kieu="application/json")
+
+    def nhat_ky(self) -> str:
+        return self._goi("/phan-hoi/nhat-ky", tho=True)
+
     def danh_sach(self) -> list[dict]:
         return self._goi("/jobs").get("cong_viec", [])
 

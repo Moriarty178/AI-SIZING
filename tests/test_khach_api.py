@@ -38,6 +38,17 @@ class _Tay(BaseHTTPRequestHandler):
         if self.path.endswith("/bao-cao"):
             return self._tra(200, "# Báo cáo\n\nCPU vượt ngưỡng ở phân hệ Lõi."
                              .encode("utf-8"), "text/plain")
+        if self.path == "/result/m1/findings":
+            return self._json(200, {"phien_ban": 1, "findings": [
+                {"id": "KPI-02#App", "finding": "CPU vượt ngưỡng"}]})
+        if self.path == "/result/m1/phan-hoi":
+            return self._json(200, {"phan_hoi": {"KPI-02#App": {
+                "ghi_chu": "quy tắc áp nhầm", "phan_loai": "bao_sai"}}})
+        if self.path == "/phan-hoi/nhat-ky":
+            return self._tra(200, "thoi_gian,finding_id\n2026-09-14,KPI-02#App"
+                             .encode("utf-8"), "text/csv")
+        if self.path == "/phan-hoi/nhat-ky-trong":
+            return self._json(404, {"detail": "Chưa có ghi chú nào được lưu"})
         if self.path == "/jobs":
             return self._json(200, {"cong_viec": [{"ma": "m1"}, {"ma": "m2"}]})
         if self.path == "/result/khongco":
@@ -48,6 +59,8 @@ class _Tay(BaseHTTPRequestHandler):
         n = int(self.headers.get("Content-Length") or 0)
         NHAN_DUOC["than"] = self.rfile.read(n)
         NHAN_DUOC["kieu"] = self.headers.get("Content-Type", "")
+        if self.path.endswith("/phan-hoi"):
+            return self._json(200, {"da_luu": 1, "tong": 1})
         self._json(202, {"ma": "moi123", "trang_thai": "cho"})
 
     def do_DELETE(self):
@@ -136,3 +149,40 @@ def test_dia_chi_lay_tu_bien_moi_truong(monkeypatch):
     monkeypatch.setenv(BIEN_DIA_CHI, "http://may-noi-bo:8000/")
     assert dia_chi_mac_dinh() == "http://may-noi-bo:8000"
     assert KhachAPI().dia_chi == "http://may-noi-bo:8000"
+
+
+# --------------------------------------------------- phản hồi thẩm định ----
+def test_findings_tra_json(kh):
+    d = kh.findings("m1")
+    assert d["phien_ban"] == 1
+    assert d["findings"][0]["id"] == "KPI-02#App"
+
+
+def test_phan_hoi_doc_duoc_tieng_viet(kh):
+    ph = kh.phan_hoi("m1")["phan_hoi"]
+    assert ph["KPI-02#App"]["ghi_chu"] == "quy tắc áp nhầm"
+    assert ph["KPI-02#App"]["phan_loai"] == "bao_sai"
+
+
+def test_luu_phan_hoi_gui_json_utf8(kh):
+    kq = kh.luu_phan_hoi("m1", [{"finding_id": "KPI-02#App",
+                                 "ghi_chu": "số liệu đúng, quy tắc áp nhầm",
+                                 "phan_loai": "bao_sai"}])
+    assert kq == {"da_luu": 1, "tong": 1}
+    than, kieu = NHAN_DUOC["than"], NHAN_DUOC["kieu"]
+    assert "application/json" in kieu
+    doc = json.loads(than.decode("utf-8"))
+    assert doc["phan_hoi"][0]["ghi_chu"] == "số liệu đúng, quy tắc áp nhầm"
+
+
+def test_nhat_ky_tra_van_ban_tho(kh):
+    log = kh.nhat_ky()
+    assert log.startswith("thoi_gian,finding_id")
+    assert "KPI-02#App" in log
+
+
+def test_nhat_ky_chua_co_thi_LoiAPI_404(kh):
+    with pytest.raises(LoiAPI) as e:
+        kh._goi("/phan-hoi/nhat-ky-trong", tho=True)
+    assert e.value.ma_http == 404
+    assert "Chưa có ghi chú nào" in str(e.value)
