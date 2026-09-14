@@ -33,6 +33,7 @@ lời nói dối với người đang chờ (NT4).
 """
 from __future__ import annotations
 
+import csv
 import json
 import pathlib
 import threading
@@ -41,9 +42,17 @@ import traceback
 import uuid
 from collections import deque
 from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from typing import Callable
 
 THU_MUC_MAC_DINH = pathlib.Path(".cache/cong_viec")
+# Nhật ký phản hồi người thẩm định — append-only, NẰM NGOÀI thư mục việc để
+# xoá việc không lôi theo dataset cải tiến công cụ (xem `xoa`).
+THU_MUC_NHAT_KY = pathlib.Path("phan_hoi")
+TEN_NHAT_KY = "nhat-ky.csv"
+COT_NHAT_KY = ["thoi_gian", "ma_viec", "ten_file", "finding_id", "rule_ref",
+               "severity", "category", "phan_loai", "tom_tat_finding", "ghi_chu"]
+TOM_TAT_TOI_DA = 160
 
 # Mức song song BÊN TRONG một tài liệu. 12 là điểm bão hoà đo được 2026-09-09;
 # 24 chậm hơn 12. Đổi thì phải chạy lại `scripts/do_song_song.py`.
@@ -200,18 +209,100 @@ class KhoCongViec:
         except (OSError, ValueError):
             return None
 
+    # ------------------------------------------------- phản hồi thẩm định --
+    @property
+    def _tep_nhat_ky(self) -> pathlib.Path:
+        return self.thu_muc.parent / THU_MUC_NHAT_KY / TEN_NHAT_KY
+
+    def phan_hoi(self, ma: str) -> dict[str, dict] | None:
+        try:
+            d = json.loads(self._tep(ma, ".phan_hoi.json").read_text(
+                encoding="utf-8"))
+            ph = d.get("phan_hoi")
+            return ph if isinstance(ph, dict) else None
+        except (OSError, ValueError):
+            return None
+
+    def luu_phan_hoi(self, ma: str, phan_hoi_moi: dict[str, dict]) -> dict:
+        """Merge phản hồi vào `{ma}.phan_hoi.json`; chỉ phần THAY ĐỔI vào nhật ký.
+
+        Bấm Lưu hai lần không nhân bản dòng log. `rule_ref/severity/category`
+        lấy từ findings đã persist chứ không tin payload — người gọi chỉ gửi
+        finding_id + ghi chú + phân loại.
+        """
+        cv = self.lay(ma)
+        if cv is None:
+            raise KeyError(ma)
+        cu = self.phan_hoi(ma) or {}
+        tap_f = {f["id"]: f for f in (self.findings(ma) or {}).get("findings", [])}
+
+        thay_doi: list[tuple[str, dict, dict]] = []
+        moi = dict(cu)
+        for fid, muc in phan_hoi_moi.items():
+            goc = cu.get(fid) or {}
+            if goc.get("ghi_chu") != muc.get("ghi_chu") or \
+                    goc.get("phan_loai") != muc.get("phan_loai"):
+                thay_doi.append((fid, muc, tap_f.get(fid, {})))
+                moi[fid] = dict(muc)
+        if not thay_doi:
+            return {"da_luu": 0, "tong": len(moi)}
+
+        try:
+            self.thu_muc.mkdir(parents=True, exist_ok=True)
+            tam = self._tep(ma, ".phan_hoi.json.tmp")
+            tam.write_text(json.dumps(
+                {"cap_nhat_luc": time.time(), "phan_hoi": moi},
+                ensure_ascii=False), encoding="utf-8")
+            tam.replace(self._tep(ma, ".phan_hoi.json"))
+        except OSError:
+            traceback.print_exc()
+            raise
+
+        self._ghi_nhat_ky(ma, cv.ten_file, thay_doi)
+        return {"da_luu": len(thay_doi), "tong": len(moi)}
+
+    def _ghi_nhat_ky(self, ma: str, ten_file: str,
+                     thay_doi: list[tuple[str, dict, dict]]) -> None:
+        tep = self._tep_nhat_ky
+        tep.parent.mkdir(parents=True, exist_ok=True)
+        tao_moi = not tep.exists()
+        with tep.open("a", encoding="utf-8-sig" if tao_moi else "utf-8",
+                      newline="") as f:
+            w = csv.writer(f)
+            if tao_moi:
+                w.writerow(COT_NHAT_KY)
+            for fid, muc, tf in thay_doi:
+                w.writerow([
+                    datetime.now().isoformat(timespec="seconds"),
+                    ma, ten_file, fid,
+                    tf.get("rule_ref", ""), tf.get("severity", ""),
+                    tf.get("category", ""), muc.get("phan_loai", ""),
+                    " ".join(str(tf.get("finding", "")).split())[:TOM_TAT_TOI_DA],
+                    " / ".join(str(muc.get("ghi_chu", "")).split("\n")),
+                ])
+
+    def doc_nhat_ky(self) -> str | None:
+        try:
+            return self._tep_nhat_ky.read_text(encoding="utf-8-sig")
+        except OSError:
+            return None
+
     def xoa(self, ma: str) -> bool:
         """Xoá hẳn việc, báo cáo VÀ tài liệu đã nộp.
 
         Tài liệu sizing là dữ liệu nội bộ của người nộp; giữ lại vô thời hạn trên
         máy chủ là một quyết định phải có người chọn, không phải mặc định.
+
+        Nhật ký phản hồi (`phan_hoi/nhat-ky.csv`) KHÔNG bị xoá kèm: đó là thứ
+        người thẩm định CHỦ ĐỘNG lưu để cải tiến công cụ — xoá âm thầm là phá
+        dataset (NT4). Dòng log vẫn còn `ma_viec` nên truy vết được.
         """
         with self._khoa:
             cv = self._viec.pop(ma, None)
         if cv is None:
             return False
         for p in (self._tep(ma, ".json"), self._tep(ma, ".md"),
-                  self._tep(ma, ".findings.json"),
+                  self._tep(ma, ".findings.json"), self._tep(ma, ".phan_hoi.json"),
                   pathlib.Path(cv.duong_dan) if cv.duong_dan else None):
             try:
                 if p is not None:

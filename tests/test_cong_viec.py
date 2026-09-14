@@ -242,3 +242,84 @@ class TestLuuFindings:
 
         assert kho.xoa(cv.ma) is True
         assert kho.findings(cv.ma) is None
+
+
+class TestPhanHoi:
+    @pytest.fixture
+    def kho_co_viec(self, kho):
+        bo = BoChay(kho, ham_chay=_chay_gia([Finding(
+            id="KPI-02#App", severity="major", category="vuot_nguong",
+            finding="CPU vượt ngưỡng 90% so với khai", rule_ref="KPI-02")]))
+        bo.bat_dau()
+        cv = kho.them("sizing.docx", "sizing.docx")
+        bo.nop(cv)
+        assert bo.cho_rong(5)
+        bo.dung()
+        return kho, cv.ma
+
+    def test_luu_2_muc_thi_nhat_ky_co_2_dong(self, kho_co_viec, tmp_path):
+        kho, ma = kho_co_viec
+        kq = kho.luu_phan_hoi(ma, {"KPI-02#App": {
+            "ghi_chu": "Con số đúng, quy tắc áp nhầm", "phan_loai": "bao_sai"}})
+        assert kq == {"da_luu": 1, "tong": 1}
+
+        log = tmp_path / "phan_hoi" / "nhat-ky.csv"
+        dong = log.read_text(encoding="utf-8-sig").strip().splitlines()
+        assert len(dong) == 2                        # header + 1
+        assert "KPI-02#App" in dong[1] and "bao_sai" in dong[1]
+        assert "sizing.docx" in dong[1]
+
+    def test_luu_lai_y_nguyen_KHONG_nhan_ban_log(self, kho_co_viec, tmp_path):
+        kho, ma = kho_co_viec
+        ph = {"KPI-02#App": {"ghi_chu": "ok", "phan_loai": "chap_nhan"}}
+        kho.luu_phan_hoi(ma, ph)
+        kq = kho.luu_phan_hoi(ma, dict(ph))
+        assert kq["da_luu"] == 0
+        log = tmp_path / "phan_hoi" / "nhat-ky.csv"
+        assert len(log.read_text(encoding="utf-8-sig").strip().splitlines()) == 2
+
+    def test_sua_1_muc_thi_log_tang_1(self, kho_co_viec, tmp_path):
+        kho, ma = kho_co_viec
+        kho.luu_phan_hoi(ma, {"KPI-02#App": {"ghi_chu": "a", "phan_loai": ""}})
+        kho.luu_phan_hoi(ma, {"KPI-02#App": {"ghi_chu": "b", "phan_loai": "bao_sai"}})
+        log = tmp_path / "phan_hoi" / "nhat-ky.csv"
+        assert len(log.read_text(encoding="utf-8-sig").strip().splitlines()) == 3
+        assert kho.phan_hoi(ma)["KPI-02#App"]["phan_loai"] == "bao_sai"
+
+    def test_xuong_dong_trong_ghi_chu_la_1_dong_csv(self, kho_co_viec, tmp_path):
+        kho, ma = kho_co_viec
+        kho.luu_phan_hoi(ma, {"KPI-02#App": {
+            "ghi_chu": "dong 1\ndong 2", "phan_loai": ""}})
+        log = tmp_path / "phan_hoi" / "nhat-ky.csv"
+        assert len(log.read_text(encoding="utf-8-sig").strip().splitlines()) == 2
+        assert "dong 1 / dong 2" in log.read_text(encoding="utf-8-sig")
+
+    def test_rule_ref_severity_lay_tu_findings_khong_tin_payload(self, kho_co_viec):
+        kho, ma = kho_co_viec
+        kho.luu_phan_hoi(ma, {"KPI-02#App": {
+            "ghi_chu": "x", "phan_loai": "can_ban"}})
+        log = kho.doc_nhat_ky()
+        # payload KHÔNG gửi severity — phải lấy từ findings.json (major/KPI-02)
+        assert "KPI-02" in log and "major" in log and "vuot_nguong" in log
+
+    def test_xoa_viec_KHONG_xoa_nhat_ky(self, kho_co_viec, tmp_path):
+        kho, ma = kho_co_viec
+        kho.luu_phan_hoi(ma, {"KPI-02#App": {"ghi_chu": "x", "phan_loai": ""}})
+        kho.xoa(ma)
+        log = tmp_path / "phan_hoi" / "nhat-ky.csv"
+        assert log.exists(), "nhiệt ký là dataset người thẩm định chủ động lưu"
+        assert (tmp_path / "cv" / f"{ma}.findings.json").exists() is False
+        assert (tmp_path / "cv" / f"{ma}.phan_hoi.json").exists() is False
+
+    def test_restart_doc_lai_phan_hoi(self, kho_co_viec, tmp_path):
+        kho, ma = kho_co_viec
+        kho.luu_phan_hoi(ma, {"KPI-02#App": {"ghi_chu": "x", "phan_loai": "bao_sai"}})
+        assert KhoCongViec(tmp_path / "cv").phan_hoi(ma) == {
+            "KPI-02#App": {"ghi_chu": "x", "phan_loai": "bao_sai"}}
+
+    def test_viec_khong_ton_tai_thi_KeyError(self, kho):
+        with pytest.raises(KeyError):
+            kho.luu_phan_hoi("khong-co", {"x": {"ghi_chu": "", "phan_loai": ""}})
+
+    def test_chua_co_nhat_ky_thi_doc_tra_None(self, kho):
+        assert kho.doc_nhat_ky() is None
