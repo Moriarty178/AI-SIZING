@@ -26,7 +26,21 @@ docs/checklist/
 # với báo cáo eval thật. Sinh lại bất cứ lúc nào bằng `run_eval --gia-lap`.
 eval/reports/dien-tap-*.md
 .commit
-viettel-mitm-ca.pem
 data/jobs/
 data/tai_len/
+
+# Chứng chỉ CA nội bộ trích từ Windows cert store để build qua proxy
+# TLS MITM. KHÔNG commit: nó là hạ tầng của một mạng cụ thể.
+viettel-mitm-ca.pem
+*.pem
+*.crt
+
+# Báo cáo sinh ra từ hồ sơ THẬT (scripts/do_bao_cao.py --ghi). Chúng chứa
+# tên hệ thống, tên phân hệ và số liệu của khách — là kết quả chạy thử,
+# không phải mã nguồn. KHÔNG commit.
+bao-cao-mau.md
+bao-cao-*.md
+
+# Khoá gọi model, mật khẩu CSDL, địa chỉ proxy. Mẫu ở `.env.example`.
 .env
+uv.lock

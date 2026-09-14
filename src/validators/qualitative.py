@@ -241,10 +241,12 @@ class QualitativeValidator:
             f = self._finding(
                 rule, scope_key, category=cat, text=nx.ly_do.strip() or rule.name,
                 location=el.location if el else "",
-                suggestion=(f"Bổ sung/làm rõ theo tiêu chí: {rule.criteria[:200]}"
-                            if rule.round == 1
-                            else f"Hoàn thiện theo tiêu chí của {rule.id} — xem "
-                                 f"phụ lục trích dẫn."),
+                # KHÔNG chép lại `criteria` vào gợi ý: `_render_finding` đã in
+                # nguyên văn tiêu chí ở dòng «Căn cứ» ngay phía trên. Đo trên báo
+                # cáo thật 2026-09-10: 33 dòng gợi ý kiểu này chiếm 11% cả báo cáo
+                # mà không thêm một chữ nào người đọc chưa thấy.
+                suggestion=f"Bổ sung/làm rõ theo tiêu chí của `{rule.id}` "
+                           "(nguyên văn ở dòng Căn cứ ngay trên).",
                 confidence="cao" if el is not None else "vua")
             return RuleOutcome(rule.id, scope_key, "vi_pham", f)
 

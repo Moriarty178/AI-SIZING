@@ -1,0 +1,37 @@
+{
+  "ngay_chot": "2026-09-09",
+  "nguon": "docs/xin-y-kien-phan-loai-nhan-2026-09-09.md",
+  "ghi_chu": "Phán quyết của đơn vị thẩm định về việc xếp nhóm nhãn PNX khi chấm 1.13. Đây là dữ liệu ghi lại quyết định của NGƯỜI, không phải tham số để chỉnh cho con số đẹp lên. Chỉ sửa khi có phán quyết mới, kèm ngày.",
+  "cau_1_thu_tuc": {
+    "phan_quyet": "Tách nhóm D (thủ tục). Công cụ chỉ cần nhắc «hồ sơ thiếu thủ tục này».",
+    "cach_thuc_hien": "Từ khoá TU_KHOA_THU_TUC trong eval/matching.py bắt 9/13 nhãn. Bốn nhãn còn lại đòi GIẢI THÍCH LỰA CHỌN THIẾT KẾ, không có từ khoá nào tách được chúng khỏi nhóm C mà không kéo theo nhãn khác — nên ghi đích danh dưới đây.",
+    "nhan_dich_danh": [
+      {
+        "label_id": "PNX_BCCS3_thị_trường_Lào|R1-07-01",
+        "text": "Các máy chủ cần nhiều ram có thể chia nhỏ ra để ảo hóa được không ?"
+      },
+      {
+        "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-01-05",
+        "text": "Sở cứ cần sử dụng SSD"
+      },
+      {
+        "label_id": "PNX_CAMPAIGN_MANAGEMENT_v3|R1-04-03",
+        "text": "Tại sao mô hình Kafka là 5 instances"
+      },
+      {
+        "label_id": "PNX_MySign_v2|R2-02-06",
+        "text": "Tổng tài nguyên data, log, backup giữ nguyên không chia ra à ?"
+      }
+    ]
+  },
+  "cau_2_so_cu": {
+    "phan_quyet": "Phải TÍNH LẠI con số mới tính là đạt — chỉ trỏ được sở cứ là chưa đủ.",
+    "he_qua": "9 nhãn đòi sở cứ Ở LẠI nhóm C và hiện bị tính là TRƯỢT. Đây là phán quyết NGƯỢC với hướng có lợi cho công cụ: mục 2.5 hiện chỉ neo được ảnh vào bảng, chưa tính lại số nào.",
+    "khong_co_ma_nao_trong_code": true
+  },
+  "cau_3_giu_nhom_C": {
+    "phan_quyet": "Đồng ý giữ trong nhóm C.",
+    "he_qua": "7 nhãn chất vấn con số (CPU 109.375/175/103.975; Cint 226/12.6/25.1; log 833,25 GB; «2 năm sao chỉ *6»; link tham chiếu cpu/cint 2017) vẫn là chỗ công cụ đáng bị chấm trượt nếu không bắt được.",
+    "khong_co_ma_nao_trong_code": true
+  }
+}

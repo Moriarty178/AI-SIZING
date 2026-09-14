@@ -7,6 +7,8 @@ về chất lượng. Nên mọi script chạy thật đều IN phiên bản tr�
 """
 from __future__ import annotations
 
+import os
+import pathlib
 import subprocess
 
 # Tăng số này mỗi khi đổi hành vi trích xuất, để người chạy đối chiếu được bằng mắt.
@@ -15,7 +17,36 @@ import subprocess
 PHIEN_BAN_C3 = "CNHT - VTT - V1#" #C3-v6 (hỏi theo CỘT bảng: mỗi cột một tham số)"
 
 
+BIEN_COMMIT = "SIZING_COPILOT_COMMIT"   # Dockerfile nướng vào lúc build
+TEP_COMMIT = "/app/.commit"             # …và ghi ra đây, cho ca không đặt được biến
+
+
+def _dau_luc_build() -> str:
+    """Commit đóng dấu lúc build, từ biến môi trường HOẶC file `/app/.commit`.
+
+    Hai đường vì hai hoàn cảnh khác nhau. Biến môi trường tiện khi `docker run`;
+    file thì sống sót qua mọi cách khởi chạy — kể cả khi ai đó ghi đè `--env`.
+
+    KHÔNG dùng `git` trong image: máy nội bộ có proxy TLS làm `apt-get` trả về
+    rác (Clearsigned NOSPLIT) nên không cài nổi `git`, và cài `git` chỉ để đọc
+    một chuỗi 7 ký tự là đổi một phụ thuộc hệ thống lấy một dòng chữ.
+    """
+    dau = os.environ.get(BIEN_COMMIT, "").strip()
+    if not dau:
+        try:
+            dau = pathlib.Path(TEP_COMMIT).read_text(encoding="utf-8").strip()
+        except OSError:
+            dau = ""
+    return "" if dau in ("", "unknown") else dau
+
+
 def commit_hien_tai() -> str:
+    # Trong container KHÔNG có `.git`, nên `git rev-parse` trả "?" và ta mất đúng
+    # thứ module này sinh ra để giữ. Nói rõ là dấu lúc build chứ không phải trạng
+    # thái cây mã hiện tại.
+    dau = _dau_luc_build()
+    if dau:
+        return f"{dau} (đóng dấu lúc build)"
     try:
         r = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
                            capture_output=True, text=True, timeout=5)

@@ -214,3 +214,177 @@ def test_dau_cach_dup_khong_duoc_lam_truot_tu_khoa():
     assert loai_nhan("Bổ  sung sở cứ cho Cấu hình server thực tế đang chạy") == "thieu"
     assert loai_nhan("Bổ sung sở cứ cho cấu hình") == "thieu"
     assert loai_nhan("Chưa\tnêu rõ cấu hình máy chủ ứng dụng") == "thieu"
+
+
+# --- nhóm THỦ TỤC (phán quyết thẩm định 2026-09-09) ------------------------
+def test_nhan_doi_THU_TUC_tach_khoi_nhom_quyet_dinh():
+    """«Bắt buộc phải có thời gian cam kết…», «Ký sizing phải đính kèm checklist»
+    — không phép tính nào trả lời được. Đơn vị thẩm định chốt tách, công cụ chỉ
+    cần nhắc *"hồ sơ còn thiếu thủ tục này"*."""
+    from eval.matching import loai_nhan
+    assert loai_nhan("Bắt buộc phải có thời gian cam kết hoàn thành triển khai "
+                     "và đổ tải thật, có sở cứ từ KD hoặc BGĐ") == "thu_tuc"
+    assert loai_nhan("- Ký sizing phải đính kèm thêm file checklist (đính kèm)") \
+        == "thu_tuc"
+    assert loai_nhan("Tài nguyên con này đã có trong QHDC nào chưa ạ") == "thu_tuc"
+
+
+def test_thu_tuc_xet_TRUOC_thieu_de_cung_doi_hoi_vao_cung_nhom():
+    """Trước phán quyết, cùng một đòi hỏi rơi hai nhóm chỉ vì hành văn: «Bắt buộc
+    phải có thời gian cam kết…» vào «khác» còn «Bổ sung thời gian cam kết…» vào
+    «thiếu». Cả hai đều là thủ tục."""
+    from eval.matching import loai_nhan
+    assert loai_nhan("Bổ sung thời gian cam kết triển khai và đổ tải trên bảng "
+                     "thông tin hệ thống") == "thu_tuc"
+
+
+def test_nhan_DOI_SO_CU_o_LAI_nhom_quyet_dinh():
+    """Câu 2 chốt NGƯỢC hướng có lợi cho công cụ: phải TÍNH LẠI con số mới tính
+    đạt, trỏ được sở cứ là chưa đủ. Hai nhãn dưới từng bị tín hiệu `rule_ref`
+    toàn mã `PRC-` kéo nhầm sang nhóm thủ tục."""
+    from eval.matching import loai_nhan
+    assert loai_nhan("Module Speech processing không rõ giá trị hệ thống hiện "
+                     "tại để định cỡ, cần sở cứ") == "khac"
+    assert loai_nhan("1. Thông tin hệ thống: Trang 27: sở cứ đây là ảnh chụp cho "
+                     "150 t/bị trong 1.5 tháng ?Sở cứ lưu 24 tháng") == "khac"
+
+
+def test_tu_khoa_thu_tuc_KHONG_duoc_bat_nhan_doi_tinh():
+    """«đính kèm» trần bắt cả «Bổ sung tính toán băng thông cho FW/LB (tham khảo
+    VD đính kèm)» — đó là đòi TÍNH. Test này khoá lại để không ai thêm nó."""
+    from eval.matching import loai_nhan, TU_KHOA_THU_TUC
+    assert "đính kèm" not in TU_KHOA_THU_TUC
+    assert "tại sao" not in TU_KHOA_THU_TUC
+    assert loai_nhan("Tổng hợp tính toán định cỡ: Bổ sung tính toán băng thông "
+                     "cho FW/LB (tham khảo VD đính kèm)") == "thieu"
+
+
+def test_phan_quyet_DICH_DANH_chi_ap_dung_khi_van_ban_con_khop(tmp_path):
+    """Neo vào văn bản chứ không chỉ `label_id`: nhãn sinh lại mà đổi chữ thì
+    phán quyết cũ có thể đang nói về câu khác — thà không áp dụng."""
+    from eval.matching import loai_nhan
+    lid = "PNX_CAMPAIGN_MANAGEMENT_v3|R1-04-03"
+    assert loai_nhan("Tại sao mô hình Kafka là 5 instances", label_id=lid) \
+        == "thu_tuc"
+    assert loai_nhan("Tại sao mô hình Kafka là 9 instances", label_id=lid) == "khac"
+    assert loai_nhan("Tại sao mô hình Kafka là 5 instances") == "khac"
+
+
+def test_bao_cao_dem_ra_so_nhan_vao_nhom_thu_tuc_DICH_DANH():
+    """Cơ chế đích danh là chỗ duy nhất thước đo can thiệp theo từng nhãn —
+    không được giấu."""
+    labels = [dict(_nhan("PNX_MySign_v2|R2-02-06", "HS1", ["BAK-01"]),
+                   text="Tổng tài nguyên data, log, backup giữ nguyên không chia ra à ?")]
+    kq = doi_chieu({"HS1": [_fc("BAK-01", "thieu_thong_tin")]}, labels)
+    assert kq.theo_loai_mau == {"thu_tuc": 1}
+    assert kq.thu_tuc_dich_danh == 1
+    bc = bang_markdown(kq)
+    assert "ĐÍCH DANH" in bc and "phải tính lại con số mới tính là đạt" in bc.lower()
+
+
+def test_van_ban_nhan_doi_thi_CANH_BAO_chu_khong_im_lang():
+    labels = [dict(_nhan("PNX_MySign_v2|R2-02-06", "HS1", ["BAK-01"]),
+                   text="Câu này đã bị sửa thành một nhận xét hoàn toàn khác")]
+    kq = doi_chieu({"HS1": [_fc("BAK-01", "thieu_thong_tin")]}, labels)
+    assert kq.thu_tuc_dich_danh == 0
+    assert any("đã đổi" in c for c in kq.canh_bao)
+
+
+def test_luu_chi_tiet_TUNG_nhan_de_cham_lai_khong_can_model():
+    """Lượt dev đầy đủ tốn ~7 giờ máy nội bộ. Chỉ lưu số tổng thì mỗi lần đổi
+    cách xếp nhóm là phải chạy lại — đã vấp đúng thế ngày 2026-09-09."""
+    labels = [dict(_nhan("l1", "HS1", ["PRC-01"]),
+                   text="Dự phòng theo KPI 75% sao lại ra 8000, đề nghị tính lại")]
+    kq = doi_chieu({"HS1": [_fc("PRC-01", "vuot_nguong"),
+                            _fc("STO-03", "thieu_thong_tin")]}, labels)
+    h = kq.ho_so[0]
+    assert h.chi_tiet_nhan == [{"label_id": "l1", "rule_ref": ["PRC-01"],
+                                "text": "Dự phòng theo KPI 75% sao lại ra 8000, "
+                                        "đề nghị tính lại",
+                                "loai": "khac", "trung": True, "thuc_chat": True,
+                                "tinh": True, "ma_khop": ["PRC-01"]}]
+    assert h.ma_finding_loai == {"PRC-01": ["vuot_nguong"],
+                                 "STO-03": ["thieu_thong_tin"]}
+
+
+def test_song_song_KHONG_phai_bo_loc():
+    """Lượt dev ĐẦY ĐỦ 2026-09-09 — đúng con số cần công bố — bị đóng dấu "KHÔNG
+    được trích như recall thật" chỉ vì chạy 12 luồng thay vì 6.
+
+    Song song không đổi hồ sơ nào được chấm hay quy tắc nào được hỏi. Một cảnh
+    báo sai chỗ làm hỏng niềm tin vào cảnh báo đúng chỗ.
+    """
+    kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
+    kq.bo_loc = {"nhom C3": "", "chi N ho so": "", "ho so": "", "song song": 12,
+                 "doc anh (2.3+2.5)": ""}
+    assert not kq.da_loc
+    bc = bang_markdown(kq)
+    assert "KHÔNG được trích như recall thật" not in bc
+
+
+def test_van_giu_song_song_trong_bao_cao_de_lan_lai_chi_phi():
+    kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
+    kq.bo_loc = {"ho so": "campaign", "song song": 12}
+    assert kq.da_loc                        # `ho so` MỚI là bộ lọc thật
+    assert "song song` = 12" in bang_markdown(kq)
+
+
+# --- 2026-09-11: phán quyết không được biến mất im lặng ---------------------
+def test_file_phan_quyet_MAT_thi_bao_cao_PHAI_noi_ra(tmp_path, monkeypatch):
+    """Lượt dev 2026-09-11 xếp 4 nhãn phán quyết đích danh về lại nhóm quyết
+    định — mẫu số 71 → 75 — mà báo cáo không nói một chữ."""
+    import eval.matching as m
+    monkeypatch.setattr(m, "DUONG_DAN_PHAN_NHOM", str(tmp_path / "khong_co.json"))
+    monkeypatch.setattr(m.nap_phan_quyet, "__defaults__", (str(tmp_path / "khong_co.json"),))
+    kq = doi_chieu({"HS1": [_f("PRC-01")]}, [_nhan("l1", "HS1", ["PRC-01"])])
+    assert any("PHÁN QUYẾT THẨM ĐỊNH" in c and "KHÔNG ÁP DỤNG" in c
+               for c in kq.canh_bao)
+
+
+def test_file_phan_quyet_co_BOM_van_doc_duoc(tmp_path):
+    """Sửa file bằng Notepad trên Windows là chèn BOM."""
+    from eval.matching import nap_phan_quyet
+    p = tmp_path / "pq.json"
+    p.write_text('{"cau_1_thu_tuc": {"nhan_dich_danh": '
+                 '[{"label_id": "x", "text": "a  b"}]}}', encoding="utf-8-sig")
+    dd, loi = nap_phan_quyet(str(p))
+    assert loi == "" and dd == {"x": "a b"}
+
+
+def test_file_phan_quyet_HONG_thi_tra_loi_ro_rang(tmp_path):
+    from eval.matching import nap_phan_quyet
+    p = tmp_path / "pq.json"
+    p.write_text("{ khong phai json", encoding="utf-8")
+    dd, loi = nap_phan_quyet(str(p))
+    assert dd == {} and "KHÔNG ĐỌC ĐƯỢC" in loi
+
+
+def test_phan_quyet_that_trong_repo_nap_duoc():
+    """File nằm trong repo; không nạp được nghĩa là bản mã lệch bản đã commit."""
+    from eval.matching import nap_phan_quyet
+    dd, loi = nap_phan_quyet()
+    assert loi == "" and len(dd) == 4
+
+
+class TestQuyetDinhTinhBangCode:
+    def test_thieu_muc_KHONG_tinh_la_da_tinh_lai_con_so(self):
+        """Nhãn «Tính toán lại số liệu Ram, cint, HDD» từng được tính trúng vì
+        công cụ nói "thiếu mục EVD-22" — không tính gì về RAM cả."""
+        labels = [dict(_nhan("l1", "HS1", ["EVD-22"]),
+                       text="Tính toán lại số liệu Ram, cint, HDD cho cụm này")]
+        kq = doi_chieu({"HS1": [_fc("EVD-22", "thieu_muc")]}, labels)
+        assert kq.theo_loai_trung.get("khac") == 1      # thước đo cũ: trúng
+        assert kq.qd_tinh == 0                           # thước đo chặt: KHÔNG
+
+    def test_vuot_nguong_la_da_tinh(self):
+        labels = [dict(_nhan("l1", "HS1", ["KPI-02"]),
+                       text="CPU vượt ngưỡng 75%, đề nghị tính lại số máy chủ")]
+        kq = doi_chieu({"HS1": [_fc("KPI-02", "vuot_nguong")]}, labels)
+        assert kq.qd_tinh == 1
+
+    def test_bao_cao_in_ca_hai_con_so(self):
+        labels = [dict(_nhan("l1", "HS1", ["EVD-22"]),
+                       text="Tính toán lại số liệu Ram, cint, HDD cho cụm này")]
+        bc = bang_markdown(doi_chieu({"HS1": [_fc("EVD-22", "thieu_muc")]}, labels))
+        assert "Nhóm quyết định — TÍNH bằng code** | **0/1**" in bc
+        assert "phải tính lại con số mới tính là" in bc

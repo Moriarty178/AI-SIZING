@@ -199,3 +199,16 @@ def test_loi_mang_KHONG_leo_thang():
                     '{"ten_he_thong": "MNP", "so_ccu": 300}'])
     c.extract(Sizing, [{"role": "user", "content": "x"}], max_tokens=4000)
     assert c.ngan_sach == [4000, 4000]
+
+
+def test_settings_la_THU_MUC_thi_goi_ten_loi_ra(tmp_path):
+    """Docker tạo THƯ MỤC khi bind-mount một file chưa tồn tại. Lỗi mặc định
+    (`IsADirectoryError` / `PermissionError` trên Windows) không gợi được gì cho
+    người triển khai — đã suýt vấp khi dựng `docker-compose.copilot.yml`."""
+    import pytest
+    from src.llm.client import load_settings
+    d = tmp_path / "settings.yaml"
+    d.mkdir()
+    with pytest.raises(IsADirectoryError) as e:
+        load_settings(str(d))
+    assert "bind-mount" in str(e.value) and "settings.example.yaml" in str(e.value)

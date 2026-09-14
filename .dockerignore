@@ -1,21 +1,39 @@
-# Bối cảnh build giữ nhỏ: image chỉ cần mã + config. Hồ sơ thật (26 hồ sơ, dữ
-# liệu nhãn) KHÔNG thuộc image — người dùng upload qua API, không đóng vào image.
-.git
-.idea
-.venv
-__pycache__
+# A1 — cái gì được vào ngữ cảnh build.
+#
+# CHẶN TẤT CẢ rồi mở lại đúng thứ cần, KHÔNG liệt kê từng thứ để chặn.
+# Lý do là an toàn dữ liệu chứ không phải dung lượng: repo đang chứa 176 MB hồ sơ
+# sizing THẬT của khách (`danh_sach_sizings_da_duyet/`), nhãn thẩm định PNX
+# (`data/`) và bản đã ký (`approved-sizing/`). Với danh sách chặn, thêm một thư
+# mục dữ liệu mới là mặc định LỌT VÀO image; với danh sách mở, thêm mới là mặc
+# định BỊ CHẶN. Chỉ một trong hai chiều sai là an toàn.
+*
+
+!pyproject.toml
+!README.md
+!src
+!config
+!ui
+!api
+!scripts
+
+# Chặn lại những thứ lọt vào qua các thư mục vừa mở
 **/__pycache__
-*.log
-*.zip
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
 
-# Cấu hình + dữ liệu không đóng vào image (mount khi chạy)
+# Cấu hình thật có endpoint nội bộ — mount lúc chạy, không nướng vào image.
+# (Khoá API luôn qua biến môi trường SIZING_COPILOT_API_KEY, không bao giờ ở đây.)
 config/settings.yaml
-data/
-docs/
-danh_sach_sizings_da_duyet/
-.cache/
-eval/reports/
 
-# backend1/nginx là web app Java hiện hành — copilot không build chúng
-backend1/
-nginx/
+# Chứng chỉ nói chung KHÔNG vào ngữ cảnh build…
+*.pem
+*.crt
+# …TRỪ CA nội bộ của proxy TLS: `Dockerfile.copilot` cần nó để `uv` cài được gói
+# qua gateway MITM. Đánh đổi (file nằm lại trong lớp image) ghi ở đó và ở
+# `docs/docker-mang-noi-bo.md` mục 3. Máy ngoài không có file này vẫn build được.
+!viettel-mitm-ca.pem
+
+# `eval/` CỐ Ý không có trong danh sách mở: nó cần `data/eval_set.json` — nhãn
+# thẩm định nội bộ. Đo eval chạy thẳng từ repo trên máy nội bộ, không chạy trong
+# image sản phẩm.

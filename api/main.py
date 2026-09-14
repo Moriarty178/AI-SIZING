@@ -1,117 +1,148 @@
-"""3.1 — REST API bọc pipeline: POST /review, GET /result/{id}.
+"""3.1 — REST API bọc pipeline. Mỏng: mọi hành vi nằm ở `src/cong_viec.py`.
 
-    uv run uvicorn api.main:app --reload
+    uvicorn api.main:app --host 0.0.0.0 --port 8000
 
-Nhận `.docx` tải lên, xếp job chạy nền (api/jobs.py — subprocess + thư mục, không
-cần Redis), trả id. Client hỏi `GET /result/{id}` tới khi xong — lượt chạy thật
-là **hàng chục phút** (đo 2026-09-09: 649 lượt gọi ≈ 30 phút/hồ sơ), không API
-đồng bộ nào chịu được điều đó.
+    POST   /review          nộp .docx  -> 202 kèm mã việc
+    GET    /result/{ma}     trạng thái + tiến độ; xong thì kèm báo cáo
+    GET    /result/{ma}/bao-cao   báo cáo Markdown thô
+    GET    /jobs            danh sách việc
+    DELETE /result/{ma}     xoá việc, báo cáo VÀ tài liệu đã nộp
+    GET    /health          cho healthcheck của container
 
-Báo cáo mở đầu luôn nói rõ đây là công cụ cố vấn — quyền quyết định vẫn ở người
-thẩm định; API chỉ chuyển phát, không đổi điều đó.
+## Vì sao KHÔNG có API chạy đồng bộ
+
+Một tài liệu tốn ~16 phút (đo 2026-09-09: ~216 lượt gọi ở mức song song 12). Một
+`POST` giữ kết nối 16 phút sẽ bị proxy cắt và người dùng bấm lại — nhân đôi tải
+lên đúng cái cổng vốn đã là nút thắt. Nên chỉ có đường bất đồng bộ; không mở
+thêm đường đồng bộ "cho tiện", vì nó sẽ được dùng.
+
+## Giới hạn cố ý
+
+Không xác thực. API này chạy trong mạng nội bộ sau lớp bảo vệ sẵn có; thêm một
+cơ chế xác thực tự chế ở đây là tạo cảm giác an toàn giả. Nếu mở ra ngoài thì
+phải đặt sau cổng xác thực thật, và điều đó phải do người quyết.
 """
 from __future__ import annotations
 
 import pathlib
 import sys
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import JSONResponse, PlainTextResponse
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Form, HTTPException, UploadFile, File
+from fastapi.responses import PlainTextResponse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from api import jobs
-from src.giao_dien import (CAN_MODEL, GIAY_MOI_LUOT, kiem_model, luu_tam,
-                           ten_file_ket_qua)
-from src.ingestion.docx_reader import read_docx
-from src.version import PHIEN_BAN_C3, commit_hien_tai
+from src.cong_viec import BoChay, KhoCongViec                    # noqa: E402
+from src.giao_dien import kiem_model, luu_tam                    # noqa: E402
+from src.version import PHIEN_BAN_C3, commit_hien_tai            # noqa: E402
 
-GOC = pathlib.Path(__file__).resolve().parents[1]
-THU_MUC_TAI = GOC / "data" / "tai_len"
+DUOI_CHO_PHEP = ".docx"
+CO_TOI_DA = 80 * 1024 * 1024        # 80 MB — bản sizing lớn nhất trong kho ~12 MB
 
-app = FastAPI(title="Sizing Copilot API", version=PHIEN_BAN_C3,
-              description="Công cụ cố vấn tự kiểm bản định cỡ. KHÔNG phê duyệt — "
-                          "người thẩm định quyết định cuối cùng.")
+# Trần mức song song NHẬN từ người gọi. 12 là điểm bão hoà đo được 2026-09-09 và
+# mức 24 CHẬM HƠN, nên để người gọi đặt 64 là để họ tự làm chậm chính mình — và
+# làm chậm cả người đang xếp hàng phía sau.
+SONG_SONG_TOI_DA = 24
+
+kho = KhoCongViec()
+bo_chay = BoChay(kho)
+
+
+@asynccontextmanager
+async def vong_doi(_app: FastAPI):
+    bo_chay.bat_dau()
+    yield
+    bo_chay.dung()
+
+
+app = FastAPI(title="Sizing Copilot", version=PHIEN_BAN_C3, lifespan=vong_doi)
 
 
 @app.get("/health")
-def health():
-    tt = kiem_model()
-    return {"trang_thai": "sống", "model": tt.san_sang, "chat_model": tt.chat_model,
-            "phien_ban": PHIEN_BAN_C3, "commit": commit_hien_tai()}
+def health() -> dict:
+    """Sống chưa, và có cấu hình model chưa — HAI câu hỏi khác nhau.
 
-
-@app.post("/review")
-async def review(f: UploadFile = File(...),
-                 chi_nhom: str = Form(""),
-                 chi_vong: int = Form(0),
-                 doc_anh: bool = Form(False),
-                 song_song: int = Form(6),
-                 gia_lap: bool = Form(False)):
-    """Nộp một bản sizing `.docx` để thẩm định. Trả `id_job` để hỏi kết quả.
-
-    `chi_nhom`: "KPI,CPU" — giới hạn nhóm quy tắc cho rẻ khi thử.
-    `chi_vong`: 0 = cả hai vòng, 1 = chỉ checklist, 2 = chỉ Guideline.
-    `doc_anh`: đọc ảnh (2.3) — mỗi ảnh thuộc loại đã chọn tốn thêm ~1 lượt gọi.
-    `gia_lap`: chạy bằng model giả — KIỂM HẠ TẦNG, kết quả vô nghĩa về chất lượng.
+    Container chạy được mà chưa có `config/settings.yaml` là trạng thái hợp lệ
+    (image cố ý không mang file đó theo), nên `health` vẫn 200 — nhưng phải NÓI
+    RA, đừng để người triển khai tưởng đã cấu hình xong.
     """
-    if not f.filename or not f.filename.lower().endswith(".docx"):
-        raise HTTPException(415, "Cần tệp .docx — pipeline đọc Word, không phải PDF.")
-
-    noi_dung = await f.read()
-    if len(noi_dung) < 1000:
-        raise HTTPException(422, "Tệp rỗng hoặc quá nhỏ để là một bản sizing.")
-    try:
-        p = luu_tam(noi_dung, f.filename, thu_muc=str(THU_MUC_TAI))
-        read_docx(str(p))            # bắt lỗi file hỏng TRƯỚC khi xếp hàng
-    except Exception as e:
-        raise HTTPException(422, f"Không đọc được .docx: {type(e).__name__}: {e}")
-
-    tuy_chon = {
-        "chi_nhom": [x.strip() for x in (chi_nhom or "").split(",") if x.strip()] or None,
-        "chi_vong": chi_vong or None,
-        "doc_anh": bool(doc_anh),
-        "song_song": max(1, min(16, int(song_song := song_song or 6))),
-        "gia_lap": bool(gia_lap),
-    }
-    id_job = jobs.tao(f.filename, tuy_chon)
-    jobs.khoi_dong_worker(id_job)
-    return {"id_job": id_job, "trang_thai": "cho",
-            "hỏi_kết_quả": f"GET /result/{id_job}"}
+    tt = kiem_model()
+    return {"song": True, "phien_ban": PHIEN_BAN_C3, "commit": commit_hien_tai(),
+            "model_san_sang": tt.san_sang, "ghi_chu_model": tt.thong_diep.strip(),
+            "dang_cho": sum(1 for c in kho.danh_sach() if not c.xong_roi)}
 
 
-@app.get("/result/{id_job}")
-def ket_qua(id_job: str, chi_bao_cao: bool = False):
-    try:
-        j = jobs.nap(id_job)
-    except jobs.JobKhongTonTai:
-        raise HTTPException(404, f"Không có job {id_job}.")
-    if chi_bao_cao and j.get("trang_thai") == "xong":
-        return PlainTextResponse(j["kq"]["bao_cao"])
-    return j
+@app.post("/review", status_code=202)
+async def review(
+    file: UploadFile = File(...),
+    nhom: str = Form("", description="giới hạn nhóm quy tắc C3, vd «KPI,CPU»"),
+    vong: int | None = Form(None, description="1 hoặc 2; để trống là cả hai"),
+    song_song: int | None = Form(None, description=f"1..{SONG_SONG_TOI_DA}"),
+) -> dict:
+    ten = pathlib.Path(file.filename or "").name
+    if not ten.lower().endswith(DUOI_CHO_PHEP):
+        raise HTTPException(400, f"Chỉ nhận file {DUOI_CHO_PHEP}; nhận được «{ten}»")
+    noi_dung = await file.read()
+    if not noi_dung:
+        raise HTTPException(400, "File rỗng")
+    if len(noi_dung) > CO_TOI_DA:
+        raise HTTPException(413, f"File {len(noi_dung) / 1e6:.1f} MB, vượt "
+                                 f"{CO_TOI_DA / 1e6:.0f} MB")
+
+    if vong not in (None, 1, 2):
+        raise HTTPException(400, "«vong» chỉ nhận 1, 2 hoặc để trống")
+    if song_song is not None and not 1 <= song_song <= SONG_SONG_TOI_DA:
+        raise HTTPException(400, f"«song_song» phải trong 1..{SONG_SONG_TOI_DA}")
+
+    # Danh sách khoá CHO PHÉP, không phải danh sách chặn: một trường lạ lọt vào
+    # `pipeline.chay` sẽ thành `TypeError` giữa chừng một lượt chạy 16 phút.
+    tuy_chon: dict = {}
+    if nhom.strip():
+        tuy_chon["chi_nhom"] = [x.strip() for x in nhom.split(",") if x.strip()]
+    if vong is not None:
+        tuy_chon["chi_vong"] = vong
+    if song_song is not None:
+        tuy_chon["song_song"] = song_song
+
+    duong_dan = luu_tam(noi_dung, ten)
+    cv = kho.them(ten, str(duong_dan), tuy_chon)
+    bo_chay.nop(cv)
+    return {**cv.as_dict(),
+            "ghi_chu": "Đã nhận. Một tài liệu tốn khoảng 16 phút; hỏi lại bằng "
+                       f"GET /result/{cv.ma}."}
+
+
+@app.get("/result/{ma}")
+def result(ma: str) -> dict:
+    cv = kho.lay(ma)
+    if cv is None:
+        raise HTTPException(404, f"Không có việc nào mã «{ma}»")
+    d = cv.as_dict()
+    if cv.trang_thai == "xong":
+        d["bao_cao"] = kho.bao_cao(ma) or ""
+    return d
+
+
+@app.get("/result/{ma}/bao-cao", response_class=PlainTextResponse)
+def bao_cao(ma: str) -> str:
+    cv = kho.lay(ma)
+    if cv is None:
+        raise HTTPException(404, f"Không có việc nào mã «{ma}»")
+    if cv.trang_thai != "xong":
+        raise HTTPException(409, f"Việc đang ở trạng thái «{cv.trang_thai}», "
+                                 "chưa có báo cáo")
+    return kho.bao_cao(ma) or ""
 
 
 @app.get("/jobs")
-def cac_job():
-    jobs.don_cu()
-    return {"jobs": jobs.danh_sach()}
+def jobs() -> dict:
+    return {"cong_viec": [c.as_dict() for c in kho.danh_sach()]}
 
 
-@app.get("/uoc-luong")
-def uoc_luong_get(chi_nhom: str = "", chi_vong: int = 0, so_phan_he: int = 5):
-    """Ước lượng chi phí — cùng công thức với giao diện, in TRƯỚC khi nộp job."""
-    from src.giao_dien import uoc_luong as uoc
-    # Không có tài liệu ở đây nên chỉ ước lượng theo bộ quy tắc; số bảng = 0 ⇒ cẩn thận
-    from src.validators.rules_loader import load_rules
-    ul = uoc.__wrapped__ if hasattr(uoc, "__wrapped__") else None
-    from src.extraction.extractor import uoc_tinh_luot_goi
-    from src.validators.qualitative import uoc_tinh_luot_goi_dt
-    rs = load_rules()
-    nhom = [x.strip() for x in chi_nhom.split(",") if x.strip()] or None
-    vong = chi_vong or None
-    c3 = uoc_tinh_luot_goi(rs, chi_nhom=nhom, so_phan_he=so_phan_he, so_bang=0)["tong"]
-    c5 = uoc_tinh_luot_goi_dt(rs, so_phan_he, chi_vong=vong, chi_ma=nhom)
-    return {"c3": c3, "c5": c5, "tong": c3 + c5,
-            "phut_1_luong": round((c3 + c5) * 40 / 60),
-            "luu_y": "chưa tính bảng của tài liệu — số thật sẽ cao hơn; "
-                     "dùng để so sánh các lựa chọn bộ lọc, không phải hứa hẹn"}
+@app.delete("/result/{ma}")
+def xoa(ma: str) -> dict:
+    if not kho.xoa(ma):
+        raise HTTPException(404, f"Không có việc nào mã «{ma}»")
+    return {"da_xoa": ma}

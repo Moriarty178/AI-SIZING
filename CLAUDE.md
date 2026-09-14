@@ -86,11 +86,17 @@ Luồng: `Ingest → Extract → Validate → Report`. 7 thành phần:
 
 ```bash
 uv sync                          # cài phụ thuộc
-uv run pytest                    # chạy toàn bộ test
-uv run python -m eval.run_eval   # chạy eval set, in recall + false positive
+uv run --no-sync pytest          # chạy toàn bộ test (--no-sync BẮT BUỘC, xem dưới)
+uv run --no-sync python -m eval.run_eval   # chạy eval set, in recall + false positive
 uv run streamlit run ui/app.py   # mở giao diện thử
 uv run uvicorn api.main:app --reload   # chạy API
 ```
+
+⚠️ **`uv run` KHÔNG kèm `--no-sync` sẽ sinh lại `uv.lock` trước khi chạy** — mà
+repo cấm có `uv.lock` (`tests/test_dong_goi.py` khoá: Dockerfile dùng
+`uv pip install --system`, không dùng `--frozen`). Chạy test/scrips bằng
+`uv run --no-sync …`; đã thêm `uv.lock` vào `.gitignore` để lỡ sinh ra cũng
+không commit được.
 
 ## Cách làm việc trên dự án này
 

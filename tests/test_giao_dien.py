@@ -9,7 +9,8 @@ import pathlib
 import pytest
 
 from src.giao_dien import (CAN_MODEL, CHE_DO, TrangThaiModel, chay_checklist,
-                           che_do_kha_dung, kiem_model, luu_tam,
+                           che_do_kha_dung, kiem_model,
+                           kiem_model_qua_dich_vu, luu_tam,
                            ten_file_ket_qua, tom_tat_tai_lieu, uoc_luong)
 from src.ingestion.docx_reader import DocxDocument, Element
 
@@ -109,6 +110,34 @@ def test_ten_file_ket_qua():
         "Sizing X-checklist.csv"
 
 
+# --- trạng thái model đến TỪ DỊCH VỤ, không từ tiến trình giao diện --------
+class TestKiemModelQuaDichVu:
+    """Container `copilot-ui` không có khoá model và không nên có (B3)."""
+
+    def test_dich_vu_chet_thi_noi_ro_la_DICH_VU_chet(self):
+        from src.khach_api import SucKhoe
+        tt = kiem_model_qua_dich_vu(SucKhoe(song=False, thong_diep="không kết nối được"))
+        assert tt.san_sang is False
+        assert "dịch vụ" in tt.thong_diep.lower()
+
+    def test_dich_vu_song_nhung_chua_cau_hinh_model(self):
+        from src.khach_api import SucKhoe
+        tt = kiem_model_qua_dich_vu(SucKhoe(
+            song=True, model_san_sang=False,
+            ghi_chu_model="Chưa đặt biến môi trường SIZING_COPILOT_API_KEY"))
+        assert tt.san_sang is False
+        assert "SIZING_COPILOT_API_KEY" in tt.thong_diep
+
+    def test_dich_vu_san_sang_thi_MO_che_do_tham_dinh(self):
+        """Đây là ca hỏng thật 2026-09-14: API có khoá, giao diện thì không, và
+        giao diện giấu mất chế độ chính."""
+        from src.khach_api import SucKhoe
+        tt = kiem_model_qua_dich_vu(SucKhoe(
+            song=True, model_san_sang=True, ghi_chu_model="Sẵn sàng, model `x`"))
+        assert tt.san_sang is True
+        assert "tham_dinh" in che_do_kha_dung(tt)
+
+
 # ------------------------------------------------- chính trang Streamlit ---
 # Chỉ chạy khi máy có cài Streamlit (nó nằm ở nhóm phụ thuộc tuỳ chọn `ui`).
 # `AppTest` chạy thật `ui/app.py` không cần trình duyệt, nên bắt được lỗi cú pháp,
@@ -139,3 +168,59 @@ def test_trang_hien_o_TAI_TEP_khi_chua_chon_gi():
     at = _chay_app()
     assert not at.exception
     assert len(at.file_uploader) == 1
+
+
+# --- D3: nói thẳng giới hạn (2026-09-10) ------------------------------------
+class TestCauGioiHan:
+    def test_moi_cau_deu_co_noi_dung(self):
+        from src.giao_dien import cau_gioi_han
+        cs = cau_gioi_han()
+        assert len(cs) >= 5 and all(c.strip() for c in cs)
+
+    def test_KHONG_lam_tron_87_5_thanh_88(self):
+        """87,5% và 88% là hai điều khác nhau khi có người trích lại. `f"{:.0%}"`
+        làm tròn LÊN đúng con số sắp công bố."""
+        from src.giao_dien import _pt, cau_gioi_han
+        assert _pt(0.875) == "87,5%"
+        assert _pt(0.07, 0) == "7%"
+        assert any("87,5%" in c for c in cau_gioi_han())
+        assert not any("88%" in c for c in cau_gioi_han())
+
+    def test_neu_ca_con_so_YEU_NHAT_chu_khong_chi_con_so_dep(self):
+        """Nêu 87,5% mà giấu con số yếu là để người đánh giá tự suy ra một công
+        cụ khác công cụ thật. Nghiệm thu 2026-09-11 lộ ra con số yếu nhất: trong
+        nhóm đòi tính/so số, phần CODE thật sự tính lại được chỉ 1/71."""
+        from src.giao_dien import cau_gioi_han
+        van = " ".join(cau_gioi_han())
+        assert "đòi TÍNH hoặc SO số" in van
+        assert "7–8,5%" in van, "nêu DẢI ba lượt, không nêu một điểm đẹp nhất"
+        assert "1,4%" in van and "thật sự tính lại được" in van
+
+    def test_noi_ro_phan_nhieu_KHONG_phai_loi_cua_tai_lieu(self):
+        from src.giao_dien import cau_gioi_han
+        van = " ".join(cau_gioi_han())
+        assert "chưa đọc được" in van and "không phải** lỗi của bản sizing" in van
+
+    def test_noi_ro_CHUA_do_duoc_ti_le_bao_sai(self):
+        """Hạn chế lớn nhất còn lại. Im lặng về nó là để người dùng tưởng mọi
+        dòng đều đúng."""
+        from src.giao_dien import cau_gioi_han
+        assert any("Chưa đo được tỉ lệ báo sai" in c for c in cau_gioi_han())
+
+    def test_con_so_khop_voi_ket_qua_da_nghiem_thu(self):
+        """Mỗi con số phải kèm NGÀY và NGUỒN — để lần sau đo lại thì biết sửa ở
+        đâu, và để không ai trích một con số đã cũ. Khớp nghiệm thu 1.13
+        2026-09-11: ba lượt A · C · E ở nhiệt độ 0,1."""
+        import pathlib
+        from src.giao_dien import DO_LUONG
+        assert DO_LUONG.ngay == "2026-09-11" and DO_LUONG.ho_so == 14
+        assert DO_LUONG.so_luot == 3
+        assert DO_LUONG.recall_chinh == (0.865, 0.875)
+        assert DO_LUONG.recall_quyet_dinh == (5 / 71, 6 / 71)
+        assert abs(DO_LUONG.quyet_dinh_tinh - 1 / 71) < 1e-9
+        assert pathlib.Path(DO_LUONG.nguon).exists(), "nguồn phải là file có thật"
+
+    def test_dai_mot_diem_thi_khong_viet_thanh_dai(self):
+        from src.giao_dien import _dai
+        assert _dai((0.865, 0.875)) == "86,5–87,5%"
+        assert _dai((0.5, 0.5)) == "50%"

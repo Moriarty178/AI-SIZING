@@ -423,12 +423,54 @@ def _part_of(f: Finding, parts: list[dict]) -> str | None:
 # ---------------------------------------------------------------------------
 # Dựng Markdown
 # ---------------------------------------------------------------------------
-def _render_finding(f: Finding, labels: ReportLabels) -> list[str]:
+MAX_PHAN_HE_LIET_KE = 12    # nhiều hơn thì cắt bớt và ghi rõ còn bao nhiêu
+
+
+def gop_pham_vi(findings: list[Finding]) -> list[tuple[Finding, list[str]]]:
+    """Gộp CÙNG MỘT vấn đề lặp trên nhiều phân hệ thành một mục.
+
+    Đo trên báo cáo thật của VTracking (2026-09-10): **713 finding nhưng chỉ 99
+    mã quy tắc**, và 718 dòng tiêu đề chỉ có **151 câu khác nhau**. Mỗi quy tắc
+    lặp đúng 13 lần — 13 phân hệ, văn bản y hệt, chỉ khác `scope_key`. Riêng
+    dòng «Căn cứ» chiếm **103 KB = 30%** báo cáo vì trích nguyên tiêu chí 713
+    lần thay vì 99.
+
+    `khu_trung` không đụng được vào đây: khoá của nó có `scope_key`, mà đúng là
+    chúng khác nhau thật. Việc cần làm không phải khử trùng mà là **thôi lặp
+    lại**: nói một lần, kèm danh sách phân hệ.
+
+    KHÔNG phải giấu bớt (NT4): số lượng và tên từng phân hệ đều còn nguyên trong
+    dòng «Phân hệ». Giữ đúng thứ tự xuất hiện đầu tiên.
+    """
+    nhom: dict[tuple, list[Finding]] = {}
+    for f in findings:
+        nhom.setdefault((f.rule_ref, f.category, f.finding, f.severity,
+                         f.computed_evidence, f.suggestion), []).append(f)
+    ra: list[tuple[Finding, list[str]]] = []
+    for ds in nhom.values():
+        scopes = [f.scope_key for f in ds if f.scope_key]
+        ra.append((ds[0], scopes))
+    return ra
+
+
+def _dong_pham_vi(scopes: list[str]) -> str:
+    """«Phân hệ: A, B, C (13 phân hệ)» — cắt bớt khi quá dài, nhưng NÓI RA."""
+    n = len(scopes)
+    if n <= MAX_PHAN_HE_LIET_KE:
+        return ", ".join(scopes) + (f" ({n} phân hệ)" if n > 1 else "")
+    con = n - MAX_PHAN_HE_LIET_KE
+    return (", ".join(scopes[:MAX_PHAN_HE_LIET_KE])
+            + f" … và {con} phân hệ nữa ({n} phân hệ)")
+
+
+def _render_finding(f: Finding, labels: ReportLabels,
+                    scopes: list[str] | None = None) -> list[str]:
     sev = labels.severity_label(f.severity)
     cat = labels.category_label(f.category)
     lines = [f"- **[{sev}]** {f.finding}  _(nhóm: {cat})_"]
-    if f.scope_key:
-        lines.append(f"  - Phân hệ: {f.scope_key}")
+    pham_vi = scopes if scopes is not None else ([f.scope_key] if f.scope_key else [])
+    if pham_vi:
+        lines.append(f"  - Phân hệ: {_dong_pham_vi(pham_vi)}")
     if f.location:
         lines.append(f"  - Vị trí: {f.location}")
     # Căn cứ (NT2): mã quy tắc + trích dẫn RÚT GỌN — nguyên văn đầy đủ nằm ở
@@ -448,13 +490,95 @@ def _render_finding(f: Finding, labels: ReportLabels) -> list[str]:
     return lines
 
 
+MAX_O_BANG = 170            # cắt ô bảng cho khỏi tràn, có dấu … khi cắt
+
+
+def _o(s: str, toi_da: int = MAX_O_BANG) -> str:
+    """Một ô bảng Markdown: gộp xuống dòng, thoát `|`, cắt khi quá dài."""
+    t = " ".join((s or "").split()).replace("|", "\\|")
+    return t if len(t) <= toi_da else t[:toi_da - 1].rstrip() + "…"
+
+
+def _tom_tat_can_xu_ly(rep: "Report", labels: ReportLabels) -> list[str]:
+    """Mục đầu báo cáo: cái gì người viết phải SỬA, tách khỏi cái công cụ không đọc được.
+
+    Đo trên báo cáo thật (VTracking, 2026-09-10): sau khi đã cắt 88% số dòng, ba
+    phát hiện thật sự nói *"số của anh sai"* vẫn nằm ở **dòng 267/418** — sau 251
+    dòng checklist Vòng 1. Thứ đáng đọc nhất bị chôn ở 60% độ sâu.
+
+    KHÔNG đảo thứ tự các mục phía dưới: Vòng 1 đứng trước Vòng 2 là theo đúng
+    trình tự thẩm định (mục Vòng 1 trượt thì chặn Vòng 2). Chỉ NÊU LÊN ĐẦU.
+    """
+    nhieu = labels.vong2_chua_kiem
+    v1_thuc_chat = [f for f in rep.vong1 if f.category not in nhieu]
+    v1_nhieu = sum(1 for f in rep.vong1 if f.category in nhieu)
+    tong_nhieu = v1_nhieu + len(rep.vong2_chua_kiem)
+
+    L = ["## Cần xử lý trước khi nộp", ""]
+    if not rep.vong2_chua_dat and not v1_thuc_chat:
+        L += ["Trong phần đọc được, công cụ **không tìm thấy chỗ nào tính sai** và "
+              "**không thấy thành phần nào thiếu**.", ""]
+    if rep.vong2_chua_dat:
+        nhom = gop_pham_vi(rep.vong2_chua_dat)
+        L += [f"### {len(nhom)} chỗ số liệu CHƯA ĐẠT", "",
+              "_Công cụ tính lại được và thấy lệch. Đây là phần đáng xem trước nhất._",
+              ""]
+        for f, scopes in nhom:
+            vt = f" — {f.location}" if f.location else ""
+            L.append(f"1. **[{labels.severity_label(f.severity)}]** "
+                     f"{_o(f.finding, 220)}{vt}")
+        L += ["", "_Chi tiết kèm số liệu: mục «Vòng 2 → Chưa đạt» bên dưới._", ""]
+    if v1_thuc_chat:
+        L += [f"### {len(gop_pham_vi(v1_thuc_chat))} thành phần còn THIẾU", "",
+              "Checklist Vòng 1 — xem mục «Vòng 1» bên dưới.", ""]
+    if tong_nhieu:
+        L += [f"### {tong_nhieu} mục công cụ CHƯA ĐỌC ĐƯỢC", "",
+              "Xem bảng «Vòng 2 → Chưa kiểm được». **Đây không phải lỗi của bản "
+              "sizing** — công cụ không trích được số để kiểm. Nếu tài liệu CÓ "
+              "những số đó, trình bày chúng rõ hơn (thành bảng) sẽ giúp công cụ "
+              "đọc được; nếu CHƯA có thì đó là phần còn thiếu thật.", ""]
+    return L
+
+
+def _bang_chua_kiem(findings: list[Finding], labels: ReportLabels) -> list[str]:
+    """Mục «chưa kiểm được» dựng thành BẢNG, không phải danh sách đầy đủ.
+
+    Mục này nói *công cụ không đọc được chỗ này*, KHÔNG nói *tài liệu sai chỗ
+    này*. Với một tài liệu thật (VTracking, đo 2026-09-10) nó chiếm **586/724**
+    phát hiện, và mỗi mục kéo theo nguyên văn tiêu chí quy tắc — riêng các dòng
+    «Căn cứ» chiếm **30% toàn báo cáo**.
+
+    Trích tiêu chí đầy đủ ở đây không giúp người viết sizing thêm được gì: họ
+    chưa có gì để đối chiếu cả. Nên bảng giữ đủ **mã quy tắc · lý do · phạm vi**
+    — tra lại nguyên văn thì xem `config/rules.yaml`, và câu dưới bảng nói rõ
+    thế chứ không lặng lẽ bỏ.
+    """
+    if not findings:
+        return ["_(không có mục nào thiếu thông tin để kiểm)_"]
+    nhom = gop_pham_vi(findings)
+    ra = [
+        f"Công cụ **chưa đủ dữ liệu để kiểm** {len(findings)} lượt, gom thành "
+        f"**{len(nhom)}** mục dưới đây. Đây là chỗ công cụ KHÔNG ĐỌC ĐƯỢC — "
+        "không phải chỗ bản sizing sai.",
+        "",
+        "| Quy tắc | Mức | Vì sao chưa kiểm được | Phạm vi |",
+        "|---|---|---|---|",
+    ]
+    for f, scopes in nhom:
+        ra.append(f"| `{f.rule_ref or '—'}` | {labels.severity_label(f.severity)} "
+                  f"| {_o(f.finding)} | {_o(_dong_pham_vi(scopes) or 'cả hệ thống', 60)} |")
+    ra += ["", "_Nguyên văn tiêu chí từng quy tắc: xem `config/rules.yaml` theo mã ở "
+           "cột đầu._"]
+    return ra
+
+
 def _render_list(findings: list[Finding], labels: ReportLabels,
                  empty: str = "_(không có)_") -> list[str]:
     if not findings:
         return [empty]
     out: list[str] = []
-    for f in findings:
-        out += _render_finding(f, labels)
+    for f, scopes in gop_pham_vi(findings):
+        out += _render_finding(f, labels, scopes)
     return out
 
 
@@ -477,16 +601,25 @@ def to_markdown(rep: Report, labels: ReportLabels) -> str:
     L.append("")
     tong = (len(rep.vong1) + len(rep.vong2_chua_dat) + len(rep.vong2_chua_kiem)
             + len(rep.vong2_tam_hoan) + len(rep.khac))
-    L.append(f"- Tổng số phát hiện trình bày: **{tong}**")
+    muc = sum(len(gop_pham_vi(ds)) for ds in
+              (rep.vong1, rep.vong2_chua_dat, rep.vong2_chua_kiem,
+               rep.vong2_tam_hoan, rep.khac))
+    L.append(f"- Tổng số phát hiện: **{tong}**"
+             + (f", trình bày thành **{muc}** mục (cùng một vấn đề lặp trên nhiều "
+                "phân hệ được nói MỘT lần, kèm danh sách phân hệ)"
+                if muc < tong else ""))
     L.append(f"- Vòng 1 (checklist thành phần): **{len(rep.vong1)}** mục chưa đạt")
     L.append(f"- Vòng 2 (Guideline): **{len(rep.vong2_chua_dat)}** chưa đạt · "
              f"**{len(rep.vong2_chua_kiem)}** chưa kiểm được · "
              f"**{len(rep.vong2_tam_hoan)}** tạm hoãn vì trượt Vòng 1")
     if rep.khac:
         L.append(f"- Cảnh báo khác: **{len(rep.khac)}**")
-    L.append(f"- Đã lọc bỏ **{rep.so_loc_khong_can_cu}** phát hiện không có căn cứ (NT2); "
-             f"gộp **{rep.so_khu_trung}** phát hiện trùng.")
+    L.append(f"- Đã lọc bỏ **{rep.so_loc_khong_can_cu}** phát hiện không có căn cứ (NT2)"
+             + (f"; gộp **{rep.so_khu_trung}** phát hiện trùng hệt nhau."
+                if rep.so_khu_trung else "."))
     L.append("")
+
+    L += _tom_tat_can_xu_ly(rep, labels)
 
     # --- Vòng 1 ---------------------------------------------------------
     L.append("## Vòng 1 — Kiểm thành phần theo checklist")

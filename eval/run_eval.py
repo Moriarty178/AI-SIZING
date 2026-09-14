@@ -16,6 +16,7 @@ bản tìm thấy và ghi rõ bản nào đã dùng**, để người đọc bi�
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import sys
@@ -63,15 +64,40 @@ def _chu_ky(a, chi_nhom, ma_dt) -> dict:
             "gia_lap": bool(getattr(a, "gia_lap", False))}
 
 
-def duong_dan_diem_dung(tap: str) -> pathlib.Path:
-    return THU_MUC_DIEM_DUNG / f"diem-dung-{tap}.json"
+def duong_dan_diem_dung(tap: str, chu_ky: dict | None = None) -> pathlib.Path:
+    """Điểm dừng đặt tên theo CHỮ KÝ lượt chạy, không chỉ theo tập.
+
+    Trước 2026-09-09 tên file chỉ có `tap`, nên hai lượt `--tap dev` chạy cùng lúc
+    (ví dụ bước 3 chạy cả 14 hồ sơ, bước 4 chạy 3 hồ sơ để đo biên độ) đè lên
+    điểm dừng của nhau. Chữ ký khác nhau nên `--tiep-tuc` sau đó TỪ CHỐI file và
+    chạy lại từ đầu — một lượt 5 giờ bị ngắt ở giờ thứ 4 là mất trắng.
+    """
+    if chu_ky is None:
+        return THU_MUC_DIEM_DUNG / f"diem-dung-{tap}.json"
+    van = json.dumps(chu_ky, sort_keys=True, ensure_ascii=False, default=str)
+    ma = hashlib.sha256(van.encode("utf-8")).hexdigest()[:8]
+    return THU_MUC_DIEM_DUNG / f"diem-dung-{tap}-{ma}.json"
 
 
 def nap_diem_dung(tap: str, chu_ky: dict) -> tuple[dict, list[str]]:
     """Trả (dữ liệu hồ sơ đã chạy, ghi chú). Chữ ký lệch thì BỎ, không trộn."""
-    p = duong_dan_diem_dung(tap)
+    p = duong_dan_diem_dung(tap, chu_ky)
     if not p.exists():
-        return {}, []
+        # Đường lùi cho file theo lối đặt tên CŨ. Bản vá này ra đời giữa lúc một
+        # lượt dev nhiều giờ đang chạy; đổi tên file mà không có nhánh này thì
+        # `--tiep-tuc` của chính lượt ấy sẽ không tìm thấy gì.
+        cu = duong_dan_diem_dung(tap)
+        if cu.exists():
+            p = cu
+        else:
+            # Im lặng chạy lại từ đầu là một bước lùi so với bản cũ: trước đây
+            # người dùng ít nhất được báo "điểm dừng thuộc lượt khác". Giữ lời
+            # báo ấy bằng cách soi các điểm dừng KHÁC của cùng tập.
+            khac = sorted(THU_MUC_DIEM_DUNG.glob(f"diem-dung-{tap}-*.json"))
+            if khac:
+                return {}, [f"có {len(khac)} điểm dừng của tập `{tap}` nhưng thuộc "
+                            "lượt chạy khác bộ lọc — KHÔNG dùng lẫn, chạy lại từ đầu"]
+            return {}, []
     try:
         d = json.loads(p.read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -85,7 +111,7 @@ def nap_diem_dung(tap: str, chu_ky: dict) -> tuple[dict, list[str]]:
 
 def ghi_diem_dung(tap: str, chu_ky: dict, ho_so: dict) -> None:
     """Ghi nguyên tử sau MỖI hồ sơ — lượt chạy 2 giờ bị ngắt không được mất sạch."""
-    p = duong_dan_diem_dung(tap)
+    p = duong_dan_diem_dung(tap, chu_ky)
     try:
         p.parent.mkdir(parents=True, exist_ok=True)
         tam = p.with_suffix(".tmp")
@@ -164,6 +190,20 @@ def main() -> int:
         return 2
 
     in_phien_ban()
+
+    # Phán quyết thẩm định quyết định MẪU SỐ nhóm quyết định. Nạp hỏng thì phải
+    # biết NGAY — không phải sau 4 giờ gọi model. Lượt dev 2026-09-11 mất phán
+    # quyết đích danh mà không ai biết cho tới khi soi từng nhãn.
+    from eval.matching import nap_phan_quyet
+    _pq, _loi = nap_phan_quyet()
+    if _loi and not a.gia_lap:
+        print(f"\n✗ {_loi}")
+        print("  Phán quyết thẩm định 2026-09-09 không nạp được, nên mẫu số nhóm "
+              "quyết định sẽ SAI.")
+        print("  Kiểm `git status` — file này nằm trong repo, thiếu hoặc hỏng nghĩa "
+              "là bản mã đang chạy không khớp bản đã commit.")
+        return 2
+    print(f"  phán quyết thẩm định: {len(_pq)} nhãn ghi đích danh — nạp được")
     if not co_pillow():
         # Không dừng: recall khớp theo `rule_ref`, mà cảnh báo ảnh không có
         # `rule_ref` nên CON SỐ KHÔNG ĐỔI. Nhưng phần ảnh trong báo cáo sẽ gộp
@@ -390,7 +430,17 @@ def main() -> int:
             f"hoặc CAO GIẢ TẠO nếu lỗi mới phát sinh ở bản sau.")
     ev = doi_chieu(theo_ho_so, labels, tap=a.tap, file_da_dung=da_dung,
                    findings_theo_vong=theo_vong_ho_so or None)
-    ev.canh_bao = canh_bao
+    # GỘP, không ghi đè. Trước 2026-09-11 dòng này là `ev.canh_bao = canh_bao`
+    # và vứt mất mọi cảnh báo `doi_chieu` vừa thêm — gồm cả cảnh báo phán quyết
+    # thẩm định không áp dụng được. Lượt dev 2026-09-11 mất 4 nhãn phán quyết
+    # đích danh mà báo cáo không nói một chữ.
+    ev.canh_bao = canh_bao + ev.canh_bao
+    # …VÀ trỏ tên cũ vào danh sách của báo cáo. Bản vá đầu (2026-09-11 sáng) chỉ
+    # có dòng trên, nên các dòng thêm SAU đây — thời gian, đệm lời gọi, cảnh báo
+    # diễn tập — rơi vào danh sách cũ và biến mất. Lượt dev 15:06 cùng ngày ra
+    # báo cáo không có dòng thời gian và không có dòng đệm, tức không kiểm được
+    # nó có chạy đúng giao thức "đệm tắt" hay không.
+    canh_bao = ev.canh_bao
     ev.dien_tap = bool(a.gia_lap)
     ev.bo_loc = {"nhom C3": ",".join(chi_nhom) if chi_nhom else "",
                  "nhom C5": ",".join(ma_dt) if ma_dt else "",
@@ -424,8 +474,21 @@ def main() -> int:
     ra = THU_MUC_BAO_CAO / f"{ten}-{a.tap}-{time.strftime('%Y%m%d-%H%M%S')}.md"
     ra.parent.mkdir(parents=True, exist_ok=True)
     ra.write_text(bao_cao + "\n", encoding="utf-8")
+
+    # Bản chi tiết theo TỪNG nhãn, đi kèm file `.md`. Một lượt dev đầy đủ tốn
+    # ~7 giờ máy nội bộ; nếu chỉ lưu số tổng thì mỗi lần đổi cách xếp nhóm là
+    # phải chạy lại từ đầu. Đã vấp đúng chuyện đó ngày 2026-09-09.
+    ra_json = ra.with_suffix(".json")
+    ra_json.write_text(json.dumps(
+        {"tap": ev.tap, "bo_loc": ev.bo_loc, "dien_tap": ev.dien_tap,
+         "canh_bao": ev.canh_bao,
+         "ho_so": [{"dossier": h.dossier, "file_da_dung": h.file_da_dung,
+                    "ghi_chu": h.ghi_chu, "nhan": h.chi_tiet_nhan,
+                    "ma_finding_loai": h.ma_finding_loai}
+                   for h in ev.ho_so]},
+        ensure_ascii=False, indent=1), encoding="utf-8")
     print("\n" + bao_cao)
-    print(f"\nĐã ghi {ra}")
+    print(f"\nĐã ghi {ra}\nĐã ghi {ra_json} (chấm lại offline, không cần model)")
     return 0
 
 

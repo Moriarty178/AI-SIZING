@@ -38,6 +38,84 @@ CHE_DO = {
 CAN_MODEL = {"tham_dinh"}
 
 
+# --------------------------------------------------------------- giới hạn --
+# D3 — nói thẳng công cụ làm được gì và KHÔNG làm được gì, bằng số đã đo.
+#
+# Demo cho người ngoài mà không nêu những con số này là để họ tự suy ra một công
+# cụ khác với công cụ thật. Con số nào cũng phải kèm NGÀY và NGUỒN, để lần sau
+# đo lại thì biết sửa ở đâu — và để không ai trích một con số đã cũ.
+
+
+@dataclass(frozen=True)
+class ConSoDoDuoc:
+    """Kết quả đo thật, KHÔNG phải mục tiêu hay kỳ vọng. Dải = min–max các lượt."""
+
+    ngay: str
+    ho_so: int
+    so_luot: int
+    recall_chinh: tuple[float, float]       # thước đo hào phóng nhất
+    recall_quyet_dinh: tuple[float, float]  # nhóm nhãn đòi TÍNH/SO số
+    quyet_dinh_tinh: float                  # …trong đó CODE thật sự tính lại được
+    ty_le_chua_doc_duoc: float              # phần báo cáo là "không đọc được"
+    phut_moi_tai_lieu: int
+    nguon: str
+
+
+# Nghiệm thu 1.13 ngày 2026-09-11: ba lượt dev độc lập ở nhiệt độ 0,1, xếp nhóm
+# theo phán quyết 2026-09-09. Xem `docs/nghiem-thu-1.13-2026-09-11.md`.
+DO_LUONG = ConSoDoDuoc(
+    ngay="2026-09-11",
+    ho_so=14,
+    so_luot=3,
+    recall_chinh=(0.865, 0.875),
+    recall_quyet_dinh=(5 / 71, 6 / 71),
+    quyet_dinh_tinh=1 / 71,
+    ty_le_chua_doc_duoc=0.949,      # đo trên báo cáo VTracking 2026-09-10
+    phut_moi_tai_lieu=16,
+    nguon="docs/nghiem-thu-1.13-2026-09-11.md",
+)
+
+
+def _pt(x: float, le: int = 1) -> str:
+    """Phần trăm kiểu Việt: dấu phẩy thập phân, KHÔNG làm tròn mất chữ số.
+
+    `f"{0.875:.0%}"` cho «88%» — làm tròn LÊN đúng con số sắp công bố. 87,5% và
+    88% là hai điều khác nhau khi có người trích lại.
+    """
+    return f"{x * 100:.{le}f}".rstrip("0").rstrip(".").replace(".", ",") + "%"
+
+
+def _dai(ab: tuple[float, float]) -> str:
+    """«86,5–87,5%» — nêu DẢI đo được, không nêu một điểm đẹp nhất."""
+    a, b = (_pt(x).rstrip("%") for x in ab)
+    return f"{a}%" if a == b else f"{a}–{b}%"
+
+
+def cau_gioi_han(d: ConSoDoDuoc = DO_LUONG) -> list[str]:
+    """Những câu PHẢI hiện cho người dùng. Trả list để test được từng câu."""
+    return [
+        "Đây là công cụ **cố vấn**. Nó KHÔNG phê duyệt và KHÔNG từ chối — "
+        "người thẩm định vẫn quyết định cuối cùng.",
+
+        f"Đo trên **{d.ho_so} hồ sơ thật**, {d.so_luot} lượt độc lập ({d.ngay}): "
+        f"công cụ chạm tới **{_dai(d.recall_chinh)}** nhận xét của người thẩm "
+        f"định trên thước đo hào phóng nhất — nhưng chỉ "
+        f"**{_dai(d.recall_quyet_dinh)}** ở nhóm nhận xét đòi TÍNH hoặc SO số, và "
+        f"phần công cụ **thật sự tính lại được con số chỉ {_pt(d.quyet_dinh_tinh)}**. "
+        "Nhóm sau mới là chỗ khó, và là chỗ công cụ còn rất yếu.",
+
+        f"Khoảng **{_pt(d.ty_le_chua_doc_duoc, 0)}** số dòng trong báo cáo là "
+        "*«công cụ chưa đọc được chỗ này»* — **không phải** lỗi của bản sizing. "
+        "Đọc mục «Cần xử lý trước khi nộp» ở đầu báo cáo trước.",
+
+        "**Chưa đo được tỉ lệ báo sai.** Một phát hiện không khớp nhận xét nào "
+        "của người thẩm định KHÔNG có nghĩa nó sai — nên đừng coi mọi dòng là "
+        "đúng, cũng đừng coi là nhiễu. Kiểm lại từng dòng.",
+
+        f"Một tài liệu tốn khoảng **{d.phut_moi_tai_lieu} phút**.",
+    ]
+
+
 @dataclass
 class TrangThaiModel:
     san_sang: bool
@@ -64,6 +142,29 @@ def kiem_model(settings_path: str = "config/settings.yaml") -> TrangThaiModel:
     except Exception as e:                      # lỗi lạ của SDK cũng không được sập
         return TrangThaiModel(False, f"Chưa gọi được model — {type(e).__name__}: {e}")
     return TrangThaiModel(True, f"Sẵn sàng, model `{c.chat_model}`", c.chat_model)
+
+
+def kiem_model_qua_dich_vu(sk) -> TrangThaiModel:
+    """Trạng thái model là của DỊCH VỤ THẨM ĐỊNH, không phải của tiến trình vẽ giao diện.
+
+    Từ mục B3 (2026-09-09) giao diện KHÔNG gọi model — nó nộp file cho API rồi
+    tra theo mã việc. Nên container `copilot-ui` không có `SIZING_COPILOT_API_KEY`
+    và **không nên có**: khoá chỉ cần ở nơi thật sự gọi gateway.
+
+    Hỏi `kiem_model()` ngay trong container giao diện thì luôn nhận
+    «Chưa đặt biến môi trường SIZING_COPILOT_API_KEY», và `che_do_kha_dung` GIẤU
+    LUÔN chế độ «Thẩm định đầy đủ» — tức giấu đúng thứ người dùng mở giao diện để
+    làm, dù API bên cạnh vẫn chạy tốt. Xảy ra thật trên máy nội bộ 2026-09-14.
+
+    `sk` là `src.khach_api.SucKhoe`; nhận kiểu lỏng để `src/giao_dien.py` không
+    phải kéo theo mô-đun khách API chỉ vì một chú thích kiểu.
+    """
+    if not sk.song:
+        return TrangThaiModel(False, f"Chưa gọi được dịch vụ thẩm định — {sk.thong_diep}")
+    if not sk.model_san_sang:
+        return TrangThaiModel(
+            False, f"Dịch vụ chạy nhưng chưa gọi được model — {sk.ghi_chu_model}")
+    return TrangThaiModel(True, sk.ghi_chu_model or "Dịch vụ thẩm định sẵn sàng")
 
 
 def che_do_kha_dung(tt: TrangThaiModel) -> list[str]:
