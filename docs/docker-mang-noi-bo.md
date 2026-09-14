@@ -140,6 +140,34 @@ curl.exe http://localhost:8902/health          # "model_san_sang": true
 `docker compose restart` **không** đọc lại `.env` — nó khởi động lại đúng
 container cũ với đúng biến cũ. Phải `up -d` để compose dựng lại container.
 
+### Nút Run trong Docker Desktop — dùng được ngay
+
+Từ 2026-09-14, hai dịch vụ copilot khai `env_file: .env`, nên compose nạp
+**toàn bộ** `.env` vào container lúc chạy (khoá model, proxy, NO_PROXY). Cách
+chạy giản lược:
+
+```powershell
+copy .env.example .env                                    # điền khoá + proxy
+copy config\settings.example.yaml config\settings.yaml   # điền endpoint TRƯỚC
+docker compose build copilot
+```
+
+Sau đó mở **Docker Desktop → Containers → nhấn ▶ Run** trên compose là cả hai
+dịch vụ lên với đủ cấu hình — không cần đặt biến môi trường trong shell, không
+cần `docker exec` điền thêm gì. Bấm vào tab của từng container để xem log.
+
+Hai điều cần biết:
+
+- **`NO_PROXY` bắt buộc đi kèm proxy.** Proxy công ty (`10.207.156.52:3128`) chỉ
+  để BUILD. Khi `env_file` nạp `HTTP_PROXY` vào container LÚC CHẠY, lời gọi
+  gateway model (`http://10.221.58.70:8401`) sẽ đi vòng qua proxy công ty và
+  chết — trừ khi `NO_PROXY` liệt kê dải nội bộ `10.*`. `.env.example` đã ghi
+  sẵn; xoá đi là model «chưa gọi được» dù health vẫn xanh.
+- **`SIZING_COPILOT_API` trong `.env` chỉ là mẫu.** Trong compose, `environment`
+  đè giá trị này bằng `http://copilot:8000` (tên dịch vụ trong mạng compose) —
+  đúng luôn, dù `.env` ghi gì. Giá trị trong `.env` chỉ có tác dụng khi chạy
+  giao diện bằng `docker run` riêng ngoài compose.
+
 Khoá chỉ vào dịch vụ `copilot`. **Giao diện `copilot-ui` cố ý không có khoá**:
 từ mục B3 nó nộp bài cho API chứ không gọi model. Thanh bên lấy trạng thái model
 từ `/health` của API — trước 2026-09-14 nó tự dựng client tại chỗ, nên trong

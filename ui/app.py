@@ -135,7 +135,7 @@ def _khach() -> KhachAPI:
     return KhachAPI(st.session_state.get("dia_chi_api") or dia_chi_mac_dinh())
 
 
-def _bang_phan_hoi(kh: KhachAPI, d: dict):
+def _bang_phan_hoi(kh: KhachAPI, d: dict, ten_tai: str | None = None):
     """Bảng ghi chú cho người thẩm định — hiện khi việc đã xong.
 
     Findings cache trong session_state: editor chỉ vẽ khi `xong` nên không có

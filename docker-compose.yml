@@ -73,8 +73,17 @@ services:
       # `/app/.cache`, KHÔNG phải `/app/data` — bản 2026-09-11 gắn nhầm chỗ nên
       # việc đang chạy mất sạch mỗi lần container khởi động lại.
       - copilot-cache:/app/.cache
+    # Nạp TOÀN BỘ .env vào container: khoá model, proxy (chỉ tác dụng lúc chạy
+    # nếu code đọc chúng), v.v. — để Docker Desktop nút Run dùng được ngay mà
+    # không cần điền từng biến tay. `environment` bên dưới GHỐP ĐÈ lên env_file
+    # nên ràng buộc "khoá qua biến môi trường" vẫn giữ nguyên.
+    env_file:
+      - .env
     environment:
       - SIZING_COPILOT_API_KEY=${SIZING_COPILOT_API_KEY}
+      # Proxy từ .env chỉ để BUILD uv kéo gói. Lúc CHẠY, gateway model là địa
+      # chỉ nội bộ (10.221.58.70) — không được đi qua proxy công ty.
+      - NO_PROXY=localhost,127.0.0.1,10.*,192.168.*,172.16.*,copilot
     deploy:
       resources:
         limits:
@@ -100,15 +109,21 @@ services:
         condition: service_healthy
     ports:
       - "8903:8501"
+    env_file:
+      - .env
     environment:
       # `copilot` là tên dịch vụ trong mạng của compose. Mặc định của giao diện
       # là `http://localhost:8000`, tức BÊN TRONG chính container giao diện —
-      # không có gì ở đó.
+      # không có gì ở đó. `environment` ĐÈ lên giá trị SIZING_COPILOT_API đọc
+      # từ .env, nên trong mạng compose luôn dùng đúng địa chỉ này.
       - SIZING_COPILOT_API=http://copilot:8000
-      # ⚠️ CỐ Ý KHÔNG có `SIZING_COPILOT_API_KEY` ở đây. Giao diện nộp bài cho
-      # API chứ không gọi model (mục B3), nên khoá chỉ đặt ở dịch vụ `copilot`.
-      # Thanh bên lấy trạng thái model TỪ `/health` của API — trước 2026-09-14 nó
-      # tự dựng client tại chỗ, thiếu khoá là giấu luôn chế độ «Thẩm định đầy đủ».
+      # ⚠️ CỐ Ý KHÔNG có `SIZING_COPILOT_API_KEY` ở `environment`. Giao diện nộp
+      # bài cho API chứ không gọi model (mục B3), nên khoá chỉ đặt ở dịch vụ
+      # `copilot`. Thanh bên lấy trạng thái model TỪ `/health` của API — trước
+      # 2026-09-14 nó tự dựng client tại chỗ, thiếu khoá là giấu luôn chế độ
+      # «Thẩm định đầy đủ». LƯU Ý: `env_file` phía trên vẫn nạp khoá vào container
+      # (để nút Run của Docker Desktop dùng được ngay) nhưng code giao diện KHÔNG
+      # đọc biến đó — nó chỉ gọi API.
     volumes:
       - ./config/settings.yaml:/app/config/settings.yaml:ro
     command:
@@ -119,6 +134,16 @@ services:
       - --server.port=8501
       - --server.headless=true
       - --browser.gatherUsageStats=false
+    # Ghi đè HEALTHCHECK của image (trỏ 8000 — cổng của dịch vụ API): trong
+    # container GIAO DIỆN, Streamlit chạy ở 8501 nên trước đây luôn "unhealthy"
+    # dù ứng dụng chạy bình thường. Endpoint `_stcore/health` là health check
+    # chính thức của Streamlit.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8501/_stcore/health',timeout=4)\" || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     deploy:
       resources:
         limits:
