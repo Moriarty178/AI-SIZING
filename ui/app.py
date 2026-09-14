@@ -19,8 +19,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from src.giao_dien import (CAN_MODEL, CHE_DO, cau_gioi_han, chay_checklist,
                            che_do_kha_dung, chuan_bi_bang, gom_thay_doi,
                            kiem_model_qua_dich_vu, loc_bang, luu_tam,
-                           NHAN_PHAN_LOAI, spec_cot_bang, ten_file_ket_qua,
-                           tom_tat_tai_lieu, uoc_luong)
+                           NHAN_PHAN_LOAI, noi_dung_day_du, spec_cot_bang,
+                           ten_file_ket_qua, tom_tat_tai_lieu, uoc_luong)
 from src.ingestion.docx_reader import read_docx
 from src.khach_api import KhachAPI, LoiAPI, dia_chi_mac_dinh
 from src.version import PHIEN_BAN_C3, commit_hien_tai
@@ -166,12 +166,17 @@ def _bang_phan_hoi(kh: KhachAPI, d: dict, ten_tai: str | None = None):
         key=f"bang_{ma}_{muc}",       # key gồm filter: edit ở một lọc không nhảy
                                       # sang dòng khác ở lọc khác
         hide_index=True, num_rows="fixed",
-        disabled=[c for c in rows[0] if c not in ("ghi_chu", "phân loại")] if rows else None,
+        column_order=[c for c in (rows[0] if rows else {})
+                      if c != "xem"] + ["xem"],
+        disabled=[c for c in rows[0] if c not in ("ghi_chu", "phân loại", "xem")] if rows else None,
         column_config=spec_cot_bang(),
         height=420, use_container_width=True)
 
+    # data_editor với dữ liệu list THÌ TRẢ LIST (không phải DataFrame) — lỗi
+    # `'list' object has no attribute 'to_dict'` ngày 2026-09-14.
     if st.button("💾 Lưu ghi chú", type="primary"):
-        payload = gom_thay_doi(rows, sua.to_dict("records"))
+        payload = gom_thay_doi(rows, sua if isinstance(sua, list) else
+                               sua.to_dict("records"))
         if not payload:
             st.info("Chưa có thay đổi nào để lưu.")
         else:
@@ -180,6 +185,20 @@ def _bang_phan_hoi(kh: KhachAPI, d: dict, ten_tai: str | None = None):
                 st.success(f"Đã lưu {kq['da_luu']} mục vào nhật ký phản hồi.")
             except LoiAPI as e:
                 st.error(f"Lưu không thành công: {e}")
+
+    # Chi tiết đầy đủ: tick «xem» ở dòng cần đọc nguyên văn — bảng cắt «nội
+    # dung» ở 200 ký tự, không phải lăn ngược lên báo cáo phía trên.
+    xem = [r for r in (sua if isinstance(sua, list) else []) if r.get("xem")]
+    if xem:
+        for r in xem:
+            f = next((x for x in du_lieu.get("findings", [])
+                      if x["id"] == r["finding_id"]), None)
+            if f is not None:
+                st.markdown(
+                    f"**Chi tiết `{r['finding_id']}`** "
+                    f"({r['mức độ']} · {r['vị trí']})")
+                st.markdown(noi_dung_day_du(f))
+        st.caption("Bỏ tick «xem» để thu gọn.")
 
     st.caption("Đổi «Mức độ» hoặc đóng trang sẽ mất ghi chú CHƯA bấm Lưu.")
 

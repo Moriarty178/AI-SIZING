@@ -301,3 +301,34 @@ class TestBangPhanHoi:
         from src.giao_dien import chuan_bi_bang, gom_thay_doi
         goc = chuan_bi_bang([self._f()])
         assert gom_thay_doi(goc, [dict(r) for r in goc]) == []
+
+    def test_cot_xem_mac_dinh_False_va_khong_dhuy_hai_gom_thay_doi(self):
+        """Cột «xem» chỉ để mở khung chi tiết; tick nó KHÔNG được tính là thay
+        đổi cần lưu (Lưu hai lần không nhân bản dòng nhật ký)."""
+        from src.giao_dien import chuan_bi_bang, gom_thay_doi
+        goc = chuan_bi_bang([self._f()])
+        assert goc[0]["xem"] is False
+        sau = [dict(goc[0])]
+        sau[0]["xem"] = True
+        assert gom_thay_doi(goc, sau) == []
+
+    def test_noi_dung_day_du_khong_bi_cat_co_can_cu_va_goi_y(self):
+        """Bảng cắt «nội dung» 200 ký tự — khung chi tiết phải trả NGUYÊN VĂN
+        kèm căn cứ và gợi ý, để không phải lăn ngược lên báo cáo."""
+        from src.giao_dien import NOI_DUNG_TOI_DA, noi_dung_day_du
+        dai = "từ " * 300
+        f = {"finding": dai, "rule_quote": "CPU peak ≤ 70%",
+             "computed_evidence": "85% > 70%", "suggestion": "Tăng lên 8 vCPU"}
+        van_ban = noi_dung_day_du(f)
+        assert van_ban.startswith(dai.strip())          # nguyên văn, KHÔNG cắt
+        assert len(van_ban) > NOI_DUNG_TOI_DA
+        assert "Nguyên văn quy tắc:** CPU peak ≤ 70%" in van_ban
+        assert "Căn cứ tính toán:** 85% > 70%" in van_ban
+        assert "Gợi ý sửa:** Tăng lên 8 vCPU" in van_ban
+
+    def test_noi_dung_day_du_bo_qua_phan_trong_va_rong(self):
+        """Chi tiết là NGUYÊN VĂN (chỉ strip hai đầu) — khác cột bảng có gộp dòng."""
+        from src.giao_dien import noi_dung_day_du
+        assert noi_dung_day_du({}) == "(không có nội dung)"
+        van = noi_dung_day_du({"finding": "  có khoảng trắng  "})
+        assert van == "có khoảng trắng"

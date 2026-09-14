@@ -302,6 +302,7 @@ def chuan_bi_bang(findings: list[dict],
             "nhóm": _NHOM_NHAN.get(f.get("nhom", ""), f.get("nhom", "")),
             "ghi_chu": ghi,
             "phân loại": PHAN_LOAI.get(loai, PHAN_LOAI[""]),
+            "xem": False,
         })
     return rows
 
@@ -345,6 +346,24 @@ COT_DOC_ONLY = ["finding_id", "mức độ", "mã quy tắc", "nội dung", "v�
                 "phân hệ", "nhóm"]
 COT_RONG = ["nội dung", "ghi_chu"]        # cột cho phép rộng — text dài
 COT_TUY_CHON = ["phân loại"]
+COT_XEM = "xem"                           # checkbox tạm xem chi tiết dưới bảng
+
+
+def noi_dung_day_du(f: dict) -> str:
+    """Markdown chi tiết ĐẦY ĐỦ của một finding cho khung xem dưới bảng.
+
+    Bảng cắt «nội dung» ở 200 ký tự để vừa cột; khung này trả nguyên văn kèm
+    căn cứ (quote/evidence) và gợi ý sửa — người thẩm định không phải lăn ngược
+    lên báo cáo để đọc chi tiết.
+    """
+    cac_phan = [str(f.get("finding") or "").strip() or "(không có nội dung)"]
+    if f.get("rule_quote"):
+        cac_phan.append(f"**Nguyên văn quy tắc:** {f['rule_quote']}")
+    if f.get("computed_evidence"):
+        cac_phan.append(f"**Căn cứ tính toán:** {f['computed_evidence']}")
+    if f.get("suggestion"):
+        cac_phan.append(f"**Gợi ý sửa:** {f['suggestion']}")
+    return "\n\n".join(cac_phan)
 
 
 def spec_cot_bang() -> dict:
@@ -357,6 +376,9 @@ def spec_cot_bang() -> dict:
         "nội dung": st.column_config.TextColumn(width="large"),
         "ghi_chu": st.column_config.TextColumn(width="large"),
         "phân loại": st.column_config.SelectboxColumn(options=NHAN_PHAN_LOAI),
+        COT_XEM: st.column_config.CheckboxColumn(
+            "🔍 Xem chi tiết", help="Tick để hiện nguyên văn đầy đủ + căn cứ + "
+            "gợi ý sửa ngay dưới bảng.", default=False),
     }
 
 
