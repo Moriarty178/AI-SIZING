@@ -94,13 +94,21 @@ sang môi trường khác sẽ không kéo theo địa chỉ proxy của một m
 
 ## 4. Chạy
 
-### Cách gọn nhất: cả hai dịch vụ bằng một lệnh
+Copilot nằm trong `docker-compose.yml` cùng `backend`/`nginx` sẵn có, dùng
+`Dockerfile.copilot`. Hai dịch vụ, **một image**:
+
+| Dịch vụ | Cổng | Là gì |
+|---|---|---|
+| `copilot` | `8902 → 8000` | API thẩm định |
+| `copilot-ui` | `8903 → 8501` | giao diện nộp bài |
 
 ```powershell
-copy config\settings.example.yaml config\settings.yaml   # điền endpoint trước
-docker compose -f docker-compose.copilot.yml up --build
-#  → API       http://localhost:8000/health
-#  → Giao diện http://localhost:8501
+copy config\settings.example.yaml config\settings.yaml   # điền endpoint TRƯỚC
+$env:COMMIT = (git rev-parse --short HEAD)
+docker compose build copilot
+docker compose up -d copilot copilot-ui
+#  → API       http://localhost:8902/health
+#  → Giao diện http://localhost:8903
 ```
 
 ⚠️ **Tạo `config/settings.yaml` TRƯỚC.** Bind-mount một file chưa tồn tại thì
@@ -113,18 +121,18 @@ mã việc, nên đóng tab không mất kết quả.
 ### Hoặc chạy từng cái
 
 ```powershell
-# API (mặc định) — cổng 8000
-docker run --rm -p 8000:8000 `
+# API — cổng 8902
+docker run --rm -p 8902:8000 `
   -e SIZING_COPILOT_API_KEY=$env:SIZING_COPILOT_API_KEY `
   -v "${PWD}\config\settings.yaml:/app/config/settings.yaml:ro" `
+  -v copilot-cache:/app/.cache `
   sizing-copilot:dev
 
-# Giao diện Streamlit — cổng 8501
-docker run --rm -p 8501:8501 `
-  -e SIZING_COPILOT_API_KEY=$env:SIZING_COPILOT_API_KEY `
-  -v "${PWD}\config\settings.yaml:/app/config/settings.yaml:ro" `
+# Giao diện Streamlit — cổng 8903
+docker run --rm -p 8903:8501 `
+  -e SIZING_COPILOT_API=http://host.docker.internal:8902 `
   sizing-copilot:dev `
-  streamlit run ui/app.py --server.address=0.0.0.0 --server.headless=true
+  streamlit run ui/app.py --server.address=0.0.0.0 --server.port=8501 --server.headless=true
 ```
 
 Chạy tay thì phải chỉ cho giao diện biết API ở đâu:
@@ -137,7 +145,7 @@ Chạy tay thì phải chỉ cho giao diện biết API ở đâu:
 ```powershell
 docker run --rm sizing-copilot:dev python scripts/khoi_dong_thu.py   # mã thoát 0
 docker run --rm sizing-copilot:dev sh -c "du -sh /app; ls /app"      # KHÔNG có hồ sơ khách
-curl http://localhost:8000/health
+curl.exe http://localhost:8902/health
 ```
 
 Lệnh thứ hai là lệnh quan trọng nhất: nó chứng minh **176 MB hồ sơ sizing thật
@@ -149,8 +157,12 @@ Một tài liệu tốn ~16 phút. Muốn trạng thái công việc sống sót
 đệm ra ngoài:
 
 ```powershell
-docker run --rm -p 8000:8000 -v "${PWD}\.cache:/app/.cache" ... sizing-copilot:dev
+docker run --rm -p 8902:8000 -v copilot-cache:/app/.cache ... sizing-copilot:dev
 ```
+
+`docker-compose.yml` đã gắn sẵn volume `copilot-cache` vào **`/app/.cache`** —
+KHÔNG phải `/app/data`. Bản 2026-09-11 gắn nhầm chỗ nên việc đang chạy mất sạch
+mỗi lần container khởi động lại.
 
 Không mount thì việc đang chạy dở lúc container chết sẽ hiện trạng thái
 `gian_doan` kèm lời nhắn nộp lại — chứ không treo mãi ở `dang_chay`.
@@ -196,3 +208,28 @@ d = json.loads(urllib.request.urlopen("http://localhost:8000/result/<ma>")
                .read().decode("utf-8"))
 print(d["loi"])
 ```
+
+
+---
+
+## 7. Nộp một bản sizing để thử
+
+Cách gọn nhất — một lệnh, tự chờ, tự ghi báo cáo:
+
+```powershell
+py scripts/nop_bai.py "D:\duong\dan\Sizing ABC.docx" --api http://localhost:8902
+```
+
+Nó in mã việc ngay, rồi in tiến độ theo giai đoạn (C3 → C5) cho tới khi xong, và
+ghi `bao-cao-<mã>.md`. Đóng cửa sổ giữa chừng cũng không mất — tra lại bằng:
+
+```powershell
+py scripts/nop_bai.py --ma <mã việc> --api http://localhost:8902
+```
+
+Hoặc qua giao diện: mở `http://localhost:8903`, kéo file vào, chọn **Thẩm định
+đầy đủ**. Trang tự làm mới 5 giây một lần và hiện mã việc.
+
+**Một tài liệu tốn khoảng 16 phút.** Đọc mục «Cần xử lý trước khi nộp» ở đầu báo
+cáo trước — khoảng 95% số dòng còn lại là *«công cụ chưa đọc được chỗ này»*, không
+phải lỗi của bản sizing.

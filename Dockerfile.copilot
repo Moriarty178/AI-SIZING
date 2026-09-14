@@ -1,0 +1,89 @@
+# syntax=docker/dockerfile:1.7
+# Sizing Copilot — API (cổng 8000) + giao diện Streamlit (cổng 8501) trong MỘT image.
+#
+# Gốc là bản đã chạy được trên máy nội bộ 2026-09-11, giữ nguyên ba quyết định đã
+# trả giá để có: dùng `uv`, KHÔNG cài gói hệ thống, và CA nội bộ cho TLS lúc build.
+#
+#   docker compose build copilot            # đọc HTTP_PROXY/HTTPS_PROXY từ .env
+#   docker compose up -d copilot copilot-ui
+#
+# ## KHÔNG có `apt-get`, và đừng thêm
+#
+# Trong mạng nội bộ, proxy trả rác cho kho apt (`Clearsigned file isn't valid, got
+# NOSPLIT` — 2026-09-09), nên mọi `apt-get install` đều hỏng. Thứ duy nhất từng
+# cần là `git`, chỉ để đọc một chuỗi 7 ký tự; nay commit được đóng dấu lúc build.
+#
+# ## Cài bằng `uv pip install --system`, KHÔNG phải `uv sync --frozen`
+#
+# Repo **không có `uv.lock`**, mà `--frozen` đòi có. `--system` cài thẳng vào
+# Python của image nên không sinh `/app/.venv`, và `CMD`/`HEALTHCHECK` gọi được
+# `uvicorn`/`python` trần.
+#
+# ## Cài CẢ `ui`
+#
+# Bản 2026-09-11 chỉ có `--extra api` nên không chạy nổi Streamlit. Từ mục B3
+# (2026-09-09) giao diện nộp bài qua API chứ không tự chạy pipeline, nên hai dịch
+# vụ dùng chung một image, khác nhau ở `command`.
+
+FROM python:3.12-slim
+
+# uv: cài nhanh hơn pip nhiều lần. Đây là lần kéo registry THỨ HAI trong build —
+# nếu mạng nội bộ chặn ghcr.io thì đổi khối này sang `pip install` là chạy được.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_LINK_MODE=copy
+
+# Proxy chỉ có hiệu lực lúc BUILD (ARG, không phải ENV) — image mang sang môi
+# trường khác sẽ không kéo theo địa chỉ proxy của một mạng cụ thể.
+ARG HTTP_PROXY=""
+ARG HTTPS_PROXY=""
+ARG NO_PROXY="localhost,127.0.0.1"
+
+# `pyproject.toml` bắt buộc có nên lệnh COPY luôn thành công; `viettel-mitm-ca.pem*`
+# là tuỳ chọn — có thì copy, không có thì bỏ qua, nhờ dấu `*`. Máy ngoài mạng nội
+# bộ build không cần file này.
+#
+# ⚠️ Đánh đổi đã biết: file `.pem` nằm lại VĨNH VIỄN trong lớp image, kể cả sau
+# khi `rm`. Chấp nhận vì image này chỉ chạy trong mạng nội bộ và không đẩy lên
+# registry nào. Nếu có ngày đẩy đi, phải đổi sang BuildKit secret
+# (`--mount=type=secret`) — xem `docs/docker-mang-noi-bo.md` mục 3.
+COPY pyproject.toml README.md viettel-mitm-ca.pem* ./
+
+# Lớp phụ thuộc tách khỏi lớp mã nguồn: sửa code không phải cài lại từ đầu.
+COPY src ./src
+RUN CA=/app/viettel-mitm-ca.pem ; \
+    if [ -f "$CA" ]; then \
+        echo "→ dùng CA nội bộ cho TLS lúc build" ; \
+        export SSL_CERT_FILE="$CA" REQUESTS_CA_BUNDLE="$CA" ; \
+    fi ; \
+    uv pip install --system --no-cache ".[api,ui]"
+
+COPY config ./config
+COPY api ./api
+COPY ui ./ui
+COPY scripts ./scripts
+
+# Đóng dấu commit: container không có `.git`, mà dự án này đã đốt ba lượt chạy
+# model vì không nhận ra mình đang chạy mã cũ (`src/version.py`).
+ARG COMMIT=unknown
+ENV SIZING_COPILOT_COMMIT=${COMMIT}
+RUN printf '%s' "${COMMIT}" > /app/.commit
+
+# `/app/.cache` giữ trạng thái công việc (3.2) và đệm lời gọi model (2.12). Một
+# tài liệu tốn ~16 phút, đủ dài để container bị khởi động lại giữa chừng — nên
+# thư mục này phải là volume, xem `docker-compose.yml`.
+RUN mkdir -p /app/.cache \
+    && useradd --create-home --uid 10001 copilot \
+    && chown -R copilot:copilot /app
+USER copilot
+
+EXPOSE 8000 8501
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health',timeout=4).status==200 else 1)"
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

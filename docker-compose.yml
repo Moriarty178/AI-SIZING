@@ -43,5 +43,88 @@ services:
     networks:
       - app-net
 
+  # --------------------------------------------------------------- Copilot --
+  # AI tự kiểm bản định cỡ. Hai dịch vụ dùng CHUNG một image, khác nhau ở
+  # `command`: `copilot` chạy API, `copilot-ui` chạy giao diện nộp bài.
+  #
+  # Giao diện KHÔNG tự chạy pipeline (mục B3, 2026-09-09): một tài liệu tốn ~16
+  # phút, giữ kết nối chừng ấy thì proxy cắt rồi người dùng bấm lại — nhân đôi
+  # tải lên đúng cái cổng vốn đã là nút thắt. Nó nộp cho API rồi tra bằng MÃ
+  # VIỆC, nên đóng tab không mất kết quả.
+  copilot:
+    container_name: sizing-copilot
+    build:
+      context: .
+      dockerfile: Dockerfile.copilot
+      args:
+        # `uv` lúc BUILD đi qua proxy công ty (registry bị chặn trực tiếp).
+        - HTTP_PROXY=${HTTP_PROXY:-}
+        - HTTPS_PROXY=${HTTPS_PROXY:-}
+        # Đóng dấu phiên bản:  $env:COMMIT = git rev-parse --short HEAD
+        - COMMIT=${COMMIT:-unknown}
+    image: sizing-copilot:dev
+    ports:
+      - "8902:8000"
+    volumes:
+      # ⚠️ TẠO FILE NÀY TRƯỚC khi `up`. Bind-mount một file chưa tồn tại thì
+      # Docker tạo một THƯ MỤC trùng tên, và lỗi sau đó rất khó đoán.
+      - ./config/settings.yaml:/app/config/settings.yaml:ro
+      # Trạng thái công việc (3.2) và đệm lời gọi model (2.12) nằm ở
+      # `/app/.cache`, KHÔNG phải `/app/data` — bản 2026-09-11 gắn nhầm chỗ nên
+      # việc đang chạy mất sạch mỗi lần container khởi động lại.
+      - copilot-cache:/app/.cache
+    environment:
+      - SIZING_COPILOT_API_KEY=${SIZING_COPILOT_API_KEY}
+    deploy:
+      resources:
+        limits:
+          # C3/C5 chạy 12 luồng song song, mỗi luồng giữ ngữ cảnh tài liệu.
+          memory: 4G
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8000/health',timeout=3)\" || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: always
+    networks:
+      - app-net
+
+  copilot-ui:
+    container_name: sizing-copilot-ui
+    image: sizing-copilot:dev
+    depends_on:
+      copilot:
+        condition: service_healthy
+    ports:
+      - "8903:8501"
+    environment:
+      # `copilot` là tên dịch vụ trong mạng của compose. Mặc định của giao diện
+      # là `http://localhost:8000`, tức BÊN TRONG chính container giao diện —
+      # không có gì ở đó.
+      - SIZING_COPILOT_API=http://copilot:8000
+    volumes:
+      - ./config/settings.yaml:/app/config/settings.yaml:ro
+    command:
+      - streamlit
+      - run
+      - ui/app.py
+      - --server.address=0.0.0.0
+      - --server.port=8501
+      - --server.headless=true
+      - --browser.gatherUsageStats=false
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    restart: always
+    networks:
+      - app-net
+
+volumes:
+  copilot-cache:
+
 networks:
   app-net:

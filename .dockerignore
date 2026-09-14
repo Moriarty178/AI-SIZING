@@ -26,10 +26,13 @@
 # (Khoá API luôn qua biến môi trường SIZING_COPILOT_API_KEY, không bao giờ ở đây.)
 config/settings.yaml
 
-# Chứng chỉ CA nội bộ KHÔNG cần vào ngữ cảnh build: nó đi qua BuildKit secret
-# (`--secret id=ca_noi_bo,src=...`), nên không nằm lại trong lớp image nào.
+# Chứng chỉ nói chung KHÔNG vào ngữ cảnh build…
 *.pem
 *.crt
+# …TRỪ CA nội bộ của proxy TLS: `Dockerfile.copilot` cần nó để `uv` cài được gói
+# qua gateway MITM. Đánh đổi (file nằm lại trong lớp image) ghi ở đó và ở
+# `docs/docker-mang-noi-bo.md` mục 3. Máy ngoài không có file này vẫn build được.
+!viettel-mitm-ca.pem
 
 # `eval/` CỐ Ý không có trong danh sách mở: nó cần `data/eval_set.json` — nhãn
 # thẩm định nội bộ. Đo eval chạy thẳng từ repo trên máy nội bộ, không chạy trong
