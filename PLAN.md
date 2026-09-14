@@ -1245,7 +1245,12 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 
 ## GIAI ĐOẠN 4 — Vận hành & cải tiến  (liên tục)
 
-- [ ] 4.1 — Vòng phản hồi: người dùng đánh dấu finding đúng/sai trên giao diện
+- [x] 4.1 — Vòng phản hồi: người dùng đánh dấu finding đúng/sai trên giao diện
+  (2026-09-14: bảng ghi chú trong expander "Bảng ghi chú cho người thẩm định" khi
+  việc xong — cột Ghi chú + phân loại Chấp nhận/Báo sai/Cần bàn, lọc theo mức độ;
+  lưu ở `.cache/cong_viec/{ma}.phan_hoi.json` + nhật ký append-only
+  `.cache/phan_hoi/nhat-ky.csv` (utf-8-sig, mở bằng Excel). Xoá việc KHÔNG xoá
+  nhật ký. Cột phân loại là bổ sung so với đề nghị gốc — người dùng chốt 2026-09-14.)
 - [ ] 4.2 — Hằng tháng: rà finding bị đánh dấu sai, điều chỉnh quy tắc/prompt
 - [ ] 4.3 — Bổ sung bản sizing mới đã ký vào kho lịch sử + eval set
 - [ ] 4.4 — Cập nhật `rules.yaml` khi tài liệu tiêu chí đổi; CHẠY LẠI eval set sau mỗi lần
