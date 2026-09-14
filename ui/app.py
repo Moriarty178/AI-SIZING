@@ -16,9 +16,11 @@ import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.giao_dien import (CAN_MODEL, CHE_DO, cau_gioi_han, che_do_kha_dung,
-                           chay_checklist, kiem_model_qua_dich_vu, luu_tam,
-                           ten_file_ket_qua, tom_tat_tai_lieu, uoc_luong)
+from src.giao_dien import (CAN_MODEL, CHE_DO, cau_gioi_han, chay_checklist,
+                           che_do_kha_dung, chuan_bi_bang, gom_thay_doi,
+                           kiem_model_qua_dich_vu, loc_bang, luu_tam,
+                           NHAN_PHAN_LOAI, spec_cot_bang, ten_file_ket_qua,
+                           tom_tat_tai_lieu, uoc_luong)
 from src.ingestion.docx_reader import read_docx
 from src.khach_api import KhachAPI, LoiAPI, dia_chi_mac_dinh
 from src.version import PHIEN_BAN_C3, commit_hien_tai
@@ -133,6 +135,68 @@ def _khach() -> KhachAPI:
     return KhachAPI(st.session_state.get("dia_chi_api") or dia_chi_mac_dinh())
 
 
+def _bang_phan_hoi(kh: KhachAPI, d: dict):
+    """Bảng ghi chú cho người thẩm định — hiện khi việc đã xong.
+
+    Findings cache trong session_state: editor chỉ vẽ khi `xong` nên không có
+    rerun 5 giây đụng vào, nhưng cache còn cho phép mở lại tab không refetch.
+    """
+    ma = d["ma"]
+    kho_cache = f"findings_{ma}"
+    if kho_cache not in st.session_state:
+        try:
+            st.session_state[kho_cache] = kh.findings(ma)
+        except LoiAPI as e:
+            st.error(f"Không lấy được danh sách đánh giá: {e}")
+            return
+    du_lieu = st.session_state[kho_cache]
+
+    try:
+        ph_cu = kh.phan_hoi(ma).get("phan_hoi") or {}
+    except LoiAPI:
+        ph_cu = {}
+    rows_goc = chuan_bi_bang(du_lieu.get("findings", []), ph_cu)
+
+    muc = st.selectbox("Mức độ", ["Tất cả", "Nghiêm trọng", "Quan trọng",
+                                  "Nhẹ", "Thông tin"])
+    rows = loc_bang(rows_goc, muc)
+
+    sua = st.data_editor(
+        rows,
+        key=f"bang_{ma}_{muc}",       # key gồm filter: edit ở một lọc không nhảy
+                                      # sang dòng khác ở lọc khác
+        hide_index=True, num_rows="fixed",
+        disabled=[c for c in rows[0] if c not in ("ghi_chu", "phân loại")] if rows else None,
+        column_config=spec_cot_bang(),
+        height=420, use_container_width=True)
+
+    if st.button("💾 Lưu ghi chú", type="primary"):
+        payload = gom_thay_doi(rows, sua.to_dict("records"))
+        if not payload:
+            st.info("Chưa có thay đổi nào để lưu.")
+        else:
+            try:
+                kq = kh.luu_phan_hoi(ma, payload)
+                st.success(f"Đã lưu {kq['da_luu']} mục vào nhật ký phản hồi.")
+            except LoiAPI as e:
+                st.error(f"Lưu không thành công: {e}")
+
+    st.caption("Đổi «Mức độ» hoặc đóng trang sẽ mất ghi chú CHƯA bấm Lưu.")
+
+    try:
+        log = kh.nhat_ky()
+    except LoiAPI as e:
+        if getattr(e, "ma_http", None) == 404:
+            st.caption("Chưa có ghi chú nào được lưu trên máy chủ.")
+        else:
+            st.caption(f"Không lấy được nhật ký phản hồi: {e}")
+    else:
+        st.download_button("⬇ Tải nhật ký phản hồi (CSV — mở bằng Excel)",
+                           log.encode("utf-8-sig"),
+                           ten_file_ket_qua(ten_tai or d["ten_file"],
+                                            "phan-hoi", "csv"), "text/csv")
+
+
 def _hien_mot_viec(kh: KhachAPI, d: dict, ten_tai: str) -> bool:
     """Vẽ trạng thái một việc. Trả True nếu còn đang chạy (cần tự làm mới)."""
     bieu, nhan = NHAN_TRANG_THAI.get(d["trang_thai"], ("•", d["trang_thai"]))
@@ -169,6 +233,9 @@ def _hien_mot_viec(kh: KhachAPI, d: dict, ten_tai: str) -> bool:
                        ten_file_ket_qua(ten_tai or d["ten_file"], "bao-cao", "md"),
                        "text/markdown")
     st.markdown(bc)
+
+    with st.expander("📝 Bảng ghi chú cho người thẩm định", expanded=False):
+        _bang_phan_hoi(kh, d, ten_tai)
     return False
 
 

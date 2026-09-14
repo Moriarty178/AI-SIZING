@@ -57,3 +57,24 @@ def test_mau_Word_dung_duoc_thanh_docx_that():
     with zipfile.ZipFile(io.BytesIO(buf.getvalue())) as z:
         assert "word/document.xml" in z.namelist()
     assert buf.tell() > 10_000, "mẫu rỗng thì người đánh giá không thử được gì"
+
+
+def test_bang_phan_hoi_dung_cac_ham_logic_that():
+    """Bộ test của Streamlit không điều khiển được `data_editor` sâu, nên kiểm
+    đúng chuỗi hàm mà `_bang_phan_hoi` gọi với dữ liệu findings thật shape."""
+    from src.giao_dien import (NHAN_PHAN_LOAI, chuan_bi_bang, gom_thay_doi,
+                               loc_bang, spec_cot_bang)
+    assert set(spec_cot_bang()) >= {"nội dung", "ghi_chu", "phân loại"}
+    fs = [{"id": "KPI-02#App", "severity": "major", "category": "vuot_nguong",
+           "finding": "CPU vượt ngưỡng", "rule_ref": "KPI-02", "rule_quote": "",
+           "location": "Mục IV.1, trang 8", "computed_evidence": "",
+           "suggestion": "", "confidence": "cao", "checklist_ref": [],
+           "vong": 2, "scope_key": "App", "source_doc": "", "nhom": "vong2_chua_dat"}]
+    rows_goc = chuan_bi_bang(fs, {})
+    assert len(rows_goc) == 1
+    rows = loc_bang(rows_goc, "Tất cả")
+    assert rows == rows_goc
+    # nhãn selectbox khớp giá trị mặc định của dòng
+    assert rows[0]["phân loại"] in NHAN_PHAN_LOAI
+    # diff với chính nó rỗng — Lưu hai lần không nhân bản
+    assert gom_thay_doi(rows, [dict(r) for r in rows]) == []
