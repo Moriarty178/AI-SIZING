@@ -25,6 +25,24 @@ lượt B chỉ phát lại lượt A, script này in 100% ổn định, và con
 
 Lượt A thì KHÔNG cần tắt: một lượt lấy từ đệm vẫn tái hiện đúng đầu ra model
 gốc, nên so A với B vẫn là so hai lượt model độc lập.
+
+## Nếu việc demo KHÔNG có `findings.json`
+
+Tập finding chỉ được lưu từ bản 2026-09-14 (`KhoCongViec.luu_findings`). Việc
+chạy bằng image cũ hơn chỉ còn báo cáo Markdown — trong đó không có `finding_id`,
+nên không dựng lại được và không so được. Đừng cố phân tích cú pháp báo cáo.
+
+Cách rẻ: **nộp lại chính tài liệu ấy với đệm BẬT**. Lượt demo đã nạp đệm, nên
+gần như mọi lời gọi đều trúng — lượt này xong trong vài phút thay vì ~16, và tái
+hiện đúng đầu ra model của buổi demo, lần này có ghi `findings.json`. Đó là lượt A.
+Rồi tắt đệm và chạy lượt B như trên.
+
+Điều kiện: volume `copilot-cache` chưa bị xoá (`docker compose down -v` là xoá),
+và phần sinh lời gọi của C3/C5 chưa đổi — đổi thì khoá đệm đổi, lượt A sẽ gọi
+model thật và mất ~16 phút. Vẫn dùng được, chỉ lâu hơn.
+
+Điều KHÔNG quan trọng: lượt A đến từ đệm hay từ model. Phép đo cần **hai lượt
+model độc lập**; chỉ cần lượt B không được phát ra từ đệm của lượt A.
 """
 from __future__ import annotations
 
@@ -69,8 +87,15 @@ def _lay(kh: KhachAPI, ma: str, ten: str) -> tuple[dict, list[dict]]:
     try:
         d = kh.findings(ma)
     except LoiAPI as e:
-        sys.exit(f"✗ {ten} «{ma}» không có tập findings: {e}\n"
-                 "  Việc chạy trước bản 2026-09-14 không lưu findings — chọn việc mới hơn.")
+        sys.exit(
+            f"✗ {ten} «{ma}» không có tập finding để so: {e}\n"
+            "\n  Việc chạy bằng image trước 2026-09-14 chỉ còn báo cáo Markdown,\n"
+            "  mà báo cáo không mang `finding_id` nên không dựng lại được.\n"
+            "\n  Cách lấy lại lượt A mà không mất 16 phút — nộp lại ĐÚNG tài liệu ấy\n"
+            "  với đệm BẬT (buổi demo đã nạp đệm, nên hầu hết lời gọi sẽ trúng):\n"
+            f"    docker compose exec copilot printenv SIZING_COPILOT_KHONG_CACHE  # phải TRỐNG\n"
+            f"    py scripts/nop_bai.py <file.docx> --giong-nhu {ma}\n"
+            "  Xong trong vài phút là đệm trúng; ~16 phút là đệm trượt — vẫn dùng được.")
     return viec, list(d.get("findings", []))
 
 
@@ -207,6 +232,16 @@ def dung_bao_cao(kq: dict, va: dict, vb: dict, ma_a: str, ma_b: str) -> str:
         "chứ không phải *đã sửa xong*.",
         "- Dòng đổi mức độ/nhóm **> 10%** số khớp → cột Trạng thái của 5.6 bắt buộc "
         "phải hiện cả «lượt nào kết luận», không chỉ kết luận cuối.",
+        "",
+        "## Lượt nào gọi model thật",
+        "",
+        f"Lượt A chạy {va['giay_da_chay'] / 60:.1f} phút, lượt B "
+        f"{vb['giay_da_chay'] / 60:.1f} phút. Một tài liệu gọi model thật tốn "
+        "**~16 phút**; xong trong vài phút nghĩa là lượt đó lấy từ đệm.",
+        "",
+        "Lượt A lấy từ đệm thì KHÔNG sao — nó tái hiện đúng đầu ra model của lượt "
+        "gốc. **Lượt B lấy từ đệm mới là hỏng**: khi đó nó chỉ phát lại lượt A và "
+        "mọi tỉ lệ trên đây đều là 100% giả.",
         "",
         "## Cảnh báo về chính phép đo",
         "",
