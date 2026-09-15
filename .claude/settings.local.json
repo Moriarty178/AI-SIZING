@@ -50,9 +50,7 @@
       "Bash(perl -i -0777 -pe 's/#f0f9ff/#e9ecef/g;' frontend/index.html)",
       "Bash(cp frontend/style.css /tmp/style_backup.js)",
       "Bash(node --check frontend/script.js)",
-      "Bash(cp frontend/script.js /tmp/script_backup4.js)",
-      "Bash(uv sync *)",
-      "Bash(uv run *)"
+      "Bash(cp frontend/script.js /tmp/script_backup4.js)"
     ]
   }
 }

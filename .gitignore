@@ -44,3 +44,8 @@ bao-cao-*.md
 # Khoá gọi model, mật khẩu CSDL, địa chỉ proxy. Mẫu ở `.env.example`.
 .env
 uv.lock
+danh_sach_sizings_da_duyet/
+appved_sizing/
+.claude/
+ToolSizing.code-workspace
+tai_lieu_noi_bo/
