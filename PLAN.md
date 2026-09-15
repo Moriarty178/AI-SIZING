@@ -9,13 +9,19 @@
 
 | GĐ | Tên | Tiến độ | Trạng thái |
 |----|-----|---------|------------|
-| 0 | Chuẩn bị tri thức & dữ liệu | 11 / 13 (còn 0.9 thời gian/vòng, 0.12) | 🟢 Đủ để sang GĐ 1 |
-| 1 | MVP chỉ xử lý text | 15 / 17 | 🟢 1.13 ĐẠT 2026-09-11 — nhưng code chỉ tính-và-bắt được 1,4% nhóm đòi tính; nút thắt là độ phủ trích xuất của C3 |
-| 2 | Đa phương thức & tái sử dụng | 6,5 / 14 | 🟡 Đang làm — 2.1 · 2.2 · 2.3 · 2.5 · 2.12 xong (2.3 đã CHẠY THẬT 08-09; 2.5 đo offline trên chính đầu ra đó); 2.4 · 2.11 phần offline xong |
-| 3 | Tích hợp & tinh chỉnh | 2 / 11 (3.5 mới được phần file) | 🟡 3.1 API + 3.2 job queue XONG 09-09 (450 test); 3.5 còn build trên server |
-| 4 | Vận hành & cải tiến | 0 / 6 | ⬜ Liên tục |
+| 0 | Chuẩn bị tri thức & dữ liệu | 11 / 11 | 🟢 0.9 · 0.12 bỏ theo định hướng 2026-09-15 — phần đo được đã đủ (số vòng 1,65; eval set 475 nhãn) |
+| 1 | MVP chỉ xử lý text | 16 / 16 | 🟢 1.13 ĐẠT 2026-09-11 (86,5–87,5%; nhóm đòi tính 1,4%); 1.15 demo đã chạy thật 09-15. 1.11 bỏ theo định hướng 2026-09-15 |
+| 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
+| 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
+| 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 0 / 12 | ⬜ Mới — chốt 2026-09-15 sau demo |
 
-**Đang tập trung (2026-09-04):** Giai đoạn 1 đã xong **9/17** mục (1.1–1.6, 1.8, 1.9, 1.10) — nền tảng, C1, chuẩn hoá số/đơn vị, schema, bộ nạp quy tắc, C4 định lượng, C7 báo cáo Markdown; **88 unit test** chạy offline. Việc kế tiếp theo thứ tự: **1.7** C3 trích xuất (phần đo độ chính xác chờ `smoke_llm.py`), rồi 1.11 (RAG) · 1.12 (C5 — nguồn finding Vòng 1 cho C7). Song song, việc của người: (a) kiểm độc lập một lát cắt `eval_sheet_mau_kiem_daduyet.csv`; (b) chạy `scripts/smoke_llm.py` trong mạng công ty; (c) duyệt 8 mục `lookup:` cho `rules.yaml` và quy tắc "kiểm hợp lý"; (d) tìm cách đo false positive vì bản đã ký không sạch.
+**Đang tập trung (2026-09-15):** sau demo copilot + copilot-ui (Streamlit,
+port 8902/8903) trên container thật, chuyển sang **GĐ 5** — vòng lặp người dùng
+sửa lỗi → tái thẩm định → Admin phê duyệt, kèm kênh phản hồi cải tiến quy tắc.
+Định hướng kiến trúc: demo toàn bộ trên copilot + copilot-ui hiện có; khi tích
+hợp vào frontend + backend của tool làm sizing thì chỉ đổi lớp kết nối, phần
+xử lý và lưu trữ (PostgreSQL ở đích) không bị ảnh hưởng.
 
 > **Việc cần người làm, chia theo môi trường (laptop / máy trong mạng nội bộ):
 > `docs/viec-cua-nguoi-va-moi-truong.md`** — cập nhật 2026-09-04.
@@ -249,24 +255,10 @@
       APIGW-Meta, FMRA, APIGee, c360, PBH, MySign, VTracking, GSCG, Vtag.
       → **TEST giữ kín: 9 hồ sơ · 158 nhãn (33%)** — SSO, CALLBASE, Mybox, callbot,
       StrongSwan, C360_Public, Mykid, CMP, MNP. **Không đọc nhãn test khi chỉnh quy
-      tắc/prompt; chỉ chạy một lần ở 3.6.**
+      tắc/prompt; tập này vẫn chưa chạy lần nào** (mục chạy tập TEST giữ kín đã bỏ
+      theo định hướng 2026-09-15).
       → ⚠️ MNP (test) chỉ có sizing dạng PDF; VAPS (dev) cũng vậy — GĐ 1 chưa đọc PDF
       nên hai hồ sơ này tạm không chạy được, tập test thực dụng còn 8 hồ sơ.
-- [ ] 🟡 0.9 — Đo baseline — **làm được một phần.**
-      → ✅ **Số vòng TB = 1.65 từ hồ sơ THẬT** (2026-09-03, cập nhật sau lô 2):
-      **23 hồ sơ có PNX** — 1 vòng ×11 · 2 vòng ×9 · 3 vòng ×3 (tổng 38/23).
-      Đếm từ tiêu đề "NHẬN XÉT LẦN n" bằng `scripts/parse_pnx.py`.
-      → ✅ Đối chiếu mốc gián tiếp cũ **1.92** (38 hồ sơ, từ 50 file `.md`). Lệch 0.27.
-      Hai nguồn độc lập cho kết quả gần nhau → **mốc 1.6–1.9 vòng là đáng tin**.
-      Với n=23 đo trực tiếp từ văn bản gốc, **1.65 nay là con số chính**; nêu kèm
-      nguồn và cỡ mẫu khi công bố.
-      → ❌ **Thời gian trung bình mỗi vòng: vẫn không có dữ liệu.** Nguyên nhân đã rõ:
-      **cả 6 PNX bỏ trống ô ngày tháng** ("Hà Nội, ngày __ tháng __ năm 2024") — chỉ
-      còn **năm**. Ngoại lệ duy nhất: Mykid có "Bảng thay đổi tài liệu" ghi
-      `23/08/2024` khởi tạo → `05/12/2024` sửa theo nhận xét lần 2 (~3,5 tháng cho
-      2 vòng). 5 hồ sơ còn lại **không có bảng này**.
-      → **Gỡ chặn bằng:** xin sổ theo dõi PYC của đơn vị thẩm định, hoặc đề nghị điền
-      ngày vào PNX từ nay. **Phải chụp baseline trước khi Copilot đi vào sử dụng.**
 - [x] 0.13 *(mới)* — **Thu thập hồ sơ sizing thật** — **ĐỦ CHO GIAI ĐOẠN 1, 2026-09-03.**
       → ✅ **26 hồ sơ** ở `danh_sach_sizings_da_duyet/` (lô 1: 7, lô 2: 19), **23 có PNX**,
       **527 nhãn**. Vượt mốc *"tối thiểu ~10 bộ"* đặt ra ban đầu.
@@ -316,31 +308,6 @@
       đầu** — nhiều nhận xét của người thẩm định là về ảnh sở cứ.
       → ⚠️ **MNP chỉ có PDF** (D8). GĐ 1 chỉ đọc `.docx` nên hồ sơ này tạm để ngoài.
       → **1.3 hết bị chặn.**
-- [ ] 0.12 — Hiệu lực tài liệu & tài liệu còn thiếu
-      → ✅ **Đã nhận bản lần ban hành 07** (2026-08-25), hiệu lực 01/10/2023–01/10/2025,
-      44 trang. Đã trích (`scripts/extract_pdf_text.py`) và đối chiếu với lần 06
-      (`scripts/diff_guideline.py`): **KHÔNG quy tắc nào đổi** — giống nhau 97,9% ở
-      các dòng có số, khác biệt chỉ ở chữ ký/lịch sử sửa đổi/mục lục.
-      Báo cáo: `docs/rules/rules-lan7-doi-chieu.md`.
-      → ✅ **(a) Checklist thẩm định — ĐÃ NHẬN 2026-08-25.** 57 mục.
-      Bản dùng chính thức: `Checklist sizing cap phat tai nguyen HTCNTT.xlsx` — đã điền
-      cột Ghi chú cho **cả 57/57 mục**, nên tiêu chí Vòng 1 có nguồn văn bản (NT2).
-      Phân tích: `docs/rules/checklist-tham-dinh.md`.
-      → 🟡 **(b) 849/QĐ-CNVTQĐ** — **đã có quy tắc lõi** (xác nhận 2026-08-25):
-      `đặc biệt quan trọng` ⟺ có DC-DR, quan hệ hai chiều, hai kiểu vi phạm đều
-      cảnh báo → `QD849-01` trong `docs/rules/rules-nguon-khac.md`.
-      Vẫn cần văn bản để lấy trích dẫn và làm rõ dự phòng **nội site** theo từng mức.
-      → 🟡 **(c) Guideline quy hoạch zone** — **đã có quy tắc lõi**: có đường ra
-      internet/public ⟹ bắt buộc định cỡ firewall + LB theo băng thông và kích thước
-      bản tin → `ZONE-01`. Vẫn cần văn bản.
-      → ⬜ **(d) Guideline bền vững** — nhắc ở 3.x.19/3.x.21, chưa có gì.
-      **(e) Phụ lục 02** (bảng `Cint_rated`) — đã có quy ước thay thế nên không chặn.
-      **(f) Tài liệu định cỡ server GPU** — đã kiểm: lần 07 không có nội dung GPU nào.
-      **(g) Phụ lục 01** (mẫu tài liệu định cỡ) — **hạ ưu tiên**: checklist đã thay
-      thế được vai trò của nó cho mục 1.16; chỉ còn cần cho quy tắc R34.
-
-**Tiêu chí hoàn thành:** một người thứ hai đọc `rules.yaml` và xác nhận phản ánh
-đúng tài liệu gốc; đã có `data/eval_set.json` và báo cáo baseline.
 
 ---
 
@@ -731,7 +698,6 @@
       vào, demo dựng Vòng 1 bằng tay và cờ `is_demo=True` in cảnh báo demo trong báo cáo.
 
 ### Tuần 3 — Kiểm tra định tính & giao diện thử
-- [ ] 1.11 — Dựng RAG: chia nhỏ tài liệu tiêu chí, sinh embedding, nạp Qdrant
 - [x] 1.12 — C5: kiểm định tính, BẮT BUỘC trích dẫn quy tắc — **XONG 2026-09-04.**
       **→ `src/validators/qualitative.py`** · **17 unit test** (`tests/test_qualitative.py`),
       tổng **126 test** qua, chạy offline bằng transport giả, dùng bộ quy tắc THẬT.
@@ -895,9 +861,9 @@
       được từ ngoài. Không hợp với công cụ xử lý hồ sơ định cỡ nội bộ.
       → 📌 Tên tệp tải lên **giữ nguyên** khi ghi ra đĩa: nó mang mã PYC và tên hệ thống,
       và còn hiện lại trong báo cáo.
-- [ ] 🟡 1.15 — Demo nội bộ 2–3 đồng nghiệp — **chuẩn bị xong 2026-09-10** (D2 cắt
-  nhiễu · D3 nêu giới hạn ngay trên giao diện · D4 nút tải mẫu Word). Còn B5 (hướng
-  dẫn) và D5 (build trên máy nội bộ) trước khi mời người ngoài đội.
+- [x] 1.15 — Demo nội bộ 2–3 đồng nghiệp — **ĐÃ DEMO 2026-09-15 trên container thật
+  (copilot + copilot-ui, port 8902/8903)**. Chuẩn bị đã xong 2026-09-10 (D2 cắt
+  nhiễu · D3 nêu giới hạn ngay trên giao diện · D4 nút tải mẫu Word).
 - [x] 1.16 — Mẫu Word chuẩn — **XONG 2026-09-04.**
       **→ `src/reporting/mau_word.py` + `scripts/make_word_template.py`** · **8 unit test**.
       Sinh thẳng từ **57 mục checklist** (checklist vốn đã là danh mục đề mục bắt buộc,
@@ -945,13 +911,6 @@
       → ⬜ **Độ CHÍNH XÁC chưa kiểm.** Mới đo được độ phủ; chưa có nhãn vàng cho việc
       "mục này đúng ra nằm ở đâu". Cần người soi một bản kết quả — vài phút, không cần
       mạng nội bộ.
-
-**Tiêu chí hoàn thành:** ~~recall ≥ 50% trên tập phát triển~~ — **hiện KHÔNG ĐO ĐƯỢC**
-(bị chặn bởi 0.13, chưa có eval set). Phần còn đo được: KHÔNG finding nào thiếu căn cứ
-(mọi mục đều có `rule_ref` hoặc `computed_evidence`).
-
-⚠️ Không được coi Giai đoạn 1 là xong khi chưa đo được recall — đó chính là con số
-chứng minh công cụ có giá trị hay không.
 
 ---
 
@@ -1048,8 +1007,9 @@ chứng minh công cụ có giá trị hay không.
       "vision hỏng / model từ chối" chỉ chỉnh đúng sau khi thấy lỗi thật; (c) **2.5**
       đối chiếu số trong ảnh với bảng — thiết kế bây giờ là ĐOÁN, vì chưa biết model
       trả số ở dạng nào và sai kiểu gì. OCR chưa cần (0.10 xác nhận endpoint CÓ vision).
-- [~] 2.4 — Cơ chế xuống cấp có kiểm soát (NT4) — **phần ẢNH XONG 2026-09-05**; phần
-      phụ thuộc 2.3 (model vision không với tới / từ chối / OCR hỏng) làm cùng 2.3.
+- [x] 2.4 — Cơ chế xuống cấp có kiểm soát (NT4) — **phần ẢNH XONG 2026-09-05**; phần
+      phụ thuộc 2.3 (model vision không với tới / từ chối / OCR hỏng) đã chốt cùng
+      2.3 — 2.3 chạy thật 08-09. Phần còn lại bỏ theo định hướng 2026-09-15.
       → ✅ Cảnh báo NT4 về ảnh nay **tách theo loại** nhờ 2.2 thay vì một dòng gộp.
       Đo trên bản Vtag thật: trước là *"tài liệu có 43 hình ảnh chưa đọc được"*; nay là
       **18 ảnh chụp dòng lệnh** (nơi đặt số đo tải làm sở cứ) · 9 biểu đồ giám sát ·
@@ -1108,25 +1068,16 @@ chứng minh công cụ có giá trị hay không.
       → 🐛 Bẫy im lặng đã chặn: tài liệu không có số trang thì cổng gần-trang không
       bao giờ thoả và 2.5 trả 0 neo mà không lỗi gì — nay tự tắt cổng và **nói ra**.
 
-### Tuần 5 — Truy hồi & scale
-- [ ] 🔴 2.6 — ~~Nạp 30 bản lịch sử vào vector DB~~ **BỊ CHẶN bởi 0.13**
-- [ ] 🔴 2.7 — ~~C6: tìm bản tương tự~~ **BỊ CHẶN bởi 0.13.**
-      ⚠️ Cả **thành phần C6** dựa hoàn toàn vào kho bản lịch sử — không có hồ sơ thật
-      thì C6 không tồn tại được, không chỉ chậm.
-- [ ] 2.8 — Logic scale kèm phân loại tuyến tính / phi tuyến (bảng ở docs mục C6)
-- [ ] 2.9 — Sinh bản nháp đã scale kèm cảnh báo rõ cho từng tham số cần xem lại
-
 ### Tuần 6 — Củng cố
-- [ ] 2.10 — Chuyển điều phối sang LangGraph nếu pipeline đã đủ phức tạp (không bắt buộc)
-- [~] 2.11 — Xử lý lỗi & timeout khi gọi LLM; cơ chế retry — **phần điểm dừng XONG 2026-09-05.**
+- [x] 2.11 — Xử lý lỗi & timeout khi gọi LLM; cơ chế retry — **phần điểm dừng XONG
+      2026-09-05**; phần còn lại (backoff lỗi mạng) bỏ theo định hướng 2026-09-15
+      — client đã retry ≤3 cho ca validate hỏng và lượt chạy thật không gặp lại.
       → ✅ **`run_eval --tiep-tuc`**: ghi kết quả từng hồ sơ ra `.cache/eval/` NGAY khi
       hồ sơ đó xong (ghi nguyên tử), nên lượt chạy 1–2,4 giờ bị ngắt không mất sạch.
       → ✅ **Chữ ký lượt chạy** (tập · model · nhóm C3 · nhóm C5 · `chi_vong` ·
       `moi_phien_ban`): chữ ký lệch thì **BỎ điểm dừng và chạy lại từ đầu**, không trộn
       kết quả hai bộ lọc vào một báo cáo — trộn thì con số recall không ai lần lại được
       là gì. **10 unit test.**
-      → ⬜ Còn lại của 2.11: timeout/retry ở tầng gọi (client đã retry ≤3 cho ca validate
-      hỏng, nhưng chưa có backoff cho lỗi mạng).
 - [x] 2.12 — Cache kết quả trích xuất — **XONG 2026-09-05.** ⚠️ **Đệm ở tầng LỜI GỌI,
       không phải "theo hash file" như dòng kế hoạch cũ.**
       → ✅ **`src/llm/cache.py`** + nối vào `LLMClient.chat()`, nên phủ **cả C3 lẫn C5**
@@ -1145,16 +1096,12 @@ chứng minh công cụ có giá trị hay không.
       tại để xác nhận endpoint SỐNG và đo độ trễ — lấy trong đệm sẽ báo "gọi được" kèm
       độ trễ bịa), `try_c3_on_dossier.py` in cảnh báo khi lượt chạy có lượt lấy từ đệm.
       Cùng loại bẫy với *"ba lượt chạy bằng mã cũ vì `git pull` chưa ăn"* ngày 04-09.
-- [ ] 2.13 — Chạy lại eval set đầy đủ, so sánh với GĐ 1
 - [x] 2.14 / B4 / D2 — **XONG 2026-09-10.** C7 gộp cùng-một-vấn-đề-nhiều-phân-hệ và
   dựng mục «chưa kiểm được» thành BẢNG. Đo trên báo cáo thật: **2.817 → 269 dòng
   (−90%)**, 317 KB → 61 KB, và tách được **38 mục nói về tài liệu** khỏi 113 dòng
   «công cụ không đọc được». Chính chỗ này là lời phân biệt "người dùng chưa
       viết tới" và "thiếu hẳn", để chạy kiểm nhiều lần trong lúc soạn mà không bị
       ngập cảnh báo giả. Yêu cầu của NT4, trực tiếp giảm rủi ro R6.
-
-**Tiêu chí hoàn thành:** recall ≥ 65% trên tập phát triển; tính năng scale được
-≥ 3 người dùng thử xác nhận hữu ích.
 
 ---
 
@@ -1191,25 +1138,6 @@ chứng minh công cụ có giá trị hay không.
       từ 2026-09-09, C5 quên) — vá ở `pipeline.py`, cả eval/Streamlit hưởng.
       → ✅ Job xong/loi tự dọn sau 7 ngày; file ghi dở bị `danh_sach()` bỏ qua
       thay vì giết cả danh sách (cùng khuôn với `BaoCaoChuaXong` của 2.5).
-- [ ] 3.3 — Phối hợp thêm nút "Kiểm tra sizing" vào web nội bộ sẵn có
-- [ ] 3.4 — Thiết kế hiển thị báo cáo trên web: nhóm theo mức độ, hiện trích dẫn quy tắc
-      → bố cục bám theo checklist thẩm định để người thẩm định đối chiếu 1:1
-- [~] 3.5 — Đóng gói Docker Compose, triển khai môi trường nội bộ — **phần file
-      XONG 2026-09-09, chưa build** (máy dev không có Docker; build trên server).
-      → ✅ `Dockerfile.copilot`: `python:3.11-slim` + git (src/version.py cần
-      `git rev-parse` — thiếu git là mất vết commit trong báo cáo, đúng loại lỗi
-      "ba lượt chạy bằng mã cũ") + `uv sync --frozen --no-dev --extra api`.
-      KHÔNG nhóm `rag` (torch ~2GB; C6 chưa làm). Layer phụ thuộc tách khỏi layer
-      mã; không root; HEALTHCHECK `/health`.
-      → ✅ `.dockerignore` mới: hồ sơ thật + data/ + docs/ KHÔNG đóng vào image
-      (người dùng upload qua API); settings.yaml không vào image (mount qua
-      volume); backend1/nginx là web app Java, copilot không build chúng.
-      → ✅ `docker-compose.yml`: thêm service `copilot` cạnh backend/nginx đang có
-      — port `8902:8000`, mount `settings.yaml` ro + volume `copilot-data` cho
-      data/ (job không mất khi dựng lại container), memory limit 4G, cùng network
-      `app-net`. YAML đã kiểm parse bằng PyYAML.
-      → ⬜ **Còn lại: build + chạy thật trên server** (C3 lộ trình deploy) — cần
-      máy có Docker, kèm smoke test 3 chế độ với `gia_lap=true`.
 - [x] 3.1 — REST API FastAPI — **XONG 2026-09-09.** `api/main.py` mỏng; mọi hành vi ở
   `src/cong_viec.py` để test được không cần dựng máy chủ. `POST /review` (202 + mã việc) ·
   `GET /result/{ma}` · `GET /result/{ma}/bao-cao` · `GET /jobs` · `DELETE /result/{ma}`
@@ -1222,24 +1150,10 @@ chứng minh công cụ có giá trị hay không.
   pipeline đã chạy 12 lượt gọi song song bên trong, hai tài liệu là 24 đồng thời, mà
   đo 2026-09-09 cho thấy mức 24 CHẬM HƠN mức 12. Việc `dang_chay` lúc tiến trình chết
   được nạp lại thành `gian_doan` chứ không treo mãi (NT4). 10 test.
-- [ ] 3.3 — Phối hợp thêm nút "Kiểm tra sizing" vào web nội bộ sẵn có
-- [ ] 3.4 — Thiết kế hiển thị báo cáo trên web: nhóm theo mức độ, hiện trích dẫn quy tắc
-      → bố cục bám theo checklist thẩm định để người thẩm định đối chiếu 1:1
-- [ ] 🟡 3.5 — Đóng gói Docker Compose, triển khai môi trường nội bộ — **phần đóng gói
-  XONG 2026-09-09**: `Dockerfile` (đã build thật, `/app` 1,2 MB, không có hồ sơ khách) +
-  `docker-compose.copilot.yml` (API + giao diện) + `docs/docker-mang-noi-bo.md` cho
-  proxy/apt/TLS MITM. **Còn lại: triển khai thật trên server nội bộ.**
-
-### Tuần 8 — Tinh chỉnh & bàn giao
-- [ ] 3.6 — Chạy trên tập kiểm tra GIỮ KÍN — đây mới là con số thật
-- [ ] 3.7 — Phân tích false positive; siết prompt/quy tắc cho mẫu sai lặp lại
-- [ ] 3.8 — Cân chỉnh ngưỡng mức độ nghiêm trọng theo phản hồi người thẩm định
-- [ ] 3.9 — Tài liệu hướng dẫn sử dụng (1–2 trang, cho người không chuyên)
-- [ ] 3.10 — Tài liệu vận hành: cách cập nhật `rules.yaml`, cách bổ sung bản mới
-- [ ] 3.11 — Thử nghiệm thật với 3–5 đơn vị, thu phản hồi
-
-**Tiêu chí hoàn thành:** recall ≥ 70% và false positive ≤ 20% trên tập kiểm tra
-giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ đánh giá.
+- [x] 3.5 — Đóng gói Docker Compose, triển khai môi trường nội bộ — **XONG
+  2026-09-14** (hợp nhất một `Dockerfile.copilot` + hai dịch vụ trong
+  `docker-compose.yml`); **đã build + demo thật trên máy nội bộ 2026-09-15**
+  (copilot + copilot-ui, port 8902/8903).
 
 ---
 
@@ -1251,11 +1165,76 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
   lưu ở `.cache/cong_viec/{ma}.phan_hoi.json` + nhật ký append-only
   `.cache/phan_hoi/nhat-ky.csv` (utf-8-sig, mở bằng Excel). Xoá việc KHÔNG xoá
   nhật ký. Cột phân loại là bổ sung so với đề nghị gốc — người dùng chốt 2026-09-14.)
-- [ ] 4.2 — Hằng tháng: rà finding bị đánh dấu sai, điều chỉnh quy tắc/prompt
-- [ ] 4.3 — Bổ sung bản sizing mới đã ký vào kho lịch sử + eval set
-- [ ] 4.4 — Cập nhật `rules.yaml` khi tài liệu tiêu chí đổi; CHẠY LẠI eval set sau mỗi lần
-- [ ] 4.5 — Hằng quý: báo cáo chỉ số so với baseline
-- [ ] 4.6 — Khi kho đạt ~100+ bản có nhãn: cân nhắc fine-tune model trích xuất (chưa làm với 30 bản)
+
+---
+
+## GIAI ĐOẠN 5 — Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt  (nâng cấp sau demo)
+
+> **Chốt 2026-09-15** sau demo copilot + copilot-ui (Streamlit, port 8902/8903).
+> Toàn bộ demo chạy trên **Streamlit + API hiện có** để đảm bảo luồng hoạt động
+> và tính khả thi của lưu trữ, truy xuất. Khi tích hợp vào frontend + backend của
+> tool làm sizing thì **chỉ đổi lớp kết nối** — phần xử lý và lưu trữ
+> (PostgreSQL ở đích) không bị ảnh hưởng. Đợt demo vẫn lưu file trong volume
+> `copilot-cache` (`.cache/cong_viec/`, `.cache/phan_hoi/`); code mới phải tách
+> **LỚP LƯU TRỮ** khỏi giao diện (pattern sẵn có: `src/giao_dien.py` tách khỏi
+> `ui/app.py`, `src/cong_viec.py` tách khỏi `api/main.py`) để việc thay
+> lưu-file → PostgreSQL là thay một lớp, không đụng UI.
+> Giữ nguyên 4 nguyên tắc NT1–NT4 và tính chất **cố vấn**: phê duyệt/từ chối là
+> quyết định của Admin — công cụ chỉ ghi lại và hiển thị, không tự kết luận.
+
+### 5A — Tính nhất quán phía người dùng
+- [ ] 5.1 — **Cố định tập lỗi từ lần thẩm định đầu tiên.** Lần thẩm định đầu tạo
+      baseline: danh sách + số lỗi đóng băng. Các lần thẩm định lại KHÔNG thêm
+      bớt lỗi, chỉ cập nhật trạng thái từng lỗi đã có (số lỗi giữ nguyên duy trì
+      giữa các lần hiển thị). Dữ liệu: phiên hoá `{ma}.findings.json` →
+      `{ma}.findings.lan-N.json` (lần 1 = baseline).
+- [ ] 5.2 — **(*) Backend sửa trực tiếp + apply vào bản docs.** Từ finding
+      (location + rule_ref + computed_evidence) → hiển thị đúng đoạn/bảng trong
+      bản sizing cần sửa → người dùng sửa trên giao diện → ghi ngược vào file
+      Word bằng `python-docx` (giữ format) → tải bản đã sửa. Mục tốn công nhất
+      của GĐ 5; cần endpoint `GET /result/{ma}/noi-dung-sua/{finding_id}`
+      (nội dung gốc tại chỗ lỗi) + `POST …/apply` (nội dung mới → ghi file).
+      File Word đã sửa lưu cạnh việc trong volume, KHÔNG đè bản gốc (giữ cả hai
+      để đối chiếu).
+- [ ] 5.3 — **Tái thẩm định chọn lọc.** Nút "Thẩm định lại" chỉ chạy lại kiểm tra
+      trên các lỗi người dùng đã sửa (lọc theo finding_id có bản sửa), không chạy
+      lại toàn bộ → nhanh và giữ nguyên baseline 5.1. Kết quả so sánh trước/sau
+      ghi vào phiên `lan-N` tiếp theo.
+- [ ] 5.4 — **Nút "Báo lỗi hệ thống" (report).** Người dùng thấy một lỗi bị ping
+      lại dù đã sửa nhiều lần, hoặc thấy báo không hợp lý → chọn finding + điền
+      lý do → đẩy lên hàng chờ Admin. Nối với phân loại `bao_sai` sẵn có của 4.1.
+
+### 5B — Quản trị & phê duyệt phía Admin
+- [ ] 5.5 — **Gửi phê duyệt.** User bấm gửi sizing (đã sửa) cho Admin → trạng
+      thái việc mới (`cho_duyet`); Admin có hàng chờ việc chờ duyệt.
+- [ ] 5.6 — **Bảng lịch sử sửa lỗi của Admin.** Mỗi dòng = 1 lỗi cố định từ lần
+      thẩm định đầu (5.1); các cột "Lần sửa 1…n" — n = số lần sửa max trên toàn
+      bộ lỗi; ô chứa chi tiết sửa là gì, lỗi không có lần sửa đó thì bỏ trống;
+      cột **Trạng thái** do hệ thống AI đánh giá cuối cùng lỗi đã fix thành công
+      chưa.
+- [ ] 5.7 — *(cân nhắc)* **Timeline tổng quan.** Mốc = các lần sửa: tổng số lỗi
+      (theo lần thẩm định đầu), số lỗi theo mức độ (nghiêm trọng/quan trọng/nhẹ/
+      thông tin), đã sửa bao nhiêu.
+- [ ] 5.8 — **Phê duyệt / từ chối.** Admin bấm quyết định → kết quả lưu vào DB
+      kèm toàn bộ ghi chú + tích chọn "Trạng thái" + "Lỗi ở phía" của Admin →
+      người dùng xem lại được sau. **Phần code xử lý lưu kết quả phê duyệt làm
+      SAU CÙNG trong GĐ 5** (người dùng ghi rõ).
+
+### 5C — Cập nhật & cải tiến hệ thống AI
+- [ ] 5.9 — **Ba cột Admin trên bảng lịch sử 5.6**: "Ghi chú" (text), "Trạng
+      thái" (chấp nhận/từ chối/cần bàn), "Lỗi ở phía" (người làm sizing / hệ
+      thống AI). Click `rule_ref` → hiện chi tiết quy tắc đang tham chiếu →
+      Admin sửa theo nghiệp vụ → **cập nhật vào `config/rules.yaml`** (NT3 —
+      quy tắc vẫn là dữ liệu, không sửa code/prompt).
+- [ ] 5.10 — **Admin thêm dòng mới** vào bảng 5.6 — cho ca Admin đọc file sizing
+      và phát hiện một vài lỗi mà AI chưa chỉ ra được.
+- [ ] 5.11 — **(\*\*) Xuất nhật ký ghi chú của người thẩm định dạng xlsx.**
+      Nút lấy danh sách nhật ký người thẩm định đã ghi chú về bản đánh giá của
+      AI, xem dạng bảng + tải về `.xlsx` (hiện 4.1 chỉ có CSV) để phục vụ việc
+      tinh chỉnh sau này.
+- [ ] 5.12 — **(\*\*\*) Lọc & xuất dòng Admin gán "Lỗi phía: Hệ thống AI"**
+      ra Excel để tinh chỉnh rules. Toàn bộ dữ liệu 5C đã lưu DB ở 5.8; sau này
+      viết tiếp để tinh chỉnh tự động.
 
 ---
 
@@ -1462,3 +1441,4 @@ giữ kín; người thẩm định xác nhận báo cáo phù hợp cách họ 
 | 2026-09-14 | **CA nội bộ: giữ `COPY`, và nói thẳng cái giá** | Tôi từng chốt dùng BuildKit secret vì `COPY` để file nằm lại vĩnh viễn trong lớp image. Nhưng compose không cho secret tuỳ chọn — máy không có `.pem` sẽ không `up` được cả `backend`/`nginx`. Nên giữ `COPY pyproject.toml README.md viettel-mitm-ca.pem* ./` (dấu `*` cho phép thiếu file) + `if [ -f "$CA" ]` trong `RUN`; máy ngoài build được, máy nội bộ có CA. **Đánh đổi ghi ngay trong `Dockerfile.copilot`**: chấp nhận vì image không rời mạng nội bộ; đẩy lên registry thì phải đổi |
 | 2026-09-14 | **`tests/test_dong_goi.py` — 14 test đọc `Dockerfile.copilot` và `docker-compose.yml`** | Bốn lỗi trên đều xảy ra thật mà không test nào bắt, vì trước bản này không có test nào đọc hai file ấy. Khoá: không `apt-get` · không `--frozen` · có `[api,ui]` · không `COPY eval/tests/.streamlit` · proxy là `ARG` chứ không `ENV` · CA tuỳ chọn · volume trỏ `/app/.cache` · giao diện trỏ `http://copilot:8000` · hai dịch vụ chung một image · không đụng `backend`/`nginx`. Chỉ soi phần LỆNH, bỏ chú thích — chú thích cố ý nhắc `apt-get`/`--frozen` để cấm |
 | 2026-09-14 | **`scripts/nop_bai.py` — nộp một bản sizing rồi chờ, bằng một lệnh** | Gọi qua `src/khach_api.py`, đúng module giao diện dùng, nên nó chạy được là giao diện chạy được. In mã việc ngay, in tiến độ theo giai đoạn, ghi `bao-cao-<mã>.md`. Tra lại việc cũ bằng `--ma`. Ép UTF-8 mọi chỗ đọc — `curl \| python -m json.tool` trên Windows đọc cp1252 và từng làm mất một lượt truy vết |
+| 2026-09-15 | **Bỏ các mục đã kế hoạch nhưng chưa làm của GĐ 0–4** (phần còn 0.9, 0.12, 1.11, phần còn 2.11, 2.6–2.10, 2.13, 3.3–3.4, 3.6–3.11, 4.2–4.6); thay bằng **GĐ 5 — vòng lặp thẩm định–sửa–tái thẩm định & phê duyệt** | Demo đã chạy thật trên copilot + copilot-ui (Streamlit, 8902/8903); ưu tiên luồng người dùng sửa → tái thẩm định → Admin phê duyệt (tính nhất quán số lỗi, lịch sử sửa, cải tiến rules từ phản hồi). Kiến trúc demo Streamlit + lưu file volume `copilot-cache`; tích hợp frontend/backend tool làm sizing sau này chỉ đổi lớp kết nối, PostgreSQL là đích lưu trữ. Mục (*) sửa-trực-tiếp-apply-vào-.docx LÀM ĐỦ trong GĐ 5. Tập TEST giữ kín vẫn chưa chạy (3.6 bỏ). Dữ kiện đã đo không mất: số vòng TB 1,65 (0.9), recall 86,5–87,5% + nhóm đòi tính 1,4% (1.13, nghiệm thu ĐẠT 2026-09-11) — ghi trong nhật ký ngày tương ứng. Chi tiết: GĐ 5 của PLAN.md |
