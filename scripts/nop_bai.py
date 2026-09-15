@@ -4,6 +4,7 @@
     py scripts/nop_bai.py "D:\\ho so\\Sizing ABC.docx"
     py scripts/nop_bai.py <file.docx> --api http://localhost:8902 --ra bao-cao.md
     py scripts/nop_bai.py --ma 6a15c6ff073b        # tra lại một việc đã nộp
+    py scripts/nop_bai.py <file.docx> --giong-nhu <ma_A>   # ĐÚNG tuỳ chọn lượt A
 
 Gọi qua `src/khach_api.py` — đúng module giao diện Streamlit dùng, nên nếu lệnh
 này chạy được thì giao diện cũng chạy được, và ngược lại.
@@ -16,6 +17,19 @@ ngày 2026-09-09. Script này ép UTF-8 ở mọi chỗ đọc.
 
 Một tài liệu tốn khoảng **16 phút**. Script in tiến độ theo giai đoạn (C3 → C5)
 để phân biệt "đang chạy" với "treo".
+
+## `--giong-nhu` — cho phép đo 5.0b
+
+So hai lượt chỉ có nghĩa khi hai lượt chạy CÙNG tuỳ chọn. Chép tay `--nhom`,
+`--vong`, `--song-song` từ một lượt đã nộp qua giao diện là chỗ dễ sai mà sai
+thì không có gì báo: tập finding khác nhau vì bộ lọc khác nhau, còn người đọc
+lại tưởng model không ổn định.
+
+`--giong-nhu <mã việc>` hỏi lại API đúng `tuy_chon` của lượt đó và dùng y nguyên.
+
+**"Số phân hệ" trong giao diện KHÔNG nằm trong `tuy_chon`** — nó chỉ để tính
+dòng ước lượng chi phí trước khi bấm chạy (`src/giao_dien.py: uoc_luong`), không
+đi vào `POST /review` và không đổi kết quả. Chọn 5 hay 30 cũng cùng một lượt chạy.
 """
 from __future__ import annotations
 
@@ -42,6 +56,40 @@ def _tien_do(d: dict) -> str:
             f"{d.get('giay_da_chay', 0):.0f}s")
 
 
+def _ap_tuy_chon_cua(kh: KhachAPI, a) -> bool:
+    """Chép `tuy_chon` của một việc cũ sang lượt sắp nộp. False = dừng lại.
+
+    Từ chối khi người dùng vừa đưa `--giong-nhu` vừa đưa tuỳ chọn tay: im lặng
+    chọn một bên là cách chắc chắn nhất để phép đo sai mà không ai biết.
+    """
+    tay = [t for t, v in (("--nhom", a.nhom), ("--vong", a.vong),
+                          ("--song-song", a.song_song)) if v not in ("", None)]
+    if tay:
+        print(f"\n✗ `--giong-nhu` đi cùng {', '.join(tay)} — bỏ bớt một bên.")
+        return False
+    try:
+        goc = kh.viec(a.giong_nhu)
+    except LoiAPI as e:
+        print(f"\n✗ Không tra được việc «{a.giong_nhu}»: {e}")
+        return False
+
+    tc = goc.get("tuy_chon") or {}
+    a.nhom = ",".join(tc.get("chi_nhom") or [])
+    a.vong = tc.get("chi_vong")
+    a.song_song = tc.get("song_song")
+    print(f"\nLấy tuỳ chọn của «{goc['ten_file']}» ({a.giong_nhu}): "
+          f"nhóm={a.nhom or 'tất cả'} · vòng={a.vong or 'cả hai'} · "
+          f"song song={a.song_song or 'mặc định'}")
+
+    if a.docx and pathlib.Path(a.docx).name != goc["ten_file"]:
+        # So hai lượt trên hai tài liệu khác nhau thì mọi con số đều vô nghĩa,
+        # và cái sai đó không lộ ra ở đâu cả.
+        print(f"⚠️  TÊN FILE KHÁC lượt gốc: «{pathlib.Path(a.docx).name}» "
+              f"vs «{goc['ten_file']}».")
+        print("   Nếu đang đo độ ổn định (5.0b) thì phải là ĐÚNG một tài liệu.")
+    return True
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(
@@ -55,6 +103,8 @@ def main() -> int:
     ap.add_argument("--vong", type=int, default=None, choices=[1, 2])
     ap.add_argument("--song-song", type=int, default=None)
     ap.add_argument("--giay-hoi", type=int, default=15, help="nhịp hỏi lại")
+    ap.add_argument("--giong-nhu", default="",
+                    help="lấy NGUYÊN tuỳ chọn của một việc đã nộp (cho phép đo 5.0b)")
     a = ap.parse_args()
     in_phien_ban("nộp bài")
 
@@ -70,6 +120,10 @@ def main() -> int:
         # Không chặn: người dùng có thể muốn nộp để xem đường chạy. Nhưng phải
         # nói trước, vì việc sẽ hỏng sau vài giây chứ không chạy được.
         print(f"  ⚠ {sk.ghi_chu_model}")
+
+    if a.giong_nhu:
+        if not _ap_tuy_chon_cua(kh, a):
+            return 2
 
     ma = a.ma
     if not ma:
