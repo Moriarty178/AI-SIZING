@@ -14,7 +14,7 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 0 / 12 | ⬜ Mới — chốt 2026-09-15 sau demo |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 0 / 14 | ⬜ Chốt từng điểm 2026-09-15; bắt đầu ở 5.0 (lưu trữ) rồi 5.0b (đo). Ghi ngược `.docx` hoãn khỏi GĐ 5 |
 
 **Đang tập trung (2026-09-15):** sau demo copilot + copilot-ui (Streamlit,
 port 8902/8903) trên container thật, chuyển sang **GĐ 5** — vòng lặp người dùng
@@ -1170,71 +1170,156 @@ xử lý và lưu trữ (PostgreSQL ở đích) không bị ảnh hưởng.
 
 ## GIAI ĐOẠN 5 — Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt  (nâng cấp sau demo)
 
-> **Chốt 2026-09-15** sau demo copilot + copilot-ui (Streamlit, port 8902/8903).
-> Toàn bộ demo chạy trên **Streamlit + API hiện có** để đảm bảo luồng hoạt động
-> và tính khả thi của lưu trữ, truy xuất. Khi tích hợp vào frontend + backend của
-> tool làm sizing thì **chỉ đổi lớp kết nối** — phần xử lý và lưu trữ
-> (PostgreSQL ở đích) không bị ảnh hưởng. Đợt demo vẫn lưu file trong volume
-> `copilot-cache` (`.cache/cong_viec/`, `.cache/phan_hoi/`); code mới phải tách
-> **LỚP LƯU TRỮ** khỏi giao diện (pattern sẵn có: `src/giao_dien.py` tách khỏi
-> `ui/app.py`, `src/cong_viec.py` tách khỏi `api/main.py`) để việc thay
-> lưu-file → PostgreSQL là thay một lớp, không đụng UI.
-> Giữ nguyên 4 nguyên tắc NT1–NT4 và tính chất **cố vấn**: phê duyệt/từ chối là
-> quyết định của Admin — công cụ chỉ ghi lại và hiển thị, không tự kết luận.
+> **Chốt 2026-09-15** sau demo copilot + copilot-ui trên container thật, **rà lại
+> và chốt từng điểm cùng ngày (lượt 2)** — xem `Nhật ký quyết định`.
+> Toàn bộ demo chạy trên **Streamlit + API hiện có**; khi tích hợp vào frontend +
+> backend của tool làm sizing thì **chỉ đổi lớp kết nối**.
+> Giữ nguyên NT1–NT4 và tính chất **cố vấn**: phê duyệt/từ chối là quyết định của
+> Admin — công cụ chỉ ghi lại và hiển thị, không tự kết luận.
 
-### 5A — Tính nhất quán phía người dùng
-- [ ] 5.1 — **Cố định tập lỗi từ lần thẩm định đầu tiên.** Lần thẩm định đầu tạo
-      baseline: danh sách + số lỗi đóng băng. Các lần thẩm định lại KHÔNG thêm
-      bớt lỗi, chỉ cập nhật trạng thái từng lỗi đã có (số lỗi giữ nguyên duy trì
-      giữa các lần hiển thị). Dữ liệu: phiên hoá `{ma}.findings.json` →
-      `{ma}.findings.lan-N.json` (lần 1 = baseline).
-- [ ] 5.2 — **(*) Backend sửa trực tiếp + apply vào bản docs.** Từ finding
-      (location + rule_ref + computed_evidence) → hiển thị đúng đoạn/bảng trong
-      bản sizing cần sửa → người dùng sửa trên giao diện → ghi ngược vào file
-      Word bằng `python-docx` (giữ format) → tải bản đã sửa. Mục tốn công nhất
-      của GĐ 5; cần endpoint `GET /result/{ma}/noi-dung-sua/{finding_id}`
-      (nội dung gốc tại chỗ lỗi) + `POST …/apply` (nội dung mới → ghi file).
-      File Word đã sửa lưu cạnh việc trong volume, KHÔNG đè bản gốc (giữ cả hai
-      để đối chiếu).
-- [ ] 5.3 — **Tái thẩm định chọn lọc.** Nút "Thẩm định lại" chỉ chạy lại kiểm tra
-      trên các lỗi người dùng đã sửa (lọc theo finding_id có bản sửa), không chạy
-      lại toàn bộ → nhanh và giữ nguyên baseline 5.1. Kết quả so sánh trước/sau
-      ghi vào phiên `lan-N` tiếp theo.
-- [ ] 5.4 — **Nút "Báo lỗi hệ thống" (report).** Người dùng thấy một lỗi bị ping
-      lại dù đã sửa nhiều lần, hoặc thấy báo không hợp lý → chọn finding + điền
-      lý do → đẩy lên hàng chờ Admin. Nối với phân loại `bao_sai` sẵn có của 4.1.
+**Hoãn khỏi GĐ 5 (chốt 2026-09-15):** ghi ngược nội dung sửa vào file `.docx`
+(mục `(*)` trong đề bài gốc). Người dùng vẫn sửa file Word bằng tay; công cụ chỉ
+**ghi nhận đã sửa gì**. Lý do: ghi ngược vào bản Word của khách mà giữ format
+(bảng, ô gộp, công thức viết dạng chữ trong ô) là mục nặng nhất và rủi ro nhất,
+trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa huỷ — để sang sau.
 
-### 5B — Quản trị & phê duyệt phía Admin
-- [ ] 5.5 — **Gửi phê duyệt.** User bấm gửi sizing (đã sửa) cho Admin → trạng
-      thái việc mới (`cho_duyet`); Admin có hàng chờ việc chờ duyệt.
-- [ ] 5.6 — **Bảng lịch sử sửa lỗi của Admin.** Mỗi dòng = 1 lỗi cố định từ lần
-      thẩm định đầu (5.1); các cột "Lần sửa 1…n" — n = số lần sửa max trên toàn
-      bộ lỗi; ô chứa chi tiết sửa là gì, lỗi không có lần sửa đó thì bỏ trống;
-      cột **Trạng thái** do hệ thống AI đánh giá cuối cùng lỗi đã fix thành công
-      chưa.
+### 5A — Nền: lưu trữ và phép đo (làm TRƯỚC mọi mục khác)
+
+- [ ] 5.0 — **Lớp lưu trữ + PostgreSQL riêng trong compose.** Thêm một service
+      `postgres` chỉ cho Copilot (volume riêng, **không** đụng CSDL của tool
+      sizing đang chạy), và MỘT lược đồ dùng chung cho cả GĐ 5:
+      `phien_tham_dinh` → `finding_baseline` → `lan_sua` → `ghi_chu_admin` →
+      `quyet_dinh`. Mọi truy cập đi qua một lớp ở `src/` (khuôn sẵn có:
+      `src/cong_viec.py` tách khỏi `api/main.py`), UI không biết gì về SQL.
+      → Mọi bảng có cột **actor** (`vai` + `ten`) ngay từ đầu — xem 5.0a. Không
+      có cột này thì dòng DB không có người, và sau này không backfill được.
+      → Dựng PostgreSQL THẬT ở demo chứ không mô phỏng bằng JSON: câu "chỉ đổi
+      lớp kết nối là tích hợp được" chỉ đúng nếu được kiểm.
+      → ⚠️ Kéo image `postgres` qua proxy nội bộ — cách làm ở
+      `docs/docker-mang-noi-bo.md` mục 1. Cần chốt cổng + volume cho service mới.
+
+- [ ] 5.0a — **Danh tính demo.** Thanh bên: ô chọn **Vai** (Người làm sizing /
+      Admin) + ô nhập **Tên**, ghi vào cột actor của mọi bảng. Giao diện phải nói
+      thẳng đây là danh tính **demo, không xác thực**. Khi ghép vào tool sizing
+      có đăng nhập thật thì chỉ thay nguồn điền vào cột đó.
+
+- [ ] 5.0b — **ĐO TRƯỚC KHI VIẾT 5.3 / 5.6: tập finding có ổn định giữa hai lượt
+      không?** Chạy lại CÙNG một tài liệu, KHÔNG sửa gì, đối chiếu hai lượt:
+      bao nhiêu `finding_id` khớp, bao nhiêu đổi trạng thái, bao nhiêu chỉ xuất
+      hiện ở một lượt. **1 lượt ~16 phút trên máy nội bộ** + script đếm offline.
+      → Vì sao bắt buộc: đo 2026-09-11 trên 14 hồ sơ, 3 lượt độc lập cho recall
+      **86,5–87,5%** — tập finding tự nó đã dao động khi KHÔNG ai sửa gì. Nếu
+      chạy lại một tài liệu mà đã có ~15% finding đổi trạng thái thì 5.3 và cột
+      Trạng thái của 5.6 phải thiết kế khác hẳn. Biết trước rẻ hơn viết 5 ngày
+      code rồi mới biết.
+      → Kết quả ghi vào `docs/` như một mốc đo, cùng khuôn các lượt nghiệm thu.
+
+### 5B — Tính nhất quán phía người dùng
+
+- [ ] 5.1 — **Baseline cố định + rổ lỗi phát sinh.** Lần thẩm định đầu đóng băng
+      danh sách + số lỗi; các lần sau KHÔNG thêm bớt vào baseline, chỉ cập nhật
+      trạng thái từng dòng. **Lỗi phát sinh sau khi sửa đi vào một khối riêng
+      "Phát sinh sau lần sửa N", luôn hiện, KHÔNG cộng vào tổng baseline.**
+      → Vì sao phải có khối riêng (NT4): người dùng sửa RAM 32→320 để dập một
+      finding thì có thể làm vỡ một quy tắc nhất quán ở mục khác. Đóng băng mà
+      không có kênh cho lỗi mới = công cụ thấy mà không nói.
+      → **Khoá nối giữa các lượt phải ổn định trước đã.** `id` hiện là
+      `"{rule.id}#{scope_key}"` (`quantitative.py:68`, `qualitative.py:126`) —
+      tất định, tốt. Hai chỗ vẫn gãy, phải vá trong mục này:
+      (a) khi hai finding trùng `rule#scope`, `report.py:768` gắn hậu tố `#2`
+      **theo thứ tự duyệt** → đổi thứ tự là dòng baseline trỏ sang finding khác;
+      (b) `scope_key` là tên phân hệ do C3 trích từ tài liệu → người dùng sửa
+      chính tả tên phân hệ là dòng baseline mồ côi.
+      5.0b cho biết chuyện này xảy ra bao nhiêu phần trăm trong thực tế.
+
+- [ ] 5.2 — **Hiển thị chỗ cần sửa + ghi nhận giá trị sửa.** Từ finding
+      (`location` + `rule_ref` + `computed_evidence`) → hiện đúng đoạn/bảng trong
+      bản sizing đang nói tới → người dùng nhập nội dung đã sửa → lưu vào
+      `lan_sua`. **KHÔNG ghi ngược vào `.docx`** (hoãn, xem đầu GĐ 5). Đây là thứ
+      nuôi cột "Lần sửa 1…n" của 5.6.
+      → Endpoint: `GET /result/{ma}/noi-dung/{finding_id}` (nội dung gốc tại chỗ
+      lỗi) + `POST /result/{ma}/lan-sua` (ghi nhận nội dung mới).
+
+- [ ] 5.3 — **Tái thẩm định: C3 chọn lọc, C4 TOÀN BỘ.** Nút "Thẩm định lại"
+      trích xuất lại **chỉ phần tài liệu đã đổi** (đây mới là chỗ tốn tiền: C3+C5
+      ~216 lượt gọi, ~16 phút), nhưng **chạy lại toàn bộ C4** trên tập trường đã
+      hợp nhất.
+      → Vì sao không chỉ chạy lại các lỗi đã sửa: C4 là Python thuần, gần như
+      miễn phí, mà quy tắc nhất quán thì so số GIỮA các mục — sửa một ô có thể
+      làm vỡ quy tắc gắn với finding *khác*. Chỉ chạy lại lỗi đã sửa là bỏ qua
+      đúng những kiểm tra bắt được cú sửa hỏng. Kết quả thừa đi vào rổ 5.1.
+
+- [ ] 5.4 — **Nút "Báo lỗi hệ thống".** Người dùng thấy một lỗi bị ping lại dù đã
+      sửa nhiều lần, hoặc thấy báo không hợp lý → chọn finding + điền lý do → đẩy
+      lên hàng chờ Admin. Nối với phân loại `bao_sai` sẵn có của 4.1.
+
+### 5C — Quản trị & phê duyệt phía Admin
+
+- [ ] 5.5 — **Gửi phê duyệt.** User bấm gửi sizing cho Admin → trạng thái việc
+      `cho_duyet`; Admin có hàng chờ.
+
+- [ ] 5.6 — **Bảng lịch sử sửa lỗi.** Mỗi dòng = 1 lỗi cố định từ baseline (5.1);
+      các cột "Lần sửa 1…n" — n = số lần sửa max trên toàn bộ lỗi; ô chứa chi
+      tiết sửa là gì, lỗi không có lần sửa đó thì bỏ trống.
+      → **Cột Trạng thái có BA giá trị, kèm nhãn ai kết luận:** `Đạt (C4 tính
+      lại được)` · `Chưa đạt` · `Chưa kiểm được`. Không phải hai.
+      → Vì sao (NT4): chỉ **1,4%** nhóm nhận xét đòi tính là code thật sự tính
+      lại được, và ~**95%** số dòng báo cáo hiện là *"chưa đọc được chỗ này"* —
+      với những dòng đó không có gì để kết luận "đã fix chưa". Cột nhị phân sẽ
+      nhấp nháy và Admin sẽ thấy "đã sửa xong" cho thứ chưa ai động vào.
+
 - [ ] 5.7 — *(cân nhắc)* **Timeline tổng quan.** Mốc = các lần sửa: tổng số lỗi
-      (theo lần thẩm định đầu), số lỗi theo mức độ (nghiêm trọng/quan trọng/nhẹ/
-      thông tin), đã sửa bao nhiêu.
-- [ ] 5.8 — **Phê duyệt / từ chối.** Admin bấm quyết định → kết quả lưu vào DB
-      kèm toàn bộ ghi chú + tích chọn "Trạng thái" + "Lỗi ở phía" của Admin →
-      người dùng xem lại được sau. **Phần code xử lý lưu kết quả phê duyệt làm
-      SAU CÙNG trong GĐ 5** (người dùng ghi rõ).
+      (theo baseline), số lỗi theo mức độ, đã sửa bao nhiêu, phát sinh bao nhiêu.
 
-### 5C — Cập nhật & cải tiến hệ thống AI
-- [ ] 5.9 — **Ba cột Admin trên bảng lịch sử 5.6**: "Ghi chú" (text), "Trạng
-      thái" (chấp nhận/từ chối/cần bàn), "Lỗi ở phía" (người làm sizing / hệ
-      thống AI). Click `rule_ref` → hiện chi tiết quy tắc đang tham chiếu →
-      Admin sửa theo nghiệp vụ → **cập nhật vào `config/rules.yaml`** (NT3 —
-      quy tắc vẫn là dữ liệu, không sửa code/prompt).
+- [ ] 5.8 — **Phê duyệt / từ chối.** Admin bấm quyết định → lưu vào bảng
+      `quyet_dinh` kèm toàn bộ ghi chú + "Trạng thái" + "Lỗi ở phía" + actor →
+      người dùng xem lại được sau. **Làm SAU CÙNG trong GĐ 5** (người dùng chốt).
+
+### 5D — Cập nhật & cải tiến hệ thống AI
+
+- [ ] 5.9 — **Ba cột Admin trên bảng 5.6** — "Ghi chú" (text), "Trạng thái"
+      (chấp nhận/từ chối/cần bàn), "Lỗi ở phía" (người làm sizing / hệ thống AI).
+      Click `rule_ref` → hiện chi tiết quy tắc đang tham chiếu → Admin sửa theo
+      nghiệp vụ → **ghi ra ĐỀ XUẤT SỬA, không ghi thẳng đè `rules.yaml`.**
+      → Đường đi: đề xuất (ai · lúc nào · diff) → kiểm tự động (schema hợp lệ +
+      77 công thức còn parse + eval set không tụt) → người chốt mới áp vào
+      `config/rules.yaml`. NT3 vẫn giữ: quy tắc là dữ liệu, không sửa code/prompt.
+      → Vì sao không ghi thẳng: một lần sửa sai âm thầm đổi mọi lượt thẩm định về
+      sau cho tất cả mọi người, không có đường lùi khi quy tắc sai đã chạy vài
+      chục hồ sơ.
+      → ⚠️ **Vật cản triển khai phải xử lý trong mục này:** `config/rules.yaml`
+      hiện **nằm trong image** (`Dockerfile.copilot` — `COPY config ./config`), mà
+      compose chỉ bind-mount `settings.yaml`. Đề xuất và bản đã áp phải nằm ở
+      volume, nếu không thì `up -d` lần sau là mất sạch.
+
 - [ ] 5.10 — **Admin thêm dòng mới** vào bảng 5.6 — cho ca Admin đọc file sizing
-      và phát hiện một vài lỗi mà AI chưa chỉ ra được.
-- [ ] 5.11 — **(\*\*) Xuất nhật ký ghi chú của người thẩm định dạng xlsx.**
-      Nút lấy danh sách nhật ký người thẩm định đã ghi chú về bản đánh giá của
-      AI, xem dạng bảng + tải về `.xlsx` (hiện 4.1 chỉ có CSV) để phục vụ việc
-      tinh chỉnh sau này.
-- [ ] 5.12 — **(\*\*\*) Lọc & xuất dòng Admin gán "Lỗi phía: Hệ thống AI"**
-      ra Excel để tinh chỉnh rules. Toàn bộ dữ liệu 5C đã lưu DB ở 5.8; sau này
-      viết tiếp để tinh chỉnh tự động.
+      và phát hiện lỗi mà AI chưa chỉ ra được. Dòng thêm tay phải phân biệt được
+      với dòng do AI sinh (nguồn: `ai` / `admin`) — đây chính là dữ liệu đo độ
+      **bỏ sót** của công cụ, thứ hiện chưa có.
+
+- [ ] 5.11 — **(\*\*) Xuất nhật ký ghi chú của người thẩm định dạng xlsx.** Nút
+      lấy danh sách nhật ký, xem dạng bảng + tải `.xlsx` (4.1 hiện chỉ có CSV).
+
+- [ ] 5.12 — **(\*\*\*) Lọc & xuất dòng Admin gán "Lỗi ở phía: Hệ thống AI"**
+      ra Excel để tinh chỉnh rules. Dữ liệu đã nằm ở DB từ 5.0/5.8.
+
+### Thứ tự làm và ước lượng
+
+| Thứ tự | Mục | Ước lượng |
+|---|---|---|
+| 1 | 5.0 + 5.0a — lưu trữ, lược đồ, actor | 0,5–1 ngày |
+| 2 | **5.0b — phép đo** (chạy trên máy nội bộ) | 1 lượt 16 phút + 1–2 giờ phân tích |
+| 3 | 5.1 — baseline + khoá ổn định + rổ phát sinh | 0,5 ngày |
+| 4 | 5.2 — hiện chỗ sửa + ghi nhận | 1 ngày |
+| 5 | 5.3 — tái thẩm định | 1–1,5 ngày |
+| 6 | 5.6 + 5.9 — bảng Admin, 3 cột, đề xuất rules | 1,5 ngày |
+| 7 | 5.4 · 5.10 · 5.11 | 1 ngày |
+| 8 | 5.5 + 5.8 | 0,5 ngày |
+| 9 | 5.7 (tuỳ chọn) | 0,5 ngày |
+
+> ⚠️ Đọc bảng này như **thứ tự ưu tiên**, không phải cam kết. Ước lượng thời gian
+> trong dự án này đã sai hai lần theo cả hai chiều (dự 4–6 h → thật 88 phút;
+> dự 110–130 phút → thật 243 phút).
 
 ---
 
@@ -1442,3 +1527,10 @@ xử lý và lưu trữ (PostgreSQL ở đích) không bị ảnh hưởng.
 | 2026-09-14 | **`tests/test_dong_goi.py` — 14 test đọc `Dockerfile.copilot` và `docker-compose.yml`** | Bốn lỗi trên đều xảy ra thật mà không test nào bắt, vì trước bản này không có test nào đọc hai file ấy. Khoá: không `apt-get` · không `--frozen` · có `[api,ui]` · không `COPY eval/tests/.streamlit` · proxy là `ARG` chứ không `ENV` · CA tuỳ chọn · volume trỏ `/app/.cache` · giao diện trỏ `http://copilot:8000` · hai dịch vụ chung một image · không đụng `backend`/`nginx`. Chỉ soi phần LỆNH, bỏ chú thích — chú thích cố ý nhắc `apt-get`/`--frozen` để cấm |
 | 2026-09-14 | **`scripts/nop_bai.py` — nộp một bản sizing rồi chờ, bằng một lệnh** | Gọi qua `src/khach_api.py`, đúng module giao diện dùng, nên nó chạy được là giao diện chạy được. In mã việc ngay, in tiến độ theo giai đoạn, ghi `bao-cao-<mã>.md`. Tra lại việc cũ bằng `--ma`. Ép UTF-8 mọi chỗ đọc — `curl \| python -m json.tool` trên Windows đọc cp1252 và từng làm mất một lượt truy vết |
 | 2026-09-15 | **Bỏ các mục đã kế hoạch nhưng chưa làm của GĐ 0–4** (phần còn 0.9, 0.12, 1.11, phần còn 2.11, 2.6–2.10, 2.13, 3.3–3.4, 3.6–3.11, 4.2–4.6); thay bằng **GĐ 5 — vòng lặp thẩm định–sửa–tái thẩm định & phê duyệt** | Demo đã chạy thật trên copilot + copilot-ui (Streamlit, 8902/8903); ưu tiên luồng người dùng sửa → tái thẩm định → Admin phê duyệt (tính nhất quán số lỗi, lịch sử sửa, cải tiến rules từ phản hồi). Kiến trúc demo Streamlit + lưu file volume `copilot-cache`; tích hợp frontend/backend tool làm sizing sau này chỉ đổi lớp kết nối, PostgreSQL là đích lưu trữ. Mục (*) sửa-trực-tiếp-apply-vào-.docx LÀM ĐỦ trong GĐ 5. Tập TEST giữ kín vẫn chưa chạy (3.6 bỏ). Dữ kiện đã đo không mất: số vòng TB 1,65 (0.9), recall 86,5–87,5% + nhóm đòi tính 1,4% (1.13, nghiệm thu ĐẠT 2026-09-11) — ghi trong nhật ký ngày tương ứng. Chi tiết: GĐ 5 của PLAN.md |
+| 2026-09-15 | **GĐ 5 lưu trữ bằng PostgreSQL THẬT trong compose**, service riêng cho Copilot, không dùng chung CSDL tool sizing | Đích đến là PostgreSQL và lời hứa "tích hợp chỉ là đổi lớp kết nối" chỉ đúng nếu được kiểm — làm bằng JSON rồi đổi sau là để sai sót lộ ra lúc tích hợp, khi sửa đắt nhất. Service riêng vì code đang phát triển không được ghi vào CSDL đang vận hành |
+| 2026-09-15 | **Đo độ ổn định giữa hai lượt (5.0b) TRƯỚC khi viết 5.3/5.6** — chạy lại cùng một tài liệu, không sửa gì | 3 lượt độc lập trên 14 hồ sơ cho recall 86,5–87,5%: tập finding tự dao động khi không ai sửa gì. Nếu mức dao động lớn thì cả vòng lặp sửa–tái thẩm định phải thiết kế khác. 16 phút rẻ hơn 5 ngày code |
+| 2026-09-15 | **Cột Trạng thái của bảng Admin có BA giá trị** (Đạt / Chưa đạt / Chưa kiểm được) kèm nhãn engine nào kết luận, không phải hai | NT4. Chỉ 1,4% nhóm đòi tính là code tính lại được; ~95% dòng báo cáo là "chưa đọc được chỗ này" — không có gì để kết luận "đã fix chưa". Cột nhị phân sẽ báo "đã sửa xong" cho thứ chưa ai động vào |
+| 2026-09-15 | **Admin sửa quy tắc qua ĐỀ XUẤT + kiểm tự động, không ghi thẳng đè `rules.yaml`** | Một lần sửa sai âm thầm đổi mọi lượt thẩm định về sau cho tất cả mọi người, không đường lùi khi quy tắc sai đã chạy vài chục hồ sơ. Kiểm gồm: schema hợp lệ + 77 công thức còn parse + eval set không tụt |
+| 2026-09-15 | **Lỗi phát sinh sau khi sửa vào rổ riêng, luôn hiện, không cộng vào tổng baseline**; tái thẩm định chạy lại TOÀN BỘ C4 | "Số lỗi giữ nguyên" là yêu cầu hiển thị, không phải yêu cầu sự thật. Sửa RAM 32→320 có thể làm vỡ quy tắc nhất quán ở mục khác; C4 là Python thuần gần như miễn phí, bỏ qua nó là bỏ qua đúng thứ bắt được cú sửa hỏng (NT4) |
+| 2026-09-15 | **Hoãn ghi ngược nội dung sửa vào `.docx` khỏi GĐ 5** — công cụ chỉ ghi nhận đã sửa gì | Mục nặng và rủi ro nhất (bảng, ô gộp, công thức viết dạng chữ trong ô), trong khi 5.3 và 5.6 chạy được mà không cần nó. Chưa huỷ, để sang giai đoạn sau |
+| 2026-09-15 | **Cột actor (vai + tên) có trong lược đồ ngay từ đầu**, demo dùng ô chọn vai + ô nhập tên, ghi rõ là danh tính không xác thực | Streamlit không có đăng nhập. Không có cột actor thì dòng DB không có người, sau này không backfill được và nhật ký ghi chú Admin mất giá trị truy vết |
