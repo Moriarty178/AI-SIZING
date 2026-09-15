@@ -106,6 +106,17 @@ class TestCompose:
         assert not any("SIZING_COPILOT_API_KEY" in x for x in env), env
 
 
+    def test_bien_moi_truong_di_vao_container_qua_env_file(self):
+        """Hướng dẫn đo 5.0b bảo người dùng đặt `SIZING_COPILOT_KHONG_CACHE=1`
+        vào `.env` rồi `up -d`. Điều đó chỉ đúng khi dịch vụ còn `env_file`.
+
+        Bỏ `env_file` đi thì biến im lặng không vào container, lượt chạy lại
+        được phát ra từ đệm, và phép đo in 100% ổn định — một kết luận sai mà
+        không có gì báo lỗi.
+        """
+        assert ".env" in COMPOSE["services"]["copilot"].get("env_file", [])
+
+
 def test_moi_bien_compose_dung_deu_co_trong_env_example():
     """`docker compose build copilot` in `WARN … SPRING_DATASOURCE_URL is not set`
     dù Spring chẳng liên quan gì: compose nội suy biến của TOÀN BỘ file dù chỉ
