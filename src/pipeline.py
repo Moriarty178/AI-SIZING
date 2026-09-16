@@ -116,6 +116,41 @@ def _canh_bao_anh(doc: DocxDocument, anh: list) -> list[Finding]:
     return ra
 
 
+def _canh_bao_moi_loi_goi_deu_hong(tk: dict) -> list[Finding]:
+    """NT4 — lượt chạy mà mọi lời gọi model đều hỏng KHÔNG được trông như bình thường.
+
+    2026-09-16: proxy công ty trả trang lỗi Squid cho từng lời gọi, 43/43 lượt
+    C3 và 16/16 lượt C5 hỏng, `truong_co_gia_tri` bằng 0 — và việc vẫn báo
+    «xong» với 61 finding, mức độ đủ cả critical/minor/info. Ba lượt chạy và hai
+    vòng phân tích đã đổ vào một báo cáo không có một con số nào được trích ra.
+
+    Một báo cáo như thế không phải kết quả thẩm định, và nó phải tự nói điều đó.
+    """
+    ra: list[Finding] = []
+    for ma, ten in (("c3", "trích xuất (C3)"), ("c5", "thẩm định định tính (C5)")):
+        d = tk.get(ma)
+        if not isinstance(d, dict):
+            continue
+        goi = int(d.get("luot_goi") or 0)
+        hong = int(d.get("luot_goi_hong") or 0)
+        if goi and hong >= goi:
+            vi_du = "; ".join(str(x) for x in (d.get("loi") or [])[:1])[:200]
+            ra.append(Finding(
+                id=f"NT4-MODEL-{ma.upper()}", severity="critical",
+                category="khong_kiem_chung_duoc",
+                finding=f"TOÀN BỘ {goi} lượt gọi model ở bước {ten} đều hỏng. "
+                        "Báo cáo này KHÔNG phải kết quả thẩm định — những gì còn "
+                        "lại chỉ là phần kiểm được bằng code, và mọi mục cần model "
+                        "đang bị bỏ trống chứ không phải đã đạt.",
+                computed_evidence=f"{ma}: luot_goi={goi}, luot_goi_hong={hong}"
+                                  + (f", ví dụ lỗi: {vi_du}" if vi_du else ""),
+                suggestion="Kiểm đường ra tới gateway model: biến HTTP_PROXY/"
+                           "HTTPS_PROXY lúc CHẠY phải TRỐNG (xem docker-compose.yml). "
+                           "Lỗi trả về là trang HTML của proxy thì lời gọi chưa tới model.",
+                confidence="cao"))
+    return ra
+
+
 def canh_bao_nt4(doc: DocxDocument) -> list[Finding]:
     """Những gì Giai đoạn 1 KHÔNG nhìn tới — nói ra, không im lặng bỏ qua (NT4).
 
@@ -237,6 +272,8 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
         findings += [o.finding for o in kq_dt if o.finding is not None]
         tk["c5"] = dict(c5.tk.__dict__)
         tk["c5"].pop("_khoa", None)     # threading.Lock — không serialize được JSON
+
+    findings += _canh_bao_moi_loi_goi_deu_hong(tk)
 
     tk["cache"]["ban_ghi_sau"] = _dem.so_ban_ghi()
     tk["cache"]["ghi_them"] = (tk["cache"]["ban_ghi_sau"]

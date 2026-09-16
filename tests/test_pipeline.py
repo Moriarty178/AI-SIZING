@@ -5,7 +5,8 @@ from docx import Document
 
 from src.extraction.schema import SizingCore
 from src.ingestion.docx_reader import DocxDocument, Element, read_docx
-from src.pipeline import canh_bao_nt4, chay
+from src.pipeline import (_canh_bao_moi_loi_goi_deu_hong, canh_bao_nt4,
+                          chay)
 
 
 def _save(doc) -> str:
@@ -102,3 +103,52 @@ def test_NT4_C1_KHONG_mang_duong_dan_tam_cua_may_chu():
     assert _cc(a) == _cc(b), "căn cứ đổi theo đường dẫn tạm"
     assert "Sizing ABC.docx" in _cc(a)[0], "vẫn phải nói rõ đọc tệp nào"
     assert "sizing-copilot-aaa111" not in _cc(a)[0]
+
+
+# --- lượt chạy mà MỌI lời gọi model đều hỏng (2026-09-16) -------------------
+class TestMoiLoiGoiDeuHong:
+    """Proxy công ty trả trang lỗi Squid cho từng lời gọi: 43/43 lượt C3 và
+    16/16 lượt C5 hỏng, không trích được trường nào — mà việc vẫn báo «xong»
+    với 61 finding đủ cả critical/minor/info. Ba lượt chạy đã đổ vào một báo
+    cáo không có một con số nào được trích ra (NT4)."""
+
+    def test_C3_hong_het_thi_sinh_finding_critical(self):
+        fs = _canh_bao_moi_loi_goi_deu_hong(
+            {"c3": {"luot_goi": 43, "luot_goi_hong": 43}})
+        assert [f.id for f in fs] == ["NT4-MODEL-C3"]
+        assert fs[0].severity == "critical"
+        assert "43" in fs[0].computed_evidence
+
+    def test_noi_ro_KHONG_phai_ket_qua_tham_dinh(self):
+        """«0 lỗi định tính» và «chưa kiểm được lần nào» trông giống hệt nhau
+        trên báo cáo nếu không nói ra."""
+        f = _canh_bao_moi_loi_goi_deu_hong(
+            {"c5": {"luot_goi": 16, "luot_goi_hong": 16}})[0]
+        assert "KHÔNG phải kết quả thẩm định" in f.finding
+
+    def test_hong_MOT_PHAN_thi_KHONG_bao_dong(self):
+        """Vài lượt hỏng là chuyện thường và đã có bộ đếm riêng; hét lên ở đây
+        sẽ làm cảnh báo mất giá trị."""
+        assert _canh_bao_moi_loi_goi_deu_hong(
+            {"c3": {"luot_goi": 43, "luot_goi_hong": 42}}) == []
+
+    def test_khong_goi_lan_nao_thi_KHONG_phai_loi_goi_hong(self):
+        """`bo_qua_dinh_tinh=True` hay lọc hết quy tắc → 0 lượt gọi, 0 hỏng."""
+        assert _canh_bao_moi_loi_goi_deu_hong(
+            {"c3": {"luot_goi": 0, "luot_goi_hong": 0}}) == []
+
+    def test_ca_hai_buoc_hong_thi_hai_finding(self):
+        fs = _canh_bao_moi_loi_goi_deu_hong(
+            {"c3": {"luot_goi": 43, "luot_goi_hong": 43},
+             "c5": {"luot_goi": 16, "luot_goi_hong": 16}})
+        assert {f.id for f in fs} == {"NT4-MODEL-C3", "NT4-MODEL-C5"}
+
+    def test_keo_theo_vi_du_loi_de_khoi_phai_doi_log(self):
+        f = _canh_bao_moi_loi_goi_deu_hong(
+            {"c5": {"luot_goi": 2, "luot_goi_hong": 2,
+                    "loi": ["EVD-16#: InternalServerError: <html> Squid"]}})[0]
+        assert "Squid" in f.computed_evidence
+
+    def test_thong_ke_thieu_hoac_hong_kieu_thi_khong_no(self):
+        assert _canh_bao_moi_loi_goi_deu_hong({}) == []
+        assert _canh_bao_moi_loi_goi_deu_hong({"c3": None}) == []

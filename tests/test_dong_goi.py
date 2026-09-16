@@ -136,3 +136,21 @@ def test_moi_bien_compose_dung_deu_co_trong_env_example():
 def test_env_that_KHONG_duoc_commit():
     """`.env` chứa khoá gọi model và mật khẩu CSDL."""
     assert ".env\n" in (GOC / ".gitignore").read_text(encoding="utf-8")
+
+
+def test_proxy_bi_GO_HAN_o_moi_truong_luc_chay():
+    """`env_file: .env` nạp HTTP_PROXY/HTTPS_PROXY vào container. Hai biến ấy
+    chỉ cần lúc BUILD để `uv` kéo gói; để nguyên lúc chạy thì mọi lời gọi model
+    đi qua Squid công ty và trả về TRANG HTML LỖI.
+
+    Hỏng thật 2026-09-16: 43/43 lượt C3 và 16/16 lượt C5 hỏng, không trích được
+    trường nào, mà việc vẫn báo «xong» với 61 finding.
+
+    `NO_PROXY` không thay được: httpx khớp no_proxy theo hậu tố tên miền hoặc
+    địa chỉ IP, KHÔNG theo ký tự đại diện — `10.*` không khớp `10.221.58.70`.
+    """
+    env = COMPOSE["services"]["copilot"]["environment"]
+    for b in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"):
+        assert f"{b}=" in env, f"{b} phải được đặt RỖNG lúc chạy: {env}"
+    no = [x for x in env if x.startswith("NO_PROXY=")]
+    assert no and "*" not in no[0], f"NO_PROXY không dùng được ký tự đại diện: {no}"

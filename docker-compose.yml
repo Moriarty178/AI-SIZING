@@ -81,9 +81,23 @@ services:
       - .env
     environment:
       - SIZING_COPILOT_API_KEY=${SIZING_COPILOT_API_KEY}
-      # Proxy từ .env chỉ để BUILD uv kéo gói. Lúc CHẠY, gateway model là địa
-      # chỉ nội bộ (10.221.58.70) — không được đi qua proxy công ty.
-      - NO_PROXY=localhost,127.0.0.1,10.*,192.168.*,172.16.*,copilot
+      # ⚠️ GỠ HẲN proxy lúc CHẠY. `env_file: .env` nạp HTTP_PROXY/HTTPS_PROXY
+      # vào container — hai biến ấy chỉ cần lúc BUILD để `uv` kéo gói, còn lúc
+      # chạy thì chúng đẩy mọi lời gọi model qua Squid của công ty.
+      #
+      # Hỏng thật 2026-09-16: 43/43 lượt gọi C3 và 16/16 lượt C5 đều trả về
+      # TRANG HTML LỖI CỦA SQUID thay vì JSON, `truong_co_gia_tri` bằng 0, mà
+      # việc vẫn báo "xong" với 61 finding. Trông như một bản thẩm định.
+      #
+      # `NO_PROXY` KHÔNG cứu được: bản cũ ghi `10.*`, mà httpx (thư viện dưới
+      # `openai` SDK) khớp no_proxy theo hậu tố tên miền hoặc địa chỉ IP, không
+      # theo ký tự đại diện — `10.*` không bao giờ khớp `10.221.58.70`. Đặt
+      # rỗng bốn biến là cách duy nhất chắc chắn, vì `environment` đè `env_file`.
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+      - NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,172.16.0.0/12,copilot
     deploy:
       resources:
         limits:
