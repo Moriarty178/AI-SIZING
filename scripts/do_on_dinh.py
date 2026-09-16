@@ -309,10 +309,18 @@ def main() -> int:
           f"đổi câu chữ {kq['doi']['cau_chu']}")
     print(f"  code tính lại được: A {kq['code_tinh_duoc_a']} · B {kq['code_tinh_duoc_b']} "
           f"· khớp {kq['code_tinh_duoc_khop']}")
-    if kq["khop"] == n and kq["chi_a"] == kq["chi_b"] == 0:
-        print("\n⚠️  KHỚP TUYỆT ĐỐI. Kiểm lại xem lượt B có thật sự gọi model không —"
-              "\n   đệm còn bật thì lượt B chỉ phát lại lượt A và con số này vô nghĩa:"
-              "\n   docker compose exec copilot-v2 printenv SIZING_COPILOT_KHONG_CACHE")
+    cung_tap = kq["khop"] == n and kq["chi_a"] == kq["chi_b"] == 0
+    so_khac = sum(kq["doi"].values())
+    if cung_tap and so_khac == 0:
+        # Phát lại từ đệm là GIỐNG TỪNG BYTE. Chỉ khi không một trường nào lệch
+        # thì mới đáng nghi — lệch dù một chỗ đã đủ chứng minh có hai lượt gọi.
+        print("\n⚠️  GIỐNG TỪNG TRƯỜNG, không lệch một chỗ nào. Kiểm lượt B có"
+              "\n   thật sự gọi model không — đệm còn bật thì nó phát lại lượt A:"
+              "\n   docker compose exec copilot printenv SIZING_COPILOT_KHONG_CACHE")
+    elif cung_tap:
+        print(f"\n✓ Cùng tập finding, nhưng lệch {so_khac} chỗ — đủ chứng minh"
+              "\n  đây là HAI lượt gọi model độc lập, không phải một lượt phát"
+              "\n  lại từ đệm.")
 
     ra = pathlib.Path(a.ra) if a.ra else pathlib.Path(
         f"docs/do-on-dinh-{time.strftime('%Y%m%d-%H%M%S')}.md")
