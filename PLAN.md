@@ -14,7 +14,7 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 0 / 14 | ⬜ Chốt từng điểm 2026-09-15; bắt đầu ở 5.0 (lưu trữ) rồi 5.0b (đo). Ghi ngược `.docx` hoãn khỏi GĐ 5 |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 1 / 14 | 🟡 5.0b ĐO XONG 09-16 (khớp 98,6% sau chuẩn hoá); khoá 5.1, luật 5.3, mức độ 5.6 đã chốt. Tiếp: 5.0 lưu trữ |
 
 **Đang tập trung (2026-09-15):** sau demo copilot + copilot-ui (Streamlit,
 port 8902/8903) trên container thật, chuyển sang **GĐ 5** — vòng lặp người dùng
@@ -1203,16 +1203,34 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       thẳng đây là danh tính **demo, không xác thực**. Khi ghép vào tool sizing
       có đăng nhập thật thì chỉ thay nguồn điền vào cột đó.
 
-- [ ] 5.0b — **ĐO TRƯỚC KHI VIẾT 5.3 / 5.6: tập finding có ổn định giữa hai lượt
-      không?** Chạy lại CÙNG một tài liệu, KHÔNG sửa gì, đối chiếu hai lượt:
-      bao nhiêu `finding_id` khớp, bao nhiêu đổi trạng thái, bao nhiêu chỉ xuất
-      hiện ở một lượt. **1 lượt ~16 phút trên máy nội bộ** + script đếm offline.
-      → Vì sao bắt buộc: đo 2026-09-11 trên 14 hồ sơ, 3 lượt độc lập cho recall
-      **86,5–87,5%** — tập finding tự nó đã dao động khi KHÔNG ai sửa gì. Nếu
-      chạy lại một tài liệu mà đã có ~15% finding đổi trạng thái thì 5.3 và cột
-      Trạng thái của 5.6 phải thiết kế khác hẳn. Biết trước rẻ hơn viết 5 ngày
-      code rồi mới biết.
-      → Kết quả ghi vào `docs/` như một mốc đo, cùng khuôn các lượt nghiệm thu.
+- [x] 5.0b — **ĐO XONG 2026-09-16: tập finding có ổn định giữa hai lượt không?**
+      Cùng tài liệu VTracking 2.0.1, không sửa gì, không lọc nhóm, đệm tắt.
+      Kết quả: `docs/do-on-dinh-20260916-180655.md` (+ `.json`).
+
+      | Số đo | Kết quả |
+      |---|---|
+      | Lời gọi model thật | 268 · 272 (21,7 · 22,6 phút) |
+      | Finding | 717 · 718 |
+      | Khớp `finding_id` gốc | 658 = **91,6%** |
+      | Mất khớp vì hậu tố `#N` | **0** |
+      | Mất khớp vì C3 diễn đạt lại tên phân hệ | **50** (`Master (K8s Master node)` ↔ `Master (K8s Control plane)`) |
+      | Khớp sau chuẩn hoá tên phân hệ | 708 = **98,6%** |
+      | Khác nhau thật (model gắn quy tắc cho phân hệ khác) | 9 + 10 ≈ **1,4%** |
+      | Trong số khớp: đổi mức độ / nhóm / căn cứ | 24 / 5 / 5 (≤ 4,4%) |
+      | Dòng có con số do code tính | 10 · 11, **chỉ 8 trùng cả hai lượt** |
+      | Chưa kiểm được | 624/717 = 87% |
+
+      → **Ba lỗi sản phẩm lộ ra trên đường đo** (đều đã vá, có test):
+      (a) `env_file` nạp HTTP_PROXY vào container lúc CHẠY, `NO_PROXY=10.*` không
+      có tác dụng với httpx → 43/43 lượt C3 và 16/16 lượt C5 trả trang lỗi Squid;
+      (b) lượt chạy hỏng sạch như thế vẫn báo «xong» với 61 finding — nay sinh
+      finding critical `NT4-MODEL-*`; (c) `/result` trả kèm toàn văn báo cáo, và
+      một bản ghi như thế đã bị commit (`b818ffc`) — nay đã bỏ khỏi `/result`.
+      → ⚠️ **Buổi demo 2026-09-15 chạy đúng cấu hình proxy hỏng (a)**: thứ mọi người
+      đã xem là phần thuần code, không phải một lượt thẩm định có model.
+      → Ba lượt đo đầu (lọc KPI; đệm «tắt» mà 0 lời gọi; hỏng sạch vì proxy) đều
+      **vô giá trị** và đã bị loại. Script nay tự phán quyết giá trị bằng số lời
+      gọi model thật, không bằng cờ đệm.
 
 ### 5B — Tính nhất quán phía người dùng
 
@@ -1220,17 +1238,18 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       danh sách + số lỗi; các lần sau KHÔNG thêm bớt vào baseline, chỉ cập nhật
       trạng thái từng dòng. **Lỗi phát sinh sau khi sửa đi vào một khối riêng
       "Phát sinh sau lần sửa N", luôn hiện, KHÔNG cộng vào tổng baseline.**
-      → Vì sao phải có khối riêng (NT4): người dùng sửa RAM 32→320 để dập một
-      finding thì có thể làm vỡ một quy tắc nhất quán ở mục khác. Đóng băng mà
-      không có kênh cho lỗi mới = công cụ thấy mà không nói.
-      → **Khoá nối giữa các lượt phải ổn định trước đã.** `id` hiện là
-      `"{rule.id}#{scope_key}"` (`quantitative.py:68`, `qualitative.py:126`) —
-      tất định, tốt. Hai chỗ vẫn gãy, phải vá trong mục này:
-      (a) khi hai finding trùng `rule#scope`, `report.py:768` gắn hậu tố `#2`
-      **theo thứ tự duyệt** → đổi thứ tự là dòng baseline trỏ sang finding khác;
-      (b) `scope_key` là tên phân hệ do C3 trích từ tài liệu → người dùng sửa
-      chính tả tên phân hệ là dòng baseline mồ côi.
-      5.0b cho biết chuyện này xảy ra bao nhiêu phần trăm trong thực tế.
+      → Vì sao phải có khối riêng (NT4): sửa một ô có thể làm vỡ một quy tắc nhất
+      quán ở mục khác. Đóng băng mà không có kênh cho lỗi mới = thấy mà không nói.
+      → **Khoá baseline = mã quy tắc + tên phân hệ ĐÃ CHUẨN HOÁ** (bỏ phần mô tả
+      trong ngoặc cuối, không phân biệt hoa thường) — **chốt 2026-09-16 theo 5.0b**:
+      khoá gốc khớp 91,6%, khoá chuẩn hoá khớp 98,6%.
+      → **Chặn gộp nhầm (bắt buộc):** nếu TRONG CÙNG một lượt có hai tên phân hệ
+      gốc khác nhau rút về cùng một khoá — `DB (Primary)`/`DB (Replica)`,
+      `App (DC)`/`App (DR)` — thì các dòng đó giữ tên gốc làm khoá, không chuẩn
+      hoá. Chuẩn hoá mà gộp hai phân hệ thật là để lỗi của bên này che lỗi bên kia.
+      → Hiển thị luôn dùng tên phân hệ GỐC; khoá chuẩn hoá chỉ để nối các lượt.
+      → Hậu tố `#N` của `report.py` đo được **0** lần gây mất khớp — không cần vá
+      trước 5.1, nhưng khoá mới vẫn phải tất định khi có finding trùng `rule#scope`.
 
 - [ ] 5.2 — **Hiển thị chỗ cần sửa + ghi nhận giá trị sửa.** Từ finding
       (`location` + `rule_ref` + `computed_evidence`) → hiện đúng đoạn/bảng trong
@@ -1241,13 +1260,18 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       lỗi) + `POST /result/{ma}/lan-sua` (ghi nhận nội dung mới).
 
 - [ ] 5.3 — **Tái thẩm định: C3 chọn lọc, C4 TOÀN BỘ.** Nút "Thẩm định lại"
-      trích xuất lại **chỉ phần tài liệu đã đổi** (đây mới là chỗ tốn tiền: C3+C5
-      ~216 lượt gọi, ~16 phút), nhưng **chạy lại toàn bộ C4** trên tập trường đã
-      hợp nhất.
-      → Vì sao không chỉ chạy lại các lỗi đã sửa: C4 là Python thuần, gần như
-      miễn phí, mà quy tắc nhất quán thì so số GIỮA các mục — sửa một ô có thể
-      làm vỡ quy tắc gắn với finding *khác*. Chỉ chạy lại lỗi đã sửa là bỏ qua
-      đúng những kiểm tra bắt được cú sửa hỏng. Kết quả thừa đi vào rổ 5.1.
+      trích xuất lại **chỉ phần tài liệu đã đổi** (chỗ tốn tiền: C3+C5 ~270 lượt
+      gọi, ~22 phút), nhưng **chạy lại toàn bộ C4** trên tập trường đã hợp nhất —
+      C4 là Python thuần gần như miễn phí, và quy tắc nhất quán so số GIỮA các mục,
+      nên chỉ chạy lại lỗi đã sửa là bỏ qua đúng thứ bắt được cú sửa hỏng.
+      Kết quả thừa đi vào rổ phát sinh của 5.1.
+      → **"Đã sửa" = finding baseline không còn xuất hiện ở lần thẩm định lại** —
+      người dùng chốt 2026-09-16, không đòi kèm bản ghi sửa ở 5.2.
+      → ⚠️ **Giá đã biết và đã chấp nhận:** 5.0b đo được ~1,4% finding tự biến mất
+      giữa hai lượt KHÔNG ai sửa gì. Trên tài liệu ~700 finding, mỗi lần thẩm định
+      lại sẽ có khoảng **10 dòng báo "đã sửa" mà thực ra chưa ai động vào**. Nếu
+      Admin phản ánh loại dòng này, phương án đã đo sẵn là: chỉ tính "đã sửa" khi
+      có bản ghi sửa ở 5.2, còn lại xếp "Biến mất, chưa rõ lý do".
 
 - [ ] 5.4 — **Nút "Báo lỗi hệ thống".** Người dùng thấy một lỗi bị ping lại dù đã
       sửa nhiều lần, hoặc thấy báo không hợp lý → chọn finding + điền lý do → đẩy
@@ -1262,11 +1286,20 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       các cột "Lần sửa 1…n" — n = số lần sửa max trên toàn bộ lỗi; ô chứa chi
       tiết sửa là gì, lỗi không có lần sửa đó thì bỏ trống.
       → **Cột Trạng thái có BA giá trị, kèm nhãn ai kết luận:** `Đạt (C4 tính
-      lại được)` · `Chưa đạt` · `Chưa kiểm được`. Không phải hai.
-      → Vì sao (NT4): chỉ **1,4%** nhóm nhận xét đòi tính là code thật sự tính
-      lại được, và ~**95%** số dòng báo cáo hiện là *"chưa đọc được chỗ này"* —
-      với những dòng đó không có gì để kết luận "đã fix chưa". Cột nhị phân sẽ
-      nhấp nháy và Admin sẽ thấy "đã sửa xong" cho thứ chưa ai động vào.
+      lại được)` · `Chưa đạt` · `Chưa kiểm được`.
+      → **Mức độ ĐÓNG BĂNG theo baseline** — chốt 2026-09-16. 5.0b đo được 24/658
+      dòng (3,6%) tự đổi mức độ khi không ai sửa (vd `STO-17` ở cả 5 phân hệ).
+      Lần thẩm định lại chỉ cập nhật Trạng thái; mức độ khác baseline thì ghi chú
+      nhỏ bên cạnh, không đổi cột chính.
+      → **Dòng do code kết luận phải hiện GIÁ TRỊ ĐẦU VÀO đã dùng.** 5.0b: chỉ 8/11
+      dòng có con số do code tính trùng ở cả hai lượt — kém ổn định hơn mặt bằng
+      chung, vì C4 tất định với đầu vào nhưng đầu vào do C3 trích và dao động
+      (`CPU-01#Kafka` ra con số khác nhau). Không hiện đầu vào thì Admin thấy
+      trạng thái lật mà không biết vì sao.
+      → KHÔNG cần cột "lượt nào kết luận": đổi mức độ + nhóm ≤ 4,4%, dưới ngưỡng
+      10% đặt trước khi đo.
+      → Trần thực tế của cột này: 87% dòng là *Chưa kiểm được*, chỉ ~1,4% có con số
+      do code tính (C3 trích được 34/397 trường ở lượt đo).
 
 - [ ] 5.7 — *(cân nhắc)* **Timeline tổng quan.** Mốc = các lần sửa: tổng số lỗi
       (theo baseline), số lỗi theo mức độ, đã sửa bao nhiêu, phát sinh bao nhiêu.
@@ -1534,3 +1567,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-15 | **Lỗi phát sinh sau khi sửa vào rổ riêng, luôn hiện, không cộng vào tổng baseline**; tái thẩm định chạy lại TOÀN BỘ C4 | "Số lỗi giữ nguyên" là yêu cầu hiển thị, không phải yêu cầu sự thật. Sửa RAM 32→320 có thể làm vỡ quy tắc nhất quán ở mục khác; C4 là Python thuần gần như miễn phí, bỏ qua nó là bỏ qua đúng thứ bắt được cú sửa hỏng (NT4) |
 | 2026-09-15 | **Hoãn ghi ngược nội dung sửa vào `.docx` khỏi GĐ 5** — công cụ chỉ ghi nhận đã sửa gì | Mục nặng và rủi ro nhất (bảng, ô gộp, công thức viết dạng chữ trong ô), trong khi 5.3 và 5.6 chạy được mà không cần nó. Chưa huỷ, để sang giai đoạn sau |
 | 2026-09-15 | **Cột actor (vai + tên) có trong lược đồ ngay từ đầu**, demo dùng ô chọn vai + ô nhập tên, ghi rõ là danh tính không xác thực | Streamlit không có đăng nhập. Không có cột actor thì dòng DB không có người, sau này không backfill được và nhật ký ghi chú Admin mất giá trị truy vết |
+| 2026-09-16 | **Khoá baseline 5.1 = mã quy tắc + tên phân hệ bỏ phần trong ngoặc**, có chặn gộp nhầm | 5.0b: khoá gốc khớp 91,6%, chuẩn hoá khớp 98,6%; 50 dòng mất khớp chỉ vì C3 viết lại `Master (K8s Master node)` thành `Master (K8s Control plane)`. Chặn gộp: hai tên gốc khác nhau rút về cùng khoá trong một lượt (Primary/Replica, DC/DR) thì giữ tên gốc |
+| 2026-09-16 | **"Đã sửa" ở 5.3 = finding baseline biến mất ở lần thẩm định lại**, không đòi kèm bản ghi sửa | Người dùng chốt, chọn đơn giản. Giá đã đo và chấp nhận: ~1,4% finding tự biến mất khi không ai sửa ⇒ ~10 dòng "đã sửa" sai mỗi lần trên tài liệu ~700 finding. Phương án dự phòng đã ghi ở 5.3 |
+| 2026-09-16 | **Mức độ trên bảng Admin 5.6 đóng băng theo baseline** | 5.0b: 3,6% dòng tự đổi mức độ giữa hai lượt không sửa gì. Đóng băng khớp yêu cầu "số lỗi giữ nguyên"; lần thẩm định lại chỉ cập nhật Trạng thái |
+| 2026-09-16 | **Dòng Đạt/Chưa đạt do code kết luận phải hiện giá trị đầu vào** | 5.0b: chỉ 8/11 dòng có con số do code tính trùng cả hai lượt — C4 tất định nhưng đầu vào do C3 trích và dao động |

@@ -330,8 +330,9 @@ def dung_bao_cao(kq: dict, va: dict, vb: dict, ma_a: str, ma_b: str) -> str:
         f"| → mất khớp CHỈ vì C3 diễn đạt lại tên phân hệ | "
         f"**{kq['mat_khop_do_ten_scope']}** | {_pt(kq['mat_khop_do_ten_scope'], n)} |",
         "",
-        "Dòng cuối là lỗi khoá, sửa được bằng code (`report.py` gắn hậu tố theo thứ "
-        "tự duyệt). Phần còn lại là model thật sự đổi ý — không sửa bằng code được.",
+        "Hai dòng «→ mất khớp CHỈ vì…» là lỗi KHOÁ, sửa được bằng code: hậu tố thứ "
+        "tự của `report.py`, và tên phân hệ do C3 diễn đạt lại. Phần không khớp còn "
+        "lại sau chuẩn hoá mới là model thật sự đổi ý — không sửa bằng code được.",
         "",
         "## Trong số dòng khớp, có gì đổi  → quyết định 5.6",
         "",
