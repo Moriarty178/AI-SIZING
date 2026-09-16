@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 3 / 14 | 🟡 5.0b đo xong 09-16 · 5.0 lưu trữ + 5.0a danh tính XONG 09-17. Tiếp: 5.1 baseline cố định |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 3 / 14 | 🟡 5.0b · 5.0 · 5.0a XONG. **5.1 code xong 09-17, CHỜ NGHIỆM THU máy nội bộ** (`scripts/nghiem_thu_5_1.py`) |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); mục kế tiếp là **5.1** (baseline cố định + rổ lỗi phát sinh).
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) đã code xong, **chờ nghiệm thu trên máy nội bộ** — cũng là lần đầu chạy PostgreSQL thật.
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1325,7 +1325,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 
 ### 5B — Tính nhất quán phía người dùng
 
-- [ ] 5.1 — **Baseline cố định + rổ lỗi phát sinh.** Lần thẩm định đầu đóng băng
+- [~] 5.1 — **Baseline cố định + rổ lỗi phát sinh.** Lần thẩm định đầu đóng băng
       danh sách + số lỗi; các lần sau KHÔNG thêm bớt vào baseline, chỉ cập nhật
       trạng thái từng dòng. **Lỗi phát sinh sau khi sửa đi vào một khối riêng
       "Phát sinh sau lần sửa N", luôn hiện, KHÔNG cộng vào tổng baseline.**
@@ -1341,6 +1341,48 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       → Hiển thị luôn dùng tên phân hệ GỐC; khoá chuẩn hoá chỉ để nối các lượt.
       → Hậu tố `#N` của `report.py` đo được **0** lần gây mất khớp — không cần vá
       trước 5.1, nhưng khoá mới vẫn phải tất định khi có finding trùng `rule#scope`.
+      → 🟡 **CODE XONG 2026-09-17 trên laptop — CHỜ NGHIỆM THU trên máy nội bộ**
+      (`[~]` = chưa tick hẳn cho tới khi `scripts/nghiem_thu_5_1.py` báo ĐẠT).
+      - `src/luu_tru/baseline.py` (thuần Python): `gan_khoa` — chuẩn hoá tên phân hệ
+        + chặn gộp nhầm trong cùng một lần + khoá luôn duy nhất; `doi_chieu` — gán
+        trạng thái từng dòng baseline, gom rổ phát sinh; mức độ đóng băng, lần này
+        khác thì ghi `muc_do_lan`. Test dùng id thật đo ở 5.0b.
+      - `kho.ghi_lan_tham_dinh`: lần 1 tạo hồ sơ + baseline, lần N đối chiếu —
+        **toàn bộ trong MỘT giao dịch** (hỏng giữa chừng mà để lại «lần 2» không có
+        kết quả thì bảng Admin đọc thành «mọi lỗi đã sửa»). `ds_ho_so`, `doc_ho_so`.
+        Hồ sơ đã gửi duyệt thì không thẩm định lại được.
+      - Lược đồ **phiên bản 2**: thêm bảng `finding_phat_sinh` (ghi theo TỪNG lần,
+        không kế thừa), cột `lan_tham_dinh.ten_file`, `finding_baseline.computed_evidence`
+        / `nhom_c7`. Bản 1 chưa từng dựng trên PostgreSQL thật.
+      - API: `POST /review` nhận `ho_so_id`; đọc danh tính từ header (hỏng → 400);
+        thẩm định lại mà thiếu danh tính → 400, hồ sơ không có → 404, không đang
+        sửa → 409 — chặn Ở CỬA, không đợi 20 phút. Ghi hồ sơ chạy sau khi việc
+        xong, TRƯỚC khi báo XONG; hỏng thì việc VẪN xong, lý do nằm ở `ghi_ho_so`.
+        Mới: `GET /ho-so`, `GET /ho-so/{id}`.
+      - Giao diện (chỉ hiện khi dịch vụ báo CSDL sẵn sàng): chọn «Hồ sơ mới» /
+        «Thẩm định lại hồ sơ đã có»; việc xong hiện bảng baseline + 5 chỉ số + rổ
+        «Phát sinh sau lần sửa N» LUÔN hiện kể cả khi rỗng.
+      - `scripts/nghiem_thu_5_1.py`: nộp cùng tài liệu hai lần, chấm 6 tiêu chí đặt
+        trước (K1–K6). 60 test mới, tổng 818.
+      → **Chú ý:**
+      (1) **Không có danh tính thì KHÔNG ghi hồ sơ** — việc vẫn chạy và báo cáo vẫn
+      đọc được, `ghi_ho_so` nói rõ «bỏ qua: không có danh tính». Chặn nộp bài thì
+      chặn luôn `nop_bai.py` và luồng cũ.
+      (2) CSDL chưa cấu hình → không thêm dòng nào vào bản ghi việc, `/ho-so` trả 409:
+      máy chưa bật CSDL chạy y như trước.
+      (3) Chặn gộp nhầm chỉ nhìn TRONG một lần: lần 1 có Primary+Replica (giữ tên
+      gốc), lần 2 C3 đổi `DB (Primary)` thành `DB (Chính)` → một dòng «đạt» giả + một
+      dòng phát sinh. Hiếm, và hiện rõ ở cả hai rổ.
+      (4) `dau_vao` còn TRỐNG: C4 chưa tách đầu vào khỏi `computed_evidence`; bảng
+      hiện «căn cứ lần đầu» cạnh «căn cứ lần này» thay thế. Tách thật ở 5.6.
+      (5) Lần 1 ghi baseline từng dòng để lấy id (~700 INSERT trong một giao dịch) —
+      đủ nhanh cho demo; nếu chậm trên PostgreSQL thật thì đổi sang INSERT…RETURNING
+      hàng loạt.
+      (6) Hai lượt thẩm định lại CÙNG hồ sơ chạy đồng thời sẽ va số thứ tự — hiện an
+      toàn vì hàng đợi chạy một việc mỗi lúc (3.2); đổi điều đó thì phải khoá hồ sơ.
+      (7) Thẩm định lại vẫn chạy TOÀN BỘ pipeline (~22 phút). Chỉ trích xuất lại phần
+      đã đổi là việc của 5.3.
+
 
 - [ ] 5.2 — **Hiển thị chỗ cần sửa + ghi nhận giá trị sửa.** Từ finding
       (`location` + `rule_ref` + `computed_evidence`) → hiện đúng đoạn/bảng trong
@@ -1667,3 +1709,6 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **KHÔNG untrack `Thiet ke va dinh co he thong_VTracking 2.0.1-bao-cao.md` ở gốc repo** dù nó là toàn văn báo cáo hồ sơ khách | Untrack một tệp đang được track thì lần `git pull` kế tiếp XOÁ tệp đó khỏi máy nội bộ — đúng thứ đã hứa không làm. Mẫu ignore `bao-cao-*.md` không bắt được tên có tiền tố `…-bao-cao.md`. Để người vận hành quyết |
 | 2026-09-17 | **Thư mục lồng `ToolSizing/` trên laptop: để nguyên, chỉ thêm vào `.gitignore`** | Nó là một kho git RIÊNG (có `.git` riêng, 29 MB) — có thể mang commit chưa đẩy. Xoá là không lấy lại được. Thư mục chỉ có trên laptop, không đi theo `git pull`. Ignore để một `git add -A` không gắn nó vào như gitlink |
 | 2026-09-17 | **Danh tính đi qua header HTTP mã hoá phần trăm, không qua thân yêu cầu** | `POST /review` là multipart, endpoint GĐ 5 sẽ là JSON — header là chỗ chung duy nhất. Mã hoá vì header chỉ chở latin-1: tên tiếng Việt thô hoặc làm `urllib` ném lỗi, hoặc bị máy chủ ASGI giải mã thành chuỗi vỡ mà không báo gì |
+| 2026-09-17 | **Không có danh tính thì KHÔNG ghi hồ sơ, nhưng việc VẪN chạy** | Chặn nộp bài sẽ chặn luôn `nop_bai.py` và luồng đang dùng. Ghi mà không có người là thứ 5.0a sinh ra để tránh. Lý do bỏ qua ghi vào `ghi_ho_so` của việc (NT4) |
+| 2026-09-17 | **Rổ phát sinh ghi theo TỪNG lần, không kế thừa giữa các lần** | Lỗi phát sinh ở lần 2 mà lần 3 hết thì đã hết thật; kế thừa sẽ để nó đọng lại trên giao diện |
+| 2026-09-17 | **Nghiệm thu 5.1 với đệm BẬT cho lần 2** | Lần 2 phát lại đúng đầu vào của lần 1 ⇒ phải ra 0 dòng «đạt» và 0 dòng phát sinh, CHÍNH XÁC — mọi lệch là lỗi code, tách bạch khỏi nhiễu model. Đo nhiễu thật (~1,4%/phía theo 5.0b) là tuỳ chọn, tắt đệm, thêm ~22 phút |

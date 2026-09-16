@@ -10,6 +10,8 @@
     POST   /result/{ma}/phan-hoi  lưu ghi chú mới/thay đổi (patch-merge)
     GET    /phan-hoi/nhat-ky      nhật ký phản hồi CSV (append-only)
     GET    /jobs            danh sách việc
+    GET    /ho-so           5.1 — danh sách hồ sơ (cần CSDL)
+    GET    /ho-so/{id}      5.1 — baseline cố định + trạng thái lần mới nhất + rổ phát sinh
     DELETE /result/{ma}     xoá việc, báo cáo VÀ tài liệu đã nộp (KHÔNG đụng nhật ký)
     GET    /health          cho healthcheck của container
 
@@ -34,7 +36,7 @@ from typing import Literal
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Form, HTTPException, Response, UploadFile, File
+from fastapi import FastAPI, Form, HTTPException, Request, Response, UploadFile, File
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
@@ -44,6 +46,7 @@ from src.cong_viec import BoChay, KhoCongViec                    # noqa: E402
 from src.giao_dien import kiem_model, luu_tam                    # noqa: E402
 from src.llm.cache import BoNhoDem                              # noqa: E402
 from src.luu_tru.cau_hinh import TrangThaiCSDL, mo_kho_tu_moi_truong  # noqa: E402
+from src.luu_tru.danh_tinh import tao_danh_tinh, tu_header          # noqa: E402
 from src.version import PHIEN_BAN_C3, commit_hien_tai            # noqa: E402
 
 DUOI_CHO_PHEP = ".docx"
@@ -55,12 +58,51 @@ CO_TOI_DA = 80 * 1024 * 1024        # 80 MB — bản sizing lớn nhất trong 
 SONG_SONG_TOI_DA = 24
 
 kho = KhoCongViec()
-bo_chay = BoChay(kho)
 
 # CSDL Giai đoạn 5 (5.0). Mở MỘT lần lúc khởi động, không mở trong `/health` —
 # xem `src/luu_tru/cau_hinh.py` vì sao. None = chưa cấu hình hoặc hỏng.
 kho_csdl = None
 trang_thai_csdl = TrangThaiCSDL(False, False, "Chưa khởi động")
+
+
+def _ghi_ho_so(cv, du_lieu: dict | None) -> dict:
+    """5.1 — sau khi một việc chạy xong: ghi lần thẩm định vào hồ sơ.
+
+    Mọi nhánh BỎ QUA đều nói ra lý do trong `ghi_ho_so` (NT4), trừ khi CSDL chưa
+    cấu hình — lúc đó tính năng đang tắt, Copilot chạy y như trước.
+    Không có danh tính thì KHÔNG ghi: một dòng CSDL không có người là thứ 5.0a sinh
+    ra để tránh. Việc vẫn xong và báo cáo vẫn đọc được bình thường.
+    """
+    if not trang_thai_csdl.cau_hinh:
+        return {}
+    if kho_csdl is None:
+        return {"ghi_ho_so": f"bỏ qua: CSDL không sẵn sàng — "
+                             f"{trang_thai_csdl.thong_diep}"[:300]}
+    if not cv.danh_tinh:
+        return {"ghi_ho_so": "bỏ qua: không có danh tính người nộp — không ghi dòng "
+                             "không có người. Nhập tên ở thanh bên rồi nộp lại."}
+    if du_lieu is None:
+        return {"ghi_ho_so": "bỏ qua: không xuất được tập finding của lượt này"}
+    r = kho_csdl.ghi_lan_tham_dinh(
+        ma_viec=cv.ma, ten_file=cv.ten_file, ho_so_id=cv.ho_so_id,
+        danh_tinh=tao_danh_tinh(**cv.danh_tinh),
+        findings=list(du_lieu.get("findings") or []),
+        commit=commit_hien_tai()[:80])
+    return {"ho_so_id": r["ho_so_id"],
+            "ghi_ho_so": (f"hồ sơ #{r['ho_so_id']} · lần {r['so_thu_tu']} · baseline "
+                          f"{r['so_loi_baseline']} lỗi · đạt {r['dat']} · chưa đạt "
+                          f"{r['chua_dat']} · chưa kiểm được {r['chua_kiem_duoc']} · "
+                          f"phát sinh {r['phat_sinh']}")}
+
+
+bo_chay = BoChay(kho, sau_khi_xong=_ghi_ho_so)
+
+
+def _can_csdl():
+    if kho_csdl is None:
+        raise HTTPException(409, "Hồ sơ Giai đoạn 5 cần CSDL — "
+                                 f"{trang_thai_csdl.thong_diep}")
+    return kho_csdl
 
 
 @asynccontextmanager
@@ -95,11 +137,30 @@ def health() -> dict:
 
 @app.post("/review", status_code=202)
 async def review(
+    request: Request,
     file: UploadFile = File(...),
     nhom: str = Form("", description="giới hạn nhóm quy tắc C3, vd «KPI,CPU»"),
     vong: int | None = Form(None, description="1 hoặc 2; để trống là cả hai"),
     song_song: int | None = Form(None, description=f"1..{SONG_SONG_TOI_DA}"),
+    ho_so_id: int | None = Form(None, description="5.1 — thẩm định lại hồ sơ này"),
 ) -> dict:
+    # 5.0a — header hỏng là lỗi của bên gọi: nói ra, đừng coi như vô danh.
+    try:
+        danh_tinh = tu_header(request.headers)
+    except ValueError as e:
+        raise HTTPException(400, f"Danh tính trong header không hợp lệ: {e}")
+    if ho_so_id is not None:
+        # Chặn Ở CỬA: không đợi 20 phút chạy xong mới báo hồ sơ không dùng được.
+        k = _can_csdl()
+        if danh_tinh is None:
+            raise HTTPException(400, "Thẩm định lại hồ sơ cần danh tính người nộp.")
+        tt = k.trang_thai_ho_so(ho_so_id)
+        if tt is None:
+            raise HTTPException(404, f"Không có hồ sơ #{ho_so_id}")
+        if tt != "dang_sua":
+            raise HTTPException(409, f"Hồ sơ #{ho_so_id} đang «{tt}» — chỉ thẩm định "
+                                     "lại được khi đang sửa.")
+
     ten = pathlib.Path(file.filename or "").name
     if not ten.lower().endswith(DUOI_CHO_PHEP):
         raise HTTPException(400, f"Chỉ nhận file {DUOI_CHO_PHEP}; nhận được «{ten}»")
@@ -126,7 +187,9 @@ async def review(
         tuy_chon["song_song"] = song_song
 
     duong_dan = luu_tam(noi_dung, ten)
-    cv = kho.them(ten, str(duong_dan), tuy_chon)
+    cv = kho.them(ten, str(duong_dan), tuy_chon, ho_so_id=ho_so_id,
+                  danh_tinh=({"vai": danh_tinh.vai, "ten": danh_tinh.ten}
+                             if danh_tinh else None))
     bo_chay.nop(cv)
     return {**cv.as_dict(),
             "ghi_chu": "Đã nhận. Một tài liệu tốn khoảng 16 phút; hỏi lại bằng "
@@ -159,6 +222,19 @@ def bao_cao(ma: str) -> str:
         raise HTTPException(409, f"Việc đang ở trạng thái «{cv.trang_thai}», "
                                  "chưa có báo cáo")
     return kho.bao_cao(ma) or ""
+
+
+@app.get("/ho-so")
+def ds_ho_so() -> dict:
+    return {"ho_so": _can_csdl().ds_ho_so()}
+
+
+@app.get("/ho-so/{ho_so_id}")
+def ho_so(ho_so_id: int) -> dict:
+    d = _can_csdl().doc_ho_so(ho_so_id)
+    if d is None:
+        raise HTTPException(404, f"Không có hồ sơ #{ho_so_id}")
+    return d
 
 
 @app.get("/jobs")

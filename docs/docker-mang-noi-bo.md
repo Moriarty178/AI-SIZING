@@ -192,7 +192,15 @@ docker compose up -d copilot-db
 docker compose ps copilot-db                         # chờ (healthy)
 docker compose up -d copilot
 curl.exe http://localhost:8902/health                # "csdl": {"san_sang": true, ...}
-docker compose exec copilot-db psql -U copilot -c "\dt"   # 10 bảng
+docker compose exec copilot-db psql -U copilot -c "\dt"   # 11 bảng (10 nghiệp vụ + phiên bản lược đồ)
+```
+
+Nghiệm thu 5.1 (baseline cố định + rổ phát sinh) sau khi CSDL sẵn sàng — nộp cùng
+tài liệu hai lần và tự chấm 6 tiêu chí; để đệm BẬT thì ~25 phút:
+
+```powershell
+py scripts/nghiem_thu_5_1.py "D:\duong\dan\Sizing ABC.docx" --api http://localhost:8902 --ten "Tên bạn"
+docker compose exec copilot-db psql -U copilot -c "select count(*) from finding_baseline"
 ```
 
 `/health` KHÔNG tự kết nối CSDL — nó báo lại kết quả kiểm lúc dịch vụ khởi động.

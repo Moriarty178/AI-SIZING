@@ -29,6 +29,11 @@ khi ghép vào tool sizing có đăng nhập thật thì không backfill đượ
 `create_all` chỉ TẠO bảng thiếu, không SỬA bảng đã có. Nên có `PHIEN_BAN_LUOC_DO`:
 khởi tạo trên một CSDL mang phiên bản khác thì DỪNG và nói ra (NT4), không chạy
 tiếp trên lược đồ lệch. Đổi lược đồ = tăng số này + viết migration.
+
+**Phiên bản 2 (5.1, 2026-09-17)** — thêm `finding_phat_sinh`, và các cột
+`lan_tham_dinh.ten_file`, `finding_baseline.computed_evidence` / `nhom_c7`. Bản 1
+chưa từng được dựng trên PostgreSQL thật nào nên không có migration; CSDL nào lỡ
+mang bản 1 sẽ bị chặn ở `khoi_tao` và phải xoá volume `copilot-db-data`.
 """
 from __future__ import annotations
 
@@ -38,7 +43,7 @@ from sqlalchemy import (Boolean, CheckConstraint, Column, DateTime, ForeignKey,
 
 from .danh_tinh import TEN_TOI_DA, VAI
 
-PHIEN_BAN_LUOC_DO = "1"
+PHIEN_BAN_LUOC_DO = "2"
 
 # Đặt tên ràng buộc tường minh: PostgreSQL tự sinh tên khác SQLite, và migration
 # sau này phải gọi được đúng tên.
@@ -100,6 +105,9 @@ lan_tham_dinh = Table(
     _fk("ho_so"),
     Column("so_thu_tu", Integer, nullable=False),
     Column("ma_viec", String(40), nullable=False, unique=True),
+    # Tên tệp của CHÍNH lần này — người dùng sửa xong hay lưu thành «…_v2.docx»,
+    # nên tên ở `ho_so` (lần đầu) không đủ để truy lại lần sau nộp tệp nào.
+    Column("ten_file", String(500), nullable=False, server_default=""),
     Column("commit", String(80), nullable=False, server_default=""),
     UniqueConstraint("ho_so_id", "so_thu_tu", name="ho_so_so_thu_tu"),
     _luc(), *_actor(),
@@ -120,6 +128,10 @@ finding_baseline = Table(
     Column("nhom_loi", String(60), nullable=False, server_default=""),
     Column("noi_dung", Text, nullable=False),
     Column("vi_tri", String(300), nullable=False, server_default=""),
+    # Con số code tính ở LẦN ĐẦU — để bảng 5.6 đặt cạnh con số của lần sau.
+    Column("computed_evidence", Text, nullable=False, server_default=""),
+    # Nhóm C7 lúc baseline: vong1 · vong2_chua_dat · vong2_chua_kiem · …
+    Column("nhom_c7", String(30), nullable=False, server_default=""),
     Column("nguon", String(10), nullable=False),
     CheckConstraint(_trong("nguon", ("ai", "admin")), name="nguon"),
     UniqueConstraint("ho_so_id", "khoa", name="ho_so_khoa"),
@@ -146,6 +158,27 @@ ket_qua_lan = Table(
     # trùng cả hai lượt, vì đầu vào do C3 trích và dao động.
     Column("dau_vao", Text, nullable=False, server_default=""),
     UniqueConstraint("lan_tham_dinh_id", "finding_baseline_id", name="lan_finding"),
+)
+
+# 5.1 — lỗi xuất hiện ở lần thẩm định lại mà KHÔNG có trong baseline. Rổ riêng,
+# luôn hiện, KHÔNG cộng vào tổng baseline. Ghi theo TỪNG lần: lần 3 tự so lại với
+# baseline, không kế thừa rổ của lần 2 — một lỗi phát sinh ở lần 2 mà lần 3 hết
+# thì đã hết thật, không đọng lại.
+finding_phat_sinh = Table(
+    "finding_phat_sinh", metadata,
+    Column("id", Integer, primary_key=True),
+    _fk("lan_tham_dinh"),
+    Column("khoa", String(400), nullable=False),
+    Column("finding_id_goc", String(400), nullable=False, server_default=""),
+    Column("rule_ref", String(40), nullable=False, server_default=""),
+    Column("scope_goc", String(300), nullable=False, server_default=""),
+    Column("muc_do", String(20), nullable=False),
+    Column("nhom_loi", String(60), nullable=False, server_default=""),
+    Column("nhom_c7", String(30), nullable=False, server_default=""),
+    Column("noi_dung", Text, nullable=False),
+    Column("vi_tri", String(300), nullable=False, server_default=""),
+    Column("computed_evidence", Text, nullable=False, server_default=""),
+    UniqueConstraint("lan_tham_dinh_id", "khoa", name="lan_khoa"),
 )
 
 # 5.2 — người dùng ghi nhận đã sửa gì. KHÔNG ghi ngược vào .docx (hoãn khỏi GĐ 5).

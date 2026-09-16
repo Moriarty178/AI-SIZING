@@ -90,6 +90,12 @@ class CongViec:
     # 100%, và chạy hết 2 phút cho một tài liệu đáng lẽ tốn ~16 — con số duy
     # nhất phân biệt được "model tất định" với "model gần như không chạy" là đây.
     thong_ke: dict = field(default_factory=dict)
+    # 5.1 — hồ sơ Giai đoạn 5. `ho_so_id` đặt lúc nộp = thẩm định lại hồ sơ đó;
+    # None = hồ sơ mới, gán sau khi ghi xong. `danh_tinh` = {vai, ten} người nộp.
+    # `ghi_ho_so` = đã ghi CSDL ra sao — NÓI RA cả khi bỏ qua hay hỏng (NT4).
+    ho_so_id: int | None = None
+    danh_tinh: dict = field(default_factory=dict)
+    ghi_ho_so: str = ""
     # Tuỳ chọn giới hạn chi phí, truyền thẳng vào `pipeline.chay`. Danh sách khoá
     # cho phép nằm ở tầng API — kho việc không tự quyết cái gì hợp lệ.
     tuy_chon: dict = field(default_factory=dict)
@@ -158,9 +164,13 @@ class KhoCongViec:
 
     # --------------------------------------------------------------- API --
     def them(self, ten_file: str, duong_dan: str,
-             tuy_chon: dict | None = None) -> CongViec:
+             tuy_chon: dict | None = None, *, ho_so_id: int | None = None,
+             danh_tinh: dict | None = None) -> CongViec:
+        # `ho_so_id`/`danh_tinh` KHÔNG nằm trong `tuy_chon`: `tuy_chon` được bung
+        # thẳng vào `pipeline.chay(**…)`, một khoá lạ là `TypeError` giữa lượt chạy.
         cv = CongViec(ma=uuid.uuid4().hex[:12], ten_file=ten_file,
-                      duong_dan=str(duong_dan), tuy_chon=dict(tuy_chon or {}))
+                      duong_dan=str(duong_dan), tuy_chon=dict(tuy_chon or {}),
+                      ho_so_id=ho_so_id, danh_tinh=dict(danh_tinh or {}))
         with self._khoa:
             self._viec[cv.ma] = cv
         self._ghi(cv)
@@ -330,8 +340,13 @@ class BoChay:
 
     def __init__(self, kho: KhoCongViec, *, ham_chay: Callable | None = None,
                  song_song: int = SONG_SONG_MAC_DINH,
-                 so_viec_song_song: int = 1):
+                 so_viec_song_song: int = 1,
+                 sau_khi_xong: Callable | None = None):
         self.kho = kho
+        # 5.1 — `sau_khi_xong(cv, du_lieu_findings) -> dict` ghi hồ sơ vào CSDL.
+        # Tiêm từ API để module này KHÔNG biết gì về CSDL. Trả {ho_so_id,
+        # ghi_ho_so}. Hỏng thì việc VẪN XONG: báo cáo 20 phút không được mất vì CSDL.
+        self._sau_khi_xong = sau_khi_xong
         self.song_song = song_song
         self.so_viec_song_song = max(1, int(so_viec_song_song))
         self._ham_chay = ham_chay
@@ -393,7 +408,7 @@ class BoChay:
                 ma = self._hang.popleft()
             self._lam(ma)
 
-    def _luu_findings(self, ma: str, kq) -> None:
+    def _luu_findings(self, ma: str, kq) -> dict | None:
         """Lưu tập finding cho bảng ghi chú; hỏng thì việc vẫn XONG.
 
         Việc thẩm định đã hoàn thành — thiếu bảng ghi chú là xuống cấp có thể
@@ -408,8 +423,20 @@ class BoChay:
                 ma_pyc=getattr(sizing, "ma_pyc", None),
                 rules=getattr(kq, "rules", None))
             self.kho.luu_findings(ma, du_lieu)
+            return du_lieu
         except Exception:
             traceback.print_exc()
+            return None
+
+    def _goi_sau_khi_xong(self, ma: str, du_lieu: dict | None) -> dict:
+        if self._sau_khi_xong is None:
+            return {}
+        cv = self.kho.lay(ma)
+        try:
+            return dict(self._sau_khi_xong(cv, du_lieu) or {})
+        except Exception as e:
+            traceback.print_exc()
+            return {"ghi_ho_so": f"lỗi: {type(e).__name__}: {e}"[:300]}
 
     def _lam(self, ma: str) -> None:
         cv = self.kho.lay(ma)
@@ -426,7 +453,10 @@ class BoChay:
             kq = self._chay_that()(cv.duong_dan, on_tien_do=tien_do,
                                    song_song=song_song, **tuy_chon)
             self.kho.luu_bao_cao(ma, kq.bao_cao())
-            self._luu_findings(ma, kq)
+            du_lieu = self._luu_findings(ma, kq)
+            # Ghi hồ sơ TRƯỚC khi báo XONG, trong cùng lần cập nhật: báo xong trước
+            # thì có một khoảng giao diện thấy việc xong mà hồ sơ chưa có.
+            ghi = self._goi_sau_khi_xong(ma, du_lieu)
             muc: dict[str, int] = {}
             for f in kq.findings:
                 muc[f.severity] = muc.get(f.severity, 0) + 1
@@ -439,7 +469,7 @@ class BoChay:
                                   (getattr(kq, "thong_ke", None) or {})
                                   .get("cache") or {}),
                               thong_ke=dict(getattr(kq, "thong_ke", None) or {}),
-                              giai_doan="")
+                              giai_doan="", **ghi)
         except Exception as e:
             # Một tài liệu hỏng KHÔNG được giết luồng chạy: các việc còn lại
             # trong hàng đợi vẫn phải tới lượt.

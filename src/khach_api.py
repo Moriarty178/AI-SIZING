@@ -176,6 +176,12 @@ class KhachAPI:
                                 {k: v for k, v in tuy_chon.items()})
         return self._goi("/review", method="POST", du_lieu=than, kieu=kieu)
 
+    def ds_ho_so(self) -> list[dict]:
+        return self._goi("/ho-so")["ho_so"]
+
+    def ho_so(self, ho_so_id: int) -> dict:
+        return self._goi(f"/ho-so/{int(ho_so_id)}")
+
     def viec(self, ma: str) -> dict:
         return self._goi(f"/result/{ma}")
 

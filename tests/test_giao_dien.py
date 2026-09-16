@@ -332,3 +332,69 @@ class TestBangPhanHoi:
         assert noi_dung_day_du({}) == "(không có nội dung)"
         van = noi_dung_day_du({"finding": "  có khoảng trắng  "})
         assert van == "có khoảng trắng"
+
+
+# --- 5.1: vẽ hồ sơ -------------------------------------------------------------
+class TestVeHoSo:
+    D = {
+        "so_loi_baseline": 3,
+        "cac_lan": [{"so_thu_tu": 1, "dem": {"dat": 0, "chua_dat": 3}},
+                    {"so_thu_tu": 2, "dem": {"dat": 1, "chua_dat": 1,
+                                             "chua_kiem_duoc": 1, "phat_sinh": 2}}],
+        "baseline": [
+            {"rule_ref": "CPU-01", "scope_goc": "Master (K8s Master node)",
+             "muc_do": "major", "muc_do_lan": "minor", "trang_thai": "chua_dat",
+             "ket_luan_boi": "c4", "noi_dung": "CPU vượt", "computed_evidence": "95%",
+             "computed_evidence_lan": "92%", "vi_tri": "Mục 1"},
+            {"rule_ref": "STO-17", "scope_goc": "MinIO", "muc_do": "major",
+             "muc_do_lan": None, "trang_thai": "dat", "ket_luan_boi": "khong_ro"},
+        ],
+        "phat_sinh": [{"rule_ref": "ARC-06", "scope_goc": "FrontEnd",
+                       "muc_do": "minor", "noi_dung": "mới"}],
+    }
+
+    def test_csdl_san_sang_doc_tu_health_tho(self):
+        from src.giao_dien import csdl_san_sang
+        assert csdl_san_sang({"csdl": {"san_sang": True}}) is True
+        assert csdl_san_sang({"csdl": {"san_sang": False}}) is False
+        assert csdl_san_sang({}) is False, "image cũ không có khoá `csdl`"
+        assert csdl_san_sang(None) is False
+
+    def test_tom_tat_lay_lan_moi_nhat(self):
+        from src.giao_dien import tom_tat_ho_so
+        t = tom_tat_ho_so(self.D)
+        assert (t["so_loi_baseline"], t["so_thu_tu"], t["dat"], t["phat_sinh"]) == \
+            (3, 2, 1, 2)
+
+    def test_tom_tat_ho_so_chua_co_lan_nao_khong_no(self):
+        from src.giao_dien import tom_tat_ho_so
+        assert tom_tat_ho_so({"so_loi_baseline": 0})["so_thu_tu"] == 0
+
+    def test_muc_do_giu_baseline_va_ghi_chu_lan_nay(self):
+        """5.6: mức độ đóng băng theo baseline; lần này khác thì chú thích."""
+        from src.giao_dien import bang_baseline
+        b = bang_baseline(self.D)
+        assert b[0]["Mức độ"] == "major (lần này: minor)"
+        assert b[1]["Mức độ"] == "major"
+
+    def test_hien_can_cu_ca_hai_lan_va_ai_ket_luan(self):
+        from src.giao_dien import bang_baseline
+        b = bang_baseline(self.D)[0]
+        assert (b["Căn cứ lần đầu"], b["Căn cứ lần này"]) == ("95%", "92%")
+        assert b["Ai kết luận"] == "Code (C4)"
+        assert "Đạt" in bang_baseline(self.D)[1]["Trạng thái"]
+
+    def test_phan_he_hien_ten_GOC(self):
+        from src.giao_dien import bang_baseline
+        assert bang_baseline(self.D)[0]["Phân hệ"] == "Master (K8s Master node)"
+
+    def test_bang_phat_sinh(self):
+        from src.giao_dien import bang_phat_sinh
+        assert [r["Quy tắc"] for r in bang_phat_sinh(self.D)] == ["ARC-06"]
+        assert bang_phat_sinh({}) == []
+
+    def test_nhan_ho_so(self):
+        from src.giao_dien import nhan_ho_so
+        n = nhan_ho_so({"id": 7, "ten_file": "a.docx", "so_lan": 2,
+                        "so_loi_baseline": 717, "ten": "An"})
+        assert n.startswith("#7") and "717 lỗi" in n

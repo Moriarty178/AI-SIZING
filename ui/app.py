@@ -16,7 +16,9 @@ import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.giao_dien import (CAN_MODEL, CHE_DO, cau_gioi_han, chay_checklist,
+from src.giao_dien import (bang_baseline, bang_phat_sinh, csdl_san_sang,
+                           nhan_ho_so, tom_tat_ho_so,
+                           CAN_MODEL, CHE_DO, cau_gioi_han, chay_checklist,
                            che_do_kha_dung, chuan_bi_bang, gom_thay_doi,
                            kiem_model_qua_dich_vu, loc_bang, luu_tam,
                            NHAN_PHAN_LOAI, noi_dung_day_du, spec_cot_bang,
@@ -283,9 +285,86 @@ def _hien_mot_viec(kh: KhachAPI, d: dict, ten_tai: str) -> bool:
                        "text/markdown")
     st.markdown(bc)
 
+    if d.get("ghi_ho_so"):
+        # NT4: bỏ qua hay hỏng khi ghi hồ sơ đều phải hiện ra, không im lặng.
+        (st.caption if d.get("ho_so_id") else st.warning)(
+            f"Hồ sơ: {d['ghi_ho_so']}")
+    if d.get("ho_so_id"):
+        with st.expander(f"🗂 Hồ sơ #{d['ho_so_id']} — baseline cố định & lỗi phát "
+                         "sinh", expanded=True):
+            hien_ho_so(kh, d["ho_so_id"])
+
     with st.expander("📝 Bảng ghi chú cho người thẩm định", expanded=False):
         _bang_phan_hoi(kh, d, ten_tai)
     return False
+
+
+def hien_ho_so(kh: KhachAPI, ho_so_id: int):
+    """5.1 — baseline CỐ ĐỊNH từ lần đầu + trạng thái lần mới nhất + rổ phát sinh."""
+    try:
+        d = kh.ho_so(ho_so_id)
+    except LoiAPI as e:
+        st.warning(f"Không đọc được hồ sơ #{ho_so_id}: {e}")
+        return
+    t = tom_tat_ho_so(d)
+    c = st.columns(5)
+    c[0].metric("Lỗi baseline (cố định)", t["so_loi_baseline"])
+    c[1].metric("Đạt", t["dat"])
+    c[2].metric("Chưa đạt", t["chua_dat"])
+    c[3].metric("Chưa kiểm được", t["chua_kiem_duoc"])
+    c[4].metric("Phát sinh", t["phat_sinh"])
+    st.caption(
+        f"Lần {t['so_thu_tu']}. Số lỗi baseline lấy từ lần thẩm định ĐẦU TIÊN và giữ "
+        "nguyên. «Đạt» nghĩa là lỗi không còn xuất hiện ở lần này — đo được khoảng "
+        "1,4% lỗi tự biến mất giữa hai lần chạy dù không ai sửa, nên kiểm lại các "
+        "dòng «Đạt» mà bạn chưa động tới.")
+    st.dataframe(bang_baseline(d), use_container_width=True, hide_index=True)
+
+    # Rổ phát sinh LUÔN hiện, kể cả khi rỗng — im lặng thì người dùng không phân
+    # biệt «không có lỗi mới» với «công cụ không kiểm lỗi mới».
+    if t["so_thu_tu"] <= 1:
+        st.markdown("**Lỗi phát sinh:** lần đầu — chưa có lần trước để so.")
+    else:
+        st.markdown(f"**Phát sinh sau lần sửa {t['so_thu_tu'] - 1}** "
+                    f"({t['phat_sinh']} lỗi — KHÔNG cộng vào số lỗi baseline)")
+        ps = bang_phat_sinh(d)
+        if ps:
+            st.dataframe(ps, use_container_width=True, hide_index=True)
+        else:
+            st.caption("Không có lỗi nào mới xuất hiện so với baseline.")
+
+
+def _chon_ho_so(kh: KhachAPI, sk):
+    """5.1 — hồ sơ mới hay thẩm định lại. None = mới · int = hồ sơ · False = chặn.
+
+    Chỉ hiện khi dịch vụ báo CSDL sẵn sàng; không thì nộp y như trước.
+    """
+    if not csdl_san_sang(sk.tho):
+        return None
+    st.markdown("**Hồ sơ**")
+    co_ten = st.session_state.get("danh_tinh") is not None
+    kieu = st.radio("Lượt này là", ["Hồ sơ mới", "Thẩm định lại hồ sơ đã có"],
+                    horizontal=True, key="kieu_ho_so")
+    if kieu == "Hồ sơ mới":
+        if not co_ten:
+            st.warning("Chưa nhập tên ở thanh bên — lượt này vẫn chạy nhưng KHÔNG được "
+                       "lưu thành hồ sơ, nên không thẩm định lại được về sau.")
+        return None
+    if not co_ten:
+        st.error("Thẩm định lại cần biết ai nộp — nhập tên ở thanh bên.")
+        return False
+    try:
+        ds = [h for h in kh.ds_ho_so() if h.get("trang_thai") == "dang_sua"]
+    except LoiAPI as e:
+        st.error(f"Không lấy được danh sách hồ sơ: {e}")
+        return False
+    if not ds:
+        st.info("Chưa có hồ sơ nào đang sửa. Chọn «Hồ sơ mới» cho lần đầu.")
+        return False
+    h = st.selectbox("Chọn hồ sơ", ds, format_func=nhan_ho_so, key="chon_ho_so")
+    st.caption("Baseline của hồ sơ giữ nguyên; lượt này chỉ cập nhật trạng thái từng "
+               "lỗi và đưa lỗi mới vào rổ «phát sinh».")
+    return int(h["id"])
 
 
 def hien_tham_dinh(doc, duong_dan, ten, noi_dung: bytes):
@@ -342,12 +421,16 @@ def hien_tham_dinh(doc, duong_dan, ten, noi_dung: bytes):
                    so_phan_he=int(so_phan_he))
     st.info("Ước lượng trước khi chạy: " + ul.mo_ta(int(song_song)))
 
+    ho_so_id = _chon_ho_so(kh, sk)
+    if ho_so_id is False:
+        return
     if not st.button("▶ Chạy thẩm định", type="primary"):
         return
     try:
         d = kh.nop(noi_dung, ten, nhom=nhom.strip(),
                    vong="" if chi_vong is None else chi_vong,
-                   song_song=int(song_song))
+                   song_song=int(song_song),
+                   ho_so_id="" if ho_so_id is None else ho_so_id)
     except LoiAPI as e:
         st.error(f"Nộp bài không thành công: {e}")
         return

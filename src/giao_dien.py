@@ -398,3 +398,64 @@ def luu_tam(noi_dung: bytes, ten: str, thu_muc: str | None = None) -> pathlib.Pa
 
 def ten_file_ket_qua(ten_goc: str, hau_to: str, duoi: str) -> str:
     return f"{pathlib.Path(ten_goc).stem[:60]}-{hau_to}.{duoi}"
+
+
+# ------------------------------------------------------ 5.1 — hồ sơ ------
+NHAN_TRANG_THAI_HO_SO = {
+    "dat": "✅ Đạt (không còn xuất hiện)",
+    "chua_dat": "❌ Chưa đạt",
+    "chua_kiem_duoc": "❔ Chưa kiểm được",
+    None: "—",
+}
+NHAN_KET_LUAN_BOI = {"c4": "Code (C4)", "c5": "Model (C5)", "khong_ro": "—", None: "—"}
+
+
+def csdl_san_sang(tho_health: dict) -> bool:
+    """Giao diện chỉ hiện phần hồ sơ khi DỊCH VỤ báo CSDL sẵn sàng."""
+    return bool(((tho_health or {}).get("csdl") or {}).get("san_sang"))
+
+
+def nhan_ho_so(h: dict) -> str:
+    return (f"#{h['id']} · {h['ten_file']} · {h.get('so_lan', 0)} lần · "
+            f"{h.get('so_loi_baseline', 0)} lỗi · {h.get('ten', '')}")
+
+
+def tom_tat_ho_so(d: dict) -> dict:
+    """Số liệu của LẦN MỚI NHẤT, kèm số thứ tự lần — để tiêu đề rổ phát sinh nói
+    đúng «sau lần sửa N»."""
+    lan = (d.get("cac_lan") or [{}])[-1]
+    dem = lan.get("dem") or {}
+    return {"so_loi_baseline": d.get("so_loi_baseline", 0),
+            "so_thu_tu": lan.get("so_thu_tu", 0),
+            "dat": dem.get("dat", 0), "chua_dat": dem.get("chua_dat", 0),
+            "chua_kiem_duoc": dem.get("chua_kiem_duoc", 0),
+            "phat_sinh": dem.get("phat_sinh", 0)}
+
+
+def bang_baseline(d: dict) -> list[dict]:
+    """Dòng bảng baseline. Mức độ ĐÓNG BĂNG theo baseline (5.6); lần này khác thì
+    ghi chú trong ngoặc, không thay cột chính."""
+    ra = []
+    for b in d.get("baseline") or []:
+        muc = b.get("muc_do", "")
+        if b.get("muc_do_lan"):
+            muc = f"{muc} (lần này: {b['muc_do_lan']})"
+        ra.append({
+            "Quy tắc": b.get("rule_ref", ""),
+            "Phân hệ": b.get("scope_goc", ""),
+            "Mức độ": muc,
+            "Trạng thái": NHAN_TRANG_THAI_HO_SO.get(b.get("trang_thai"), "—"),
+            "Ai kết luận": NHAN_KET_LUAN_BOI.get(b.get("ket_luan_boi"), "—"),
+            "Nội dung (lần đầu)": b.get("noi_dung", ""),
+            "Căn cứ lần đầu": b.get("computed_evidence", ""),
+            "Căn cứ lần này": b.get("computed_evidence_lan", ""),
+            "Vị trí": b.get("vi_tri", ""),
+        })
+    return ra
+
+
+def bang_phat_sinh(d: dict) -> list[dict]:
+    return [{"Quy tắc": p.get("rule_ref", ""), "Phân hệ": p.get("scope_goc", ""),
+             "Mức độ": p.get("muc_do", ""), "Nội dung": p.get("noi_dung", ""),
+             "Căn cứ": p.get("computed_evidence", ""), "Vị trí": p.get("vi_tri", "")}
+            for p in d.get("phat_sinh") or []]

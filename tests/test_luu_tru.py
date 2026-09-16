@@ -169,3 +169,109 @@ class TestHoSoVaBaseline:
 def test_trang_thai_csdl_ra_json_duoc():
     import json
     json.dumps(TrangThaiCSDL(True, False, "x").as_dict())
+
+
+# ----------------------------------------------------- 5.1: ghi một lần --------
+def _fd(fid, **kw):
+    d = {"id": fid, "severity": "major", "category": "vuot_nguong",
+         "finding": "CPU vượt ngưỡng", "computed_evidence": "", "location": "Mục I",
+         "nhom": "vong2_chua_dat", "rule_ref": fid.split("#")[0]}
+    d.update(kw)
+    return d
+
+
+def _dt():
+    from src.luu_tru.danh_tinh import tao_danh_tinh
+    return tao_danh_tinh("nguoi_lam_sizing", "Nguyễn Văn A")
+
+
+class TestGhiLanThamDinh:
+    def test_lan_dau_tao_ho_so_va_dong_bang_baseline(self, kho):
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
+                                  findings=[_fd("A#x"), _fd("B#y")])
+        assert (r["so_thu_tu"], r["so_loi_baseline"], r["phat_sinh"]) == (1, 2, 0)
+        d = kho.doc_ho_so(r["ho_so_id"])
+        assert d["so_loi_baseline"] == 2
+        assert {b["vai"] for b in d["baseline"]} == {"he_thong"}, \
+            "baseline do MÁY sinh, không mang danh tính người nộp"
+        assert d["cac_lan"][0]["ten"] == "Nguyễn Văn A", "LẦN thì mang người nộp"
+
+    def test_lan_sau_KHONG_doi_so_dong_baseline(self, kho):
+        r1 = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
+                                   findings=[_fd("A#x"), _fd("B#y")])
+        r2 = kho.ghi_lan_tham_dinh(ma_viec="m2", ten_file="a_v2.docx", danh_tinh=_dt(),
+                                   ho_so_id=r1["ho_so_id"],
+                                   findings=[_fd("A#x"), _fd("C#z"), _fd("D#w")])
+        assert r2["so_thu_tu"] == 2
+        assert r2["so_loi_baseline"] == 2, "số lỗi giữ nguyên"
+        assert (r2["dat"], r2["chua_dat"], r2["phat_sinh"]) == (1, 1, 2)
+        d = kho.doc_ho_so(r1["ho_so_id"])
+        assert len(d["baseline"]) == 2
+        assert {b["khoa"]: b["trang_thai"] for b in d["baseline"]} == \
+            {"A#x": "chua_dat", "B#y": "dat"}
+        assert sorted(p["khoa"] for p in d["phat_sinh"]) == ["C#z", "D#w"]
+        assert [l["ten_file"] for l in d["cac_lan"]] == ["a.docx", "a_v2.docx"]
+        assert d["cac_lan"][1]["dem"] == {"dat": 1, "chua_dat": 1,
+                                          "chua_kiem_duoc": 0, "phat_sinh": 2}
+
+    def test_ro_phat_sinh_tinh_lai_moi_lan_KHONG_ke_thua(self, kho):
+        """Lỗi phát sinh ở lần 2 mà lần 3 đã hết thì hết thật, không đọng lại."""
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a", danh_tinh=_dt(),
+                                  findings=[_fd("A#x")])
+        h = r["ho_so_id"]
+        kho.ghi_lan_tham_dinh(ma_viec="m2", ten_file="a", danh_tinh=_dt(), ho_so_id=h,
+                              findings=[_fd("A#x"), _fd("C#z")])
+        r3 = kho.ghi_lan_tham_dinh(ma_viec="m3", ten_file="a", danh_tinh=_dt(),
+                                   ho_so_id=h, findings=[_fd("A#x")])
+        assert r3["phat_sinh"] == 0
+        assert kho.doc_ho_so(h)["phat_sinh"] == []
+
+    def test_ho_so_khong_ton_tai_thi_bao_ro(self, kho):
+        from src.luu_tru.kho import KhongThamDinhLaiDuoc
+        with pytest.raises(KhongThamDinhLaiDuoc, match="#999"):
+            kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a", danh_tinh=_dt(),
+                                  ho_so_id=999, findings=[])
+
+    def test_ho_so_da_gui_duyet_thi_KHONG_tham_dinh_lai(self, kho):
+        from src.luu_tru.kho import KhongThamDinhLaiDuoc
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a", danh_tinh=_dt(),
+                                  findings=[_fd("A#x")])
+        kho.dat_trang_thai_ho_so(r["ho_so_id"], "cho_duyet")
+        with pytest.raises(KhongThamDinhLaiDuoc, match="cho_duyet"):
+            kho.ghi_lan_tham_dinh(ma_viec="m2", ten_file="a", danh_tinh=_dt(),
+                                  ho_so_id=r["ho_so_id"], findings=[])
+
+    def test_hong_giua_chung_KHONG_de_lai_lan_do_dang(self, kho):
+        """Một «lần 2» không có kết quả nào sẽ bị bảng Admin đọc thành «mọi lỗi đã
+        sửa». Mã việc trùng làm INSERT lần hỏng → cả giao dịch phải lùi."""
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a", danh_tinh=_dt(),
+                                  findings=[_fd("A#x")])
+        with pytest.raises(sa.exc.IntegrityError):
+            kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a", danh_tinh=_dt(),
+                                  ho_so_id=r["ho_so_id"], findings=[_fd("B#y")])
+        d = kho.doc_ho_so(r["ho_so_id"])
+        assert len(d["cac_lan"]) == 1 and d["phat_sinh"] == []
+
+    def test_lan_dau_hong_KHONG_de_lai_ho_so_rong(self, kho):
+        """Hồ sơ mới được INSERT trước lần 1. Lần 1 hỏng (mã việc trùng) mà hồ sơ
+        còn lại thì danh sách hồ sơ có một hồ sơ không lần nào, không baseline."""
+        kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a", danh_tinh=_dt(),
+                              findings=[_fd("A#x")])
+        with pytest.raises(sa.exc.IntegrityError):
+            kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="b", danh_tinh=_dt(),
+                                  findings=[_fd("B#y")])
+        assert [h["ten_file"] for h in kho.ds_ho_so()] == ["a"]
+
+    def test_ds_ho_so_dem_lan_va_loi(self, kho):
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a", danh_tinh=_dt(),
+                                  findings=[_fd("A#x"), _fd("B#y")])
+        kho.ghi_lan_tham_dinh(ma_viec="m2", ten_file="a", danh_tinh=_dt(),
+                              ho_so_id=r["ho_so_id"], findings=[])
+        (h,) = kho.ds_ho_so()
+        assert (h["so_lan"], h["so_loi_baseline"]) == (2, 2)
+
+    def test_doc_ho_so_khong_ton_tai_la_None(self, kho):
+        assert kho.doc_ho_so(12345) is None
+
+    def test_phien_ban_luoc_do_la_2(self):
+        assert ld.PHIEN_BAN_LUOC_DO == "2"
