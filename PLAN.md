@@ -16,9 +16,15 @@
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
 | 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 2 / 14 | 🟡 5.0b đo xong 09-16 · 5.0 lưu trữ + PostgreSQL XONG 09-17 (không mở cổng, không phụ thuộc — pull an toàn). Tiếp: 5.0a danh tính trên giao diện |
 
-**Đang tập trung (2026-09-15):** sau demo copilot + copilot-ui (Streamlit,
-port 8902/8903) trên container thật, chuyển sang **GĐ 5** — vòng lặp người dùng
-sửa lỗi → tái thẩm định → Admin phê duyệt, kèm kênh phản hồi cải tiến quy tắc.
+**Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
+→ tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
+PostgreSQL); mục kế tiếp là **5.0a** (danh tính trên giao diện).
+
+> ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
+> chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
+> (43/43 C3, 16/16 C5), và báo cáo mọi người xem là phần thuần code (61 finding,
+> ~2 phút). Lượt chạy đúng sau khi vá: 717 finding, ~22 phút, 268 lời gọi. Chi tiết
+> ở mục 3.5 — «Vá sau demo». Nên báo lại cho người đã dự.
 Định hướng kiến trúc: demo toàn bộ trên copilot + copilot-ui hiện có; khi tích
 hợp vào frontend + backend của tool làm sizing thì chỉ đổi lớp kết nối, phần
 xử lý và lưu trữ (PostgreSQL ở đích) không bị ảnh hưởng.
@@ -1154,6 +1160,34 @@ xử lý và lưu trữ (PostgreSQL ở đích) không bị ảnh hưởng.
   2026-09-14** (hợp nhất một `Dockerfile.copilot` + hai dịch vụ trong
   `docker-compose.yml`); **đã build + demo thật trên máy nội bộ 2026-09-15**
   (copilot + copilot-ui, port 8902/8903).
+  → **Vá sau demo (2026-09-16), lộ ra khi đo 5.0b.** Mỗi mục có test khoá:
+  - **Proxy lúc CHẠY làm hỏng MỌI lời gọi model** (`b818ffc`). `env_file: .env`
+    nạp `HTTP_PROXY`/`HTTPS_PROXY` vào container; lời gọi gateway đi qua Squid và
+    nhận trang lỗi HTML. `NO_PROXY=10.*` KHÔNG cứu được: httpx (dưới `openai` SDK)
+    khớp no_proxy theo hậu tố tên miền hoặc IP, không theo ký tự đại diện. Sửa:
+    `environment:` của `copilot` đặt RỖNG bốn biến proxy (đè `env_file`), `NO_PROXY`
+    chuyển sang CIDR.
+  - **Lượt chạy hỏng sạch vẫn báo «xong»** (`b818ffc`). Mọi lời gọi ở C3 hoặc C5
+    đều hỏng ⇒ sinh finding critical `NT4-MODEL-C3`/`NT4-MODEL-C5` nói thẳng
+    «báo cáo này KHÔNG phải kết quả thẩm định», kèm ví dụ lỗi. Hỏng một phần thì
+    không kêu (đã có bộ đếm riêng).
+  - **Khách API cũng không đi qua proxy** (`6e8f7fd`). `nop_bai.py` báo
+    `unknown url type: [http` với địa chỉ gõ đúng: urllib đọc biến proxy bọc ngoặc
+    vuông trong cửa sổ cmd. `KhachAPI` nay dùng opener `ProxyHandler({})`.
+  - **`/result` KHÔNG còn kèm toàn văn báo cáo** (`dc39e5a`). Bản ghi chẩn đoán này
+    hay được dán vào chat/gửi kèm báo lỗi; một bản như thế đã bị commit với 39 KB
+    nội dung hồ sơ khách. Báo cáo vẫn lấy ở `/result/{ma}/bao-cao`. Kèm lợi ích phụ:
+    giao diện hỏi lại mỗi 5 giây không còn kéo ~116 KB mỗi lượt.
+  - **Bằng chứng lượt chạy có gọi model nằm trong dữ liệu** (`0675eed`, `f125b78`).
+    Bản ghi việc giữ `thong_ke` đầy đủ (`c3.luot_goi`, `c5.luot_goi`,
+    `luot_goi_hong`…) và `thong_ke_cache`; `/health` có `cache_bat`. Trước đó không
+    ai chứng minh được một lượt chạy đã gọi model hay chỉ phát lại từ đệm.
+  - **`NT4-C1` không còn mang đường dẫn tạm của máy chủ** (`e45e13c`). Mỗi lần tải
+    lên API ghi vào một `mkdtemp()` mới, nên căn cứ của finding này đổi ở mọi lượt
+    — làm hỏng việc đối chiếu giữa các lượt. Nay chỉ ghi tên tệp.
+  - Chú ý vận hành: image build không truyền `COMMIT` thì `/health` trả `unknown`
+    và không truy được dịch vụ đang chạy mã nào. Luôn
+    `$env:COMMIT = (git rev-parse --short HEAD)` trước `docker compose build`.
 
 ---
 
@@ -1215,6 +1249,9 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       container unhealthy và `copilot-ui` không lên được).
       → Image cài thêm nhóm `db` (`sqlalchemy`, `psycopg[binary]` — mang sẵn libpq,
       không cần apt). Lần build tới kéo thêm hai gói này qua proxy.
+      → Commit `0158755`. ⚠️ **CHƯA chạy trên PostgreSQL thật** — laptop không có
+      Docker, 34 test chạy trên SQLite. Lần kiểm thật đầu tiên làm cùng 5.1, khi có
+      dữ liệu thật để ghi. Bật CSDL theo ba bước trong `.env.example`.
 
 - [ ] 5.0a — **Danh tính demo.** Thanh bên: ô chọn **Vai** (Người làm sizing /
       Admin) + ô nhập **Tên**, ghi vào cột actor của mọi bảng. Giao diện phải nói
@@ -1249,6 +1286,18 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       → Ba lượt đo đầu (lọc KPI; đệm «tắt» mà 0 lời gọi; hỏng sạch vì proxy) đều
       **vô giá trị** và đã bị loại. Script nay tự phán quyết giá trị bằng số lời
       gọi model thật, không bằng cờ đệm.
+      → **Công cụ để đo lại** (`c15e204` … `11039c5`):
+      `scripts/do_on_dinh.py <ma_A> <ma_B>` — so hai lượt, tách mất khớp do hậu tố
+      `#N`, do C3 đổi tên phân hệ, và khác biệt thật; phán quyết «dùng được» ngay
+      đầu báo cáo. `scripts/nop_bai.py --giong-nhu <ma>` — chép NGUYÊN tuỳ chọn của
+      một việc đã nộp (ô «Số phân hệ» trên giao diện chỉ để ước lượng chi phí,
+      không đi vào lượt chạy). `SIZING_COPILOT_KHONG_CACHE=1` trong `.env` để tắt đệm.
+      → **Chú ý khi đo lại:** (1) đệm bật mặc định và khoá theo nội dung lời gọi —
+      không tắt thì lượt sau chỉ phát lại lượt trước; (2) đổi `.env` phải
+      `docker compose up -d`, `restart` không đọc lại; (3) không lọc `chi_nhom` nếu
+      muốn kết luận cho cả lượt thẩm định; (4) nhớ trả đệm về trống sau khi đo;
+      (5) file `docs/do-on-dinh-*` chỉ chứa mã quy tắc + tên phân hệ, commit được;
+      bản ghi `/result` thì KHÔNG (xem 3.5).
 
 ### 5B — Tính nhất quán phía người dùng
 

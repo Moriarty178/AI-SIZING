@@ -158,11 +158,16 @@ cần `docker exec` điền thêm gì. Bấm vào tab của từng container đ�
 
 Hai điều cần biết:
 
-- **`NO_PROXY` bắt buộc đi kèm proxy.** Proxy công ty (`10.207.156.52:3128`) chỉ
-  để BUILD. Khi `env_file` nạp `HTTP_PROXY` vào container LÚC CHẠY, lời gọi
-  gateway model (`http://10.221.58.70:8401`) sẽ đi vòng qua proxy công ty và
-  chết — trừ khi `NO_PROXY` liệt kê dải nội bộ `10.*`. `.env.example` đã ghi
-  sẵn; xoá đi là model «chưa gọi được» dù health vẫn xanh.
+- **Proxy chỉ để BUILD — lúc CHẠY nó phải RỖNG.** `env_file` nạp `HTTP_PROXY` vào
+  container, và lời gọi gateway model (`http://10.221.58.70:8401`) sẽ đi vòng qua
+  proxy công ty rồi nhận **trang lỗi HTML của Squid**. `docker-compose.yml` nay đặt
+  rỗng cả bốn biến proxy trong `environment:` của `copilot` (đè `env_file`).
+  **Đừng tin `NO_PROXY=10.*`** — hướng dẫn cũ ở đây ghi như vậy và nó sai: httpx
+  khớp no_proxy theo hậu tố tên miền hoặc IP, không theo ký tự đại diện. Hậu quả
+  thật ngày 2026-09-16: 43/43 lời gọi C3 và 16/16 lời gọi C5 hỏng, `/health` vẫn
+  xanh, việc vẫn báo «xong». Kiểm nhanh:
+  `docker compose exec copilot printenv | Select-String proxy` — phải rỗng.
+  Lượt chạy hỏng sạch nay sinh finding critical `NT4-MODEL-*` nói thẳng điều đó.
 - **`SIZING_COPILOT_API` trong `.env` chỉ là mẫu.** Trong compose, `environment`
   đè giá trị này bằng `http://copilot:8000` (tên dịch vụ trong mạng compose) —
   đúng luôn, dù `.env` ghi gì. Giá trị trong `.env` chỉ có tác dụng khi chạy
@@ -173,6 +178,25 @@ từ mục B3 nó nộp bài cho API chứ không gọi model. Thanh bên lấy 
 từ `/health` của API — trước 2026-09-14 nó tự dựng client tại chỗ, nên trong
 container luôn báo «Chưa gọi được model» và **giấu luôn** chế độ «Thẩm định đầy
 đủ», dù API bên cạnh chạy tốt.
+
+### CSDL Giai đoạn 5 (tuỳ chọn, 5.0)
+
+Service `copilot-db` (`postgres:16-alpine`) KHÔNG tự lên cùng Copilot và KHÔNG mở
+cổng ra máy chủ — máy nội bộ đã có PostgreSQL cho backend Spring. Để trống
+`SIZING_COPILOT_DB_URL` thì Copilot chạy y như trước.
+
+```powershell
+notepad .env        # SIZING_COPILOT_DB_PASSWORD=<tuỳ ý>
+                    # SIZING_COPILOT_DB_URL=postgresql+psycopg://copilot:<mật khẩu đó>@copilot-db:5432/copilot
+docker compose up -d copilot-db
+docker compose ps copilot-db                         # chờ (healthy)
+docker compose up -d copilot
+curl.exe http://localhost:8902/health                # "csdl": {"san_sang": true, ...}
+docker compose exec copilot-db psql -U copilot -c "\dt"   # 10 bảng
+```
+
+`/health` KHÔNG tự kết nối CSDL — nó báo lại kết quả kiểm lúc dịch vụ khởi động.
+CSDL hỏng thì `csdl.san_sang=false` kèm lý do (mật khẩu đã che), dịch vụ vẫn chạy.
 
 ### Hoặc chạy từng cái
 
