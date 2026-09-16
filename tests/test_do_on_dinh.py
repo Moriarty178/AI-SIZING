@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from scripts.do_on_dinh import (_dong_dich_vu, _khoa_goc,   # noqa: E402
-                                so_sanh)
+                                gia_tri_do, so_sanh)
 from src.khach_api import SucKhoe                           # noqa: E402
 
 
@@ -104,3 +104,56 @@ class TestDongDichVu:
 
     def test_thieu_ca_commit_lan_nhan_van_khong_no(self):
         assert _dong_dich_vu(SucKhoe(song=True))
+
+
+class TestGiaTriDo:
+    """Phép đo tự nói nó có dùng được không — bằng DỮ LIỆU của hai lượt chạy.
+
+    Ngày 2026-09-16 mất trọn một phép đo vì chuyện này chỉ nằm trong trí nhớ
+    người chạy: hai lượt khớp 61/61 mà không ai chứng minh được lượt sau có gọi
+    model hay chỉ phát lại từ đệm.
+    """
+    TAT = {"bat": False, "ghi_them": 0}
+    BAT_CO_GOI = {"bat": True, "ghi_them": 96}
+    BAT_PHAT_LAI = {"bat": True, "ghi_them": 0}
+
+    def _v(self, tk, **kw):
+        d = {"thong_ke_cache": tk, "tuy_chon": {}}
+        d.update(kw)
+        return d
+
+    def test_ca_hai_luot_tat_dem_thi_dung_duoc(self):
+        dung, _ = gia_tri_do(self._v(self.TAT), self._v(self.TAT))
+        assert dung is True
+
+    def test_dem_bat_nhung_co_ghi_them_van_la_goi_that(self):
+        dung, ly = gia_tri_do(self._v(self.TAT), self._v(self.BAT_CO_GOI))
+        assert dung is True
+        assert "96 lời gọi thật" in " ".join(ly)
+
+    def test_phat_lai_hoan_toan_tu_dem_thi_KHONG_dung_duoc(self):
+        dung, ly = gia_tri_do(self._v(self.TAT), self._v(self.BAT_PHAT_LAI))
+        assert dung is False
+        assert "KHÔNG gọi model" in " ".join(ly)
+
+    def test_thieu_so_lieu_dem_thi_KHONG_dam_bao(self):
+        """Image cũ hơn bản 2026-09-16 không ghi `thong_ke_cache`. Im lặng coi
+        như đạt là đúng cái bẫy đã sập một lần."""
+        dung, ly = gia_tri_do(self._v({}), self._v(self.TAT))
+        assert dung is False
+        assert "KHÔNG có số liệu đệm" in " ".join(ly)
+
+    def test_co_loc_nhom_thi_chua_du_co_so_chot_thiet_ke(self):
+        """Lượt 2026-09-16 lọc `chi_nhom=['KPI']` — 61 finding của MỘT nhóm quy
+        tắc, không phải một lượt thẩm định đầy đủ."""
+        dung, ly = gia_tri_do(
+            self._v(self.TAT, tuy_chon={"chi_nhom": ["KPI"], "song_song": 12}),
+            self._v(self.TAT))
+        assert dung is False
+        assert "chi_nhom" in " ".join(ly)
+
+    def test_loc_vong_hay_song_song_KHONG_lam_mat_gia_tri(self):
+        """`song_song` chỉ đổi tốc độ, không đổi phạm vi quy tắc."""
+        dung, _ = gia_tri_do(self._v(self.TAT, tuy_chon={"song_song": 12}),
+                             self._v(self.TAT))
+        assert dung is True

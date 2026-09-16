@@ -80,6 +80,10 @@ class CongViec:
     loi: str = ""
     so_finding: int = 0
     theo_muc_do: dict = field(default_factory=dict)
+    # Trạng thái đệm của CHÍNH lượt chạy này: {bat, ban_ghi_truoc, ban_ghi_sau,
+    # ghi_them}. Không có nó thì không ai chứng minh được lượt chạy đã gọi model
+    # hay chỉ phát lại — xem `scripts/do_on_dinh.py`.
+    thong_ke_cache: dict = field(default_factory=dict)
     # Tuỳ chọn giới hạn chi phí, truyền thẳng vào `pipeline.chay`. Danh sách khoá
     # cho phép nằm ở tầng API — kho việc không tự quyết cái gì hợp lệ.
     tuy_chon: dict = field(default_factory=dict)
@@ -422,6 +426,12 @@ class BoChay:
                 muc[f.severity] = muc.get(f.severity, 0) + 1
             self.kho.cap_nhat(ma, trang_thai=XONG, ket_thuc=time.time(),
                               so_finding=len(kq.findings), theo_muc_do=muc,
+                              # `getattr`: `ham_chay` tiêm vào khi test không
+                              # bắt buộc trả `thong_ke`, và thiếu một con số
+                              # thống kê KHÔNG được làm hỏng cả lượt chạy.
+                              thong_ke_cache=dict(
+                                  (getattr(kq, "thong_ke", None) or {})
+                                  .get("cache") or {}),
                               giai_doan="")
         except Exception as e:
             # Một tài liệu hỏng KHÔNG được giết luồng chạy: các việc còn lại

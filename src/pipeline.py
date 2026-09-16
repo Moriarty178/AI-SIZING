@@ -176,7 +176,14 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
     doc = read_docx(path)
 
     core = SizingCore()
-    tk: dict = {"c1_phan_tu": len(doc.elements), "c1_bang": len(doc.tables()),
+    # Đệm bật hay tắt, và lượt này ghi thêm bao nhiêu bản ghi — bằng chứng
+    # NẰM TRONG dữ liệu chứ không nằm ở trí nhớ người chạy. Đo 5.0b ngày
+    # 2026-09-16 tốn hai lượt chạy rồi vẫn không kết luận được, chỉ vì không ai
+    # chứng minh được lượt sau có thật sự gọi model hay chỉ phát lại từ đệm.
+    from .llm.cache import BoNhoDem
+    _dem = BoNhoDem()
+    tk: dict = {"cache": {"bat": _dem.bat, "ban_ghi_truoc": _dem.so_ban_ghi()},
+                "c1_phan_tu": len(doc.elements), "c1_bang": len(doc.tables()),
                 "c1_anh": len(doc.images()), "c1_trang": doc.page_source}
 
     if not bo_qua_trich_xuat:
@@ -230,6 +237,10 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
         findings += [o.finding for o in kq_dt if o.finding is not None]
         tk["c5"] = dict(c5.tk.__dict__)
         tk["c5"].pop("_khoa", None)     # threading.Lock — không serialize được JSON
+
+    tk["cache"]["ban_ghi_sau"] = _dem.so_ban_ghi()
+    tk["cache"]["ghi_them"] = (tk["cache"]["ban_ghi_sau"]
+                               - tk["cache"]["ban_ghi_truoc"])
 
     findings += canh_bao_nt4(doc)
     # KHÔNG lọc NT2 ở đây — C7 lọc và ĐẾM số bị loại; lọc sớm sẽ giấu mất con số đó.

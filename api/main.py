@@ -42,6 +42,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from src.cong_viec import BoChay, KhoCongViec                    # noqa: E402
 from src.giao_dien import kiem_model, luu_tam                    # noqa: E402
+from src.llm.cache import BoNhoDem                              # noqa: E402
 from src.version import PHIEN_BAN_C3, commit_hien_tai            # noqa: E402
 
 DUOI_CHO_PHEP = ".docx"
@@ -76,6 +77,9 @@ def health() -> dict:
     """
     tt = kiem_model()
     return {"song": True, "phien_ban": PHIEN_BAN_C3, "commit": commit_hien_tai(),
+            # Kiểm TRƯỚC khi đốt 32 phút cho một cặp lượt đo độ ổn định, thay vì
+            # phát hiện sau khi đã chạy xong (2026-09-16).
+            "cache_bat": BoNhoDem().bat,
             "model_san_sang": tt.san_sang, "ghi_chu_model": tt.thong_diep.strip(),
             "dang_cho": sum(1 for c in kho.danh_sach() if not c.xong_roi)}
 

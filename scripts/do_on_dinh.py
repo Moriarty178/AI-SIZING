@@ -76,6 +76,44 @@ def _khoa_goc(fid: str) -> str:
     return fid
 
 
+def gia_tri_do(va: dict, vb: dict) -> tuple[bool, list[str]]:
+    """Phép đo này có dùng được không? (dùng_được, các dòng giải thích)
+
+    Trả lời bằng DỮ LIỆU của chính hai lượt chạy, không bằng trí nhớ người chạy.
+    `thong_ke_cache` = {bat, ban_ghi_truoc, ban_ghi_sau, ghi_them} do
+    `pipeline.chay` ghi lại.
+
+    Vì sao cần: ngày 2026-09-16 hai lượt cho 61/61 khớp, và không ai chứng minh
+    được lượt sau đã gọi model hay chỉ phát lại từ đệm — mất trọn phép đo. Chỗ
+    lệch duy nhất hoá ra là một đường dẫn tạm, đổi ở mọi lượt bất kể có gọi model.
+    """
+    ly: list[str] = []
+    dung = True
+    for ten, v in (("A", va), ("B", vb)):
+        tk = v.get("thong_ke_cache") or {}
+        if not tk:
+            ly.append(f"Lượt {ten}: KHÔNG có số liệu đệm — chạy bằng image cũ hơn "
+                      "bản 2026-09-16, không chứng minh được đã gọi model.")
+            dung = False
+            continue
+        if not tk.get("bat"):
+            ly.append(f"Lượt {ten}: đệm TẮT → mọi lời gọi đều tới model. ✓")
+            continue
+        them = int(tk.get("ghi_them") or 0)
+        if them > 0:
+            ly.append(f"Lượt {ten}: đệm bật nhưng ghi thêm {them} bản ghi → "
+                      f"{them} lời gọi thật. ✓")
+        else:
+            ly.append(f"Lượt {ten}: đệm BẬT và không ghi thêm bản ghi nào → "
+                      "phát lại hoàn toàn từ đệm, KHÔNG gọi model. ✗")
+            dung = False
+    if (va.get("tuy_chon") or {}).get("chi_nhom"):
+        ly.append("Có lọc `chi_nhom` → kết luận chỉ đúng cho nhóm quy tắc đã lọc, "
+                  "không phải cho một lượt thẩm định đầy đủ.")
+        dung = False
+    return dung, ly
+
+
 def _dong_dich_vu(sk) -> str:
     """Một dòng nhận dạng dịch vụ đang hỏi.
 
@@ -176,8 +214,16 @@ def dung_bao_cao(kq: dict, va: dict, vb: dict, ma_a: str, ma_b: str) -> str:
     n = max(kq["so_a"], kq["so_b"])
     d = kq["doi"]
     ben_vung = kq["khop"] - d["muc_do"] - d["nhom"] - d["can_cu"]
+    dung_duoc, ly_do = gia_tri_do(va, vb)
     dong = [
         "# 5.0b — đo độ ổn định giữa hai lượt thẩm định",
+        "",
+        # Đặt NGAY ĐẦU: một phép đo không dùng được mà người đọc lướt tới bảng
+        # số trước là một tuần code sai hướng.
+        ("> ✅ **Phép đo dùng được.**" if dung_duoc
+         else "> ⛔ **Phép đo CHƯA dùng được — đừng chốt thiết kế theo số bên dưới.**"),
+        "",
+    ] + [f"> - {x}" for x in ly_do] + [
         "",
         f"Đo lúc {time.strftime('%Y-%m-%d %H:%M')}. Cùng một tài liệu, **không sửa gì**.",
         "",
@@ -188,6 +234,8 @@ def dung_bao_cao(kq: dict, va: dict, vb: dict, ma_a: str, ma_b: str) -> str:
         f"| Tuỳ chọn | `{va.get('tuy_chon')}` | `{vb.get('tuy_chon')}` |",
         f"| Số finding | {kq['so_a']} | {kq['so_b']} |",
         f"| Phút chạy | {va['giay_da_chay'] / 60:.1f} | {vb['giay_da_chay'] / 60:.1f} |",
+        f"| Đệm | `{va.get('thong_ke_cache') or 'không có số liệu'}` | "
+        f"`{vb.get('thong_ke_cache') or 'không có số liệu'}` |",
         "",
         "## Khoá nối giữa hai lượt  → quyết định 5.1",
         "",
@@ -296,6 +344,11 @@ def main() -> int:
     if va.get("tuy_chon") != vb.get("tuy_chon"):
         print(f"\n⚠️  Tuỳ chọn khác nhau: {va.get('tuy_chon')} vs {vb.get('tuy_chon')}."
               "\n   Lọc nhóm/vòng khác nhau thì tập finding khác nhau là đương nhiên.")
+
+    dung_duoc, ly_do = gia_tri_do(va, vb)
+    print("\nPHÉP ĐO NÀY " + ("DÙNG ĐƯỢC" if dung_duoc else "CHƯA DÙNG ĐƯỢC:"))
+    for d in ly_do:
+        print("  " + d)
 
     kq = so_sanh(fa, fb)
     n = max(kq["so_a"], kq["so_b"])
