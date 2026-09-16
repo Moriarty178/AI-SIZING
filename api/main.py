@@ -43,6 +43,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from src.cong_viec import BoChay, KhoCongViec                    # noqa: E402
 from src.giao_dien import kiem_model, luu_tam                    # noqa: E402
 from src.llm.cache import BoNhoDem                              # noqa: E402
+from src.luu_tru.cau_hinh import TrangThaiCSDL, mo_kho_tu_moi_truong  # noqa: E402
 from src.version import PHIEN_BAN_C3, commit_hien_tai            # noqa: E402
 
 DUOI_CHO_PHEP = ".docx"
@@ -56,9 +57,16 @@ SONG_SONG_TOI_DA = 24
 kho = KhoCongViec()
 bo_chay = BoChay(kho)
 
+# CSDL Giai đoạn 5 (5.0). Mở MỘT lần lúc khởi động, không mở trong `/health` —
+# xem `src/luu_tru/cau_hinh.py` vì sao. None = chưa cấu hình hoặc hỏng.
+kho_csdl = None
+trang_thai_csdl = TrangThaiCSDL(False, False, "Chưa khởi động")
+
 
 @asynccontextmanager
 async def vong_doi(_app: FastAPI):
+    global kho_csdl, trang_thai_csdl
+    kho_csdl, trang_thai_csdl = mo_kho_tu_moi_truong()
     bo_chay.bat_dau()
     yield
     bo_chay.dung()
@@ -80,6 +88,7 @@ def health() -> dict:
             # Kiểm TRƯỚC khi đốt 32 phút cho một cặp lượt đo độ ổn định, thay vì
             # phát hiện sau khi đã chạy xong (2026-09-16).
             "cache_bat": BoNhoDem().bat,
+            "csdl": trang_thai_csdl.as_dict(),
             "model_san_sang": tt.san_sang, "ghi_chu_model": tt.thong_diep.strip(),
             "dang_cho": sum(1 for c in kho.danh_sach() if not c.xong_roi)}
 

@@ -49,3 +49,7 @@ tai_lieu_noi_bo/
 # Bản ghi chẩn đoán tải từ `/result` — từng kèm toàn văn báo cáo,
 # tức nội dung hồ sơ khách (2026-09-16).
 docs/result_*.json
+
+# Bản sao lồng của repo trên laptop — một kho git RIÊNG, có thể mang commit
+# chưa đẩy, nên không xoá (2026-09-17). Chỉ chặn để không bị gắn vào như gitlink.
+/ToolSizing/

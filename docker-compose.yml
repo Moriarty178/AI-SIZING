@@ -81,6 +81,9 @@ services:
       - .env
     environment:
       - SIZING_COPILOT_API_KEY=${SIZING_COPILOT_API_KEY}
+      # CSDL Giai đoạn 5. TRỐNG = Copilot chạy như trước, không cần CSDL.
+      # Bật: postgresql+psycopg://copilot:<mật khẩu>@copilot-db:5432/copilot
+      - SIZING_COPILOT_DB_URL=${SIZING_COPILOT_DB_URL:-}
       # ⚠️ GỠ HẲN proxy lúc CHẠY. `env_file: .env` nạp HTTP_PROXY/HTTPS_PROXY
       # vào container — hai biến ấy chỉ cần lúc BUILD để `uv` kéo gói, còn lúc
       # chạy thì chúng đẩy mọi lời gọi model qua Squid của công ty.
@@ -166,8 +169,48 @@ services:
     networks:
       - app-net
 
+  # ------------------------------------------------------------ CSDL GĐ 5 --
+  # PostgreSQL CHỈ cho Copilot (5.0). KHÔNG dùng chung CSDL của tool sizing
+  # đang chạy — code đang phát triển không được ghi vào CSDL đang vận hành.
+  #
+  # Ba quyết định để một lần `git pull` KHÔNG làm thay đổi gì trên máy nội bộ:
+  #
+  # 1. KHÔNG mở cổng ra máy chủ (không có `ports:`). Copilot nói chuyện với nó
+  #    qua mạng compose ở `copilot-db:5432`. Mở cổng là thêm một chỗ có thể trùng
+  #    với PostgreSQL sẵn có trên máy (backend Spring dùng một CSDL), và thêm một
+  #    CSDL lộ ra mạng. Xem dữ liệu: `docker compose exec copilot-db psql -U copilot`.
+  # 2. `copilot` KHÔNG `depends_on` dịch vụ này. Chưa bật CSDL thì Copilot chạy
+  #    y như trước; `docker compose up -d copilot copilot-ui` không kéo image
+  #    postgres, không khởi động thêm gì.
+  # 3. Mật khẩu KHÔNG có giá trị mặc định và KHÔNG dùng `:?`. `:?` làm MỌI lệnh
+  #    compose hỏng khi thiếu biến — kể cả lệnh chỉ động tới `copilot`.
+  #    Thiếu mật khẩu thì chỉ riêng service này từ chối khởi động.
+  copilot-db:
+    container_name: sizing-copilot-db
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${SIZING_COPILOT_DB_NAME:-copilot}
+      - POSTGRES_USER=${SIZING_COPILOT_DB_USER:-copilot}
+      - POSTGRES_PASSWORD=${SIZING_COPILOT_DB_PASSWORD:-}
+    volumes:
+      - copilot-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: always
+    networks:
+      - app-net
+
 volumes:
   copilot-cache:
+  copilot-db-data:
 
 networks:
   app-net:

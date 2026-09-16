@@ -34,7 +34,7 @@ class TestDockerfile:
     def test_cai_CA_extra_ui_de_giao_dien_chay_duoc(self):
         """Bản 2026-09-11 chỉ cài `--extra api` nên Streamlit không có trong
         image — không ai nộp được file qua giao diện."""
-        assert '".[api,ui]"' in LENH
+        assert '".[api,ui,db]"' in LENH
 
     def test_KHONG_copy_eval_hay_tests_vao_image(self):
         """`.dockerignore` chặn cả hai, nên `COPY eval/` sẽ làm build hỏng. Và
@@ -126,7 +126,9 @@ def test_moi_bien_compose_dung_deu_co_trong_env_example():
     """
     import re
     tho = (GOC / "docker-compose.yml").read_text(encoding="utf-8")
-    dung = set(re.findall(r"\$\{([A-Z_][A-Z0-9_]*)", tho))
+    # `$${X}` là `$` thoát cho shell TRONG container (vd healthcheck của postgres),
+    # không phải biến compose nội suy — không cần khai.
+    dung = set(re.findall(r"(?<!\$)\$\{([A-Z_][A-Z0-9_]*)", tho))
     mau = (GOC / ".env.example").read_text(encoding="utf-8")
     khai = {d.split("=")[0].strip() for d in mau.splitlines()
             if "=" in d and not d.lstrip().startswith("#")}
@@ -154,3 +156,45 @@ def test_proxy_bi_GO_HAN_o_moi_truong_luc_chay():
         assert f"{b}=" in env, f"{b} phải được đặt RỖNG lúc chạy: {env}"
     no = [x for x in env if x.startswith("NO_PROXY=")]
     assert no and "*" not in no[0], f"NO_PROXY không dùng được ký tự đại diện: {no}"
+
+
+
+# --- 5.0: CSDL Giai đoạn 5 — một lần `git pull` KHÔNG được đổi gì trên máy nội bộ
+class TestCSDLKhongAnhHuongKhiPull:
+    DB = COMPOSE["services"]["copilot-db"]
+
+    def test_KHONG_mo_cong_ra_may_chu(self):
+        """Mở cổng là thêm chỗ trùng với PostgreSQL sẵn có trên máy (backend Spring
+        dùng một CSDL) và thêm một CSDL lộ ra mạng. Copilot gọi qua `copilot-db:5432`."""
+        assert "ports" not in self.DB
+
+    def test_copilot_KHONG_phu_thuoc_csdl(self):
+        """Phụ thuộc thì `docker compose up -d copilot` sẽ kéo image postgres qua
+        proxy và khởi động CSDL — tức một lần pull đổi hành vi dịch vụ đang chạy."""
+        dep = COMPOSE["services"]["copilot"].get("depends_on") or {}
+        assert "copilot-db" not in dep
+
+    def test_mat_khau_KHONG_dong_cung_va_KHONG_dung_dau_hoi(self):
+        """`${X:?}` làm MỌI lệnh compose hỏng khi thiếu biến — kể cả lệnh chỉ động
+        tới `copilot`, trên một máy có `.env` chép từ mẫu cũ."""
+        import re
+        tho = (GOC / "docker-compose.yml").read_text(encoding="utf-8")
+        # Dò đúng cú pháp nội suy, không dò chuỗi — chú thích trong compose cố ý
+        # nhắc tới `:?` để CẤM nó.
+        assert not re.search(r"\$\{[A-Z_][A-Z0-9_]*:\?", tho)
+        env = self.DB["environment"]
+        assert "POSTGRES_PASSWORD=${SIZING_COPILOT_DB_PASSWORD:-}" in env
+
+    def test_url_csdl_mac_dinh_TRONG(self):
+        """Trống = Copilot chạy như trước, không cần CSDL."""
+        env = COMPOSE["services"]["copilot"]["environment"]
+        assert "SIZING_COPILOT_DB_URL=${SIZING_COPILOT_DB_URL:-}" in env
+
+    def test_du_lieu_nam_o_volume_rieng(self):
+        assert any(str(v).startswith("copilot-db-data:") for v in self.DB["volumes"])
+        assert "copilot-db-data" in (COMPOSE.get("volumes") or {})
+
+    def test_image_postgres_ghim_phien_ban_chinh(self):
+        """`postgres:latest` sẽ nhảy phiên bản chính khi kéo lại, và PostgreSQL
+        KHÔNG đọc được thư mục dữ liệu của phiên bản chính khác."""
+        assert self.DB["image"].startswith("postgres:16")

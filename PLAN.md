@@ -14,7 +14,7 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 1 / 14 | 🟡 5.0b ĐO XONG 09-16 (khớp 98,6% sau chuẩn hoá); khoá 5.1, luật 5.3, mức độ 5.6 đã chốt. Tiếp: 5.0 lưu trữ |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 2 / 14 | 🟡 5.0b đo xong 09-16 · 5.0 lưu trữ + PostgreSQL XONG 09-17 (không mở cổng, không phụ thuộc — pull an toàn). Tiếp: 5.0a danh tính trên giao diện |
 
 **Đang tập trung (2026-09-15):** sau demo copilot + copilot-ui (Streamlit,
 port 8902/8903) trên container thật, chuyển sang **GĐ 5** — vòng lặp người dùng
@@ -1185,7 +1185,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 
 ### 5A — Nền: lưu trữ và phép đo (làm TRƯỚC mọi mục khác)
 
-- [ ] 5.0 — **Lớp lưu trữ + PostgreSQL riêng trong compose.** Thêm một service
+- [x] 5.0 — **Lớp lưu trữ + PostgreSQL riêng trong compose.** Thêm một service
       `postgres` chỉ cho Copilot (volume riêng, **không** đụng CSDL của tool
       sizing đang chạy), và MỘT lược đồ dùng chung cho cả GĐ 5:
       `phien_tham_dinh` → `finding_baseline` → `lan_sua` → `ghi_chu_admin` →
@@ -1197,6 +1197,24 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       lớp kết nối là tích hợp được" chỉ đúng nếu được kiểm.
       → ⚠️ Kéo image `postgres` qua proxy nội bộ — cách làm ở
       `docs/docker-mang-noi-bo.md` mục 1. Cần chốt cổng + volume cho service mới.
+
+      → ✅ **XONG 2026-09-17.** `src/luu_tru/` — `luoc_do.py` (9 bảng nghiệp vụ,
+      SQLAlchemy Core, ràng buộc đặt tên tường minh, `PHIEN_BAN_LUOC_DO` chặn chạy
+      trên lược đồ lệch), `kho.py` (hồ sơ → lần thẩm định → baseline; hàm cho từng
+      tính năng thêm khi làm tính năng đó), `cau_hinh.py` (KHÔNG nhập SQLAlchemy).
+      Service `copilot-db` (`postgres:16-alpine`). 34 test chạy trên SQLite trong bộ
+      nhớ với CÙNG lược đồ, bật khoá ngoại thật.
+      → **9 bảng thay vì 5 phác thảo**: thêm `lan_tham_dinh` + `ket_qua_lan` (baseline
+      đóng băng nhưng mỗi lần thẩm định lại ghi trạng thái riêng — ghi đè thì mất
+      lịch sử 5.6 cần), `bao_cao_loi` (5.4), `de_xuat_quy_tac` (5.9).
+      → **`git pull` không đổi gì trên máy nội bộ** (có test khoá từng điều):
+      KHÔNG mở cổng ra máy chủ; `copilot` KHÔNG `depends_on` CSDL; mật khẩu không
+      mặc định và không dùng `${X:?}` (cú pháp đó làm hỏng MỌI lệnh compose khi
+      thiếu biến); `SIZING_COPILOT_DB_URL` trống = chạy y như trước; `/health` báo
+      trạng thái CSDL mà KHÔNG tự kết nối (kết nối chờ timeout trong healthcheck là
+      container unhealthy và `copilot-ui` không lên được).
+      → Image cài thêm nhóm `db` (`sqlalchemy`, `psycopg[binary]` — mang sẵn libpq,
+      không cần apt). Lần build tới kéo thêm hai gói này qua proxy.
 
 - [ ] 5.0a — **Danh tính demo.** Thanh bên: ô chọn **Vai** (Người làm sizing /
       Admin) + ô nhập **Tên**, ghi vào cột actor của mọi bảng. Giao diện phải nói
@@ -1571,3 +1589,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-16 | **"Đã sửa" ở 5.3 = finding baseline biến mất ở lần thẩm định lại**, không đòi kèm bản ghi sửa | Người dùng chốt, chọn đơn giản. Giá đã đo và chấp nhận: ~1,4% finding tự biến mất khi không ai sửa ⇒ ~10 dòng "đã sửa" sai mỗi lần trên tài liệu ~700 finding. Phương án dự phòng đã ghi ở 5.3 |
 | 2026-09-16 | **Mức độ trên bảng Admin 5.6 đóng băng theo baseline** | 5.0b: 3,6% dòng tự đổi mức độ giữa hai lượt không sửa gì. Đóng băng khớp yêu cầu "số lỗi giữ nguyên"; lần thẩm định lại chỉ cập nhật Trạng thái |
 | 2026-09-16 | **Dòng Đạt/Chưa đạt do code kết luận phải hiện giá trị đầu vào** | 5.0b: chỉ 8/11 dòng có con số do code tính trùng cả hai lượt — C4 tất định nhưng đầu vào do C3 trích và dao động |
+| 2026-09-17 | **`copilot-db` KHÔNG mở cổng ra máy chủ, `copilot` KHÔNG phụ thuộc nó** | Máy nội bộ đã có PostgreSQL cho backend Spring — mở cổng là thêm chỗ trùng và thêm một CSDL lộ ra mạng. Không phụ thuộc để `git pull` rồi `up -d copilot` vẫn y như trước: không kéo image postgres qua proxy, không khởi động thêm gì. Xem dữ liệu bằng `docker compose exec copilot-db psql` |
+| 2026-09-17 | **KHÔNG viết lại lịch sử git để gỡ `docs/result_luot_moi.json` khỏi `b818ffc`** | Force-push `dev-isolate` làm `git pull` trên máy nội bộ hỏng, mà máy đó đang có thay đổi chưa commit (`có sửa cục bộ`) — viết lại lịch sử là ép người vận hành reset và có thể mất các thay đổi ấy. Và repo vẫn đang track chính tài liệu nguồn (`danh_sach_sizings_da_duyet/`, 175 tệp) cùng một báo cáo đầy đủ ở gốc, nên gỡ một bản ghi khỏi lịch sử không đổi mức lộ của repo. File đã untrack + ignore từ `dc39e5a` |
+| 2026-09-17 | **KHÔNG untrack `Thiet ke va dinh co he thong_VTracking 2.0.1-bao-cao.md` ở gốc repo** dù nó là toàn văn báo cáo hồ sơ khách | Untrack một tệp đang được track thì lần `git pull` kế tiếp XOÁ tệp đó khỏi máy nội bộ — đúng thứ đã hứa không làm. Mẫu ignore `bao-cao-*.md` không bắt được tên có tiền tố `…-bao-cao.md`. Để người vận hành quyết |
+| 2026-09-17 | **Thư mục lồng `ToolSizing/` trên laptop: để nguyên, chỉ thêm vào `.gitignore`** | Nó là một kho git RIÊNG (có `.git` riêng, 29 MB) — có thể mang commit chưa đẩy. Xoá là không lấy lại được. Thư mục chỉ có trên laptop, không đi theo `git pull`. Ignore để một `git add -A` không gắn nó vào như gitlink |

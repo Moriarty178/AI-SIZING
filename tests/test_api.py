@@ -61,6 +61,15 @@ def test_health_noi_ro_CHUA_co_cau_hinh_model_chu_khong_im(client):
     assert "model_san_sang" in d and "ghi_chu_model" in d
 
 
+def test_health_bao_trang_thai_csdl_ma_KHONG_ket_noi(client):
+    """5.0 — `/health` đọc lại kết quả kiểm lúc khởi động, không tự kết nối: bị hỏi
+    mỗi 30 giây với timeout 5 giây, một lần chờ CSDL là container thành unhealthy
+    và `copilot-ui` không lên. Chưa cấu hình thì phải NÓI RA, không im lặng."""
+    d = client.get("/health").json()
+    assert set(d["csdl"]) == {"cau_hinh", "san_sang", "thong_diep"}
+    assert d["csdl"]["thong_diep"]
+
+
 def test_nop_file_tra_202_va_ma_viec_NGAY(client):
     """Không được giữ kết nối 16 phút: proxy sẽ cắt, người dùng sẽ bấm lại."""
     r = _nop(client)

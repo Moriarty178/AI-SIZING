@@ -60,7 +60,7 @@ RUN CA=/app/viettel-mitm-ca.pem ; \
         echo "→ dùng CA nội bộ cho TLS lúc build" ; \
         export SSL_CERT_FILE="$CA" REQUESTS_CA_BUNDLE="$CA" ; \
     fi ; \
-    uv pip install --system --no-cache ".[api,ui]"
+    uv pip install --system --no-cache ".[api,ui,db]"
 
 COPY config ./config
 COPY api ./api
