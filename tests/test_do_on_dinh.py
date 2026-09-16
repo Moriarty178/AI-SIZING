@@ -8,7 +8,9 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from scripts.do_on_dinh import _khoa_goc, so_sanh   # noqa: E402
+from scripts.do_on_dinh import (_dong_dich_vu, _khoa_goc,   # noqa: E402
+                                so_sanh)
+from src.khach_api import SucKhoe                           # noqa: E402
 
 
 def _f(fid, **kw):
@@ -86,3 +88,19 @@ class TestSoSanh:
     def test_tap_rong_khong_no(self):
         kq = so_sanh([], [])
         assert kq["khop"] == 0 and kq["so_a"] == 0
+
+
+class TestDongDichVu:
+    """Dòng in ĐẦU TIÊN của script. Nổ ở đây là giết cả phép đo trước khi nó
+    chạm tới dữ liệu — đã xảy ra thật 2026-09-16 (`SucKhoe` không có `.ban`)."""
+
+    def test_health_khong_co_nhan_ban_van_in_duoc(self):
+        d = _dong_dich_vu(SucKhoe(song=True, commit="abc1234"))
+        assert "abc1234" in d and "—" in d
+
+    def test_health_co_nhan_ban_thi_in_ra(self):
+        sk = SucKhoe(song=True, commit="abc1234", tho={"ban": "v2"})
+        assert "v2" in _dong_dich_vu(sk)
+
+    def test_thieu_ca_commit_lan_nhan_van_khong_no(self):
+        assert _dong_dich_vu(SucKhoe(song=True))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """5.0b — hai lượt thẩm định CÙNG một tài liệu, KHÔNG sửa gì, có cho cùng kết quả không?
 
-    py scripts/do_on_dinh.py <ma_A> <ma_B> --api http://localhost:8904
+    py scripts/do_on_dinh.py <ma_A> <ma_B> --api http://localhost:8902
 
 ## Vì sao phải đo trước khi viết 5.3 và 5.6
 
@@ -74,6 +74,18 @@ def _khoa_goc(fid: str) -> str:
     if len(phan) >= 3 and phan[-1].isdigit():
         return "#".join(phan[:-1])
     return fid
+
+
+def _dong_dich_vu(sk) -> str:
+    """Một dòng nhận dạng dịch vụ đang hỏi.
+
+    Đọc các trường phụ qua `sk.tho` — bản ghi THÔ của `/health` — chứ không qua
+    thuộc tính của `SucKhoe`: trường `ban` (nhãn thể hiện) có ở bản này nhưng
+    không có ở bản kia, và một `AttributeError` ở dòng in đầu tiên thì giết cả
+    phép đo trước khi nó chạm tới dữ liệu.
+    """
+    ban = (sk.tho or {}).get("ban") or "—"
+    return f"dịch vụ: SỐNG · bản {ban} · commit {sk.commit or '?'}"
 
 
 def _lay(kh: KhachAPI, ma: str, ten: str) -> tuple[dict, list[dict]]:
@@ -274,7 +286,7 @@ def main() -> int:
     if not sk.song:
         print(f"\n✗ Không gọi được dịch vụ tại {kh.dia_chi}\n  {sk.thong_diep}")
         return 2
-    print(f"dịch vụ: SỐNG · bản {sk.ban or '—'} · commit {sk.commit}")
+    print(_dong_dich_vu(sk))
 
     va, fa = _lay(kh, a.ma_a, "lượt A")
     vb, fb = _lay(kh, a.ma_b, "lượt B")
