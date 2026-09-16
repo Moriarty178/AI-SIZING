@@ -18,6 +18,19 @@ bằng mã vẫn thấy kết quả.
 lượt truy vết ngày 2026-09-09 (`ChÆ°a cÃ³` thay vì `Chưa có`, do đường ống trên
 Windows giải mã theo cp1252). Ở đây mọi chỗ `.decode("utf-8")` tường minh.
 
+## KHÔNG đi qua proxy công ty
+
+Dịch vụ thẩm định nằm ở `localhost` hoặc trong mạng nội bộ; proxy công ty không
+bao giờ là đường đúng để tới nó. Mà `urllib` thì mặc định ĐỌC `HTTP_PROXY` /
+`HTTPS_PROXY` của môi trường, nên một biến proxy đặt sai ở cửa sổ lệnh là hỏng
+lời gọi tới chính máy mình.
+
+Đã gặp thật 2026-09-16: biến proxy mang giá trị bọc ngoặc vuông
+(`[http://…:3128]`), `urllib` lấy `[http` làm scheme rồi báo
+`unknown url type: [http` — trong khi địa chỉ người dùng gõ hoàn toàn đúng, nên
+thông báo lỗi trỏ sai chỗ. Ở đây dựng `opener` riêng với `ProxyHandler({})`:
+lời gọi luôn đi thẳng, bất kể môi trường có gì.
+
 ## KHÔNG có đường lùi "chạy thẳng khi API chết"
 
 Nghe thì tiện, nhưng đường lùi ấy sẽ chặn giao diện 16 phút — đúng cái mà module
@@ -35,6 +48,24 @@ from dataclasses import dataclass, field
 
 BIEN_DIA_CHI = "SIZING_COPILOT_API"
 DIA_CHI_MAC_DINH = "http://localhost:8000"
+
+# Chỉ để BÁO cho người dùng biết môi trường đang đặt gì. Không dùng để định tuyến —
+# xem `KhachAPI._mo`.
+BIEN_PROXY = ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy", "ALL_PROXY")
+
+
+def proxy_dang_dat() -> list[str]:
+    """Tên các biến proxy đang có giá trị, để nói ra khi kết nối hỏng.
+
+    Khử trùng không phân biệt hoa thường: trên Windows `os.environ` không phân
+    biệt hoa thường, nên đặt `HTTP_PROXY` là thấy luôn cả `http_proxy` — in cả
+    hai chỉ làm thông báo dài thêm mà không thêm thông tin.
+    """
+    ra: dict[str, str] = {}
+    for b in BIEN_PROXY:
+        if os.environ.get(b, "").strip():
+            ra.setdefault(b.upper(), b)
+    return list(ra.values())
 
 
 def dia_chi_mac_dinh() -> str:
@@ -86,6 +117,10 @@ class KhachAPI:
     def __init__(self, dia_chi: str | None = None, *, timeout: float = 15.0):
         self.dia_chi = (dia_chi or dia_chi_mac_dinh()).rstrip("/")
         self.timeout = timeout
+        # `ProxyHandler({})` = KHÔNG proxy, kể cả khi môi trường có đặt. Dịch vụ
+        # thẩm định là localhost/nội bộ; đi vòng qua proxy công ty thì tốt nhất
+        # là chậm, tệ nhất là hỏng vì một biến môi trường đặt sai.
+        self._mo = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
     # ------------------------------------------------------------------
     def _goi(self, duong: str, *, method: str = "GET", du_lieu: bytes | None = None,
@@ -95,7 +130,7 @@ class KhachAPI:
         if kieu:
             req.add_header("Content-Type", kieu)
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            with self._mo.open(req, timeout=self.timeout) as r:
                 van = r.read().decode("utf-8")
         except urllib.error.HTTPError as e:
             chi_tiet = ""
@@ -105,7 +140,14 @@ class KhachAPI:
                 pass
             raise LoiAPI(chi_tiet or f"HTTP {e.code}", e.code) from e
         except (urllib.error.URLError, OSError, TimeoutError) as e:
-            raise LoiAPI(f"không kết nối được {self.dia_chi}: {e}", None) from e
+            them = ""
+            if "unknown url type" in str(e) and (bp := proxy_dang_dat()):
+                # Lời gọi này KHÔNG đi qua proxy, nên biến proxy hỏng không còn
+                # làm hỏng nó nữa. Vẫn nêu tên biến: gặp lại thông báo này thì
+                # gần như chắc chắn là môi trường, không phải địa chỉ đã gõ.
+                them = (f" · môi trường đang đặt {', '.join(bp)} — kiểm giá trị, "
+                        "bọc ngoặc vuông là hỏng")
+            raise LoiAPI(f"không kết nối được {self.dia_chi}: {e}{them}", None) from e
         return van if tho else json.loads(van)
 
     # ------------------------------------------------------------------

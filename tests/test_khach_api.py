@@ -9,8 +9,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from src.khach_api import (BIEN_DIA_CHI, DIA_CHI_MAC_DINH, KhachAPI, LoiAPI,
-                           dia_chi_mac_dinh)
+from src.khach_api import (BIEN_DIA_CHI, BIEN_PROXY, DIA_CHI_MAC_DINH,
+                           KhachAPI, LoiAPI, dia_chi_mac_dinh,
+                           proxy_dang_dat)
 
 NHAN_DUOC: dict = {}
 
@@ -186,3 +187,44 @@ def test_nhat_ky_chua_co_thi_LoiAPI_404(kh):
         kh._goi("/phan-hoi/nhat-ky-trong", tho=True)
     assert e.value.ma_http == 404
     assert "Chưa có ghi chú nào" in str(e.value)
+
+
+# --- proxy công ty KHÔNG được xen vào lời gọi nội bộ (2026-09-16) -----------
+class TestKhongDiQuaProxy:
+    """Máy nội bộ luôn có biến proxy; dịch vụ thẩm định thì ở localhost.
+
+    Gặp thật 2026-09-16: biến proxy mang giá trị bọc ngoặc vuông, `urllib` lấy
+    `[http` làm scheme và báo `unknown url type: [http`, trong khi địa chỉ người
+    dùng gõ hoàn toàn đúng — thông báo lỗi trỏ sai chỗ, mất một lượt truy vết.
+    """
+
+    @pytest.mark.parametrize("bien", ["HTTP_PROXY", "http_proxy", "ALL_PROXY"])
+    def test_bien_proxy_HONG_van_goi_duoc_dich_vu(self, kh, bien, monkeypatch):
+        monkeypatch.setenv(bien, "[http://10.207.156.52:3128]")
+        assert kh.suc_khoe().song is True
+
+    def test_proxy_hop_le_cung_KHONG_duoc_dung(self, kh, monkeypatch):
+        """Địa chỉ proxy đúng cú pháp nhưng không tồn tại: nếu lời gọi đi qua nó
+        thì sẽ treo/hỏng. Đi thẳng thì vẫn tới."""
+        monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:9")
+        assert kh.suc_khoe().song is True
+
+    def test_proxy_dang_dat_liet_ke_dung_ten_bien(self, monkeypatch):
+        for b in BIEN_PROXY:
+            monkeypatch.delenv(b, raising=False)
+        assert proxy_dang_dat() == []
+        monkeypatch.setenv("HTTPS_PROXY", "http://x:3128")
+        assert proxy_dang_dat() == ["HTTPS_PROXY"]
+
+    def test_khoang_trang_KHONG_tinh_la_dat_proxy(self, monkeypatch):
+        for b in BIEN_PROXY:
+            monkeypatch.delenv(b, raising=False)
+        monkeypatch.setenv("HTTP_PROXY", "   ")
+        assert proxy_dang_dat() == []
+
+    def test_dich_vu_chet_thi_thong_diep_NEU_co_proxy_van_neu_ten_bien(self, monkeypatch):
+        """Không còn là nguyên nhân nữa, nhưng gặp lại chữ này thì gần như chắc
+        chắn là môi trường chứ không phải địa chỉ đã gõ."""
+        monkeypatch.setenv("HTTP_PROXY", "[http://x:3128]")
+        sk = KhachAPI("http://127.0.0.1:1", timeout=1).suc_khoe()
+        assert sk.song is False
