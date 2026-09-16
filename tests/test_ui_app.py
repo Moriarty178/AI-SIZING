@@ -78,3 +78,35 @@ def test_bang_phan_hoi_dung_cac_ham_logic_that():
     assert rows[0]["phân loại"] in NHAN_PHAN_LOAI
     # diff với chính nó rỗng — Lưu hai lần không nhân bản
     assert gom_thay_doi(rows, [dict(r) for r in rows]) == []
+
+
+# --- 5.0a: danh tính demo ----------------------------------------------------
+class TestDanhTinhDemo:
+    def test_co_o_chon_vai_va_o_nhap_ten(self, app):
+        assert [s.label for s in app.sidebar.selectbox] == ["Vai"]
+        assert [t.label for t in app.sidebar.text_input] == ["Tên"]
+
+    def test_NOI_RA_la_khong_xac_thuc(self, app):
+        """Không nói thì người xem tưởng «vai Admin» là quyền thật."""
+        van = " ".join(str(c.value) for c in app.sidebar.caption)
+        assert "KHÔNG xác thực" in van
+
+    def test_KHONG_cho_chon_vai_he_thong(self, app):
+        """`he_thong` dành cho dòng máy ghi."""
+        assert "he_thong" not in list(app.sidebar.selectbox[0].options)
+        assert "Hệ thống" not in list(app.sidebar.selectbox[0].options)
+
+    def test_nhap_ten_thi_danh_tinh_vao_phien(self, app):
+        app.sidebar.selectbox[0].set_value("admin")
+        app.sidebar.text_input[0].set_value("  Nguyễn   Văn A ").run()
+        assert not app.exception
+        dt = app.session_state["danh_tinh"]
+        assert (dt.vai, dt.ten) == ("admin", "Nguyễn Văn A")
+
+    def test_chua_nhap_ten_thi_nhac_chu_KHONG_chan_gi(self, app):
+        """Chưa có tính năng nào ghi theo danh tính (bắt đầu từ 5.1): chặn bây giờ
+        là chặn luôn phần nộp bài đang chạy tốt."""
+        assert app.session_state["danh_tinh"] is None
+        assert not app.sidebar.warning or all(
+            "tên" not in str(w.value).lower() for w in app.sidebar.warning)
+        assert len(app.file_uploader) == 1

@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 2 / 14 | 🟡 5.0b đo xong 09-16 · 5.0 lưu trữ + PostgreSQL XONG 09-17 (không mở cổng, không phụ thuộc — pull an toàn). Tiếp: 5.0a danh tính trên giao diện |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 3 / 14 | 🟡 5.0b đo xong 09-16 · 5.0 lưu trữ + 5.0a danh tính XONG 09-17. Tiếp: 5.1 baseline cố định |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL); mục kế tiếp là **5.0a** (danh tính trên giao diện).
+PostgreSQL) và 5.0a (danh tính demo); mục kế tiếp là **5.1** (baseline cố định + rổ lỗi phát sinh).
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1253,10 +1253,34 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       Docker, 34 test chạy trên SQLite. Lần kiểm thật đầu tiên làm cùng 5.1, khi có
       dữ liệu thật để ghi. Bật CSDL theo ba bước trong `.env.example`.
 
-- [ ] 5.0a — **Danh tính demo.** Thanh bên: ô chọn **Vai** (Người làm sizing /
+- [x] 5.0a — **Danh tính demo.** Thanh bên: ô chọn **Vai** (Người làm sizing /
       Admin) + ô nhập **Tên**, ghi vào cột actor của mọi bảng. Giao diện phải nói
       thẳng đây là danh tính **demo, không xác thực**. Khi ghép vào tool sizing
       có đăng nhập thật thì chỉ thay nguồn điền vào cột đó.
+      → ✅ **XONG 2026-09-17.** `src/luu_tru/danh_tinh.py` (không nhập SQLAlchemy):
+      `DanhTinh`, `tao_danh_tinh()` kiểm + chuẩn hoá, `VAI` là nguồn DUY NHẤT cho cả
+      giao diện lẫn ràng buộc CHECK của lược đồ (có test khoá hai bên khớp nhau).
+      Thanh bên có mục «Bạn là ai»: ô chọn Vai (Người làm sizing / Admin) + ô Tên,
+      kèm dòng «Danh tính demo, KHÔNG xác thực» hiện sẵn. 25 test mới.
+      → **Đi qua HTTP bằng header mã hoá phần trăm** `X-Copilot-Vai` /
+      `X-Copilot-Ten`; `KhachAPI(danh_tinh=…)` gửi ở MỌI yêu cầu. Lý do: header
+      HTTP chỉ chở latin-1 — tên tiếng Việt gửi thô thì `urllib` ném lỗi, còn máy
+      chủ giải mã latin-1 ra `Nguyá»…n` mà KHÔNG báo gì, ghi tên hỏng vào CSDL.
+      Test gửi «Nguyễn Thị Ánh Tuyết — P3/Đội 2» qua một máy chủ HTTP thật.
+      → Quyết định nhỏ: **người không chọn được vai `he_thong`**, kể cả qua header
+      (dành cho dòng máy ghi — lẫn vào thì bảng Admin không tách được); **gộp khoảng
+      trắng trong tên** («Nguyễn  Văn A» và «Nguyễn Văn A» là một người).
+      → **Chú ý / chưa làm:**
+      (1) API CHƯA đọc header — endpoint ghi đầu tiên (5.1/5.2) gọi
+      `tu_header(request.headers)`; header hỏng phải trả 400, không coi là vô danh.
+      (2) Chỉ sống trong một phiên trình duyệt (`session_state`) — tải lại trang là
+      chọn lại.
+      (3) Thiếu tên hiện chỉ NHẮC, không chặn gì, vì chưa có tính năng nào ghi theo
+      danh tính; chặn thì chặn luôn phần nộp bài đang chạy tốt. Từ 5.1 các thao tác
+      ghi phải chặn khi `danh_tinh` là None.
+      (4) Nhật ký ghi chú của 4.1 (`nhat-ky.csv`) CHƯA mang actor — thêm cột giữa
+      chừng làm lệch hàng tiêu đề đã ghi của tệp append-only; chuyển sang CSDL ở
+      5.9/5.11 thì có actor sẵn.
 
 - [x] 5.0b — **ĐO XONG 2026-09-16: tập finding có ổn định giữa hai lượt không?**
       Cùng tài liệu VTracking 2.0.1, không sửa gì, không lọc nhóm, đệm tắt.
@@ -1642,3 +1666,4 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **KHÔNG viết lại lịch sử git để gỡ `docs/result_luot_moi.json` khỏi `b818ffc`** | Force-push `dev-isolate` làm `git pull` trên máy nội bộ hỏng, mà máy đó đang có thay đổi chưa commit (`có sửa cục bộ`) — viết lại lịch sử là ép người vận hành reset và có thể mất các thay đổi ấy. Và repo vẫn đang track chính tài liệu nguồn (`danh_sach_sizings_da_duyet/`, 175 tệp) cùng một báo cáo đầy đủ ở gốc, nên gỡ một bản ghi khỏi lịch sử không đổi mức lộ của repo. File đã untrack + ignore từ `dc39e5a` |
 | 2026-09-17 | **KHÔNG untrack `Thiet ke va dinh co he thong_VTracking 2.0.1-bao-cao.md` ở gốc repo** dù nó là toàn văn báo cáo hồ sơ khách | Untrack một tệp đang được track thì lần `git pull` kế tiếp XOÁ tệp đó khỏi máy nội bộ — đúng thứ đã hứa không làm. Mẫu ignore `bao-cao-*.md` không bắt được tên có tiền tố `…-bao-cao.md`. Để người vận hành quyết |
 | 2026-09-17 | **Thư mục lồng `ToolSizing/` trên laptop: để nguyên, chỉ thêm vào `.gitignore`** | Nó là một kho git RIÊNG (có `.git` riêng, 29 MB) — có thể mang commit chưa đẩy. Xoá là không lấy lại được. Thư mục chỉ có trên laptop, không đi theo `git pull`. Ignore để một `git add -A` không gắn nó vào như gitlink |
+| 2026-09-17 | **Danh tính đi qua header HTTP mã hoá phần trăm, không qua thân yêu cầu** | `POST /review` là multipart, endpoint GĐ 5 sẽ là JSON — header là chỗ chung duy nhất. Mã hoá vì header chỉ chở latin-1: tên tiếng Việt thô hoặc làm `urllib` ném lỗi, hoặc bị máy chủ ASGI giải mã thành chuỗi vỡ mà không báo gì |

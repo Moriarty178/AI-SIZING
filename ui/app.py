@@ -23,6 +23,7 @@ from src.giao_dien import (CAN_MODEL, CHE_DO, cau_gioi_han, chay_checklist,
                            ten_file_ket_qua, tom_tat_tai_lieu, uoc_luong)
 from src.ingestion.docx_reader import read_docx
 from src.khach_api import KhachAPI, LoiAPI, dia_chi_mac_dinh
+from src.luu_tru.danh_tinh import NHAN_VAI, VAI_NGUOI_CHON, tao_danh_tinh
 from src.version import PHIEN_BAN_C3, commit_hien_tai
 
 st.set_page_config(page_title="Sizing Copilot", page_icon="📐", layout="wide")
@@ -35,6 +36,7 @@ def thanh_ben():
         "Công cụ **cố vấn**: giúp tự kiểm bản định cỡ trước khi nộp. "
         "KHÔNG phê duyệt, KHÔNG từ chối — người thẩm định vẫn quyết định cuối cùng."
     )
+    o_danh_tinh()
     # Hỏi DỊCH VỤ, không tự dựng client tại chỗ: giao diện không giữ khoá model
     # (xem `kiem_model_qua_dich_vu`).
     kh = _khach()
@@ -56,6 +58,33 @@ def thanh_ben():
     st.sidebar.divider()
     st.sidebar.caption(f"{PHIEN_BAN_C3}  \ncommit `{commit_hien_tai()}`")
     return tt
+
+
+def o_danh_tinh():
+    """5.0a — ai đang thao tác. Danh tính DEMO, không xác thực.
+
+    Giữ trong `session_state` theo `key` của widget, nên sống qua mọi lần vẽ lại
+    trong một phiên trình duyệt; tải lại trang là chọn lại. Chưa có tính năng nào
+    GHI theo danh tính (bắt đầu từ 5.1), nên thiếu tên chỉ nhắc, không chặn gì.
+    """
+    st.sidebar.subheader("Bạn là ai")
+    vai = st.sidebar.selectbox("Vai", VAI_NGUOI_CHON, key="danh_tinh_vai",
+                               format_func=lambda v: NHAN_VAI[v])
+    ten = st.sidebar.text_input("Tên", key="danh_tinh_ten", max_chars=200,
+                                placeholder="vd: Nguyễn Văn A")
+    try:
+        st.session_state["danh_tinh"] = tao_danh_tinh(vai, ten)
+    except ValueError as e:
+        st.session_state["danh_tinh"] = None
+        if ten.strip():                   # gõ rồi mà sai thì nói; chưa gõ thì nhắc nhẹ
+            st.sidebar.warning(str(e))
+        else:
+            st.sidebar.caption("Chưa nhập tên — sửa lỗi, ghi chú và phê duyệt "
+                               "(Giai đoạn 5) sẽ cần biết ai làm.")
+    st.sidebar.caption(
+        "⚠️ **Danh tính demo, KHÔNG xác thực** — ai cũng chọn được vai Admin. Chỉ "
+        "để ghi lại ai đã làm gì; khi ghép vào tool sizing sẽ lấy từ đăng nhập thật.")
+    st.sidebar.divider()
 
 
 def mau_word():
@@ -132,7 +161,8 @@ NHAN_TRANG_THAI = {
 
 
 def _khach() -> KhachAPI:
-    return KhachAPI(st.session_state.get("dia_chi_api") or dia_chi_mac_dinh())
+    return KhachAPI(st.session_state.get("dia_chi_api") or dia_chi_mac_dinh(),
+                    danh_tinh=st.session_state.get("danh_tinh"))
 
 
 def _bang_phan_hoi(kh: KhachAPI, d: dict, ten_tai: str | None = None):

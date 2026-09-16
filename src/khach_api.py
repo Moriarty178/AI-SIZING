@@ -114,8 +114,12 @@ def _multipart(ten_truong: str, ten_file: str, noi_dung: bytes,
 
 
 class KhachAPI:
-    def __init__(self, dia_chi: str | None = None, *, timeout: float = 15.0):
+    def __init__(self, dia_chi: str | None = None, *, timeout: float = 15.0,
+                 danh_tinh=None):
         self.dia_chi = (dia_chi or dia_chi_mac_dinh()).rstrip("/")
+        # 5.0a — `src.luu_tru.danh_tinh.DanhTinh` hoặc None. Gửi trong header ở
+        # MỌI yêu cầu, mã hoá phần trăm (xem module đó vì sao).
+        self.danh_tinh = danh_tinh
         self.timeout = timeout
         # `ProxyHandler({})` = KHÔNG proxy, kể cả khi môi trường có đặt. Dịch vụ
         # thẩm định là localhost/nội bộ; đi vòng qua proxy công ty thì tốt nhất
@@ -129,6 +133,10 @@ class KhachAPI:
                                      method=method)
         if kieu:
             req.add_header("Content-Type", kieu)
+        if self.danh_tinh is not None:
+            from src.luu_tru.danh_tinh import thanh_header
+            for k, v in thanh_header(self.danh_tinh).items():
+                req.add_header(k, v)
         try:
             with self._mo.open(req, timeout=self.timeout) as r:
                 van = r.read().decode("utf-8")

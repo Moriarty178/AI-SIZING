@@ -31,6 +31,8 @@ class _Tay(BaseHTTPRequestHandler):
         self._tra(ma, json.dumps(d, ensure_ascii=False).encode("utf-8"))
 
     def do_GET(self):
+        # Giữ header THÔ như máy chủ thật nhận được — để kiểm danh tính qua dây.
+        NHAN_DUOC["header"] = self.headers
         if self.path == "/health":
             return self._json(200, {"song": True, "commit": "abc1234",
                                     "model_san_sang": False,
@@ -228,3 +230,25 @@ class TestKhongDiQuaProxy:
         monkeypatch.setenv("HTTP_PROXY", "[http://x:3128]")
         sk = KhachAPI("http://127.0.0.1:1", timeout=1).suc_khoe()
         assert sk.song is False
+
+
+
+# --- 5.0a: danh tính đi qua HTTP ---------------------------------------------
+class TestDanhTinhQuaDay:
+    """Header HTTP chỉ chở latin-1. Tên tiếng Việt gửi thô thì `urllib` ném
+    `UnicodeEncodeError`, còn máy chủ giải mã latin-1 ra `Nguyá»…n` mà KHÔNG báo
+    gì — ghi tên hỏng vào CSDL. Kiểm bằng byte thật đi qua một máy chủ thật."""
+
+    def test_ten_tieng_viet_toi_noi_nguyen_ven(self, kh):
+        from src.luu_tru.danh_tinh import tao_danh_tinh, tu_header
+        dt = tao_danh_tinh("admin", "Nguyễn Thị Ánh Tuyết — P3/Đội 2")
+        kh.danh_tinh = dt
+        assert kh.suc_khoe().song is True
+        assert tu_header(NHAN_DUOC["header"]) == dt
+
+    def test_khong_dat_danh_tinh_thi_KHONG_gui_header(self, kh):
+        from src.luu_tru.danh_tinh import HEADER_TEN, HEADER_VAI, tu_header
+        kh.suc_khoe()
+        h = NHAN_DUOC["header"]
+        assert h.get(HEADER_VAI) is None and h.get(HEADER_TEN) is None
+        assert tu_header(h) is None

@@ -36,9 +36,9 @@ from sqlalchemy import (Boolean, CheckConstraint, Column, DateTime, ForeignKey,
                         Integer, MetaData, String, Table, Text, UniqueConstraint,
                         false, func)
 
-PHIEN_BAN_LUOC_DO = "1"
+from .danh_tinh import TEN_TOI_DA, VAI
 
-VAI = ("nguoi_lam_sizing", "admin", "he_thong")
+PHIEN_BAN_LUOC_DO = "1"
 
 # Đặt tên ràng buộc tường minh: PostgreSQL tự sinh tên khác SQLite, và migration
 # sau này phải gọi được đúng tên.
@@ -59,7 +59,7 @@ def _actor() -> list:
     """Ai làm. `he_thong` dành cho dòng do AI sinh (baseline, kết quả lần chạy)."""
     return [
         Column("vai", String(20), nullable=False),
-        Column("ten", String(200), nullable=False),
+        Column("ten", String(TEN_TOI_DA), nullable=False),
         CheckConstraint(_trong("vai", VAI), name="vai"),
     ]
 
