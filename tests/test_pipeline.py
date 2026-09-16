@@ -79,3 +79,26 @@ def test_bao_cao_dung_duoc_tu_ket_qua_chay():
     doc.add_paragraph("x")
     kq = chay(_save(doc), bo_qua_trich_xuat=True, bo_qua_dinh_tinh=True)
     assert "Vòng 1" in kq.bao_cao() or "Vòng 2" in kq.bao_cao()
+
+
+# --- căn cứ phải TÁI LẬP ĐƯỢC giữa hai lượt chạy (2026-09-16) ---------------
+def test_NT4_C1_KHONG_mang_duong_dan_tam_cua_may_chu():
+    """Mỗi lần tải lên, API ghi tệp vào một `mkdtemp()` mới — đường dẫn đổi ở
+    MỌI lượt chạy dù tài liệu y nguyên.
+
+    Đo 5.0b ngày 2026-09-16: hai lượt trùng khớp 61/61 finding, và trường DUY
+    NHẤT lệch là `computed_evidence` của NT4-C1 — lệch vì đường dẫn, không vì
+    model. Chỗ lệch giả ấy suýt được đọc thành bằng chứng model đã chạy hai lần.
+    Trường này còn là thứ 5.1 dùng để đối chiếu baseline, nên nó phải tái lập được.
+    """
+    a = DocxDocument(path="/tmp/sizing-copilot-aaa111/Sizing ABC.docx",
+                     page_source="rendered", warnings=["thiếu numbering.xml"])
+    b = DocxDocument(path="/tmp/sizing-copilot-zzz999/Sizing ABC.docx",
+                     page_source="rendered", warnings=["thiếu numbering.xml"])
+
+    def _cc(d):
+        return [f.computed_evidence for f in canh_bao_nt4(d) if f.id == "NT4-C1"]
+
+    assert _cc(a) == _cc(b), "căn cứ đổi theo đường dẫn tạm"
+    assert "Sizing ABC.docx" in _cc(a)[0], "vẫn phải nói rõ đọc tệp nào"
+    assert "sizing-copilot-aaa111" not in _cc(a)[0]

@@ -19,6 +19,7 @@ báo "không kiểm chứng được" có căn cứ đếm được (NT2) để 
 """
 from __future__ import annotations
 
+import pathlib
 from dataclasses import dataclass, field
 
 from .extraction.extractor import Extractor
@@ -141,7 +142,15 @@ def canh_bao_nt4(doc: DocxDocument) -> list[Finding]:
         ra.append(Finding(
             id="NT4-C1", severity="info", category="khong_kiem_chung_duoc",
             finding=f"Cảnh báo khi đọc tài liệu: {w}",
-            computed_evidence=f"nguồn: C1 đọc {doc.path}", confidence="cao"))
+            # TÊN tệp, KHÔNG phải đường dẫn: mỗi lần tải lên, API ghi tệp vào
+            # một thư mục `tempfile.mkdtemp()` mới, nên đường dẫn đổi ở MỌI lượt
+            # chạy dù tài liệu y nguyên. Hệ quả đo được 2026-09-16: đây là trường
+            # DUY NHẤT lệch giữa hai lượt, và nó lệch vì cấu trúc chứ không vì
+            # model — đủ để làm hỏng phép đo độ ổn định 5.0b và, sau này, việc
+            # đối chiếu baseline của 5.1. Đường dẫn tạm cũng chẳng nói gì với
+            # người đọc báo cáo.
+            computed_evidence=f"nguồn: C1 đọc {pathlib.Path(doc.path).name}",
+            confidence="cao"))
     return ra
 
 

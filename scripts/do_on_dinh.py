@@ -318,9 +318,17 @@ def main() -> int:
               "\n   thật sự gọi model không — đệm còn bật thì nó phát lại lượt A:"
               "\n   docker compose exec copilot printenv SIZING_COPILOT_KHONG_CACHE")
     elif cung_tap:
-        print(f"\n✓ Cùng tập finding, nhưng lệch {so_khac} chỗ — đủ chứng minh"
-              "\n  đây là HAI lượt gọi model độc lập, không phải một lượt phát"
-              "\n  lại từ đệm.")
+        print(f"\nCùng tập finding, lệch {so_khac} chỗ:")
+        for ten, ds in (("mức độ", kq["vi_du_doi_muc_do"]),
+                        ("căn cứ", kq["vi_du_doi_can_cu"])):
+            if ds:
+                print(f"    {ten}: " + ", ".join(ds))
+        # KHÔNG kết luận "hai lượt độc lập" từ chỗ lệch: một trường có thể
+        # lệch vì CẤU TRÚC chứ không vì model. NT4-C1 từng mang đường dẫn
+        # tạm của máy chủ, đổi ở mọi lượt chạy — 2026-09-16 nó là chỗ lệch
+        # duy nhất, và suýt bị đọc thành bằng chứng model đã chạy hai lần.
+        print("\n  Kiểm từng chỗ lệch: lệch vì MODEL hay vì cấu trúc (đường dẫn,"
+              "\n  thời gian, số ngẫu nhiên)? Chỉ loại đầu mới nói lên điều gì.")
 
     ra = pathlib.Path(a.ra) if a.ra else pathlib.Path(
         f"docs/do-on-dinh-{time.strftime('%Y%m%d-%H%M%S')}.md")

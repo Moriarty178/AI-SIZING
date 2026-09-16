@@ -1,0 +1,30 @@
+{
+  "ma_a": "fbed51d3bf2a",
+  "ma_b": "7230c5e6ca1c",
+  "ket_qua": {
+    "so_a": 61,
+    "so_b": 61,
+    "khop": 61,
+    "chi_a": 0,
+    "chi_b": 0,
+    "khop_theo_khoa_goc": 61,
+    "mat_khop_do_hau_to": 0,
+    "doi": {
+      "muc_do": 0,
+      "nhom": 0,
+      "cau_chu": 0,
+      "can_cu": 1,
+      "vi_tri": 0
+    },
+    "code_tinh_duoc_a": 8,
+    "code_tinh_duoc_b": 8,
+    "code_tinh_duoc_khop": 8,
+    "chua_kiem_duoc_a": 42,
+    "vi_du_chi_a": [],
+    "vi_du_chi_b": [],
+    "vi_du_doi_muc_do": [],
+    "vi_du_doi_can_cu": [
+      "NT4-C1"
+    ]
+  }
+}
