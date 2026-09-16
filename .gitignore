@@ -45,3 +45,7 @@ bao-cao-*.md
 .env
 uv.lock
 tai_lieu_noi_bo/
+
+# Bản ghi chẩn đoán tải từ `/result` — từng kèm toàn văn báo cáo,
+# tức nội dung hồ sơ khách (2026-09-16).
+docs/result_*.json

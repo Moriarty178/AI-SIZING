@@ -70,13 +70,20 @@ def test_nop_file_tra_202_va_ma_viec_NGAY(client):
     assert d["trang_thai"] in ("cho", "dang_chay", "xong")
 
 
-def test_chay_xong_thi_result_kem_bao_cao(client):
+def test_chay_xong_thi_bao_cao_lay_o_duong_rieng(client):
+    """`/result` là bản ghi chẩn đoán, KHÔNG kèm toàn văn báo cáo.
+
+    Người ta dán bản ghi này vào chat và gửi kèm khi báo lỗi; ngày 2026-09-16
+    một bản như thế bị commit vào repo với 39 KB nội dung hồ sơ khách bên trong,
+    lặp lại đúng sự cố `bao-cao-mau.md` hồi 2026-09-10. Giao diện còn hỏi lại
+    mỗi 5 giây, nên kèm báo cáo là kéo ~116 KB mỗi lượt hỏi không ai đọc.
+    """
     from api import main
     ma = _nop(client).json()["ma"]
     assert main.bo_chay.cho_rong(5)
     d = client.get(f"/result/{ma}").json()
     assert d["trang_thai"] == "xong"
-    assert "Báo cáo thử" in d["bao_cao"]
+    assert "bao_cao" not in d, "toàn văn báo cáo lọt vào bản ghi chẩn đoán"
     assert client.get(f"/result/{ma}/bao-cao").text.startswith("# Báo cáo thử")
 
 

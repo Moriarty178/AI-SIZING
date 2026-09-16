@@ -3,7 +3,7 @@
     uvicorn api.main:app --host 0.0.0.0 --port 8000
 
     POST   /review          nộp .docx  -> 202 kèm mã việc
-    GET    /result/{ma}     trạng thái + tiến độ; xong thì kèm báo cáo
+    GET    /result/{ma}     trạng thái + tiến độ + thống kê (KHÔNG kèm báo cáo)
     GET    /result/{ma}/bao-cao   báo cáo Markdown thô
     GET    /result/{ma}/findings  tập finding C7 dạng JSON (cho bảng ghi chú)
     GET    /result/{ma}/phan-hoi  ghi chú người thẩm định đã lưu cho việc này
@@ -129,10 +129,16 @@ def result(ma: str) -> dict:
     cv = kho.lay(ma)
     if cv is None:
         raise HTTPException(404, f"Không có việc nào mã «{ma}»")
-    d = cv.as_dict()
-    if cv.trang_thai == "xong":
-        d["bao_cao"] = kho.bao_cao(ma) or ""
-    return d
+    # KHÔNG kèm toàn văn báo cáo. Ba lý do, lý do đầu là lý do bắt buộc:
+    #
+    # 1. Báo cáo chứa NỘI DUNG HỒ SƠ KHÁCH. `/result` là bản ghi chẩn đoán —
+    #    người ta chụp lại, dán vào chat, gửi kèm khi báo lỗi. Ngày 2026-09-16
+    #    một bản ghi như thế bị commit vào repo với 39 KB báo cáo bên trong,
+    #    lặp lại đúng sự cố `bao-cao-mau.md` hồi 2026-09-10.
+    # 2. Giao diện hỏi lại mỗi 5 giây; kèm báo cáo là kéo theo ~116 KB mỗi lượt
+    #    hỏi mà không ai đọc tới.
+    # 3. Đã có `GET /result/{ma}/bao-cao` trả nguyên văn cho người thật sự cần.
+    return cv.as_dict()
 
 
 @app.get("/result/{ma}/bao-cao", response_class=PlainTextResponse)
