@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from scripts.do_on_dinh import (_dong_dich_vu, _khoa_goc,   # noqa: E402
-                                gia_tri_do, so_sanh)
+                                gia_tri_do, so_luot_goi, so_sanh)
 from src.khach_api import SucKhoe                           # noqa: E402
 
 
@@ -118,7 +118,10 @@ class TestGiaTriDo:
     BAT_PHAT_LAI = {"bat": True, "ghi_them": 0}
 
     def _v(self, tk, **kw):
-        d = {"thong_ke_cache": tk, "tuy_chon": {}}
+        # Mặc định CÓ gọi model: lớp này kiểm phần đệm, nên đừng để thiếu bằng
+        # chứng gọi làm nhiễu. Ca không gọi lần nào nằm ở `TestSoLuotGoi`.
+        d = {"thong_ke_cache": tk, "tuy_chon": {},
+             "thong_ke": {"c3": {"luot_goi": 71}, "c5": {"luot_goi": 120}}}
         d.update(kw)
         return d
 
@@ -156,4 +159,49 @@ class TestGiaTriDo:
         """`song_song` chỉ đổi tốc độ, không đổi phạm vi quy tắc."""
         dung, _ = gia_tri_do(self._v(self.TAT, tuy_chon={"song_song": 12}),
                              self._v(self.TAT))
+        assert dung is True
+
+
+class TestSoLuotGoi:
+    """Bằng chứng THẬT là số lời gọi, không phải cờ đệm.
+
+    2026-09-16: hai lượt tắt đệm, trùng khớp 61/61, nhưng chạy hết 2 phút cho
+    một tài liệu đáng lẽ tốn ~16 — dấu ✅ in ra dựa trên cờ đệm là sai.
+    """
+
+    def test_cong_du_ba_giai_doan_goi_model(self):
+        v = {"thong_ke": {"c3": {"luot_goi": 71}, "c5": {"luot_goi": 120},
+                          "c2": {"luot_goi": 5}, "c1_bang": 9}}
+        assert so_luot_goi(v) == 196
+
+    def test_C4_thuan_code_KHONG_duoc_tinh_vao(self):
+        v = {"thong_ke": {"c3": {"luot_goi": 71},
+                          "c4_he_so_du_phong": {"luot_goi": 999}}}
+        assert so_luot_goi(v) == 71
+
+    def test_khong_ghi_thong_ke_thi_None_chu_khong_phai_0(self):
+        """Không biết KHÁC với biết là không. Trả 0 là biến một lượt chạy cũ
+        thành một lời khẳng định sai."""
+        assert so_luot_goi({}) is None
+        assert so_luot_goi({"thong_ke": {"c1_bang": 9}}) is None
+
+    def test_khong_goi_lan_nao_thi_phep_do_VO_NGHIA(self):
+        v = {"thong_ke": {"c3": {"luot_goi": 0}, "c5": {"luot_goi": 0},
+                          "cache": {"bat": False, "ghi_them": 0}},
+             "thong_ke_cache": {"bat": False, "ghi_them": 0}, "tuy_chon": {}}
+        dung, ly = gia_tri_do(v, v)
+        assert dung is False
+        assert "0 lời gọi model" in " ".join(ly)
+
+    def test_dem_tat_KHONG_con_duoc_tinh_la_bang_chung_co_goi(self):
+        """Đệm tắt chỉ chứng minh KHÔNG phát lại. Hai mệnh đề khác nhau."""
+        v = {"thong_ke": {"c3": {"luot_goi": 0}},
+             "thong_ke_cache": {"bat": False, "ghi_them": 0}, "tuy_chon": {}}
+        dung, _ = gia_tri_do(v, v)
+        assert dung is False
+
+    def test_co_goi_that_va_dem_tat_thi_dung_duoc(self):
+        v = {"thong_ke": {"c3": {"luot_goi": 71}, "c5": {"luot_goi": 120}},
+             "thong_ke_cache": {"bat": False, "ghi_them": 0}, "tuy_chon": {}}
+        dung, _ = gia_tri_do(v, v)
         assert dung is True

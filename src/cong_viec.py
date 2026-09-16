@@ -84,6 +84,12 @@ class CongViec:
     # ghi_them}. Không có nó thì không ai chứng minh được lượt chạy đã gọi model
     # hay chỉ phát lại — xem `scripts/do_on_dinh.py`.
     thong_ke_cache: dict = field(default_factory=dict)
+    # Toàn bộ `KetQuaChay.thong_ke`, trong đó có `c3.luot_goi` / `c5.luot_goi` —
+    # SỐ LỜI GỌI MODEL của lượt chạy. Đệm tắt chỉ chứng minh không phát lại; nó
+    # KHÔNG chứng minh có gọi. Hai lượt ngày 2026-09-16 tắt đệm, trùng khớp
+    # 100%, và chạy hết 2 phút cho một tài liệu đáng lẽ tốn ~16 — con số duy
+    # nhất phân biệt được "model tất định" với "model gần như không chạy" là đây.
+    thong_ke: dict = field(default_factory=dict)
     # Tuỳ chọn giới hạn chi phí, truyền thẳng vào `pipeline.chay`. Danh sách khoá
     # cho phép nằm ở tầng API — kho việc không tự quyết cái gì hợp lệ.
     tuy_chon: dict = field(default_factory=dict)
@@ -432,6 +438,7 @@ class BoChay:
                               thong_ke_cache=dict(
                                   (getattr(kq, "thong_ke", None) or {})
                                   .get("cache") or {}),
+                              thong_ke=dict(getattr(kq, "thong_ke", None) or {}),
                               giai_doan="")
         except Exception as e:
             # Một tài liệu hỏng KHÔNG được giết luồng chạy: các việc còn lại

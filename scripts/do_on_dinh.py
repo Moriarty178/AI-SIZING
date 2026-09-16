@@ -76,6 +76,27 @@ def _khoa_goc(fid: str) -> str:
     return fid
 
 
+# Các giai đoạn có gọi model. C4 là Python thuần nên không có mặt ở đây.
+GIAI_DOAN_GOI = ("c2", "c3", "c5")
+
+
+def so_luot_goi(v: dict) -> int | None:
+    """Tổng lời gọi model của một lượt chạy. None = lượt chạy không ghi lại.
+
+    Đây mới là bằng chứng. `cache.bat=False` chỉ nói lượt này KHÔNG phát lại từ
+    đệm — nó không nói lượt này có gọi model hay không, mà hai mệnh đề đó khác
+    nhau đúng ở chỗ làm hỏng phép đo: một lượt gọi 0 lần thì trùng khớp 100% với
+    bất kỳ lượt nào khác, và con số 100% ấy không nói gì về model cả.
+    """
+    tk = v.get("thong_ke") or {}
+    if not tk:
+        return None
+    co = [tk[g] for g in GIAI_DOAN_GOI if isinstance(tk.get(g), dict)]
+    if not co:
+        return None
+    return sum(int(x.get("luot_goi") or 0) for x in co)
+
+
 def gia_tri_do(va: dict, vb: dict) -> tuple[bool, list[str]]:
     """Phép đo này có dùng được không? (dùng_được, các dòng giải thích)
 
@@ -90,6 +111,17 @@ def gia_tri_do(va: dict, vb: dict) -> tuple[bool, list[str]]:
     ly: list[str] = []
     dung = True
     for ten, v in (("A", va), ("B", vb)):
+        n = so_luot_goi(v)
+        if n is None:
+            ly.append(f"Lượt {ten}: KHÔNG ghi lại số lời gọi model — image cũ hơn "
+                      "bản này, không chứng minh được pipeline đã chạy đủ.")
+            dung = False
+        elif n == 0:
+            ly.append(f"Lượt {ten}: **0 lời gọi model**. Trùng khớp 100% là đương "
+                      "nhiên và không nói gì về độ ổn định của model. ✗")
+            dung = False
+        else:
+            ly.append(f"Lượt {ten}: {n} lời gọi model. ✓")
         tk = v.get("thong_ke_cache") or {}
         if not tk:
             ly.append(f"Lượt {ten}: KHÔNG có số liệu đệm — chạy bằng image cũ hơn "
@@ -97,7 +129,7 @@ def gia_tri_do(va: dict, vb: dict) -> tuple[bool, list[str]]:
             dung = False
             continue
         if not tk.get("bat"):
-            ly.append(f"Lượt {ten}: đệm TẮT → mọi lời gọi đều tới model. ✓")
+            ly.append(f"Lượt {ten}: đệm TẮT → không lời gọi nào được phát lại.")
             continue
         them = int(tk.get("ghi_them") or 0)
         if them > 0:
@@ -234,6 +266,7 @@ def dung_bao_cao(kq: dict, va: dict, vb: dict, ma_a: str, ma_b: str) -> str:
         f"| Tuỳ chọn | `{va.get('tuy_chon')}` | `{vb.get('tuy_chon')}` |",
         f"| Số finding | {kq['so_a']} | {kq['so_b']} |",
         f"| Phút chạy | {va['giay_da_chay'] / 60:.1f} | {vb['giay_da_chay'] / 60:.1f} |",
+        f"| **Lời gọi model** | {so_luot_goi(va)} | {so_luot_goi(vb)} |",
         f"| Đệm | `{va.get('thong_ke_cache') or 'không có số liệu'}` | "
         f"`{vb.get('thong_ke_cache') or 'không có số liệu'}` |",
         "",
