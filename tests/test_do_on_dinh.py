@@ -9,7 +9,8 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from scripts.do_on_dinh import (_dong_dich_vu, _khoa_goc,   # noqa: E402
-                                gia_tri_do, so_luot_goi, so_sanh)
+                                _scope_chuan_hoa, gia_tri_do,
+                                so_luot_goi, so_sanh)
 from src.khach_api import SucKhoe                           # noqa: E402
 
 
@@ -205,3 +206,46 @@ class TestSoLuotGoi:
              "thong_ke_cache": {"bat": False, "ghi_them": 0}, "tuy_chon": {}}
         dung, _ = gia_tri_do(v, v)
         assert dung is True
+
+
+class TestScopeChuanHoa:
+    """Đo 2026-09-16 (268/272 lời gọi thật): id lệch chủ yếu có dạng
+    `ARC-02#Master (K8s Master node)` ↔ `ARC-02#Master (K8s Control plane)` —
+    CÙNG phân hệ, chỉ phần mô tả trong ngoặc do C3 diễn đạt lại."""
+
+    def test_bo_phan_dien_giai_trong_ngoac(self):
+        assert _scope_chuan_hoa("ARC-02#Master (K8s Master node)") == \
+            _scope_chuan_hoa("ARC-02#Master (K8s Control plane)")
+
+    def test_KHONG_gop_hai_phan_he_khac_ten(self):
+        """Chuẩn hoá mà gộp nhầm MinIO với FrontEnd là che mất một khác biệt thật."""
+        assert _scope_chuan_hoa("ARC-06#MinIO") != _scope_chuan_hoa("ARC-06#FrontEnd")
+
+    def test_KHONG_gop_hai_quy_tac_khac_nhau(self):
+        assert _scope_chuan_hoa("ARC-02#Master (a)") != _scope_chuan_hoa("ARC-03#Master (a)")
+
+    def test_khong_phan_biet_hoa_thuong_va_khoang_trang(self):
+        assert _scope_chuan_hoa("CPU-01#Kafka ") == _scope_chuan_hoa("CPU-01#kafka")
+
+    def test_bo_hau_to_khu_trung_truoc_khi_chuan_hoa(self):
+        assert _scope_chuan_hoa("KPI-02#PH1 (x)#2") == "KPI-02#ph1"
+
+    def test_he_thong_giu_nguyen(self):
+        assert _scope_chuan_hoa("ARC-10#he_thong") == "ARC-10#he_thong"
+
+    def test_so_sanh_dem_rieng_phan_mat_khop_do_ten_phan_he(self):
+        a = [_f("ARC-02#Master (K8s Master node)"), _f("ARC-06#MinIO")]
+        b = [_f("ARC-02#Master (K8s Control plane)"), _f("ARC-06#FrontEnd")]
+        kq = so_sanh(a, b)
+        assert kq["khop"] == 0
+        assert kq["khop_scope_chuan_hoa"] == 1, "Master phải khớp lại"
+        assert kq["mat_khop_do_ten_scope"] == 1
+        assert kq["ds_chi_a"] and kq["ds_chi_b"], "phải giữ đủ danh sách"
+
+
+def test_ben_vung_KHONG_dem_trung_dong_doi_nhieu_thu():
+    """Bản trước trừ thẳng từng loại đổi: một dòng đổi cả mức độ lẫn căn cứ bị
+    trừ hai lần, số «bền hoàn toàn» thấp hơn thật."""
+    a = [_f("A#x", severity="cao", computed_evidence="1"), _f("B#y")]
+    b = [_f("A#x", severity="thap", computed_evidence="2"), _f("B#y")]
+    assert so_sanh(a, b)["ben_vung"] == 1

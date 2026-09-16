@@ -76,6 +76,35 @@ def _khoa_goc(fid: str) -> str:
     return fid
 
 
+def _scope_chuan_hoa(fid: str) -> str:
+    """`rule#scope` với scope bỏ phần diễn giải trong ngoặc, không phân biệt hoa thường.
+
+    Đo 2026-09-16 (717 vs 718 finding, 268/272 lời gọi thật): phần lớn id lệch có
+    dạng `ARC-02#Master (K8s Master node)` ở lượt A và `ARC-02#Master (K8s
+    Control plane)` ở lượt B — CÙNG một phân hệ, chỉ phần mô tả trong ngoặc do
+    C3 diễn đạt lại. Một phân hệ đổi tên là mọi quy tắc gắn với nó mất khớp.
+
+    Hàm này đo xem chuẩn hoá cứu được bao nhiêu, để 5.1 chọn khoá bằng số chứ
+    không bằng đoán.
+    """
+    import re
+    goc = _khoa_goc(fid)
+    rule, _, scope = goc.partition("#")
+    scope = re.sub(r"\s*\(.*\)\s*$", "", scope).strip().casefold()
+    return f"{rule}#{scope}"
+
+
+def _khop_da_tap(a: list[str], b: list[str]) -> int:
+    """Số cặp khớp khi coi hai danh sách là ĐA TẬP (khoá lặp được)."""
+    da: dict[str, int] = {}
+    for k in a:
+        da[k] = da.get(k, 0) + 1
+    db: dict[str, int] = {}
+    for k in b:
+        db[k] = db.get(k, 0) + 1
+    return sum(min(n, db.get(k, 0)) for k, n in da.items())
+
+
 # Các giai đoạn có gọi model. C4 là Python thuần nên không có mặt ở đây.
 GIAI_DOAN_GOI = ("c2", "c3", "c5")
 
@@ -227,11 +256,20 @@ def so_sanh(fa: list[dict], fb: list[dict]) -> dict:
     ca, cb = _co_can_cu(fa), _co_can_cu(fb)
     chua_kiem_a = {f["id"] for f in fa if f.get("nhom") == NHOM_CHUA_KIEM}
 
+    khop_chuan_hoa = _khop_da_tap([_scope_chuan_hoa(i) for i in ia],
+                                  [_scope_chuan_hoa(i) for i in ib])
+    # Hợp các tập đổi, không cộng dồn: một dòng đổi cả mức độ lẫn căn cứ chỉ là
+    # MỘT dòng không bền. Bản trước trừ thẳng từng loại nên đếm trùng.
+    khong_ben = set(doi["muc_do"]) | set(doi["nhom"]) | set(doi["can_cu"])
+
     return {
         "so_a": len(fa), "so_b": len(fb),
         "khop": len(khop), "chi_a": len(chi_a), "chi_b": len(chi_b),
         "khop_theo_khoa_goc": khop_goc,
         "mat_khop_do_hau_to": max(0, khop_goc - len(khop)),
+        "khop_scope_chuan_hoa": khop_chuan_hoa,
+        "mat_khop_do_ten_scope": max(0, khop_chuan_hoa - khop_goc),
+        "ben_vung": len(khop) - len(khong_ben),
         "doi": {k: len(v) for k, v in doi.items()},
         "code_tinh_duoc_a": len(ca), "code_tinh_duoc_b": len(cb),
         "code_tinh_duoc_khop": len(ca & cb),
@@ -239,13 +277,19 @@ def so_sanh(fa: list[dict], fb: list[dict]) -> dict:
         "vi_du_chi_a": chi_a[:10], "vi_du_chi_b": chi_b[:10],
         "vi_du_doi_muc_do": doi["muc_do"][:10],
         "vi_du_doi_can_cu": doi["can_cu"][:10],
+        # Danh sách ĐẦY ĐỦ — bản trước chỉ giữ 10 ví dụ, nên muốn phân tích thêm
+        # là phải chạy lại. Chỉ là mã quy tắc + tên phân hệ, không có nội dung
+        # tài liệu.
+        "ds_chi_a": chi_a, "ds_chi_b": chi_b,
+        "ds_doi_muc_do": doi["muc_do"], "ds_doi_nhom": doi["nhom"],
+        "ds_doi_can_cu": doi["can_cu"],
     }
 
 
 def dung_bao_cao(kq: dict, va: dict, vb: dict, ma_a: str, ma_b: str) -> str:
     n = max(kq["so_a"], kq["so_b"])
     d = kq["doi"]
-    ben_vung = kq["khop"] - d["muc_do"] - d["nhom"] - d["can_cu"]
+    ben_vung = kq["ben_vung"]
     dung_duoc, ly_do = gia_tri_do(va, vb)
     dong = [
         "# 5.0b — đo độ ổn định giữa hai lượt thẩm định",
@@ -281,6 +325,10 @@ def dung_bao_cao(kq: dict, va: dict, vb: dict, ma_a: str, ma_b: str) -> str:
         f"{_pt(kq['khop_theo_khoa_goc'], n)} |",
         f"| → mất khớp CHỈ vì hậu tố thứ tự | **{kq['mat_khop_do_hau_to']}** | "
         f"{_pt(kq['mat_khop_do_hau_to'], n)} |",
+        f"| Khớp khi CHUẨN HOÁ tên phân hệ (bỏ phần trong ngoặc) | "
+        f"{kq['khop_scope_chuan_hoa']} | {_pt(kq['khop_scope_chuan_hoa'], n)} |",
+        f"| → mất khớp CHỈ vì C3 diễn đạt lại tên phân hệ | "
+        f"**{kq['mat_khop_do_ten_scope']}** | {_pt(kq['mat_khop_do_ten_scope'], n)} |",
         "",
         "Dòng cuối là lỗi khoá, sửa được bằng code (`report.py` gắn hậu tố theo thứ "
         "tự duyệt). Phần còn lại là model thật sự đổi ý — không sửa bằng code được.",
@@ -330,7 +378,8 @@ def dung_bao_cao(kq: dict, va: dict, vb: dict, ma_a: str, ma_b: str) -> str:
         "",
         f"Lượt A chạy {va['giay_da_chay'] / 60:.1f} phút, lượt B "
         f"{vb['giay_da_chay'] / 60:.1f} phút. Một tài liệu gọi model thật tốn "
-        "**~16 phút**; xong trong vài phút nghĩa là lượt đó lấy từ đệm.",
+        "**~16–23 phút** (đo 2026-09-16: 21,7 và 22,6 phút, 268 và 272 lời gọi); "
+        "xong trong vài phút nghĩa là lượt đó lấy từ đệm hoặc lời gọi đang hỏng.",
         "",
         "Lượt A lấy từ đệm thì KHÔNG sao — nó tái hiện đúng đầu ra model của lượt "
         "gốc. **Lượt B lấy từ đệm mới là hỏng**: khi đó nó chỉ phát lại lượt A và "

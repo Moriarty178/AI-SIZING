@@ -1,0 +1,67 @@
+{
+  "ma_a": "36d2314d3826",
+  "ma_b": "790a8dd95594",
+  "ket_qua": {
+    "so_a": 717,
+    "so_b": 718,
+    "khop": 658,
+    "chi_a": 59,
+    "chi_b": 60,
+    "khop_theo_khoa_goc": 658,
+    "mat_khop_do_hau_to": 0,
+    "doi": {
+      "muc_do": 24,
+      "nhom": 5,
+      "cau_chu": 61,
+      "can_cu": 5,
+      "vi_tri": 17
+    },
+    "code_tinh_duoc_a": 10,
+    "code_tinh_duoc_b": 11,
+    "code_tinh_duoc_khop": 8,
+    "chua_kiem_duoc_a": 624,
+    "vi_du_chi_a": [
+      "ARC-02#Master (K8s Master node)",
+      "ARC-03#Master (K8s Master node)",
+      "ARC-06#MinIO",
+      "ARC-08#Master (K8s Master node)",
+      "ARC-09#Master (K8s Master node)",
+      "ARC-11#Master (K8s Master node)",
+      "ARC-14#Master (K8s Master node)",
+      "ARC-15#Master (K8s Master node)",
+      "ARC-16#Master (K8s Master node)",
+      "ARC-19#Master (K8s Master node)"
+    ],
+    "vi_du_chi_b": [
+      "ARC-02#Master (K8s Control plane)",
+      "ARC-03#Master (K8s Control plane)",
+      "ARC-06#FrontEnd",
+      "ARC-06#Master (K8s Control plane)",
+      "ARC-08#Master (K8s Control plane)",
+      "ARC-09#Master (K8s Control plane)",
+      "ARC-11#FrontEnd",
+      "ARC-11#Master (K8s Control plane)",
+      "ARC-14#Master (K8s Control plane)",
+      "ARC-14#MinIO"
+    ],
+    "vi_du_doi_muc_do": [
+      "ARC-02#FrontEnd",
+      "ARC-10#he_thong",
+      "ARC-14#vLB (Virtual Load Balancer)",
+      "ARC-15#FrontEnd",
+      "ARC-16#Redis",
+      "ARC-16#Worker (module xử lý nghiệp vụ)",
+      "ARC-27#FrontEnd",
+      "ARC-27#MinIO",
+      "ARC-27#Redis",
+      "CPU-01#Kafka"
+    ],
+    "vi_du_doi_can_cu": [
+      "ARC-27#FrontEnd",
+      "ARC-27#MinIO",
+      "ARC-27#Redis",
+      "CPU-01#Kafka",
+      "EVD-05#Redis"
+    ]
+  }
+}
