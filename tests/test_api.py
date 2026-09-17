@@ -30,13 +30,8 @@ def client(tmp_path, monkeypatch):
 
     main.kho = KhoCongViec(tmp_path / "cv")
     main.bo_chay = BoChay(main.kho, ham_chay=_chay_gia)
-    # Phải vá vào `api.main.luu_tam`, KHÔNG phải `src.giao_dien.luu_tam`:
-    # `main` đã `from ... import luu_tam` nên nó giữ tham chiếu riêng, vá vào
-    # module gốc không ăn và test sẽ lặng lẽ ghi file thật ra ngoài `tmp_path`.
-    monkeypatch.setattr(main, "luu_tam",
-                        lambda noi_dung, ten, thu_muc=None:
-                        _ghi(tmp_path / "tai_lieu" / pathlib.Path(ten).name,
-                             noi_dung))
+    # Tài liệu nộp giờ vào `KhoCongViec` (5.2) — tức vào `tmp_path / "cv"`, không
+    # cần vá gì để khỏi ghi ra ngoài thư mục tạm của test.
     with TestClient(main.app) as c:
         yield c
 

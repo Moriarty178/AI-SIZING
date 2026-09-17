@@ -398,3 +398,35 @@ class TestVeHoSo:
         n = nhan_ho_so({"id": 7, "ten_file": "a.docx", "so_lan": 2,
                         "so_loi_baseline": 717, "ten": "An"})
         assert n.startswith("#7") and "717 lỗi" in n
+
+
+# --- 5.2: sửa ----------------------------------------------------------------------
+class TestSua:
+    def test_bang_baseline_co_so_lan_sua(self):
+        from src.giao_dien import bang_baseline
+        assert bang_baseline({"baseline": [{"so_lan_sua": 3}]})[0]["Số lần sửa"] == 3
+
+    def test_bang_lan_sua(self):
+        from src.giao_dien import bang_lan_sua
+        r = bang_lan_sua({"lan_sua": [{"so_lan": 1, "ten": "An", "noi_dung_sua": "x",
+                                       "tao_luc": "2026-09-17T10:23:18.123+07:00"}]})
+        assert r == [{"Lần": 1, "Người ghi nhận": "An", "Lúc": "2026-09-17 10:23:18",
+                      "Đã sửa": "x"}]
+
+    def test_noi_dung_goc_chi_lay_khi_DINH_VI_duoc(self):
+        """Gợi ý theo tên phân hệ KHÔNG phải chỗ lỗi — ghi vào «nội dung gốc» là để
+        bảng Admin hiểu nhầm."""
+        from src.giao_dien import noi_dung_goc_tu_cho_sua
+        doan = [{"text": "Redis dùng 32 GB", "rows": None}]
+        assert noi_dung_goc_tu_cho_sua({"cach_tim": "phan_tu", "doan": doan}) == \
+            "Redis dùng 32 GB"
+        assert noi_dung_goc_tu_cho_sua({"cach_tim": "ten_phan_he", "doan": doan}) == ""
+        assert noi_dung_goc_tu_cho_sua({"cach_tim": "khong_tim_duoc"}) == ""
+        assert noi_dung_goc_tu_cho_sua({}) == ""
+
+    def test_noi_dung_goc_cua_bang_moi_dong_mot_hang_va_cat_do_dai(self):
+        from src.giao_dien import TOI_DA_NOI_DUNG_GOC, noi_dung_goc_tu_cho_sua
+        cho = {"cach_tim": "muc", "doan": [{"rows": [["A", "1"], ["B", "2"]]}]}
+        assert noi_dung_goc_tu_cho_sua(cho) == "A | 1\nB | 2"
+        dai = {"cach_tim": "muc", "doan": [{"text": "x" * 5000}]}
+        assert len(noi_dung_goc_tu_cho_sua(dai)) == TOI_DA_NOI_DUNG_GOC

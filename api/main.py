@@ -12,6 +12,8 @@
     GET    /jobs            danh sách việc
     GET    /ho-so           5.1 — danh sách hồ sơ (cần CSDL)
     GET    /ho-so/{id}      5.1 — baseline cố định + trạng thái lần mới nhất + rổ phát sinh
+    GET    /ho-so/{id}/finding/{fb}          5.2 — một lỗi + chỗ trong tài liệu + lịch sử sửa
+    POST   /ho-so/{id}/finding/{fb}/lan-sua  5.2 — ghi nhận đã sửa gì (cần danh tính)
     DELETE /result/{ma}     xoá việc, báo cáo VÀ tài liệu đã nộp (KHÔNG đụng nhật ký)
     GET    /health          cho healthcheck của container
 
@@ -30,6 +32,7 @@ phải đặt sau cổng xác thực thật, và điều đó phải do người
 """
 from __future__ import annotations
 
+import functools
 import pathlib
 import sys
 import threading
@@ -44,7 +47,7 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from src.cong_viec import BoChay, KhoCongViec                    # noqa: E402
-from src.giao_dien import kiem_model, luu_tam                    # noqa: E402
+from src.giao_dien import kiem_model                             # noqa: E402
 from src.llm.cache import BoNhoDem                              # noqa: E402
 from src.luu_tru.cau_hinh import TrangThaiCSDL, mo_kho_tu_moi_truong  # noqa: E402
 from src.luu_tru.danh_tinh import tao_danh_tinh, tu_header          # noqa: E402
@@ -224,8 +227,9 @@ async def review(
     if song_song is not None:
         tuy_chon["song_song"] = song_song
 
-    duong_dan = luu_tam(noi_dung, ten)
-    cv = kho.them(ten, str(duong_dan), tuy_chon, ho_so_id=ho_so_id,
+    # Tài liệu vào kho việc (volume), không vào `/tmp`: 5.2 mở lại nó nhiều ngày
+    # sau để hiện chỗ cần sửa — xem `KhoCongViec._luu_tai_lieu`.
+    cv = kho.them(ten, "", tuy_chon, ho_so_id=ho_so_id, noi_dung=noi_dung,
                   danh_tinh=({"vai": danh_tinh.vai, "ten": danh_tinh.ten}
                              if danh_tinh else None))
     bo_chay.nop(cv)
@@ -281,6 +285,74 @@ def jobs() -> dict:
 
 
 # ------------------------------------------------- phản hồi thẩm định ------
+# ------------------------------------------------------------ 5.2 — sửa ------
+class LanSuaVao(BaseModel):
+    noi_dung_sua: str = Field(min_length=1, max_length=10_000)
+    # Đoạn người dùng đang nhìn lúc ghi nhận — để 5.6 đặt «trước» cạnh «sau».
+    noi_dung_goc: str = Field(default="", max_length=20_000)
+
+
+def _doc_tai_lieu(duong_dan: str):
+    """Đọc lại tài liệu của một lần nộp; đệm theo (đường dẫn, mtime) vì người dùng
+    bấm qua lại giữa các dòng của cùng một hồ sơ."""
+    p = pathlib.Path(duong_dan)
+    return _doc_tai_lieu_dem(str(p), p.stat().st_mtime)
+
+
+@functools.lru_cache(maxsize=4)
+def _doc_tai_lieu_dem(duong_dan: str, _mtime: float):
+    from src.ingestion.docx_reader import read_docx
+    return read_docx(duong_dan)
+
+
+@app.get("/ho-so/{ho_so_id}/finding/{fb_id}")
+def finding_ho_so(ho_so_id: int, fb_id: int) -> dict:
+    from src.luu_tru.cho_sua import ChoSua, tim_cho_sua
+    d = _can_csdl().doc_finding(ho_so_id, fb_id)
+    if d is None:
+        raise HTTPException(404, f"Lỗi #{fb_id} không thuộc hồ sơ #{ho_so_id}")
+    lan = d.get("lan_moi_nhat") or {}
+    cv = kho.lay(lan.get("ma_viec", "")) if lan else None
+    duong = cv.duong_dan if cv else ""
+    if not duong or not pathlib.Path(duong).is_file():
+        # NT4: nói rõ vì sao không hiện được chỗ, đừng trả khối rỗng.
+        cho = ChoSua("khong_tim_duoc",
+                     f"Tài liệu của lần {lan.get('so_thu_tu', '?')} "
+                     f"(«{lan.get('ten_file', '')}») không còn trên máy chủ — việc đã bị "
+                     "xoá, hoặc nộp trước bản lưu tài liệu bền (2026-09-17).")
+    else:
+        try:
+            cho = tim_cho_sua(_doc_tai_lieu(duong), d.get("vi_tri", ""),
+                              d.get("scope_goc", ""))
+        except Exception as e:                    # tài liệu hỏng không được giết API
+            cho = ChoSua("khong_tim_duoc",
+                         f"Không đọc lại được tài liệu: {type(e).__name__}: {e}"[:300])
+    d["cho_sua"] = cho.as_dict()
+    return d
+
+
+@app.post("/ho-so/{ho_so_id}/finding/{fb_id}/lan-sua", status_code=201)
+def ghi_lan_sua(ho_so_id: int, fb_id: int, vao: LanSuaVao, request: Request) -> dict:
+    from src.luu_tru.kho import HoSoKhongDangSua, KhongCoFinding
+    k = _can_csdl()
+    try:
+        dt = tu_header(request.headers)
+    except ValueError as e:
+        raise HTTPException(400, f"Danh tính trong header không hợp lệ: {e}")
+    if dt is None:
+        # 5.0a: thao tác ghi đầu tiên theo danh tính — không có người thì không ghi.
+        raise HTTPException(400, "Ghi nhận sửa cần danh tính — nhập tên ở thanh bên.")
+    try:
+        return k.them_lan_sua(ho_so_id, fb_id, danh_tinh=dt,
+                              noi_dung_sua=vao.noi_dung_sua, noi_dung_goc=vao.noi_dung_goc)
+    except KhongCoFinding as e:
+        raise HTTPException(404, str(e))
+    except HoSoKhongDangSua as e:
+        raise HTTPException(409, str(e))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
 class MucPhanHoiVao(BaseModel):
     finding_id: str = Field(min_length=1, max_length=300)
     ghi_chu: str = Field(default="", max_length=2000)

@@ -313,3 +313,59 @@ class TestGoiYSua:
     def test_csdl_chua_len_thi_noi_se_tu_thu_lai(self):
         from src.luu_tru.cau_hinh import goi_y_sua
         assert "tự thử lại" in goi_y_sua("connection refused")
+
+
+# ------------------------------------------------ 5.2: ghi nhận lần sửa -----------
+class TestLanSua:
+    def _ho_so(self, kho):
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
+                                  findings=[_fd("A#x"), _fd("B#y")])
+        d = kho.doc_ho_so(r["ho_so_id"])
+        return r["ho_so_id"], [b["id"] for b in d["baseline"]]
+
+    def test_so_lan_tang_theo_tung_dong(self, kho):
+        h, (a, b) = self._ho_so(kho)
+        assert kho.them_lan_sua(h, a, danh_tinh=_dt(), noi_dung_sua="32→64 GB")["so_lan"] == 1
+        assert kho.them_lan_sua(h, a, danh_tinh=_dt(), noi_dung_sua="64→48 GB")["so_lan"] == 2
+        assert kho.them_lan_sua(h, b, danh_tinh=_dt(), noi_dung_sua="x")["so_lan"] == 1
+
+    def test_doc_finding_co_lich_su_trang_thai_va_lan_moi_nhat(self, kho):
+        h, (a, _) = self._ho_so(kho)
+        kho.them_lan_sua(h, a, danh_tinh=_dt(), noi_dung_sua="Đã tăng RAM Redis",
+                         noi_dung_goc="Redis dùng 32 GB")
+        d = kho.doc_finding(h, a)
+        assert d["trang_thai"] == "chua_dat"
+        assert d["lan_moi_nhat"]["ma_viec"] == "m1"
+        assert [(x["so_lan"], x["noi_dung_sua"], x["ten"]) for x in d["lan_sua"]] == \
+            [(1, "Đã tăng RAM Redis", "Nguyễn Văn A")]
+        assert d["lan_sua"][0]["noi_dung_goc"] == "Redis dùng 32 GB"
+
+    def test_bang_ho_so_dem_so_lan_sua_moi_dong(self, kho):
+        h, (a, b) = self._ho_so(kho)
+        kho.them_lan_sua(h, a, danh_tinh=_dt(), noi_dung_sua="1")
+        kho.them_lan_sua(h, a, danh_tinh=_dt(), noi_dung_sua="2")
+        so = {x["id"]: x["so_lan_sua"] for x in kho.doc_ho_so(h)["baseline"]}
+        assert so == {a: 2, b: 0}
+
+    def test_finding_cua_ho_so_khac_thi_KHONG_ghi_duoc(self, kho):
+        """Chặn ghi nhầm sang hồ sơ khác qua một id đoán mò."""
+        from src.luu_tru.kho import KhongCoFinding
+        h1, (a, _) = self._ho_so(kho)
+        r2 = kho.ghi_lan_tham_dinh(ma_viec="m9", ten_file="b", danh_tinh=_dt(),
+                                   findings=[_fd("C#z")])
+        with pytest.raises(KhongCoFinding):
+            kho.them_lan_sua(r2["ho_so_id"], a, danh_tinh=_dt(), noi_dung_sua="x")
+        assert kho.doc_finding(r2["ho_so_id"], a) is None
+
+    def test_ho_so_da_gui_duyet_thi_KHONG_ghi_nhan_sua(self, kho):
+        from src.luu_tru.kho import HoSoKhongDangSua
+        h, (a, _) = self._ho_so(kho)
+        kho.dat_trang_thai_ho_so(h, "cho_duyet")
+        with pytest.raises(HoSoKhongDangSua):
+            kho.them_lan_sua(h, a, danh_tinh=_dt(), noi_dung_sua="x")
+
+    @pytest.mark.parametrize("nd", ["", "   ", "x" * 10_001])
+    def test_noi_dung_rong_hoac_qua_dai_bi_chan(self, kho, nd):
+        h, (a, _) = self._ho_so(kho)
+        with pytest.raises(ValueError):
+            kho.them_lan_sua(h, a, danh_tinh=_dt(), noi_dung_sua=nd)

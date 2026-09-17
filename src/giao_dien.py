@@ -450,8 +450,38 @@ def bang_baseline(d: dict) -> list[dict]:
             "Căn cứ lần đầu": b.get("computed_evidence", ""),
             "Căn cứ lần này": b.get("computed_evidence_lan", ""),
             "Vị trí": b.get("vi_tri", ""),
+            "Số lần sửa": b.get("so_lan_sua", 0),
         })
     return ra
+
+
+# ---------------------------------------------------------- 5.2 — sửa ------
+CACH_TIM_CHINH_XAC = ("phan_tu", "muc_trang", "muc", "trang")
+TOI_DA_NOI_DUNG_GOC = 2000
+
+
+def bang_lan_sua(d: dict) -> list[dict]:
+    return [{"Lần": x.get("so_lan"), "Người ghi nhận": x.get("ten", ""),
+             "Lúc": str(x.get("tao_luc", ""))[:19].replace("T", " "),
+             "Đã sửa": x.get("noi_dung_sua", "")}
+            for x in d.get("lan_sua") or []]
+
+
+def noi_dung_goc_tu_cho_sua(cho: dict) -> str:
+    """Đoạn người dùng đang nhìn lúc ghi nhận — để 5.6 đặt «trước» cạnh «sau».
+
+    Chỉ lấy khi công cụ ĐỊNH VỊ được (không lấy khi chỉ là gợi ý theo tên phân hệ):
+    ghi một đoạn gợi ý vào cột «nội dung gốc» là để bảng Admin hiểu nhầm đó là chỗ
+    lỗi thật.
+    """
+    if (cho or {}).get("cach_tim") not in CACH_TIM_CHINH_XAC:
+        return ""
+    doan = (cho.get("doan") or [{}])[0]
+    if doan.get("rows"):
+        van = "\n".join(" | ".join(r) for r in doan["rows"])
+    else:
+        van = doan.get("text") or ""
+    return van[:TOI_DA_NOI_DUNG_GOC]
 
 
 def bang_phat_sinh(d: dict) -> list[dict]:

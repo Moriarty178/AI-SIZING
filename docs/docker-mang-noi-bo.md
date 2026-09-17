@@ -203,6 +203,17 @@ py scripts/nghiem_thu_5_1.py "D:\duong\dan\Sizing ABC.docx" --api http://localho
 docker compose exec copilot-db psql -U copilot -c "select count(*) from finding_baseline"
 ```
 
+Nghiệm thu 5.2 (hiện chỗ cần sửa + ghi nhận sửa) — thẩm định lại hồ sơ nghiệm thu
+một lần (tài liệu của các lần nộp trước bản 5.2 nằm ở `/tmp` cũ, đã mất), rồi hỏi
+chỗ sửa cho mọi dòng. Script GHI hai lần sửa thử vào dòng đầu tiên của hồ sơ:
+
+```powershell
+py scripts/nghiem_thu_5_2.py --ho-so 1 "D:\duong\dan\Sizing ABC.docx" --api http://localhost:8902 --ten "Tên bạn"
+```
+
+Từ 5.2, tài liệu nộp lên được **giữ bền** ở `.cache/cong_viec/tai_lieu/` trong volume
+`copilot-cache`; xoá việc (`DELETE /result/{ma}`) xoá cả tài liệu.
+
 ⚠️ **Mật khẩu CSDL chỉ được đặt ở LẦN ĐẦU tạo volume `copilot-db-data`.** Image
 `postgres` đọc `POSTGRES_PASSWORD` đúng một lần; sửa `SIZING_COPILOT_DB_PASSWORD`
 về sau KHÔNG đổi mật khẩu trong CSDL, và Copilot sẽ báo `password authentication

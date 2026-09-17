@@ -49,6 +49,7 @@ THU_MUC_MAC_DINH = pathlib.Path(".cache/cong_viec")
 # Nhật ký phản hồi người thẩm định — append-only, NẰM NGOÀI thư mục việc để
 # xoá việc không lôi theo dataset cải tiến công cụ (xem `xoa`).
 THU_MUC_NHAT_KY = pathlib.Path("phan_hoi")
+THU_MUC_TAI_LIEU = "tai_lieu"
 TEN_NHAT_KY = "nhat-ky.csv"
 COT_NHAT_KY = ["thoi_gian", "ma_viec", "ten_file", "finding_id", "rule_ref",
                "severity", "category", "phan_loai", "tom_tat_finding", "ghi_chu"]
@@ -165,16 +166,36 @@ class KhoCongViec:
     # --------------------------------------------------------------- API --
     def them(self, ten_file: str, duong_dan: str,
              tuy_chon: dict | None = None, *, ho_so_id: int | None = None,
-             danh_tinh: dict | None = None) -> CongViec:
+             danh_tinh: dict | None = None,
+             noi_dung: bytes | None = None) -> CongViec:
         # `ho_so_id`/`danh_tinh` KHÔNG nằm trong `tuy_chon`: `tuy_chon` được bung
         # thẳng vào `pipeline.chay(**…)`, một khoá lạ là `TypeError` giữa lượt chạy.
         cv = CongViec(ma=uuid.uuid4().hex[:12], ten_file=ten_file,
                       duong_dan=str(duong_dan), tuy_chon=dict(tuy_chon or {}),
                       ho_so_id=ho_so_id, danh_tinh=dict(danh_tinh or {}))
+        if noi_dung is not None:
+            cv.duong_dan = str(self._luu_tai_lieu(cv.ma, ten_file, noi_dung))
         with self._khoa:
             self._viec[cv.ma] = cv
         self._ghi(cv)
         return cv
+
+    def _luu_tai_lieu(self, ma: str, ten_file: str, noi_dung: bytes) -> pathlib.Path:
+        """Tài liệu nộp vào `tai_lieu/{ma}/{tên gốc}` TRONG kho việc (volume).
+
+        Trước 5.2 tài liệu nằm ở `/tmp` của container: mất khi container dựng lại,
+        mà 5.2 cần mở lại nó nhiều ngày sau để hiện chỗ cần sửa (và 5.3 cần so hai
+        bản). Đây là quyết định GIỮ tài liệu — `xoa()` vẫn xoá sạch.
+
+        Giữ nguyên TÊN GỐC trong thư mục riêng theo mã việc: tên hồ sơ mang mã PYC,
+        tên hệ thống, và hiện lại trong báo cáo; đổi thành `{ma}.docx` còn làm căn
+        cứ của `NT4-C1` đổi ở mỗi lượt (đúng lỗi đã vá 2026-09-16).
+        """
+        d = self.thu_muc / THU_MUC_TAI_LIEU / ma
+        d.mkdir(parents=True, exist_ok=True)
+        p = d / (pathlib.Path(ten_file).name or "tai-lieu.docx")
+        p.write_bytes(noi_dung)
+        return p
 
     def lay(self, ma: str) -> CongViec | None:
         with self._khoa:
@@ -329,6 +350,10 @@ class KhoCongViec:
                     p.unlink(missing_ok=True)
             except OSError:
                 pass
+        try:                    # thư mục `tai_lieu/{ma}` giờ đã rỗng
+            (self.thu_muc / THU_MUC_TAI_LIEU / ma).rmdir()
+        except OSError:
+            pass
         return True
 
 

@@ -16,8 +16,9 @@ import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.giao_dien import (bang_baseline, bang_phat_sinh, csdl_san_sang,
-                           nhan_ho_so, tom_tat_ho_so,
+from src.giao_dien import (bang_baseline, bang_lan_sua, bang_phat_sinh,
+                           csdl_san_sang, nhan_ho_so, noi_dung_goc_tu_cho_sua,
+                           tom_tat_ho_so, CACH_TIM_CHINH_XAC,
                            CAN_MODEL, CHE_DO, cau_gioi_han, chay_checklist,
                            che_do_kha_dung, chuan_bi_bang, gom_thay_doi,
                            kiem_model_qua_dich_vu, loc_bang, luu_tam,
@@ -42,7 +43,10 @@ def thanh_ben():
     # Hỏi DỊCH VỤ, không tự dựng client tại chỗ: giao diện không giữ khoá model
     # (xem `kiem_model_qua_dich_vu`).
     kh = _khach()
-    tt = kiem_model_qua_dich_vu(kh.suc_khoe())
+    sk = kh.suc_khoe()
+    # Trang chính cần biết CSDL có sẵn không (lối vào «Mở hồ sơ»); đỡ hỏi lại.
+    st.session_state["_health_tho"] = sk.tho or {}
+    tt = kiem_model_qua_dich_vu(sk)
     (st.sidebar.success if tt.san_sang else st.sidebar.warning)(tt.nhan)
     if not tt.san_sang:
         st.sidebar.caption(
@@ -299,7 +303,91 @@ def _hien_mot_viec(kh: KhachAPI, d: dict, ten_tai: str) -> bool:
     return False
 
 
-def hien_ho_so(kh: KhachAPI, ho_so_id: int):
+def hien_sua_finding(kh: KhachAPI, ho_so_id: int, fb_id: int, vung: str):
+    """5.2 — một lỗi: chỗ trong tài liệu + lịch sử sửa + ghi nhận lần sửa mới.
+
+    `vung` vào khoá widget: cùng một hồ sơ có thể hiện HAI lần trên một trang (khối
+    «Mở hồ sơ» và khối việc vừa chạy xong), trùng khoá là Streamlit ném lỗi.
+    """
+    thong_bao = st.session_state.pop(f"da_ghi_sua_{fb_id}", None)
+    if thong_bao:
+        st.success(thong_bao)
+    try:
+        d = kh.finding_ho_so(ho_so_id, fb_id)
+    except LoiAPI as e:
+        st.warning(f"Không đọc được lỗi #{fb_id}: {e}")
+        return
+    st.markdown(f"#### {d.get('rule_ref') or '—'} · {d.get('scope_goc') or 'toàn hệ thống'}")
+    st.markdown(d.get("noi_dung") or "")
+    st.caption(f"Mức độ: {d.get('muc_do')} · Vị trí công cụ ghi: "
+               f"{d.get('vi_tri') or 'không có'} · Bản đang xem: lần "
+               f"{(d.get('lan_moi_nhat') or {}).get('so_thu_tu', '?')} "
+               f"«{(d.get('lan_moi_nhat') or {}).get('ten_file', '')}»")
+
+    cho = d.get("cho_sua") or {}
+    # Gợi ý theo tên phân hệ / không tìm được → cảnh báo, để không bị đọc như vị trí.
+    (st.info if cho.get("cach_tim") in CACH_TIM_CHINH_XAC else st.warning)(
+        cho.get("ghi_chu") or "")
+    for doan in cho.get("doan") or []:
+        st.caption(f"{doan.get('location')} · {doan.get('kind')}"
+                   + (" · đã cắt bớt" if doan.get("cat_bot") else ""))
+        if doan.get("rows"):
+            st.dataframe(doan["rows"], hide_index=True, use_container_width=True)
+        else:
+            st.text(doan.get("text") or "")
+    if cho.get("con_nua"):
+        st.caption(f"… còn {cho['con_nua']} đoạn nữa trong phạm vi này.")
+
+    ls = bang_lan_sua(d)
+    if ls:
+        st.markdown("**Đã ghi nhận sửa**")
+        st.dataframe(ls, hide_index=True, use_container_width=True)
+    st.caption("Công cụ **KHÔNG sửa file Word**. Sửa trong Word, ghi nhận ở đây, rồi "
+               "nộp lại để thẩm định lại hồ sơ.")
+
+    if d.get("ho_so_trang_thai") != "dang_sua":
+        st.info("Hồ sơ đã gửi duyệt — không ghi nhận sửa được nữa.")
+        return
+    if st.session_state.get("danh_tinh") is None:
+        st.warning("Nhập tên ở thanh bên để ghi nhận lần sửa — cần biết ai đã sửa.")
+        return
+    with st.form(key=f"{vung}_form_sua_{ho_so_id}_{fb_id}", clear_on_submit=True):
+        nd = st.text_area("Bạn đã sửa gì trong tài liệu", max_chars=10_000,
+                          placeholder="vd: Bổ sung số đo tải đỉnh 7 ngày cho Kafka; "
+                                      "đổi 12 → 16 core")
+        if st.form_submit_button("Ghi nhận lần sửa"):
+            if not nd.strip():
+                st.error("Chưa nhập nội dung đã sửa.")
+                return
+            try:
+                r = kh.ghi_lan_sua(ho_so_id, fb_id, nd, noi_dung_goc_tu_cho_sua(cho))
+            except LoiAPI as e:
+                st.error(f"Không ghi nhận được: {e}")
+                return
+            st.session_state[f"da_ghi_sua_{fb_id}"] = f"Đã ghi nhận lần sửa {r['so_lan']}."
+            st.rerun()
+
+
+def mo_ho_so_da_co():
+    """5.2 — lối vào hồ sơ KHÔNG cần mã việc: người dùng quay lại sửa sau vài ngày."""
+    if not csdl_san_sang(st.session_state.get("_health_tho")):
+        return
+    kh = _khach()
+    with st.expander("🗂 Mở hồ sơ đã có — xem lỗi, chỗ cần sửa, ghi nhận sửa",
+                     expanded=False):
+        try:
+            ds = kh.ds_ho_so()
+        except LoiAPI as e:
+            st.warning(f"Không lấy được danh sách hồ sơ: {e}")
+            return
+        if not ds:
+            st.caption("Chưa có hồ sơ nào. Nộp một bản sizing ở dưới để tạo hồ sơ.")
+            return
+        h = st.selectbox("Hồ sơ", ds, format_func=nhan_ho_so, key="mo_ho_so")
+        hien_ho_so(kh, int(h["id"]), vung="mo")
+
+
+def hien_ho_so(kh: KhachAPI, ho_so_id: int, vung: str = "viec"):
     """5.1 — baseline CỐ ĐỊNH từ lần đầu + trạng thái lần mới nhất + rổ phát sinh."""
     try:
         d = kh.ho_so(ho_so_id)
@@ -318,7 +406,15 @@ def hien_ho_so(kh: KhachAPI, ho_so_id: int):
         "nguyên. «Đạt» nghĩa là lỗi không còn xuất hiện ở lần này — đo được khoảng "
         "1,4% lỗi tự biến mất giữa hai lần chạy dù không ai sửa, nên kiểm lại các "
         "dòng «Đạt» mà bạn chưa động tới.")
-    st.dataframe(bang_baseline(d), use_container_width=True, hide_index=True)
+    st.caption("👉 **Chọn một dòng** để xem chỗ cần sửa trong tài liệu và ghi nhận đã "
+               "sửa gì.")
+    ev = st.dataframe(bang_baseline(d), use_container_width=True, hide_index=True,
+                      on_select="rerun", selection_mode="single-row",
+                      key=f"{vung}_bang_ho_so_{ho_so_id}")
+    chon = list(getattr(getattr(ev, "selection", None), "rows", []) or [])
+    if chon and chon[0] < len(d.get("baseline") or []):
+        with st.container(border=True):
+            hien_sua_finding(kh, ho_so_id, d["baseline"][chon[0]]["id"], vung)
 
     # Rổ phát sinh LUÔN hiện, kể cả khi rỗng — im lặng thì người dùng không phân
     # biệt «không có lỗi mới» với «công cụ không kiểm lỗi mới».
@@ -442,6 +538,7 @@ def hien_tham_dinh(doc, duong_dan, ten, noi_dung: bytes):
 def main():
     tt = thanh_ben()
     st.title("Tự kiểm bản định cỡ")
+    mo_ho_so_da_co()
 
     f = st.file_uploader("Chọn bản sizing (.docx)", type=["docx"])
     if f is None:

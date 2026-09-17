@@ -6,6 +6,8 @@ Giao diện và API không viết SQL. Khi ghép vào tool sizing, chỉ lớp n
 - 5.0 — mở kết nối, khởi tạo lược đồ, đường đi hồ sơ → lần → baseline.
 - 5.1 — `ghi_lan_tham_dinh`: lần đầu đóng băng baseline, lần sau đối chiếu và ghi
   rổ phát sinh; `ds_ho_so`, `doc_ho_so` để API/giao diện đọc lại.
+- 5.2 — `doc_finding` (một dòng baseline + lịch sử sửa + lần nộp mới nhất),
+  `them_lan_sua` (người dùng ghi nhận đã sửa gì).
 """
 from __future__ import annotations
 
@@ -27,6 +29,17 @@ class LoiCSDL(RuntimeError):
 
 class KhongThamDinhLaiDuoc(LoiCSDL):
     """Hồ sơ không tồn tại, hoặc đã gửi duyệt/đã có quyết định."""
+
+
+class KhongCoFinding(LoiCSDL):
+    """Dòng baseline không có, hoặc không thuộc hồ sơ đang nói tới."""
+
+
+class HoSoKhongDangSua(LoiCSDL):
+    """Hồ sơ đã gửi duyệt / đã có quyết định — không ghi nhận sửa được nữa."""
+
+
+TOI_DA_NOI_DUNG_SUA = 10_000
 
 
 def _bat_khoa_ngoai_sqlite(engine: Engine) -> None:
@@ -223,6 +236,13 @@ class KhoCSDL:
 
             baseline = [_dict(r) for r in c.execute(
                 select(fb).where(fb.c.ho_so_id == ho_so_id).order_by(fb.c.id))]
+            so_sua = dict(c.execute(
+                select(ld.lan_sua.c.finding_baseline_id, func.count())
+                .join(fb, fb.c.id == ld.lan_sua.c.finding_baseline_id)
+                .where(fb.c.ho_so_id == ho_so_id)
+                .group_by(ld.lan_sua.c.finding_baseline_id)).all())
+            for b in baseline:
+                b["so_lan_sua"] = so_sua.get(b["id"], 0)
             moi_nhat = cac_lan[-1]["id"] if cac_lan else None
             if moi_nhat is not None:
                 theo_b = {r.finding_baseline_id: r for r in c.execute(
@@ -237,6 +257,67 @@ class KhoCSDL:
                 select(ps).where(ps.c.lan_tham_dinh_id == moi_nhat).order_by(ps.c.id))]
         return {"ho_so": _dict(h), "so_loi_baseline": len(baseline),
                 "cac_lan": cac_lan, "baseline": baseline, "phat_sinh": phat_sinh}
+
+    # ------------------------------------------------------------------ 5.2 --
+    def doc_finding(self, ho_so_id: int, fb_id: int) -> dict | None:
+        """Một dòng baseline + trạng thái lần mới nhất + lịch sử sửa + lần nộp mới
+        nhất (để mở đúng bản tài liệu). None nếu dòng không thuộc hồ sơ."""
+        fb, lan, kq, ls = (ld.finding_baseline, ld.lan_tham_dinh, ld.ket_qua_lan,
+                           ld.lan_sua)
+        with self.engine.connect() as c:
+            r = c.execute(select(fb).where(fb.c.id == fb_id,
+                                           fb.c.ho_so_id == ho_so_id)).first()
+            if r is None:
+                return None
+            d = _dict(r)
+            moi = c.execute(select(lan).where(lan.c.ho_so_id == ho_so_id)
+                            .order_by(lan.c.so_thu_tu.desc()).limit(1)).first()
+            d["lan_moi_nhat"] = _dict(moi) if moi else None
+            k = None if moi is None else c.execute(select(kq).where(
+                kq.c.lan_tham_dinh_id == moi.id, kq.c.finding_baseline_id == fb_id)).first()
+            d["trang_thai"] = k.trang_thai if k else None
+            d["ket_luan_boi"] = k.ket_luan_boi if k else None
+            d["muc_do_lan"] = k.muc_do_lan if k else None
+            d["computed_evidence_lan"] = k.computed_evidence if k else ""
+            d["lan_sua"] = [_dict(x) for x in c.execute(
+                select(ls).where(ls.c.finding_baseline_id == fb_id)
+                .order_by(ls.c.so_lan))]
+            d["ho_so_trang_thai"] = c.execute(select(ld.ho_so.c.trang_thai).where(
+                ld.ho_so.c.id == ho_so_id)).scalar()
+        return d
+
+    def them_lan_sua(self, ho_so_id: int, fb_id: int, *, danh_tinh: DanhTinh,
+                     noi_dung_sua: str, noi_dung_goc: str = "") -> dict:
+        """Ghi nhận MỘT lần sửa. `so_lan` tăng theo từng dòng baseline.
+
+        Kiểm trong CÙNG giao dịch với INSERT: tách ra thì giữa lúc kiểm và lúc ghi,
+        hồ sơ có thể đã được gửi duyệt.
+        """
+        noi_dung_sua = (noi_dung_sua or "").strip()
+        if not noi_dung_sua:
+            raise ValueError("Chưa nhập nội dung đã sửa.")
+        if len(noi_dung_sua) > TOI_DA_NOI_DUNG_SUA:
+            raise ValueError(f"Nội dung sửa dài {len(noi_dung_sua)} ký tự, tối đa "
+                             f"{TOI_DA_NOI_DUNG_SUA}.")
+        fb, ls = ld.finding_baseline, ld.lan_sua
+        with self.engine.begin() as c:
+            tt = c.execute(select(ld.ho_so.c.trang_thai).where(
+                ld.ho_so.c.id == ho_so_id)).scalar()
+            if tt is None:
+                raise KhongCoFinding(f"Không có hồ sơ #{ho_so_id}.")
+            if c.execute(select(fb.c.id).where(fb.c.id == fb_id,
+                                               fb.c.ho_so_id == ho_so_id)).first() is None:
+                raise KhongCoFinding(f"Lỗi #{fb_id} không thuộc hồ sơ #{ho_so_id}.")
+            if tt != "dang_sua":
+                raise HoSoKhongDangSua(f"Hồ sơ #{ho_so_id} đang «{tt}» — không ghi nhận "
+                                       "sửa được nữa.")
+            so = (c.execute(select(func.max(ls.c.so_lan)).where(
+                ls.c.finding_baseline_id == fb_id)).scalar() or 0) + 1
+            i = c.execute(insert(ls).values(
+                finding_baseline_id=fb_id, so_lan=so, noi_dung_goc=noi_dung_goc or "",
+                noi_dung_sua=noi_dung_sua, vai=danh_tinh.vai,
+                ten=danh_tinh.ten)).inserted_primary_key[0]
+        return {"id": i, "so_lan": so}
 
     def dat_trang_thai_ho_so(self, ho_so_id: int, trang_thai: str) -> None:
         """Dùng ở 5.5/5.8; ở 5.1 chỉ để test chặn thẩm định lại hồ sơ đã gửi duyệt."""

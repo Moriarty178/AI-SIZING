@@ -182,6 +182,17 @@ class KhachAPI:
     def ho_so(self, ho_so_id: int) -> dict:
         return self._goi(f"/ho-so/{int(ho_so_id)}")
 
+    def finding_ho_so(self, ho_so_id: int, fb_id: int) -> dict:
+        return self._goi(f"/ho-so/{int(ho_so_id)}/finding/{int(fb_id)}")
+
+    def ghi_lan_sua(self, ho_so_id: int, fb_id: int, noi_dung_sua: str,
+                    noi_dung_goc: str = "") -> dict:
+        than = json.dumps({"noi_dung_sua": noi_dung_sua, "noi_dung_goc": noi_dung_goc},
+                          ensure_ascii=False).encode("utf-8")
+        return self._goi(f"/ho-so/{int(ho_so_id)}/finding/{int(fb_id)}/lan-sua",
+                         method="POST", du_lieu=than,
+                         kieu="application/json; charset=utf-8")
+
     def viec(self, ma: str) -> dict:
         return self._goi(f"/result/{ma}")
 

@@ -1,4 +1,5 @@
 """Test 3.2 — hàng đợi công việc. OFFLINE, KHÔNG cần model (pipeline được tiêm)."""
+import pathlib
 import threading
 import time
 
@@ -323,3 +324,42 @@ class TestPhanHoi:
 
     def test_chua_co_nhat_ky_thi_doc_tra_None(self, kho):
         assert kho.doc_nhat_ky() is None
+
+
+# --- 5.2: tài liệu nộp được lưu BỀN trong kho việc --------------------------------
+def test_tai_lieu_luu_trong_kho_giu_TEN_GOC(tmp_path):
+    """Tên gốc mang mã PYC/tên hệ thống và hiện lại trong báo cáo; đổi thành
+    `{ma}.docx` còn làm căn cứ NT4-C1 đổi ở mỗi lượt."""
+    from src.cong_viec import KhoCongViec
+    kho = KhoCongViec(tmp_path / "cv")
+    cv = kho.them("Sizing VTracking 2.0.1.docx", "", noi_dung=b"PK\x03\x04abc")
+    p = pathlib.Path(cv.duong_dan)
+    assert p.name == "Sizing VTracking 2.0.1.docx"
+    assert p.read_bytes() == b"PK\x03\x04abc"
+    assert (tmp_path / "cv") in p.parents, "phải nằm trong kho việc (volume)"
+
+
+def test_hai_lan_nop_cung_ten_KHONG_de_nhau(tmp_path):
+    """Nộp lại cùng tên tệp sau khi sửa là ca THƯỜNG của 5.1/5.2."""
+    from src.cong_viec import KhoCongViec
+    kho = KhoCongViec(tmp_path / "cv")
+    a = kho.them("a.docx", "", noi_dung=b"ban-1")
+    b = kho.them("a.docx", "", noi_dung=b"ban-2")
+    assert pathlib.Path(a.duong_dan).read_bytes() == b"ban-1"
+    assert pathlib.Path(b.duong_dan).read_bytes() == b"ban-2"
+
+
+def test_xoa_viec_xoa_ca_tai_lieu_va_thu_muc(tmp_path):
+    from src.cong_viec import KhoCongViec
+    kho = KhoCongViec(tmp_path / "cv")
+    cv = kho.them("a.docx", "", noi_dung=b"x")
+    p = pathlib.Path(cv.duong_dan)
+    assert kho.xoa(cv.ma)
+    assert not p.exists() and not p.parent.exists()
+
+
+def test_ten_tep_co_duong_dan_KHONG_thoat_ra_ngoai_kho(tmp_path):
+    from src.cong_viec import KhoCongViec
+    kho = KhoCongViec(tmp_path / "cv")
+    cv = kho.them("../../ngoai.docx", "", noi_dung=b"x")
+    assert (tmp_path / "cv") in pathlib.Path(cv.duong_dan).parents

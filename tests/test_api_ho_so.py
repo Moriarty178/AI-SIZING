@@ -60,8 +60,6 @@ def client(tmp_path, monkeypatch):
                        f"sqlite+pysqlite:///{(tmp_path / 'csdl.sqlite').as_posix()}")
     main.kho = KhoCongViec(tmp_path / "cv")
     main.bo_chay = BoChay(main.kho, ham_chay=_chay, sau_khi_xong=main._ghi_ho_so)
-    monkeypatch.setattr(main, "luu_tam", lambda nd, ten, thu_muc=None:
-                        _ghi(tmp_path / "tl" / pathlib.Path(ten).name, nd))
     with TestClient(main.app) as c:
         yield c
     main.kho_csdl = None
@@ -160,8 +158,6 @@ def test_KHONG_cau_hinh_csdl_thi_ho_so_409_va_viec_KHONG_mang_ghi_chu(tmp_path,
     main.kho = KhoCongViec(tmp_path / "cv")
     main.bo_chay = BoChay(main.kho, ham_chay=lambda *a, **k: _KQ(LUOT[0]),
                           sau_khi_xong=main._ghi_ho_so)
-    monkeypatch.setattr(main, "luu_tam", lambda nd, ten, thu_muc=None:
-                        _ghi(tmp_path / "tl" / ten, nd))
     with TestClient(main.app) as c:
         assert c.get("/ho-so").status_code == 409
         v = _xong(c, _nop(c, NGUOI).json()["ma"])

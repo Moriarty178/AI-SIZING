@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 4 / 14 | 🟡 5.0b · 5.0 · 5.0a · **5.1 NGHIỆM THU ĐẠT 09-17** (PostgreSQL thật, 719 dòng baseline). Tiếp: 5.2 |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 4 / 14 | 🟡 5.0b · 5.0 · 5.0a · 5.1 XONG. **5.2 code xong 09-17, CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_2.py`) |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. Mục kế tiếp: **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa).
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) code xong, **chờ nghiệm thu trên máy nội bộ**.
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1408,13 +1408,51 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       đã đổi là việc của 5.3.
 
 
-- [ ] 5.2 — **Hiển thị chỗ cần sửa + ghi nhận giá trị sửa.** Từ finding
+- [~] 5.2 — **Hiển thị chỗ cần sửa + ghi nhận giá trị sửa.** Từ finding
       (`location` + `rule_ref` + `computed_evidence`) → hiện đúng đoạn/bảng trong
       bản sizing đang nói tới → người dùng nhập nội dung đã sửa → lưu vào
       `lan_sua`. **KHÔNG ghi ngược vào `.docx`** (hoãn, xem đầu GĐ 5). Đây là thứ
       nuôi cột "Lần sửa 1…n" của 5.6.
       → Endpoint: `GET /result/{ma}/noi-dung/{finding_id}` (nội dung gốc tại chỗ
       lỗi) + `POST /result/{ma}/lan-sua` (ghi nhận nội dung mới).
+      → 🟡 **CODE XONG 2026-09-17 — CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_2.py`).
+      - `src/luu_tru/cho_sua.py` (thuần Python): từ `location` của lỗi tìm phần tử
+        trong tài liệu — `phần tử #N` ra đúng một phần tử; `Mục X[, trang Y]` ra NHÓM
+        phần tử của phạm vi đó, đoạn nhắc tên phân hệ xếp trước; không định vị được
+        thì lùi về «các đoạn nhắc tới phân hệ» và NÓI RÕ đó là gợi ý (NT4); không có
+        cả tên thì nói không tìm được. Tối đa 5 đoạn, bảng 25 dòng, có đánh dấu cắt.
+      - `kho.doc_finding`, `kho.them_lan_sua` (kiểm hồ sơ + dòng thuộc hồ sơ + đang
+        sửa, cùng giao dịch với INSERT), `doc_ho_so` thêm `so_lan_sua` từng dòng.
+      - API: `GET /ho-so/{id}/finding/{fb}` (dòng + trạng thái mới nhất + lịch sử sửa
+        + chỗ trong bản nộp MỚI NHẤT) và `POST /ho-so/{id}/finding/{fb}/lan-sua` —
+        **thao tác ghi đầu tiên đòi danh tính** (thiếu → 400, 5.0a); dòng không thuộc
+        hồ sơ → 404; hồ sơ đã gửi duyệt → 409; nội dung rỗng/quá 10 000 ký tự → 422.
+        Khác đường dẫn phác trong PLAN (`/result/{ma}/…`): lỗi thuộc HỒ SƠ, không
+        thuộc một lượt chạy — cùng một dòng baseline sống qua nhiều mã việc.
+      - Giao diện: khối «🗂 Mở hồ sơ đã có» ở đầu trang (quay lại sửa sau vài ngày
+        KHÔNG cần mã việc); bảng baseline chọn được dòng → khung chi tiết: nội dung
+        lỗi, chỗ trong tài liệu, lịch sử sửa, ô «Bạn đã sửa gì» + «Ghi nhận lần sửa».
+        Luôn ghi rõ «Công cụ KHÔNG sửa file Word».
+      - 41 test mới, trong đó 8 test API đi trọn đường với FILE WORD THẬT dựng bằng
+        python-docx. Tổng 859.
+      → **Chú ý:**
+      (1) **QUYẾT ĐỊNH GIỮ TÀI LIỆU:** bản `.docx` nộp lên nay lưu BỀN ở
+      `.cache/cong_viec/tai_lieu/{mã việc}/{tên gốc}` trong volume (trước ở `/tmp`,
+      mất khi dựng lại container). 5.2 cần mở lại nhiều ngày sau; 5.3 sẽ cần so hai
+      bản. Xoá việc (`DELETE /result/{ma}`) vẫn xoá sạch. Đây đổi mặc định lưu giữ hồ
+      sơ khách trên máy chủ — cần người vận hành đồng ý.
+      (2) Các lần nộp TRƯỚC bản này không có tài liệu bền → dòng của chúng báo «tài
+      liệu không còn trên máy chủ». Nghiệm thu phải thẩm định lại hồ sơ một lần sau
+      khi dựng image mới.
+      (3) `location` chỉ khoanh được MỘT NHÓM phần tử, không phải một câu — finding
+      không mang câu trích. Tỉ lệ định vị được trên tài liệu thật CHƯA đo được trên
+      laptop (file eval không lưu vị trí): nghiệm thu đo ở Đ1.
+      (4) Chỗ sửa lấy từ bản nộp MỚI NHẤT, không phải bản baseline — vị trí ghi lúc
+      baseline có thể không còn khớp bản đã sửa; khi đó lùi về gợi ý theo tên phân
+      hệ và nói rõ.
+      (5) `noi_dung_goc` của lần sửa chỉ ghi khi công cụ ĐỊNH VỊ được; đoạn gợi ý theo
+      tên phân hệ KHÔNG ghi vào — để bảng Admin 5.6 không hiểu nhầm đó là chỗ lỗi.
+      (6) Mỗi lượt hỏi đọc lại tài liệu, đệm 4 bản gần nhất theo (đường dẫn, mtime).
 
 - [ ] 5.3 — **Tái thẩm định: C3 chọn lọc, C4 TOÀN BỘ.** Nút "Thẩm định lại"
       trích xuất lại **chỉ phần tài liệu đã đổi** (chỗ tốn tiền: C3+C5 ~270 lượt
@@ -1737,3 +1775,5 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **Rổ phát sinh ghi theo TỪNG lần, không kế thừa giữa các lần** | Lỗi phát sinh ở lần 2 mà lần 3 hết thì đã hết thật; kế thừa sẽ để nó đọng lại trên giao diện |
 | 2026-09-17 | **Nghiệm thu 5.1 với đệm BẬT cho lần 2** | Lần 2 phát lại đúng đầu vào của lần 1 ⇒ phải ra 0 dòng «đạt» và 0 dòng phát sinh, CHÍNH XÁC — mọi lệch là lỗi code, tách bạch khỏi nhiễu model. Đo nhiễu thật (~1,4%/phía theo 5.0b) là tuỳ chọn, tắt đệm, thêm ~22 phút |
 | 2026-09-17 | **CSDL được thử mở lại NỀN mỗi 30 giây, thay vì kiểm một lần lúc khởi động** | Nghiệm thu 5.1 lộ ra: CSDL hỏng lúc khởi động là tính năng hồ sơ tắt tới lần khởi động lại, không ai biết. Ca chắc chắn xảy ra: máy khởi động lại, `copilot` lên trước `copilot-db` (cố ý không phụ thuộc). `/health` vẫn KHÔNG tự kết nối — lý do cũ vẫn đúng |
+| 2026-09-17 | **Giữ bền bản `.docx` đã nộp trong volume** (`tai_lieu/{mã việc}/{tên gốc}`), thay cho `/tmp` của container | 5.2 phải mở lại tài liệu nhiều ngày sau để hiện chỗ cần sửa; 5.3 sẽ cần so hai bản. Đổi mặc định lưu giữ hồ sơ khách — `DELETE /result` vẫn xoá sạch. **Cần người vận hành xác nhận** |
+| 2026-09-17 | **API sửa lỗi theo HỒ SƠ (`/ho-so/{id}/finding/{fb}`), không theo mã việc như phác thảo** | Một dòng baseline sống qua nhiều lượt chạy (nhiều mã việc); gắn vào một mã việc thì lịch sử sửa rời ra từng lượt |
