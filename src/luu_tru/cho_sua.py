@@ -32,8 +32,11 @@ CHỈ hiện hàng tiêu đề + các dòng nhắc tên. Vẫn ghi rõ đây là
 
 ## Công cụ KHÔNG sửa file Word
 
-Hoãn khỏi Giai đoạn 5 (chốt 2026-09-15). Chỗ hiện ra ở đây để người dùng biết mở
-Word ra sửa ở đâu; sửa xong thì nộp lại để thẩm định lại.
+Code không bao giờ ghi ngược vào `.docx`. Hôm nay chỗ hiện ra ở đây để người dùng
+biết mở Word ra sửa ở đâu, sửa xong thì nộp lại. Hướng đã chốt 2026-09-17 (5.2b):
+NGƯỜI DÙNG sửa trong trình soạn thảo nhúng trên web, Save thành phiên bản mới — chỗ
+tìm được ở đây là đích để editor nhảy tới, nên độ chính xác của nó (5.3a) là trần
+của tính năng đó.
 """
 from __future__ import annotations
 

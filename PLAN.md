@@ -14,7 +14,7 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 5 / 14 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · **5.2 NGHIỆM THU ĐẠT 09-17** (định vị mục+trang 77,9%, đúng phần tử 0%). Tiếp: 5.3 |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 5 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · **5.2 NGHIỆM THU ĐẠT 09-17** (định vị mục+trang 77,9%, đúng phần tử 0%). Tiếp: 5.3 |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
@@ -1432,7 +1432,8 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       Tức là KHÔNG dòng nào chỉ thẳng được một đoạn/bảng; tốt nhất là khoanh một
       mục trên một trang, và 22% dòng không khoanh được. Đòn bẩy thật nằm ở PHÍA
       TRÍCH XUẤT: để C3/C5 ghi lại chỉ số phần tử hoặc câu trích làm căn cứ, thay vì
-      chỉ chuỗi `location`. Chưa làm — ghi lại làm việc cần cân nhắc sau GĐ 5.
+      chỉ chuỗi `location`. Chưa làm — nay thành mục **5.3a** (điều kiện để trình
+      soạn thảo 5.2b nhảy đúng chỗ).
       → **Vá theo ảnh chụp nghiệm thu (chưa xem lại trên máy nội bộ):**
       (a) Trong một mục, hiện theo THỨ TỰ TÀI LIỆU, trần 5 → 12 phần tử: xếp đoạn nhắc
       tên lên trước làm năm ô bị nhãn ngắn («Mức tiêu thụ CPU của FrontEnd») chiếm
@@ -1483,6 +1484,28 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       tên phân hệ KHÔNG ghi vào — để bảng Admin 5.6 không hiểu nhầm đó là chỗ lỗi.
       (6) Mỗi lượt hỏi đọc lại tài liệu, đệm 4 bản gần nhất theo (đường dẫn, mtime).
 
+- [ ] 5.2b — **Spike: sửa Word ngay trên web** (chưa code sản phẩm, KHÔNG chặn 5.3).
+      Luồng mong muốn: mở `.docx` trên frontend → bấm dòng lỗi thì nhảy tới chỗ đó
+      trong tài liệu đang mở → Save thì backend lưu thành PHIÊN BẢN MỚI → thẩm định lại
+      (5.3). Người dùng tự sửa, công cụ KHÔNG tự áp dụng gợi ý — vẫn là cố vấn.
+      → Hai ứng viên, đo trên CHÍNH file VTracking 2.0.1, không chọn trước khi đo:
+      - **ONLYOFFICE Docs Community** (container riêng, AGPLv3): Save qua `callbackUrl`.
+        ⚠️ Automation API/Connector (điều khiển editor từ trang ngoài, tức là "nhảy tới")
+        CHỈ có ở bản Developer và tính thêm tiền — bản Community phải tự viết plugin.
+        Nặng (vài GB RAM), cần nạp font, JWT, document server phải gọi được backend.
+      - **docx-editor** (`@docx-editor.dev`, Apache 2.0 trừ gói `pro`/`editor-api`):
+        thư viện React/Vue chạy trong frontend, gọi thẳng API. Dự án mới (repo gốc
+        khởi tạo lại lịch sử 2026-07-20) — độ trung thành với Word phải đo.
+      → Tiêu chí: (a) mở rồi lưu KHÔNG sửa gì → C1 trên hai bản ra cùng số phần tử,
+      bảng, mục và cùng con số trong bảng; (b) nhảy được tới tiêu đề mục VÀ tới một
+      chuỗi trong ô bảng, trên bản miễn phí; (c) font tiếng Việt hiển thị đúng khi
+      không có mạng ngoài; (d) RAM/CPU cần dùng. Ra một bảng so sánh để chốt.
+      → ⚠️ **Nhảy đúng chỗ bị giới hạn bởi ĐỊNH VỊ, không bởi editor:** Đ1 của 5.2 —
+      0% tới đúng một phần tử, 77,9% chỉ mục + trang. Chưa có 5.3a thì editor chỉ nhảy
+      tới TIÊU ĐỀ MỤC; số trang của C1 là ước lượng, không khớp cách editor chia trang.
+      → Streamlit chỉ nhúng iframe được; bấm dòng → nhảy cần custom component, nên
+      bản dùng thật hợp với frontend đầy đủ hơn là Streamlit.
+
 - [ ] 5.3 — **Tái thẩm định: C3 chọn lọc, C4 TOÀN BỘ.** Nút "Thẩm định lại"
       trích xuất lại **chỉ phần tài liệu đã đổi** (chỗ tốn tiền: C3+C5 ~270 lượt
       gọi, ~22 phút), nhưng **chạy lại toàn bộ C4** trên tập trường đã hợp nhất —
@@ -1496,6 +1519,17 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       lại sẽ có khoảng **10 dòng báo "đã sửa" mà thực ra chưa ai động vào**. Nếu
       Admin phản ánh loại dòng này, phương án đã đo sẵn là: chỉ tính "đã sửa" khi
       có bản ghi sửa ở 5.2, còn lại xếp "Biến mất, chưa rõ lý do".
+      → **Đầu vào là PHIÊN BẢN tài liệu** (lưu bền `tai_lieu/{mã việc}/…`), không gắn
+      với cách nó tới: upload hôm nay, nút Save của trình soạn thảo (5.2b) sau này.
+      So khác biệt hai phiên bản vừa chọn phần cho C3, vừa cho ra "đã sửa gì" — khi có
+      editor thì không cần gõ tay `lan_sua` nữa.
+
+- [ ] 5.3a — **Neo lỗi vào phần tử / câu trích dẫn.** C3/C5 ghi thêm chỉ số phần tử
+      (hoặc câu trích nguyên văn) làm căn cứ, bên cạnh chuỗi `location`; code KIỂM câu
+      trích có thật trong phần tử đó, không có thì bỏ neo (NT2 — không tin model tự
+      báo vị trí). Mục tiêu đo lại Đ1: tỉ lệ «đúng một phần tử» từ 0% lên. Là điều kiện
+      để 5.2b nhảy đúng bảng/đoạn thay vì tiêu đề mục. Tốn thêm lượt model → đo lại
+      thời gian và độ ổn định (5.0b) sau khi đổi.
 
 - [ ] 5.4 — **Nút "Báo lỗi hệ thống".** Người dùng thấy một lỗi bị ping lại dù đã
       sửa nhiều lần, hoặc thấy báo không hợp lý → chọn finding + điền lý do → đẩy
@@ -1568,7 +1602,8 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2 | **5.0b — phép đo** (chạy trên máy nội bộ) | 1 lượt 16 phút + 1–2 giờ phân tích |
 | 3 | 5.1 — baseline + khoá ổn định + rổ phát sinh | 0,5 ngày |
 | 4 | 5.2 — hiện chỗ sửa + ghi nhận | 1 ngày |
-| 5 | 5.3 — tái thẩm định | 1–1,5 ngày |
+| 5 | 5.3 — tái thẩm định (đầu vào theo phiên bản) · 5.2b spike song song | 1–1,5 ngày · spike 1 ngày |
+| 5b | 5.3a — neo phần tử / câu trích | cần đo, đụng C3/C5 |
 | 6 | 5.6 + 5.9 — bảng Admin, 3 cột, đề xuất rules | 1,5 ngày |
 | 7 | 5.4 · 5.10 · 5.11 | 1 ngày |
 | 8 | 5.5 + 5.8 | 0,5 ngày |
@@ -1789,7 +1824,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-15 | **Cột Trạng thái của bảng Admin có BA giá trị** (Đạt / Chưa đạt / Chưa kiểm được) kèm nhãn engine nào kết luận, không phải hai | NT4. Chỉ 1,4% nhóm đòi tính là code tính lại được; ~95% dòng báo cáo là "chưa đọc được chỗ này" — không có gì để kết luận "đã fix chưa". Cột nhị phân sẽ báo "đã sửa xong" cho thứ chưa ai động vào |
 | 2026-09-15 | **Admin sửa quy tắc qua ĐỀ XUẤT + kiểm tự động, không ghi thẳng đè `rules.yaml`** | Một lần sửa sai âm thầm đổi mọi lượt thẩm định về sau cho tất cả mọi người, không đường lùi khi quy tắc sai đã chạy vài chục hồ sơ. Kiểm gồm: schema hợp lệ + 77 công thức còn parse + eval set không tụt |
 | 2026-09-15 | **Lỗi phát sinh sau khi sửa vào rổ riêng, luôn hiện, không cộng vào tổng baseline**; tái thẩm định chạy lại TOÀN BỘ C4 | "Số lỗi giữ nguyên" là yêu cầu hiển thị, không phải yêu cầu sự thật. Sửa RAM 32→320 có thể làm vỡ quy tắc nhất quán ở mục khác; C4 là Python thuần gần như miễn phí, bỏ qua nó là bỏ qua đúng thứ bắt được cú sửa hỏng (NT4) |
-| 2026-09-15 | **Hoãn ghi ngược nội dung sửa vào `.docx` khỏi GĐ 5** — công cụ chỉ ghi nhận đã sửa gì | Mục nặng và rủi ro nhất (bảng, ô gộp, công thức viết dạng chữ trong ô), trong khi 5.3 và 5.6 chạy được mà không cần nó. Chưa huỷ, để sang giai đoạn sau |
+| 2026-09-15 | **Hoãn ghi ngược nội dung sửa vào `.docx` khỏi GĐ 5** — công cụ chỉ ghi nhận đã sửa gì | Mục nặng và rủi ro nhất (bảng, ô gộp, công thức viết dạng chữ trong ô), trong khi 5.3 và 5.6 chạy được mà không cần nó. Chưa huỷ, để sang giai đoạn sau. **Thay bằng dòng 2026-09-17 «sửa Word ngay trên web»** |
 | 2026-09-15 | **Cột actor (vai + tên) có trong lược đồ ngay từ đầu**, demo dùng ô chọn vai + ô nhập tên, ghi rõ là danh tính không xác thực | Streamlit không có đăng nhập. Không có cột actor thì dòng DB không có người, sau này không backfill được và nhật ký ghi chú Admin mất giá trị truy vết |
 | 2026-09-16 | **Khoá baseline 5.1 = mã quy tắc + tên phân hệ bỏ phần trong ngoặc**, có chặn gộp nhầm | 5.0b: khoá gốc khớp 91,6%, chuẩn hoá khớp 98,6%; 50 dòng mất khớp chỉ vì C3 viết lại `Master (K8s Master node)` thành `Master (K8s Control plane)`. Chặn gộp: hai tên gốc khác nhau rút về cùng khoá trong một lượt (Primary/Replica, DC/DR) thì giữ tên gốc |
 | 2026-09-16 | **"Đã sửa" ở 5.3 = finding baseline biến mất ở lần thẩm định lại**, không đòi kèm bản ghi sửa | Người dùng chốt, chọn đơn giản. Giá đã đo và chấp nhận: ~1,4% finding tự biến mất khi không ai sửa ⇒ ~10 dòng "đã sửa" sai mỗi lần trên tài liệu ~700 finding. Phương án dự phòng đã ghi ở 5.3 |
@@ -1807,3 +1842,4 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **Giữ bền bản `.docx` đã nộp trong volume** (`tai_lieu/{mã việc}/{tên gốc}`), thay cho `/tmp` của container | 5.2 phải mở lại tài liệu nhiều ngày sau để hiện chỗ cần sửa; 5.3 sẽ cần so hai bản. Đổi mặc định lưu giữ hồ sơ khách — `DELETE /result` vẫn xoá sạch. **Cần người vận hành xác nhận** |
 | 2026-09-17 | **API sửa lỗi theo HỒ SƠ (`/ho-so/{id}/finding/{fb}`), không theo mã việc như phác thảo** | Một dòng baseline sống qua nhiều lượt chạy (nhiều mã việc); gắn vào một mã việc thì lịch sử sửa rời ra từng lượt |
 | 2026-09-17 | **Chỗ sửa hiện theo thứ tự tài liệu trong một mục; không định vị được thì tìm MỤC có tiêu đề nhắc phân hệ trước khi gom phần tử rời** | Ảnh chụp nghiệm thu 5.2: xếp theo «nhắc tên» làm nhãn ngắn đẩy bảng số ra ngoài, và đưa hai bảng không liên quan lên trước tiêu đề «Định cỡ module Mongo» |
+| 2026-09-17 | **Sửa Word ngay trên web thay cho quyết định «không đụng .docx»: NGƯỜI DÙNG sửa trong trình soạn thảo nhúng, Save thành phiên bản mới; công cụ KHÔNG tự áp dụng gợi ý. Spike 5.2b đo trước, chưa chọn công cụ** | Sửa tay trong Word rồi upload lại là vòng lặp chậm nhất của GĐ 5. Không ghi ngược bằng code nên né được rủi ro bảng/ô gộp của quyết định 09-15. Chưa chọn vì ONLYOFFICE Community không có Automation API (chỉ bản Developer, tính thêm tiền) còn docx-editor chưa đo độ trung thành; và nhảy đúng chỗ còn phụ thuộc 5.3a (Đ1: 0% đúng phần tử) |
