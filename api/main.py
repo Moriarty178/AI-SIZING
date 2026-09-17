@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import pathlib
 import sys
+import threading
 from typing import Literal
 
 from contextlib import asynccontextmanager
@@ -105,12 +106,49 @@ def _can_csdl():
     return kho_csdl
 
 
-@asynccontextmanager
-async def vong_doi(_app: FastAPI):
+# Thử mở lại CSDL mỗi chừng ấy giây khi đã cấu hình mà chưa mở được.
+CHO_THU_LAI_CSDL = 30.0
+
+
+def _mo_csdl() -> None:
     global kho_csdl, trang_thai_csdl
     kho_csdl, trang_thai_csdl = mo_kho_tu_moi_truong()
+
+
+def _vong_thu_lai_csdl(dung: threading.Event) -> None:
+    """Thử mở lại CSDL NỀN cho tới khi được — `/health` vẫn không tự kết nối.
+
+    Trước bản này CSDL chỉ được kiểm MỘT lần lúc khởi động, và hỏng lúc đó là hỏng
+    tới khi có người khởi động lại Copilot. Hai ca có thật:
+    - máy khởi động lại: `restart: always` đưa `copilot` và `copilot-db` lên CÙNG
+      lúc, `copilot` không phụ thuộc CSDL (cố ý, xem compose) nên hay tới trước khi
+      PostgreSQL nhận kết nối → tính năng hồ sơ tắt im lặng tới lần khởi động sau;
+    - sửa mật khẩu phía CSDL (`ALTER USER`) cho khớp `.env` → phải chờ Copilot tự
+      nhận ra, không bắt người vận hành khởi động lại.
+    Không cứu được ca đổi `.env`: biến môi trường chỉ đọc lúc tạo container.
+    """
+    while not dung.wait(CHO_THU_LAI_CSDL):
+        if kho_csdl is not None or not trang_thai_csdl.cau_hinh:
+            return
+        truoc = trang_thai_csdl.thong_diep
+        _mo_csdl()
+        if kho_csdl is not None:
+            print(f"[csdl] đã mở lại được: {trang_thai_csdl.thong_diep}", flush=True)
+            return
+        if trang_thai_csdl.thong_diep != truoc:     # chỉ in khi lỗi ĐỔI, đỡ rác log
+            print(f"[csdl] vẫn chưa mở được: {trang_thai_csdl.thong_diep}", flush=True)
+
+
+@asynccontextmanager
+async def vong_doi(_app: FastAPI):
+    _mo_csdl()
+    dung = threading.Event()
+    if trang_thai_csdl.cau_hinh and kho_csdl is None:
+        threading.Thread(target=_vong_thu_lai_csdl, args=(dung,),
+                         name="thu-lai-csdl", daemon=True).start()
     bo_chay.bat_dau()
     yield
+    dung.set()
     bo_chay.dung()
 
 

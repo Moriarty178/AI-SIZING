@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 3 / 14 | 🟡 5.0b · 5.0 · 5.0a XONG. **5.1 code xong 09-17, CHỜ NGHIỆM THU máy nội bộ** (`scripts/nghiem_thu_5_1.py`) |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 4 / 14 | 🟡 5.0b · 5.0 · 5.0a · **5.1 NGHIỆM THU ĐẠT 09-17** (PostgreSQL thật, 719 dòng baseline). Tiếp: 5.2 |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) đã code xong, **chờ nghiệm thu trên máy nội bộ** — cũng là lần đầu chạy PostgreSQL thật.
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. Mục kế tiếp: **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa).
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1325,7 +1325,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 
 ### 5B — Tính nhất quán phía người dùng
 
-- [~] 5.1 — **Baseline cố định + rổ lỗi phát sinh.** Lần thẩm định đầu đóng băng
+- [x] 5.1 — **Baseline cố định + rổ lỗi phát sinh.** Lần thẩm định đầu đóng băng
       danh sách + số lỗi; các lần sau KHÔNG thêm bớt vào baseline, chỉ cập nhật
       trạng thái từng dòng. **Lỗi phát sinh sau khi sửa đi vào một khối riêng
       "Phát sinh sau lần sửa N", luôn hiện, KHÔNG cộng vào tổng baseline.**
@@ -1341,8 +1341,30 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       → Hiển thị luôn dùng tên phân hệ GỐC; khoá chuẩn hoá chỉ để nối các lượt.
       → Hậu tố `#N` của `report.py` đo được **0** lần gây mất khớp — không cần vá
       trước 5.1, nhưng khoá mới vẫn phải tất định khi có finding trùng `rule#scope`.
-      → 🟡 **CODE XONG 2026-09-17 trên laptop — CHỜ NGHIỆM THU trên máy nội bộ**
-      (`[~]` = chưa tick hẳn cho tới khi `scripts/nghiem_thu_5_1.py` báo ĐẠT).
+      → ✅ **NGHIỆM THU ĐẠT 2026-09-17 trên máy nội bộ, PostgreSQL thật** — 6/6 tiêu
+      chí (`docs/nghiem-thu-5.1-20260917-102318.md`). Commit `9b42659`.
+
+      | | Lần 1 | Lần 2 |
+      |---|---|---|
+      | Phút | 15,6 | 6,4 |
+      | Đệm ghi thêm | 126 | 17 (phát lại phần lớn) |
+      | Baseline | 719 = 719 finding xuất ra | 719 (giữ nguyên) |
+      | Trạng thái | 54 chưa đạt · 665 chưa kiểm được | 1 đạt · 54 · 664 · 0 phát sinh |
+
+      Dòng «đạt» duy nhất là `EVD-22#File storage` — cũng là dòng tự biến mất giữa
+      hai lượt ở phép đo 5.0b, tức nhiễu model đã biết, không phải lỗi khoá. 17 lời
+      gọi không trúng đệm nên phép kiểm «phát lại chính xác ⇒ 0/0» không áp được
+      trọn; script chấm theo ngưỡng nhiễu 3% và nay ghi rõ «phát lại phần lớn».
+      → **Sau nghiệm thu, `/health` báo CSDL không sẵn sàng** (`password authentication
+      failed`), dù lượt nghiệm thu vừa ghi thành công. Không xác định được thứ tự sự
+      việc từ đầu ra; hai cách đều dẫn tới cùng một cái bẫy của thiết kế 5.0 — CSDL
+      chỉ được kiểm MỘT lần lúc khởi động, hỏng là hỏng tới khi khởi động lại. Vá:
+      (a) API thử mở lại CSDL nền mỗi 30 giây khi đã cấu hình mà chưa mở được —
+      `/health` vẫn không tự kết nối; cứu được ca máy khởi động lại (`copilot` lên
+      trước `copilot-db`) và ca sửa mật khẩu phía CSDL; KHÔNG cứu được ca đổi `.env`
+      (biến môi trường chỉ đọc lúc tạo container). (b) Lỗi mở CSDL kèm gợi ý sửa:
+      sai mật khẩu → «`POSTGRES_PASSWORD` chỉ được đọc ở LẦN ĐẦU tạo volume» + lệnh
+      `ALTER USER`; mật khẩu có ký tự đặc biệt phải mã hoá phần trăm trong URL.
       - `src/luu_tru/baseline.py` (thuần Python): `gan_khoa` — chuẩn hoá tên phân hệ
         + chặn gộp nhầm trong cùng một lần + khoá luôn duy nhất; `doi_chieu` — gán
         trạng thái từng dòng baseline, gom rổ phát sinh; mức độ đóng băng, lần này
@@ -1712,3 +1734,4 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **Không có danh tính thì KHÔNG ghi hồ sơ, nhưng việc VẪN chạy** | Chặn nộp bài sẽ chặn luôn `nop_bai.py` và luồng đang dùng. Ghi mà không có người là thứ 5.0a sinh ra để tránh. Lý do bỏ qua ghi vào `ghi_ho_so` của việc (NT4) |
 | 2026-09-17 | **Rổ phát sinh ghi theo TỪNG lần, không kế thừa giữa các lần** | Lỗi phát sinh ở lần 2 mà lần 3 hết thì đã hết thật; kế thừa sẽ để nó đọng lại trên giao diện |
 | 2026-09-17 | **Nghiệm thu 5.1 với đệm BẬT cho lần 2** | Lần 2 phát lại đúng đầu vào của lần 1 ⇒ phải ra 0 dòng «đạt» và 0 dòng phát sinh, CHÍNH XÁC — mọi lệch là lỗi code, tách bạch khỏi nhiễu model. Đo nhiễu thật (~1,4%/phía theo 5.0b) là tuỳ chọn, tắt đệm, thêm ~22 phút |
+| 2026-09-17 | **CSDL được thử mở lại NỀN mỗi 30 giây, thay vì kiểm một lần lúc khởi động** | Nghiệm thu 5.1 lộ ra: CSDL hỏng lúc khởi động là tính năng hồ sơ tắt tới lần khởi động lại, không ai biết. Ca chắc chắn xảy ra: máy khởi động lại, `copilot` lên trước `copilot-db` (cố ý không phụ thuộc). `/health` vẫn KHÔNG tự kết nối — lý do cũ vẫn đúng |

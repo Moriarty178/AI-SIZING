@@ -102,8 +102,14 @@ def danh_gia(*, lan1: dict | None, ho_so_1: dict | None, so_finding_1: int | Non
             f" phát sinh {ps}")
     else:
         tl_dat, tl_ps = (dat / n2, ps / n2) if n2 else (0.0, 0.0)
+        tk = viec_2.get("thong_ke_cache") or {}
+        # Nghiệm thu 2026-09-17: đệm bật mà lần 2 vẫn ghi thêm 17 bản ghi — phát lại
+        # PHẦN LỚN, không phải gọi thật toàn bộ. Nói đúng tên để người đọc không
+        # tưởng đây là phép đo nhiễu model đầy đủ.
+        cach = (f"lần 2 phát lại PHẦN LỚN từ đệm, {tk.get('ghi_them')} lời gọi mới tới "
+                "model" if tk.get("bat") else "lần 2 gọi model thật")
         ghi("K6", tl_dat <= NGUONG_NHIEU and tl_ps <= NGUONG_NHIEU,
-            f"lần 2 gọi model thật → đạt {dat} ({tl_dat:.1%}), phát sinh {ps} "
+            f"{cach} → đạt {dat} ({tl_dat:.1%}), phát sinh {ps} "
             f"({tl_ps:.1%}); ngưỡng {NGUONG_NHIEU:.0%} mỗi phía")
     return kq
 

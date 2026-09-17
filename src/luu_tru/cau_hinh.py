@@ -58,6 +58,31 @@ def an_mat_khau(url: str) -> str:
     return f"{dau}://{xac_thuc}@{may}"
 
 
+def goi_y_sua(loi: str) -> str:
+    """Gợi ý hành động cho những lỗi mở CSDL đã gặp thật. Rỗng nếu không nhận ra.
+
+    2026-09-17, máy nội bộ: `password authentication failed for user "copilot"` —
+    trong khi cùng image đó vừa ghi hồ sơ thành công. Nguyên nhân hay gặp nhất:
+    image `postgres` CHỈ đọc `POSTGRES_PASSWORD` ở LẦN ĐẦU khởi tạo volume. Đổi
+    `SIZING_COPILOT_DB_PASSWORD` sau đó không đổi mật khẩu trong CSDL, và không có
+    gì báo cả — cho tới khi Copilot khởi động lại.
+    """
+    t = loi.lower()
+    if "password authentication failed" in t:
+        return (" → Mật khẩu PostgreSQL CHỈ được đặt ở LẦN ĐẦU tạo volume "
+                "`copilot-db-data`; sửa `SIZING_COPILOT_DB_PASSWORD` về sau KHÔNG đổi "
+                "mật khẩu trong CSDL. Sửa: đặt lại mật khẩu trong CSDL cho khớp `.env` "
+                "(`docker compose exec copilot-db psql -U copilot -c \"ALTER USER "
+                "copilot PASSWORD '<mật khẩu trong .env>'\"`). Mật khẩu có ký tự "
+                "@ : / # % ? thì phải mã hoá phần trăm trong SIZING_COPILOT_DB_URL.")
+    if "could not translate host name" in t or "name or service not known" in t:
+        return " → Không thấy máy `copilot-db`: `docker compose up -d copilot-db`."
+    if "connection refused" in t or "timeout expired" in t:
+        return (" → CSDL chưa nhận kết nối (đang khởi động?). Copilot tự thử lại, "
+                "không cần khởi động lại.")
+    return ""
+
+
 def mo_kho_tu_moi_truong():
     """(kho hoặc None, TrangThaiCSDL). KHÔNG BAO GIỜ ném lỗi.
 
@@ -82,8 +107,9 @@ def mo_kho_tu_moi_truong():
         kho.khoi_tao()
     except Exception as e:                   # CSDL hỏng không được giết API
         loi = str(e).replace(url, an_mat_khau(url))
+        # Gợi ý đặt TRƯỚC phần lỗi thô, để cắt 600 ký tự không cắt mất nó.
         return None, TrangThaiCSDL(
             True, False,
-            f"Không mở được CSDL tại {an_mat_khau(url)}: "
-            f"{type(e).__name__}: {loi}"[:400])
+            (f"Không mở được CSDL tại {an_mat_khau(url)}.{goi_y_sua(loi)} "
+             f"Lỗi: {type(e).__name__}: {loi}")[:600])
     return kho, TrangThaiCSDL(True, True, f"Sẵn sàng · {an_mat_khau(url)}")

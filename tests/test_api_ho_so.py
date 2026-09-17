@@ -167,3 +167,29 @@ def test_KHONG_cau_hinh_csdl_thi_ho_so_409_va_viec_KHONG_mang_ghi_chu(tmp_path,
         v = _xong(c, _nop(c, NGUOI).json()["ma"])
         assert v["trang_thai"] == "xong" and v["ghi_ho_so"] == ""
         assert _nop(c, NGUOI, ho_so_id=1).status_code == 409
+
+
+def test_csdl_len_SAU_copilot_thi_tu_mo_lai_KHONG_can_khoi_dong_lai(tmp_path,
+                                                                    monkeypatch):
+    """Máy khởi động lại: `restart: always` đưa `copilot` và `copilot-db` lên cùng
+    lúc, `copilot` hay tới trước. Trước bản này tính năng hồ sơ tắt im lặng tới lần
+    khởi động sau. Mô phỏng: CSDL chưa mở được lúc khởi động, lát sau mới được."""
+    import time as _t
+    from api import main
+    from src.cong_viec import BoChay, KhoCongViec
+    thu_muc = tmp_path / "chua_co"
+    monkeypatch.setenv("SIZING_COPILOT_DB_URL",
+                       f"sqlite+pysqlite:///{(thu_muc / 'csdl.sqlite').as_posix()}")
+    monkeypatch.setattr(main, "CHO_THU_LAI_CSDL", 0.05)
+    main.kho = KhoCongViec(tmp_path / "cv")
+    main.bo_chay = BoChay(main.kho, ham_chay=lambda *a, **k: _KQ([]))
+    with TestClient(main.app) as c:
+        h = c.get("/health").json()["csdl"]
+        assert h["cau_hinh"] is True and h["san_sang"] is False
+        thu_muc.mkdir()                       # «CSDL lên»
+        het = _t.time() + 5
+        while _t.time() < het and not c.get("/health").json()["csdl"]["san_sang"]:
+            _t.sleep(0.05)
+        assert c.get("/health").json()["csdl"]["san_sang"] is True
+        assert c.get("/ho-so").status_code == 200
+    main.kho_csdl = None

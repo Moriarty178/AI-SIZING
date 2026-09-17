@@ -275,3 +275,41 @@ class TestGhiLanThamDinh:
 
     def test_phien_ban_luoc_do_la_2(self):
         assert ld.PHIEN_BAN_LUOC_DO == "2"
+
+
+# --- 2026-09-17: lỗi mở CSDL phải nói cách sửa ----------------------------------
+class TestGoiYSua:
+    # Nguyên văn `/health` trên máy nội bộ sau nghiệm thu 5.1.
+    LOI_THAT = ('(psycopg.OperationalError) connection failed: connection to server at '
+                '"172.18.0.4", port 5432 failed: FATAL:  password authentication '
+                'failed for user "copilot"')
+
+    def test_sai_mat_khau_chi_ra_nguyen_nhan_hay_gap_va_lenh_sua(self):
+        from src.luu_tru.cau_hinh import goi_y_sua
+        g = goi_y_sua(self.LOI_THAT)
+        assert "LẦN ĐẦU" in g and "ALTER USER" in g
+        assert "mã hoá phần trăm" in g
+
+    def test_goi_y_nam_TRUOC_loi_tho_de_khong_bi_cat_mat(self, monkeypatch):
+        """Thông điệp bị cắt 600 ký tự; lỗi thô của psycopg dài và kèm link."""
+        from src.luu_tru import cau_hinh
+
+        class _Hong:
+            def __init__(self, url):
+                raise RuntimeError(self_loi)
+
+        self_loi = self.LOI_THAT + " x" * 500
+        import src.luu_tru.kho as kho_mod
+        monkeypatch.setattr(kho_mod, "KhoCSDL", _Hong)
+        monkeypatch.setenv(BIEN_URL, "postgresql+psycopg://copilot:bi-mat@copilot-db/c")
+        _, tt = cau_hinh.mo_kho_tu_moi_truong()
+        assert "ALTER USER" in tt.thong_diep
+        assert "bi-mat" not in tt.thong_diep
+
+    def test_loi_khong_nhan_ra_thi_khong_bia_goi_y(self):
+        from src.luu_tru.cau_hinh import goi_y_sua
+        assert goi_y_sua("một lỗi lạ") == ""
+
+    def test_csdl_chua_len_thi_noi_se_tu_thu_lai(self):
+        from src.luu_tru.cau_hinh import goi_y_sua
+        assert "tự thử lại" in goi_y_sua("connection refused")

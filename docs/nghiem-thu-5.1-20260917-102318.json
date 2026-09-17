@@ -1,0 +1,55 @@
+{
+  "ho_so_id": 1,
+  "tieu_chi": [
+    {
+      "ma": "K1",
+      "dat": true,
+      "chi_tiet": "baseline lần 1 = 719, sau lần 2 = 719"
+    },
+    {
+      "ma": "K2",
+      "dat": true,
+      "chi_tiet": "số thứ tự lần mới nhất = 2"
+    },
+    {
+      "ma": "K3",
+      "dat": true,
+      "chi_tiet": "đạt 1 + chưa đạt 54 + chưa kiểm được 664 = 719 / baseline 719"
+    },
+    {
+      "ma": "K4",
+      "dat": true,
+      "chi_tiet": "lần 1 xuất 719 finding, baseline có 719 dòng"
+    },
+    {
+      "ma": "K5",
+      "dat": true,
+      "chi_tiet": "tên lưu: «phongnh40» — gửi: «phongnh40»"
+    },
+    {
+      "ma": "K6",
+      "dat": true,
+      "chi_tiet": "lần 2 gọi model thật → đạt 1 (0.1%), phát sinh 0 (0.0%); ngưỡng 3% mỗi phía"
+    }
+  ],
+  "lan_2": {
+    "dat": 1,
+    "chua_dat": 54,
+    "chua_kiem_duoc": 664,
+    "phat_sinh": 0
+  },
+  "so_loi_baseline": 719,
+  "dem_1": 719,
+  "cache_lan_2": {
+    "bat": true,
+    "ban_ghi_truoc": 322,
+    "ban_ghi_sau": 339,
+    "ghi_them": 17
+  },
+  "vi_du": {
+    "dat": [
+      "EVD-22#File storage"
+    ],
+    "phat_sinh": []
+  }
+}

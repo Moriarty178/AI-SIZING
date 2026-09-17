@@ -203,7 +203,21 @@ py scripts/nghiem_thu_5_1.py "D:\duong\dan\Sizing ABC.docx" --api http://localho
 docker compose exec copilot-db psql -U copilot -c "select count(*) from finding_baseline"
 ```
 
-`/health` KHÔNG tự kết nối CSDL — nó báo lại kết quả kiểm lúc dịch vụ khởi động.
+⚠️ **Mật khẩu CSDL chỉ được đặt ở LẦN ĐẦU tạo volume `copilot-db-data`.** Image
+`postgres` đọc `POSTGRES_PASSWORD` đúng một lần; sửa `SIZING_COPILOT_DB_PASSWORD`
+về sau KHÔNG đổi mật khẩu trong CSDL, và Copilot sẽ báo `password authentication
+failed`. Sửa mà không mất dữ liệu:
+
+```powershell
+docker compose exec copilot-db psql -U copilot -c "ALTER USER copilot PASSWORD '<mật khẩu trong .env>'"
+```
+
+Copilot tự thử mở lại CSDL mỗi 30 giây, nên sửa phía CSDL thì KHÔNG cần khởi động
+lại. Sửa `.env` thì phải `docker compose up -d copilot` (biến môi trường chỉ đọc lúc
+tạo container). Mật khẩu có `@ : / # % ?` phải mã hoá phần trăm trong
+`SIZING_COPILOT_DB_URL` (vd `@` → `%40`) — dễ nhất là dùng mật khẩu chỉ chữ và số.
+
+`/health` KHÔNG tự kết nối CSDL — nó báo lại kết quả lần thử gần nhất.
 CSDL hỏng thì `csdl.san_sang=false` kèm lý do (mật khẩu đã che), dịch vụ vẫn chạy.
 
 ### Hoặc chạy từng cái
