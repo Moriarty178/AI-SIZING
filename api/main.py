@@ -184,6 +184,8 @@ async def review(
     vong: int | None = Form(None, description="1 hoặc 2; để trống là cả hai"),
     song_song: int | None = Form(None, description=f"1..{SONG_SONG_TOI_DA}"),
     ho_so_id: int | None = Form(None, description="5.1 — thẩm định lại hồ sơ này"),
+    toan_bo: bool = Form(False, description="5.3 — thẩm định lại KHÔNG dùng lại câu "
+                                             "trả lời model của lần trước"),
 ) -> dict:
     # 5.0a — header hỏng là lỗi của bên gọi: nói ra, đừng coi như vô danh.
     try:
@@ -201,6 +203,9 @@ async def review(
         if tt != "dang_sua":
             raise HTTPException(409, f"Hồ sơ #{ho_so_id} đang «{tt}» — chỉ thẩm định "
                                      "lại được khi đang sửa.")
+    elif toan_bo:
+        raise HTTPException(400, "«toan_bo» chỉ dùng khi thẩm định lại một hồ sơ "
+                                 "(kèm «ho_so_id»).")
 
     ten = pathlib.Path(file.filename or "").name
     if not ten.lower().endswith(DUOI_CHO_PHEP):
@@ -229,9 +234,14 @@ async def review(
 
     # Tài liệu vào kho việc (volume), không vào `/tmp`: 5.2 mở lại nó nhiều ngày
     # sau để hiện chỗ cần sửa — xem `KhoCongViec._luu_tai_lieu`.
+    # 5.3 — lần MỚI NHẤT lúc nộp: dùng lại câu trả lời model của nó và so tài liệu với
+    # nó. Hai lượt thẩm định lại xếp hàng liền nhau thì lượt sau dùng lại lần trước
+    # nữa — vẫn đúng, chỉ dùng lại được ít hơn.
+    lan = k.lan_moi_nhat(ho_so_id) if ho_so_id is not None else None
     cv = kho.them(ten, "", tuy_chon, ho_so_id=ho_so_id, noi_dung=noi_dung,
                   danh_tinh=({"vai": danh_tinh.vai, "ten": danh_tinh.ten}
-                             if danh_tinh else None))
+                             if danh_tinh else None),
+                  lan_truoc=(lan or {}).get("ma_viec") or "", toan_bo=toan_bo)
     bo_chay.nop(cv)
     return {**cv.as_dict(),
             "ghi_chu": "Đã nhận. Một tài liệu tốn khoảng 16 phút; hỏi lại bằng "

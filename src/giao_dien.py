@@ -506,6 +506,43 @@ def noi_dung_goc_tu_cho_sua(cho: dict) -> str:
     return van[:TOI_DA_NOI_DUNG_GOC]
 
 
+def tom_tat_thay_doi(d: dict | None) -> tuple[str, str] | None:
+    """5.3 — (mức, câu) cho «bản này khác lần trước ở đâu». Mức: info · warning.
+    None = lượt này không phải thẩm định lại.
+
+    Nộp y nguyên bản cũ phải nói THẲNG: mọi dòng «chưa đạt» giữ nguyên lúc đó là đúng,
+    không phải công cụ không nhận ra chỗ đã sửa.
+    """
+    if not d:
+        return None
+    if d.get("loi"):
+        return "warning", f"Không so được với lần trước: {d['loi']}"
+    if d.get("giong_het"):
+        return "warning", ("Tài liệu GIỐNG HỆT lần trước — không có chỗ nào đổi. Nếu bạn "
+                           "đã sửa, kiểm lại xem có nộp nhầm bản cũ không.")
+    cau = (f"So với lần trước: {d.get('sua', 0)} chỗ sửa · {d.get('them', 0)} chỗ thêm · "
+           f"{d.get('xoa', 0)} chỗ xoá.")
+    vt = list(d.get("vi_tri") or [])
+    if vt:
+        cau += " " + "; ".join(vt)
+        if d.get("con_nua"):
+            cau += f"; và {d['con_nua']} chỗ khác"
+    return "info", cau
+
+
+def tom_tat_vung_doi(tk_phat_lai: dict | None) -> str:
+    """Phân hệ nào có nội dung đổi — tên đã chuẩn hoá (chữ thường, bỏ ngoặc cuối)."""
+    tk = tk_phat_lai or {}
+    if "vung_doi" not in tk:
+        return ""
+    phan = [f"phân hệ đổi: {', '.join(tk['vung_doi']) or 'không có'}"]
+    if tk.get("vung_moi"):
+        phan.append(f"phân hệ mới nhận ra: {', '.join(tk['vung_moi'])}")
+    phan.append("phần chung (ngoài mọi phân hệ) " +
+                ("CÓ đổi" if tk.get("chung_doi") else "không đổi"))
+    return " · ".join(phan)
+
+
 def bang_phat_sinh(d: dict) -> list[dict]:
     return [{"Quy tắc": p.get("rule_ref", ""), "Phân hệ": p.get("scope_goc", ""),
              "Mức độ": p.get("muc_do", ""), "Nội dung": p.get("noi_dung", ""),

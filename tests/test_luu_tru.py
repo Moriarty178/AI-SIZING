@@ -273,6 +273,18 @@ class TestGhiLanThamDinh:
     def test_doc_ho_so_khong_ton_tai_la_None(self, kho):
         assert kho.doc_ho_so(12345) is None
 
+    def test_lan_moi_nhat_cho_5_3(self, kho):
+        """5.3 dùng lại câu trả lời model của lần có số thứ tự LỚN NHẤT."""
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a", danh_tinh=_dt(),
+                                  findings=[_fd("A#x")])
+        h = r["ho_so_id"]
+        assert kho.lan_moi_nhat(h)["ma_viec"] == "m1"
+        kho.ghi_lan_tham_dinh(ma_viec="m2", ten_file="a", danh_tinh=_dt(), ho_so_id=h,
+                              findings=[])
+        assert (kho.lan_moi_nhat(h)["ma_viec"], kho.lan_moi_nhat(h)["so_thu_tu"]) == \
+            ("m2", 2)
+        assert kho.lan_moi_nhat(999) is None
+
     def test_phien_ban_luoc_do_la_2(self):
         assert ld.PHIEN_BAN_LUOC_DO == "2"
 

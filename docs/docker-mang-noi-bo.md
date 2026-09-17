@@ -214,6 +214,21 @@ py scripts/nghiem_thu_5_2.py --ho-so 1 "D:\duong\dan\Sizing ABC.docx" --api http
 Từ 5.2, tài liệu nộp lên được **giữ bền** ở `.cache/cong_viec/tai_lieu/` trong volume
 `copilot-cache`; xoá việc (`DELETE /result/{ma}`) xoá cả tài liệu.
 
+Nghiệm thu 5.3 (thẩm định lại chỉ hỏi model cho phần đã đổi) — cần HAI tệp: bản gốc
+của hồ sơ nghiệm thu, và một bản đã sửa. Tạo bản sửa: mở bản gốc bằng Word, sửa MỘT
+con số trong bảng của MỘT phân hệ, thêm MỘT câu vào đầu mục của phân hệ đó, rồi
+«Save As» sang tên khác. Script thẩm định lại ba lần (gốc · gốc · bản sửa) và tự chấm
+6 tiêu chí; đệm lời gọi bật thì lần 1–2 vài phút, lần 3 hỏi lại toàn bộ C5 (~147 lượt):
+
+```powershell
+py scripts/nghiem_thu_5_3.py --ho-so 1 "D:\duong\dan\Sizing ABC.docx" "D:\duong\dan\Sizing ABC - da sua.docx" --api http://localhost:8902 --ten "Tên bạn"
+```
+
+Từ 5.3, mỗi việc lưu thêm `.cache/cong_viec/{mã việc}.phat_lai.json` — câu trả lời model
+của lượt đó (nguyên văn giá trị và trích dẫn lấy từ tài liệu), để lần thẩm định lại sau
+dùng lại. Xoá việc xoá kèm tệp này. Lần thẩm định lại ĐẦU TIÊN sau khi nâng cấp chạy
+toàn bộ: các lần trước chưa có tệp đó.
+
 ⚠️ **Mật khẩu CSDL chỉ được đặt ở LẦN ĐẦU tạo volume `copilot-db-data`.** Image
 `postgres` đọc `POSTGRES_PASSWORD` đúng một lần; sửa `SIZING_COPILOT_DB_PASSWORD`
 về sau KHÔNG đổi mật khẩu trong CSDL, và Copilot sẽ báo `password authentication

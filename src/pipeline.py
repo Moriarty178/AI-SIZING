@@ -194,7 +194,7 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
          chi_vong: int | None = None, chi_ma_dt: list[str] | None = None,
          bo_qua_dinh_tinh: bool = False, bo_qua_trich_xuat: bool = False,
          doc_anh: bool = False, loai_anh=None,
-         on_tien_do=None, song_song: int = 1) -> KetQuaChay:
+         on_tien_do=None, song_song: int = 1, phat_lai=None) -> KetQuaChay:
     """Chạy trọn pipeline trên một file `.docx`.
 
     `chi_nhom` / `chi_vong` để giới hạn chi phí khi thử: một tài liệu 5 phân hệ tốn
@@ -206,6 +206,11 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
     recall chạy sạch trước, không kèm 2.3 — trộn hai thay đổi vào một lượt chạy tốn
     tiền thì không quy được kết quả cho cái nào. Bật lên thì mỗi ảnh thuộc loại đã
     chọn tốn thêm một lượt gọi (~40 giây).
+
+    `phat_lai` (5.3, `src/llm/phat_lai.py`): dùng lại câu trả lời của lần thẩm định
+    trước cho lượt hỏi C3/C5 có nội dung không đổi, và ghi lại câu trả lời của lượt
+    này. Pipeline vẫn chạy TRỌN — C4 và mọi bước kiểm bằng code chạy lại toàn bộ.
+    C2 (đọc ảnh, mặc định tắt) KHÔNG đi qua đây: bật lên thì ảnh được đọc lại mỗi lần.
     """
     rs = rules or load_rules()
     doc = read_docx(path)
@@ -223,9 +228,22 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
 
     if not bo_qua_trich_xuat:
         c3 = Extractor(client or LLMClient(), rules=rs, model=model,
-                       on_tien_do=_bao("C3", on_tien_do), song_song=song_song)
+                       on_tien_do=_bao("C3", on_tien_do), song_song=song_song,
+                       phat_lai=phat_lai)
         core = c3.run(doc, chi_nhom=chi_nhom)
         tk["c3"] = dict(c3.tk.__dict__)
+
+    if phat_lai is not None:
+        # Vân tay nội dung từng vùng phân hệ — để BÁO phân hệ nào đổi so với lần trước,
+        # không để chọn lượt gọi. Hỏng thì chỉ mất dòng báo đó (NT4: nói ra).
+        try:
+            from .extraction.vung import chuan_ten, van_tay, vung_phan_he
+            theo_ten, chung = vung_phan_he(doc, core)
+            phat_lai.ghi_vung({"": van_tay(doc, chung),
+                               **{chuan_ten(t): van_tay(doc, v)
+                                  for t, v in theo_ten.items()}})
+        except Exception as e:                      # pragma: no cover — phòng thủ
+            tk["phat_lai_loi_vung"] = f"{type(e).__name__}: {e}"[:200]
 
     # C2 (2.3 đọc ảnh + 2.5 neo số) chạy TRƯỚC C4, không sau như trước 2026-09-09.
     # Thứ tự cũ khiến số 2.5 lấy được không bao giờ kịp vào phép tính của C4 —
@@ -267,13 +285,15 @@ def chay(path: str, *, client: LLMClient | None = None, rules: RuleSet | None = 
     if not bo_qua_dinh_tinh:
         c5 = QualitativeValidator(client or LLMClient(), rules=rs, model=model,
                                   on_tien_do=_bao("C5", on_tien_do),
-                                  song_song=song_song)
+                                  song_song=song_song, phat_lai=phat_lai)
         kq_dt = c5.run(doc, core, chi_vong=chi_vong, chi_ma=chi_ma_dt)
         findings += [o.finding for o in kq_dt if o.finding is not None]
         tk["c5"] = dict(c5.tk.__dict__)
         tk["c5"].pop("_khoa", None)     # threading.Lock — không serialize được JSON
 
     findings += _canh_bao_moi_loi_goi_deu_hong(tk)
+    if phat_lai is not None:
+        tk["phat_lai"] = phat_lai.thong_ke()
 
     tk["cache"]["ban_ghi_sau"] = _dem.so_ban_ghi()
     tk["cache"]["ghi_them"] = (tk["cache"]["ban_ghi_sau"]

@@ -8,6 +8,8 @@ Giao diện và API không viết SQL. Khi ghép vào tool sizing, chỉ lớp n
   rổ phát sinh; `ds_ho_so`, `doc_ho_so` để API/giao diện đọc lại.
 - 5.2 — `doc_finding` (một dòng baseline + lịch sử sửa + lần nộp mới nhất),
   `them_lan_sua` (người dùng ghi nhận đã sửa gì).
+- 5.3 — `lan_moi_nhat`: lần thẩm định mới nhất của hồ sơ, để lần sau dùng lại câu trả
+  lời model của nó.
 """
 from __future__ import annotations
 
@@ -199,6 +201,14 @@ class KhoCSDL:
         with self.engine.connect() as c:
             return c.execute(select(ld.ho_so.c.trang_thai).where(
                 ld.ho_so.c.id == ho_so_id)).scalar()
+
+    def lan_moi_nhat(self, ho_so_id: int) -> dict | None:
+        """5.3 — lần thẩm định có số thứ tự lớn nhất. None nếu hồ sơ chưa có lần nào."""
+        lan = ld.lan_tham_dinh
+        with self.engine.connect() as c:
+            r = c.execute(select(lan).where(lan.c.ho_so_id == ho_so_id)
+                          .order_by(lan.c.so_thu_tu.desc()).limit(1)).first()
+        return _dict(r) if r is not None else None
 
     def ds_ho_so(self) -> list[dict]:
         hs, lan, fb = ld.ho_so, ld.lan_tham_dinh, ld.finding_baseline

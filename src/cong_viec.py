@@ -45,6 +45,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Callable
 
+from .llm.phat_lai import PhatLai
+
 THU_MUC_MAC_DINH = pathlib.Path(".cache/cong_viec")
 # Nhật ký phản hồi người thẩm định — append-only, NẰM NGOÀI thư mục việc để
 # xoá việc không lôi theo dataset cải tiến công cụ (xem `xoa`).
@@ -90,6 +92,9 @@ class CongViec:
     # KHÔNG chứng minh có gọi. Hai lượt ngày 2026-09-16 tắt đệm, trùng khớp
     # 100%, và chạy hết 2 phút cho một tài liệu đáng lẽ tốn ~16 — con số duy
     # nhất phân biệt được "model tất định" với "model gần như không chạy" là đây.
+    # ⚠️ Từ 5.3, lần THẨM ĐỊNH LẠI dùng lại câu trả lời cũ: `luot_goi` đếm lượt HỎI,
+    # số lượt thật sự tới model là `luot_goi − phat_lai.<c3|c5>.dung_lai` (còn trừ
+    # tiếp phần đệm lời gọi trúng). Lượt nộp hồ sơ mới không dùng lại gì.
     thong_ke: dict = field(default_factory=dict)
     # 5.1 — hồ sơ Giai đoạn 5. `ho_so_id` đặt lúc nộp = thẩm định lại hồ sơ đó;
     # None = hồ sơ mới, gán sau khi ghi xong. `danh_tinh` = {vai, ten} người nộp.
@@ -97,6 +102,14 @@ class CongViec:
     ho_so_id: int | None = None
     danh_tinh: dict = field(default_factory=dict)
     ghi_ho_so: str = ""
+    # 5.3 — `lan_truoc` = mã việc của lần thẩm định MỚI NHẤT của hồ sơ lúc nộp: dùng lại
+    # câu trả lời model của nó, và so tài liệu với nó. `toan_bo` = người nộp chọn không
+    # dùng lại. `phat_lai` = đã dùng lại ra sao — NÓI RA cả khi không dùng được (NT4).
+    # `thay_doi` = bản này khác bản lần trước ở đâu (`src/ingestion/so_sanh.py`).
+    lan_truoc: str = ""
+    toan_bo: bool = False
+    phat_lai: str = ""
+    thay_doi: dict = field(default_factory=dict)
     # Tuỳ chọn giới hạn chi phí, truyền thẳng vào `pipeline.chay`. Danh sách khoá
     # cho phép nằm ở tầng API — kho việc không tự quyết cái gì hợp lệ.
     tuy_chon: dict = field(default_factory=dict)
@@ -167,12 +180,14 @@ class KhoCongViec:
     def them(self, ten_file: str, duong_dan: str,
              tuy_chon: dict | None = None, *, ho_so_id: int | None = None,
              danh_tinh: dict | None = None,
-             noi_dung: bytes | None = None) -> CongViec:
+             noi_dung: bytes | None = None, lan_truoc: str = "",
+             toan_bo: bool = False) -> CongViec:
         # `ho_so_id`/`danh_tinh` KHÔNG nằm trong `tuy_chon`: `tuy_chon` được bung
         # thẳng vào `pipeline.chay(**…)`, một khoá lạ là `TypeError` giữa lượt chạy.
         cv = CongViec(ma=uuid.uuid4().hex[:12], ten_file=ten_file,
                       duong_dan=str(duong_dan), tuy_chon=dict(tuy_chon or {}),
-                      ho_so_id=ho_so_id, danh_tinh=dict(danh_tinh or {}))
+                      ho_so_id=ho_so_id, danh_tinh=dict(danh_tinh or {}),
+                      lan_truoc=lan_truoc or "", toan_bo=bool(toan_bo))
         if noi_dung is not None:
             cv.duong_dan = str(self._luu_tai_lieu(cv.ma, ten_file, noi_dung))
         with self._khoa:
@@ -246,6 +261,31 @@ class KhoCongViec:
         try:
             d = json.loads(self._tep(ma, ".findings.json").read_text(
                 encoding="utf-8"))
+            return d if isinstance(d, dict) else None
+        except (OSError, ValueError):
+            return None
+
+    # ------------------------------------------------------- dùng lại (5.3) --
+    def luu_phat_lai(self, ma: str, du_lieu: dict) -> bool:
+        """Câu trả lời model của lượt chạy — để lần thẩm định lại sau dùng lại.
+
+        Chứa nguyên văn giá trị và trích dẫn lấy từ tài liệu, nên cùng mức giữ bí mật
+        với `findings.json`: `xoa()` xoá kèm. Hỏng thì trả False để việc NÓI RA, không
+        làm hỏng lượt chạy.
+        """
+        try:
+            self.thu_muc.mkdir(parents=True, exist_ok=True)
+            tam = self._tep(ma, ".phat_lai.json.tmp")
+            tam.write_text(json.dumps(du_lieu, ensure_ascii=False), encoding="utf-8")
+            tam.replace(self._tep(ma, ".phat_lai.json"))
+            return True
+        except (OSError, ValueError, TypeError):
+            traceback.print_exc()
+            return False
+
+    def phat_lai(self, ma: str) -> dict | None:
+        try:
+            d = json.loads(self._tep(ma, ".phat_lai.json").read_text(encoding="utf-8"))
             return d if isinstance(d, dict) else None
         except (OSError, ValueError):
             return None
@@ -344,6 +384,7 @@ class KhoCongViec:
             return False
         for p in (self._tep(ma, ".json"), self._tep(ma, ".md"),
                   self._tep(ma, ".findings.json"), self._tep(ma, ".phan_hoi.json"),
+                  self._tep(ma, ".phat_lai.json"),
                   pathlib.Path(cv.duong_dan) if cv.duong_dan else None):
             try:
                 if p is not None:
@@ -463,11 +504,62 @@ class BoChay:
             traceback.print_exc()
             return {"ghi_ho_so": f"lỗi: {type(e).__name__}: {e}"[:300]}
 
+    def _chuan_bi_phat_lai(self, cv: CongViec) -> tuple[PhatLai, str]:
+        """(đối tượng dùng lại, lý do KHÔNG dùng lại được). Lượt nào cũng GHI lại câu
+        trả lời — kể cả hồ sơ mới — vì lần thẩm định lại kế tiếp cần nó."""
+        if not cv.lan_truoc:
+            return PhatLai(), ""
+        if cv.toan_bo:
+            return PhatLai(), "không dùng lại — người nộp chọn thẩm định lại toàn bộ"
+        cu = self.kho.phat_lai(cv.lan_truoc)
+        if cu is None:
+            return PhatLai(), (
+                f"không dùng lại được — lần trước (việc {cv.lan_truoc}) không có bản ghi "
+                "câu trả lời model (chạy trước bản 5.3, hoặc việc đã bị xoá): chạy toàn bộ")
+        pl = PhatLai(cu, tu_viec=cv.lan_truoc)
+        if not pl.co_ban_cu:
+            return pl, (f"không dùng lại được — bản ghi của việc {cv.lan_truoc} khác "
+                        "phiên bản: chạy toàn bộ")
+        return pl, ""
+
+    @staticmethod
+    def _tom_tat_phat_lai(tk: dict, tu_viec: str) -> str:
+        c3, c5 = tk.get("c3") or {}, tk.get("c5") or {}
+        dl = int(c3.get("dung_lai", 0)) + int(c5.get("dung_lai", 0))
+        tong = dl + int(c3.get("goi_moi", 0)) + int(c5.get("goi_moi", 0))
+
+        def phan(d):
+            return f"{d.get('dung_lai', 0)}/{d.get('dung_lai', 0) + d.get('goi_moi', 0)}"
+        return (f"dùng lại {dl}/{tong} lượt hỏi model của lần trước (việc {tu_viec}) — "
+                f"C3 {phan(c3)}, C5 {phan(c5)}")
+
+    def _so_sanh_lan_truoc(self, cv: CongViec, kq) -> dict:
+        """Bản này khác bản lần trước ở đâu. Hỏng thì nói ra, không làm hỏng việc."""
+        doc_moi = getattr(kq, "doc", None)
+        if not cv.lan_truoc or doc_moi is None:
+            return {}
+        cu = self.kho.lay(cv.lan_truoc)
+        if cu is None or not cu.duong_dan or not pathlib.Path(cu.duong_dan).exists():
+            return {"voi_viec": cv.lan_truoc,
+                    "loi": "tài liệu lần trước không còn trên máy chủ — không so được"}
+        try:
+            from .ingestion.docx_reader import read_docx
+            from .ingestion.so_sanh import so_sanh_ban
+            return {"voi_viec": cv.lan_truoc,
+                    **so_sanh_ban(read_docx(cu.duong_dan), doc_moi)}
+        except Exception as e:
+            traceback.print_exc()
+            return {"voi_viec": cv.lan_truoc,
+                    "loi": f"không so được: {type(e).__name__}: {e}"[:300]}
+
     def _lam(self, ma: str) -> None:
         cv = self.kho.lay(ma)
         if cv is None:
             return
         self.kho.cap_nhat(ma, trang_thai=DANG_CHAY, bat_dau=time.time())
+        pl, khong_dung_lai = self._chuan_bi_phat_lai(cv)
+        if khong_dung_lai:
+            self.kho.cap_nhat(ma, phat_lai=khong_dung_lai)
 
         def tien_do(giai_doan, i, tong, _nhan):
             self.kho.cap_nhat(ma, giai_doan=giai_doan, da_xong=i, tong=tong)
@@ -476,9 +568,17 @@ class BoChay:
         song_song = int(tuy_chon.pop("song_song", None) or self.song_song)
         try:
             kq = self._chay_that()(cv.duong_dan, on_tien_do=tien_do,
-                                   song_song=song_song, **tuy_chon)
+                                   song_song=song_song, phat_lai=pl, **tuy_chon)
             self.kho.luu_bao_cao(ma, kq.bao_cao())
             du_lieu = self._luu_findings(ma, kq)
+            phat_lai = khong_dung_lai or (
+                self._tom_tat_phat_lai(pl.thong_ke(), cv.lan_truoc) if cv.lan_truoc
+                else "")
+            if not self.kho.luu_phat_lai(ma, pl.xuat()):
+                phat_lai = "; ".join(x for x in (
+                    phat_lai, "KHÔNG ghi được câu trả lời model của lượt này — lần "
+                              "thẩm định lại sau sẽ chạy toàn bộ") if x)
+            thay_doi = self._so_sanh_lan_truoc(cv, kq)
             # Ghi hồ sơ TRƯỚC khi báo XONG, trong cùng lần cập nhật: báo xong trước
             # thì có một khoảng giao diện thấy việc xong mà hồ sơ chưa có.
             ghi = self._goi_sau_khi_xong(ma, du_lieu)
@@ -494,6 +594,7 @@ class BoChay:
                                   (getattr(kq, "thong_ke", None) or {})
                                   .get("cache") or {}),
                               thong_ke=dict(getattr(kq, "thong_ke", None) or {}),
+                              phat_lai=phat_lai, thay_doi=thay_doi,
                               giai_doan="", **ghi)
         except Exception as e:
             # Một tài liệu hỏng KHÔNG được giết luồng chạy: các việc còn lại

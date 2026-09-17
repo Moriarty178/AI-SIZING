@@ -166,6 +166,10 @@ class TestTuyChon:
                         data={"nhom": "KPI, CPU", "vong": 2, "song_song": 8})
         assert r.status_code == 202
         assert main.bo_chay.cho_rong(5)
+        # 5.3 — lượt nào cũng mang đối tượng ghi/dùng lại câu trả lời model; nó do bộ
+        # chạy tạo, không phải tuỳ chọn người gọi gửi lên.
+        from src.llm.phat_lai import PhatLai
+        assert isinstance(nhan.pop("phat_lai"), PhatLai)
         assert nhan == {"song_song": 8, "chi_nhom": ["KPI", "CPU"], "chi_vong": 2}
 
     def test_khong_gui_tuy_chon_thi_dung_mac_dinh_do_duoc(self, client):

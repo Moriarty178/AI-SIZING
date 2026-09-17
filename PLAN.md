@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 5 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · **5.2 NGHIỆM THU ĐẠT 09-17** (định vị mục+trang 77,9%, đúng phần tử 0%). Tiếp: 5.3 |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 5 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 đạt · **5.3 CODE XONG 09-17, CHỜ NGHIỆM THU** (dùng lại câu trả lời model theo nội dung lượt hỏi; C5 chặt) |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. Mục kế tiếp: **5.3** (tái thẩm định: C3 chọn lọc, C4 toàn bộ).
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) code xong, **chờ nghiệm thu trên máy nội bộ**.
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1506,7 +1506,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       → Streamlit chỉ nhúng iframe được; bấm dòng → nhảy cần custom component, nên
       bản dùng thật hợp với frontend đầy đủ hơn là Streamlit.
 
-- [ ] 5.3 — **Tái thẩm định: C3 chọn lọc, C4 TOÀN BỘ.** Nút "Thẩm định lại"
+- [~] 5.3 — **Tái thẩm định: C3 chọn lọc, C4 TOÀN BỘ.** Nút "Thẩm định lại"
       trích xuất lại **chỉ phần tài liệu đã đổi** (chỗ tốn tiền: C3+C5 ~270 lượt
       gọi, ~22 phút), nhưng **chạy lại toàn bộ C4** trên tập trường đã hợp nhất —
       C4 là Python thuần gần như miễn phí, và quy tắc nhất quán so số GIỮA các mục,
@@ -1521,8 +1521,59 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       có bản ghi sửa ở 5.2, còn lại xếp "Biến mất, chưa rõ lý do".
       → **Đầu vào là PHIÊN BẢN tài liệu** (lưu bền `tai_lieu/{mã việc}/…`), không gắn
       với cách nó tới: upload hôm nay, nút Save của trình soạn thảo (5.2b) sau này.
-      So khác biệt hai phiên bản vừa chọn phần cho C3, vừa cho ra "đã sửa gì" — khi có
-      editor thì không cần gõ tay `lan_sua` nữa.
+      → 🟡 **CODE XONG 2026-09-17 — CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_3.py`).
+      → **Cách làm: DÙNG LẠI câu trả lời model theo NỘI DUNG từng lượt hỏi**
+      (`src/llm/phat_lai.py`), không tự hợp nhất tập trường. Mỗi lượt chạy ghi lại mọi
+      câu trả lời model (`{mã việc}.phat_lai.json`). Lần thẩm định lại chạy TRỌN
+      pipeline trên bản mới; lượt hỏi nào có cùng lược đồ + lời nhắc + đoạn tài liệu +
+      model thì lấy câu trả lời của lần MỚI NHẤT, không gọi. Lượt nào đọc chỗ đã sửa thì
+      khoá tự khác ⇒ hỏi lại. C4, hệ số dự phòng, cổng một-ô-một-tham-số, C7 đều chạy
+      lại toàn bộ như một lượt mới — không có đường hợp nhất tự viết nào để sai.
+      Khoá BỎ nhãn vị trí (`[Mục X, trang Y]`, `BẢNG #N`, đuôi số tên lược đồ
+      `GanBang{N}`): chèn một câu làm lệch chỉ số và số trang của mọi thứ phía sau mà
+      nội dung không đổi. Ngoại lệ: nhận diện phân hệ trả CHỈ SỐ bảng nên giữ vị trí.
+      → **C5 CHẶT + ĐO** (người dùng chốt 2026-09-17): C5 gửi cả tài liệu nên sửa bất
+      kỳ đâu là hỏi lại toàn bộ C5. Kèm phép đo cho lần sau: quy tắc C5 cấp phân hệ mà
+      «vùng phân hệ + phần chung» không đổi, model hỏi lại có ra kết luận khác không.
+      → Code xong trước nghiệm thu:
+      - `src/llm/phat_lai.py` (khoá, ghi/dùng lại, phép đo C5), `src/extraction/vung.py`
+        (vùng phân hệ + vân tay nội dung; `khoang_phan_he` chuyển nguyên từ C3),
+        `src/ingestion/so_sanh.py` (bản này khác bản trước ở đâu, theo nội dung).
+      - C3 bốn chỗ gọi model và C5 đi qua MỘT cửa (`_hoi` / `goi_kem_nguon`). Lời
+        nhắc gửi model KHÔNG đổi một byte — đệm lời gọi cũ vẫn trúng.
+      - Việc mang `lan_truoc` (mã việc lần mới nhất của hồ sơ lúc nộp), `toan_bo`,
+        `phat_lai` (đã dùng lại ra sao — nói ra cả khi không dùng được), `thay_doi`.
+        API: `toan_bo` (chỉ kèm `ho_so_id`, không thì 400); CSDL: `lan_moi_nhat`.
+      - Giao diện: ô «Thẩm định lại TOÀN BỘ»; việc xong hiện «So với lần trước: N chỗ
+        sửa…» (nộp y nguyên thì CẢNH BÁO nộp nhầm bản cũ), «Dùng lại: x/y lượt hỏi»,
+        phân hệ nào có nội dung đổi.
+      - 56 test mới, trong đó 10 test chạy TRỌN pipeline thật (kể cả qua bộ chạy việc)
+        trên Word thật với model giả tất định theo nội dung. Tổng 935.
+      → **Thử trên VTracking 2.0.1 THẬT ở laptop, model giả** (không phải số đo chất
+      lượng — chỉ đếm lượt hỏi): nộp y nguyên **0/235 lượt tới model**; sửa một ô bảng
+      của một phân hệ + chèn một câu trước mục đó: C3 dùng lại **84/109**, hỏi lại 25
+      (9 nhóm cấp hệ thống đọc cả tài liệu, thông tin chung, nhận diện phân hệ, 12 nhóm
+      của 2 phân hệ giáp chỗ chèn, 2 bảng); C5 hỏi lại **126/126**. Tổng 151/235 lượt
+      (−36%). Phép đo C5 ở laptop VÔ NGHĨA (model giả ngẫu nhiên theo lời nhắc) — chỉ
+      máy nội bộ đo được.
+      → **Chú ý:**
+      (1) **Lần thẩm định lại ĐẦU TIÊN sau khi nâng cấp chạy toàn bộ** — các lần trước
+      chưa có bản ghi; việc nói rõ «không dùng lại được … chạy trước bản 5.3».
+      (2) Thời gian giảm ÍT hơn số lượt: C5 (147/268 lượt ở VTracking) vẫn hỏi lại hết.
+      Sửa trong 1–2 phân hệ ước còn ~175/268 lượt. Muốn giảm tiếp thì xem Đ3 rồi quyết
+      có làm C5 theo vùng không.
+      (3) **Phần không đổi cho ĐÚNG kết quả cũ** ⇒ dòng «đạt» giả do model dao động
+      (~1,4%, 5.0b) chỉ còn ở phần hỏi lại — với C5 chặt thì phần lớn vẫn còn, vì C5 sinh
+      phần lớn dòng. Đ4 đếm dòng đổi trạng thái NGOÀI phân hệ có nội dung đổi.
+      (4) `luot_goi` của C3/C5 giờ đếm lượt HỎI; lượt thật tới model = `luot_goi −
+      phat_lai.dung_lai`. Lượt nộp hồ sơ mới không dùng lại gì — `do_on_dinh` không đổi.
+      (5) Bản ghi có nguyên văn giá trị/trích dẫn lấy từ tài liệu — cùng mức giữ bí mật
+      với `findings.json`, xoá việc xoá kèm.
+      (6) C2 (đọc ảnh, mặc định tắt) KHÔNG dùng lại — bật lên thì đọc lại mỗi lần.
+      (7) Hai lượt thẩm định lại xếp hàng liền nhau: lượt sau dùng lại lần trước NỮA
+      (lần mới nhất lúc nộp) — đúng, chỉ dùng lại được ít hơn.
+      (8) Đổi `rules.yaml`, model, hay lời nhắc giữa hai lần ⇒ khoá đổi ⇒ hỏi lại đúng
+      những lượt bị ảnh hưởng — không cần bấm «toàn bộ».
 
 - [ ] 5.3a — **Neo lỗi vào phần tử / câu trích dẫn.** C3/C5 ghi thêm chỉ số phần tử
       (hoặc câu trích nguyên văn) làm căn cứ, bên cạnh chuỗi `location`; code KIỂM câu
@@ -1843,3 +1894,6 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **API sửa lỗi theo HỒ SƠ (`/ho-so/{id}/finding/{fb}`), không theo mã việc như phác thảo** | Một dòng baseline sống qua nhiều lượt chạy (nhiều mã việc); gắn vào một mã việc thì lịch sử sửa rời ra từng lượt |
 | 2026-09-17 | **Chỗ sửa hiện theo thứ tự tài liệu trong một mục; không định vị được thì tìm MỤC có tiêu đề nhắc phân hệ trước khi gom phần tử rời** | Ảnh chụp nghiệm thu 5.2: xếp theo «nhắc tên» làm nhãn ngắn đẩy bảng số ra ngoài, và đưa hai bảng không liên quan lên trước tiêu đề «Định cỡ module Mongo» |
 | 2026-09-17 | **Sửa Word ngay trên web thay cho quyết định «không đụng .docx»: NGƯỜI DÙNG sửa trong trình soạn thảo nhúng, Save thành phiên bản mới; công cụ KHÔNG tự áp dụng gợi ý. Spike 5.2b đo trước, chưa chọn công cụ** | Sửa tay trong Word rồi upload lại là vòng lặp chậm nhất của GĐ 5. Không ghi ngược bằng code nên né được rủi ro bảng/ô gộp của quyết định 09-15. Chưa chọn vì ONLYOFFICE Community không có Automation API (chỉ bản Developer, tính thêm tiền) còn docx-editor chưa đo độ trung thành; và nhảy đúng chỗ còn phụ thuộc 5.3a (Đ1: 0% đúng phần tử) |
+| 2026-09-17 | **5.3 dùng lại câu trả lời model theo NỘI DUNG từng lượt hỏi, không hợp nhất tập trường theo «phần đã sửa»** | Pipeline chạy trọn trên bản mới nên C4 và mọi cổng code chạy lại toàn bộ đúng như lượt mới; lượt nào đọc chỗ sửa thì khoá tự khác. Đường hợp nhất tự viết phải xử lý mâu thuẫn giữa bảng, cổng một-ô-một-tham-số, đổi tên phân hệ — mỗi chỗ là một cách sai lặng lẽ. Phần không đổi còn cho ĐÚNG kết quả cũ, không dao động |
+| 2026-09-17 | **Khoá dùng lại BỎ nhãn vị trí, trừ lượt nhận diện phân hệ** | Chèn một câu làm lệch chỉ số + số trang mọi phần tử phía sau. Câu trả lời C3/C5 không chứa vị trí (code neo lại vào bản mới); nhận diện phân hệ trả CHỈ SỐ bảng nên phải giữ. Chạy trọn pipeline bắt thêm tên lớp `GanBang{N}` mang chỉ số |
+| 2026-09-17 | **C5 CHẶT khi thẩm định lại: sửa bất kỳ đâu là hỏi lại toàn bộ C5, kèm đo** | Người dùng chốt. C5 đọc cả tài liệu; «chỉ hỏi lại phân hệ có vùng đổi» sẽ bỏ sót khi nội dung về phân hệ A nằm ở mục khác (bảng tổng hợp cuối cụm). Đo Đ3 trên máy nội bộ rồi mới quyết có nới không |

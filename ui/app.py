@@ -18,7 +18,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from src.giao_dien import (bang_baseline, bang_lan_sua, bang_phat_sinh, bang_tu_dong,
                            csdl_san_sang, nhan_ho_so, noi_dung_goc_tu_cho_sua,
-                           tom_tat_ho_so, CACH_TIM_CHINH_XAC,
+                           tom_tat_ho_so, tom_tat_thay_doi, tom_tat_vung_doi,
+                           CACH_TIM_CHINH_XAC,
                            CAN_MODEL, CHE_DO, cau_gioi_han, chay_checklist,
                            che_do_kha_dung, chuan_bi_bang, gom_thay_doi,
                            kiem_model_qua_dich_vu, loc_bang, luu_tam,
@@ -289,6 +290,17 @@ def _hien_mot_viec(kh: KhachAPI, d: dict, ten_tai: str) -> bool:
                        "text/markdown")
     st.markdown(bc)
 
+    # 5.3 — đã dùng lại câu trả lời của lần trước ra sao, và bản này đổi ở đâu.
+    tt_doi = tom_tat_thay_doi(d.get("thay_doi"))
+    if tt_doi:
+        (st.warning if tt_doi[0] == "warning" else st.info)(tt_doi[1])
+    if d.get("phat_lai"):
+        (st.warning if d["phat_lai"].casefold().find("không") >= 0 else st.caption)(
+            f"Dùng lại: {d['phat_lai']}")
+        vung = tom_tat_vung_doi((d.get("thong_ke") or {}).get("phat_lai"))
+        if vung:
+            st.caption(vung)
+
     if d.get("ghi_ho_so"):
         # NT4: bỏ qua hay hỏng khi ghi hồ sơ đều phải hiện ra, không im lặng.
         (st.caption if d.get("ho_so_id") else st.warning)(
@@ -464,6 +476,11 @@ def _chon_ho_so(kh: KhachAPI, sk):
     h = st.selectbox("Chọn hồ sơ", ds, format_func=nhan_ho_so, key="chon_ho_so")
     st.caption("Baseline của hồ sơ giữ nguyên; lượt này chỉ cập nhật trạng thái từng "
                "lỗi và đưa lỗi mới vào rổ «phát sinh».")
+    st.checkbox("Thẩm định lại TOÀN BỘ (không dùng lại kết quả lần trước)",
+                key="tham_dinh_lai_toan_bo",
+                help="Mặc định chỉ hỏi model lại cho phần tài liệu đã đổi; phần không "
+                     "đổi lấy đúng kết quả lần trước, nên không dao động. Chọn ô này "
+                     "khi nghi kết quả lần trước sai, hoặc sau khi sửa bộ quy tắc.")
     return int(h["id"])
 
 
@@ -527,10 +544,12 @@ def hien_tham_dinh(doc, duong_dan, ten, noi_dung: bytes):
     if not st.button("▶ Chạy thẩm định", type="primary"):
         return
     try:
+        toan_bo = ho_so_id is not None and st.session_state.get("tham_dinh_lai_toan_bo")
         d = kh.nop(noi_dung, ten, nhom=nhom.strip(),
                    vong="" if chi_vong is None else chi_vong,
                    song_song=int(song_song),
-                   ho_so_id="" if ho_so_id is None else ho_so_id)
+                   ho_so_id="" if ho_so_id is None else ho_so_id,
+                   toan_bo="true" if toan_bo else "")
     except LoiAPI as e:
         st.error(f"Nộp bài không thành công: {e}")
         return

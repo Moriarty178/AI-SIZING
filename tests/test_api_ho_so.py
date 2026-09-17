@@ -107,6 +107,24 @@ def test_lan_dau_dong_bang_baseline_va_lan_sau_doi_chieu(client):
     assert d2["cac_lan"][1]["ten"] == "Nguyễn Văn A", "tên tiếng Việt qua header"
 
 
+def test_tham_dinh_lai_mang_ma_viec_LAN_MOI_NHAT_de_dung_lai(client):
+    """5.3 — lần 3 dùng lại lần 2, không phải lần 1."""
+    v1 = _xong(client, _nop(client, NGUOI).json()["ma"])
+    h = v1["ho_so_id"]
+    assert v1["lan_truoc"] == "" and v1["toan_bo"] is False
+    v2 = _xong(client, _nop(client, NGUOI, ho_so_id=h).json()["ma"])
+    assert v2["lan_truoc"] == v1["ma"]
+    r3 = _nop(client, NGUOI, ho_so_id=h, toan_bo="true").json()
+    assert (r3["lan_truoc"], r3["toan_bo"]) == (v2["ma"], True)
+    v3 = _xong(client, r3["ma"])
+    assert v3["phat_lai"] == "không dùng lại — người nộp chọn thẩm định lại toàn bộ"
+
+
+def test_toan_bo_khong_kem_ho_so_thi_400(client):
+    r = _nop(client, NGUOI, toan_bo="true")
+    assert r.status_code == 400 and "ho_so_id" in r.json()["detail"]
+
+
 def test_khong_co_danh_tinh_thi_viec_VAN_XONG_nhung_KHONG_ghi_ho_so(client):
     v = _xong(client, _nop(client).json()["ma"])
     assert v["trang_thai"] == "xong"

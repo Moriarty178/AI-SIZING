@@ -60,6 +60,8 @@ from .bang import (KHONG_RO, chu_giai, cot_du_lieu, luoc_do_bang, nhan_dong,
 from .plan import (NhomTrich, ThamSo, ke_hoach_trich,
                    tham_so_cua_bo_quy_tac)
 from .schema import ExtractedValue, SizingCore, SizingExtension
+from .vung import dau_muc as _dau_muc_vung
+from .vung import khoang_phan_he as _khoang_phan_he
 
 KHONG_NEU = "khong_neu"
 MAX_KY_TU_NGU_CANH = 60_000     # ngữ cảnh 200k–1M token (0.10) nên không cần cắt gắt
@@ -256,9 +258,12 @@ class Extractor:
     def __init__(self, client: LLMClient | None = None, *, rules: RuleSet | None = None,
                  units: Units | None = None, model: str | None = None,
                  on_tien_do: Callable[[int, int, str], None] | None = None,
-                 song_song: int = 1):
+                 song_song: int = 1, phat_lai=None):
         self.client = client or LLMClient()
         self.rules = rules
+        # 5.3 — dùng lại câu trả lời của lần thẩm định trước cho lượt hỏi có nội dung
+        # không đổi. None = hỏi model như trước. Xem `src/llm/phat_lai.py`.
+        self.phat_lai = phat_lai
         self.units = units or load_units()
         self.model = model
         # Không có tiến trình thì một lượt chạy 31–95 lời gọi × ~5s trông y hệt TREO.
@@ -276,6 +281,13 @@ class Extractor:
     def _bao(self, tong: int, nhan: str) -> None:
         if self.on_tien_do:
             self.on_tien_do(self.tk.luot_goi, tong, nhan)
+
+    def _hoi(self, schema, messages, *, nhan: str, giu_vi_tri: bool = False, **kw):
+        """MỘT cửa ra model cho C3 — để 5.3 dùng lại được câu trả lời cũ."""
+        if self.phat_lai is None:
+            return self.client.extract(schema, messages, **kw)
+        return self.phat_lai.goi(self.client, schema, messages, thanh_phan="c3",
+                                 nhan=nhan, giu_vi_tri=giu_vi_tri, **kw)
 
     # -------------------------------------------------------------- ngữ cảnh
     def _ve_phan_tu(self, e: Element) -> str:
@@ -302,45 +314,15 @@ class Extractor:
 
     def khoang_phan_he(self, core: SizingCore, ph: SizingExtension, het: int,
                        doc: DocxDocument | None = None) -> tuple[int, int] | None:
-        """Khoảng phần tử thuộc về một phân hệ: từ đầu MỤC của nó đến phân hệ kế.
-
-        Cắt theo `section` không đủ — ở BCCS3 cả 13 phân hệ nằm trong mục III, nên
-        `Firewall` vẫn nhìn thấy bảng của `Database` và lấy nhầm số của nó.
-
-        **Bắt đầu từ đầu mục, không từ chỗ phân hệ được nhắc.** Mốc phân hệ thường là
-        bảng cấu hình (`bang_cau_hinh` được tra trước tên), mà bảng cấu hình nằm ở
-        CUỐI mục: trên bản Vtag, mục #49–59 có bảng ở #55–57, mục #59–74 có bảng ở #72.
-        Lấy mốc làm điểm đầu thì toàn bộ văn xuôi mở đầu mục nằm ngoài cửa sổ — mà
-        khoảng này quyết định CẢ ngữ cảnh gửi cho model lẫn vùng neo, nên model không
-        được thấy phần đó và giá trị trích từ đó cũng không neo lại được.
-
-        Đo ở lượt B1 2026-09-07: **28/58 lượt mất neo là giá trị CÓ THẬT nằm ngoài cửa
-        sổ** (Vtag 18/32) — nguyên nhân đơn lẻ lớn nhất. Cùng lượt đo đó bác bỏ giả
-        thuyết "trích vắt qua ranh giới phần tử": 0 lượt trên cả bốn hồ sơ.
-
-        Không lùi quá mốc của phân hệ liền trước, nên phần đất của nó không bị nuốt.
-        Không có `doc` hoặc không có heading nào ở giữa thì giữ nguyên hành vi cũ.
-        """
-        if ph.element_index is None:
-            return None
-        moc = sorted(x.element_index for x in core.phan_he
-                     if x.element_index is not None)
-        # Điểm KẾT cũng phải là đầu mục của phân hệ kế, không phải mốc của nó: lấy mốc
-        # thì cửa sổ lấn sang phần văn xuôi mở đầu mục sau (Worker thành 49–72, nuốt
-        # trọn mục Postgres 59–74) — đúng thứ khoảng này sinh ra để chặn.
-        dau = {x: self._dau_muc(doc, x, max([y for y in moc if y < x], default=-1))
-               for x in moc}
-        sau = [x for x in moc if x > ph.element_index]
-        return (dau[ph.element_index], dau[sau[0]] if sau else het)
+        """Khoảng phần tử thuộc về một phân hệ — chuyển sang `vung.khoang_phan_he`
+        (5.3) để C5 và phần đo dùng chung mà không nhập module này. Lý do đo được của
+        từng quyết định nằm ở docstring bên đó."""
+        return _khoang_phan_he(core, ph, het, doc)
 
     @staticmethod
     def _dau_muc(doc: DocxDocument | None, idx: int, chan_duoi: int) -> int:
         """Heading gần nhất ở TRƯỚC `idx`, không lùi quá `chan_duoi`."""
-        if doc is None:
-            return idx
-        return max((e.index for e in doc.elements
-                    if e.kind == "heading" and chan_duoi < e.index <= idx),
-                   default=idx)
+        return _dau_muc_vung(doc, idx, chan_duoi)
 
     # ------------------------------------------------------------------ neo
     def neo(self, doc: DocxDocument, *khoa: str,
@@ -550,7 +532,7 @@ class Extractor:
         # và dòng cho MỘT node, phân biệt được hai dòng đó chỉ nhờ câu chữ bên cạnh.
         quanh = self.ngu_canh(doc, khoang=khoang) if khoang else self._ve_phan_tu(e)
         try:
-            kq = self.client.extract(lop, [
+            kq = self._hoi(lop, [
                 {"role": "system", "content": HE_THONG},
                 {"role": "user", "content":
                     f"Dưới đây là một phần tài liệu định cỡ. Hãy đọc BẢNG #{e.index} và "
@@ -558,7 +540,7 @@ class Extractor:
                     f"{NHAC_NHO_BANG}\n\n=== CÁC THAM SỐ CÓ THỂ CHỌN ===\n"
                     f"{chu_giai(ung_vien)}\n\n=== TÀI LIỆU ===\n{quanh}\n\n"
                     f"=== BẢNG #{e.index} CẦN PHÂN TÍCH ===\n{self._ve_phan_tu(e)}"},
-            ], model=self.model,
+            ], model=self.model, nhan=f"bảng · {e.location}",
                 max_tokens=min(TOKEN_TOI_DA, TOKEN_NEN + TOKEN_MOI_TRUONG * len(cot)))
         except (ExtractionFailed, LLMError) as ex:
             with self._khoa:
@@ -720,12 +702,13 @@ class Extractor:
         if (section or khoang) and len(nc) < MIN_KY_TU_NGU_CANH_HEP:
             nc = self.ngu_canh(doc)
         try:
-            kq = self.client.extract(lop, [
+            kq = self._hoi(lop, [
                 {"role": "system", "content": HE_THONG},
                 {"role": "user", "content":
                     f"Trích các thông tin sau{pham_vi} từ tài liệu định cỡ dưới đây.\n"
                     f"{NHAC_NHO}\n\n=== TÀI LIỆU ===\n{nc}"},
             ], model=self.model,
+                nhan=f"{ten_phan_he or 'hệ thống'} · nhóm {nhom.ten}",
                 max_tokens=min(TOKEN_TOI_DA,
                                TOKEN_NEN + TOKEN_MOI_TRUONG * len(nhom.tham_so)))
         except (ExtractionFailed, LLMError) as e:
@@ -751,14 +734,16 @@ class Extractor:
     def nhan_dien_phan_he(self, doc: DocxDocument) -> list[SizingExtension]:
         self.tk.luot_goi += 1
         try:
-            kq = self.client.extract(DanhSachPhanHe, [
+            # `giu_vi_tri`: câu trả lời chứa CHỈ SỐ bảng (`bang_cau_hinh`), nên chỉ
+            # dùng lại khi cả nhãn vị trí cũng y nguyên — xem `src/llm/phat_lai.py`.
+            kq = self._hoi(DanhSachPhanHe, [
                 {"role": "system", "content": HE_THONG},
                 {"role": "user", "content":
                     "Liệt kê các PHÂN HỆ được định cỡ trong tài liệu dưới đây "
                     "(Application, Database, Redis, Kafka, K8s, LB/FW…). "
                     "Chỉ liệt kê phân hệ tài liệu thực sự có mục riêng; không suy đoán."
                     f"\n\n=== TÀI LIỆU ===\n{self.ngu_canh(doc)}"},
-            ], model=self.model)
+            ], model=self.model, nhan="nhận diện phân hệ", giu_vi_tri=True)
         except (ExtractionFailed, LLMError) as e:
             self.tk.luot_goi_hong += 1
             self.tk.loi.append(f"nhận diện phân hệ: {e}")
@@ -802,12 +787,12 @@ class Extractor:
     def trich_cap_tai_lieu(self, doc: DocxDocument, core: SizingCore) -> None:
         self.tk.luot_goi += 1
         try:
-            kq = self.client.extract(ThongTinChung, [
+            kq = self._hoi(ThongTinChung, [
                 {"role": "system", "content": HE_THONG},
                 {"role": "user", "content":
                     "Trích thông tin chung của bản định cỡ dưới đây.\n" + NHAC_NHO +
                     f"\n\n=== TÀI LIỆU ===\n{self.ngu_canh(doc)}"},
-            ], model=self.model)
+            ], model=self.model, nhan="thông tin chung")
         except (ExtractionFailed, LLMError) as e:
             self.tk.luot_goi_hong += 1
             self.tk.loi.append(f"thông tin chung: {e}")

@@ -464,3 +464,36 @@ class TestBangTuDong:
         from src.giao_dien import bang_tu_dong
         r = bang_tu_dong([["A", "A (2)", "A"], ["1", "2", "3"]])
         assert len(r[0]) == 3
+
+
+class TestThamDinhLai53:
+    """5.3 — dòng «bản này khác lần trước ở đâu» và «phân hệ nào đổi»."""
+
+    def test_khong_phai_tham_dinh_lai_thi_khong_hien(self):
+        from src.giao_dien import tom_tat_thay_doi, tom_tat_vung_doi
+        assert tom_tat_thay_doi({}) is None and tom_tat_thay_doi(None) is None
+        assert tom_tat_vung_doi({"c3": {}}) == ""
+
+    def test_nop_y_nguyen_thi_CANH_BAO_nop_nham(self):
+        from src.giao_dien import tom_tat_thay_doi
+        muc, cau = tom_tat_thay_doi({"giong_het": True, "sua": 0, "them": 0, "xoa": 0})
+        assert muc == "warning" and "nộp nhầm bản cũ" in cau
+
+    def test_liet_ke_cho_doi(self):
+        from src.giao_dien import tom_tat_thay_doi
+        muc, cau = tom_tat_thay_doi({"giong_het": False, "sua": 1, "them": 2, "xoa": 0,
+                                     "vi_tri": ["Mục II.2, trang 3 · bảng · sửa"],
+                                     "con_nua": 2})
+        assert muc == "info"
+        assert "1 chỗ sửa · 2 chỗ thêm · 0 chỗ xoá" in cau
+        assert cau.endswith("Mục II.2, trang 3 · bảng · sửa; và 2 chỗ khác")
+
+    def test_khong_so_duoc_thi_noi_ra(self):
+        from src.giao_dien import tom_tat_thay_doi
+        assert tom_tat_thay_doi({"loi": "tài liệu lần trước không còn"})[0] == "warning"
+
+    def test_vung_doi(self):
+        from src.giao_dien import tom_tat_vung_doi
+        assert tom_tat_vung_doi({"vung_doi": ["redis"], "vung_moi": [], "chung_doi": False}) \
+            == "phân hệ đổi: redis · phần chung (ngoài mọi phân hệ) không đổi"
+        assert "CÓ đổi" in tom_tat_vung_doi({"vung_doi": [], "chung_doi": True})
