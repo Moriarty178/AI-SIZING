@@ -1355,16 +1355,18 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       hai lượt ở phép đo 5.0b, tức nhiễu model đã biết, không phải lỗi khoá. 17 lời
       gọi không trúng đệm nên phép kiểm «phát lại chính xác ⇒ 0/0» không áp được
       trọn; script chấm theo ngưỡng nhiễu 3% và nay ghi rõ «phát lại phần lớn».
-      → **Sau nghiệm thu, `/health` báo CSDL không sẵn sàng** (`password authentication
-      failed`), dù lượt nghiệm thu vừa ghi thành công. Không xác định được thứ tự sự
-      việc từ đầu ra; hai cách đều dẫn tới cùng một cái bẫy của thiết kế 5.0 — CSDL
-      chỉ được kiểm MỘT lần lúc khởi động, hỏng là hỏng tới khi khởi động lại. Vá:
-      (a) API thử mở lại CSDL nền mỗi 30 giây khi đã cấu hình mà chưa mở được —
-      `/health` vẫn không tự kết nối; cứu được ca máy khởi động lại (`copilot` lên
-      trước `copilot-db`) và ca sửa mật khẩu phía CSDL; KHÔNG cứu được ca đổi `.env`
-      (biến môi trường chỉ đọc lúc tạo container). (b) Lỗi mở CSDL kèm gợi ý sửa:
-      sai mật khẩu → «`POSTGRES_PASSWORD` chỉ được đọc ở LẦN ĐẦU tạo volume» + lệnh
-      `ALTER USER`; mật khẩu có ký tự đặc biệt phải mã hoá phần trăm trong URL.
+      → `/health` sau nghiệm thu: CSDL **sẵn sàng**. (Một dòng `/health` báo
+      `password authentication failed` gửi kèm lúc đầu là bản chụp nhầm từ TRƯỚC khi
+      mật khẩu được chỉnh khớp — người dùng đính chính cùng ngày.)
+      → Dòng nhầm ấy vẫn chỉ ra một cái bẫy có thật của thiết kế 5.0: CSDL chỉ được
+      kiểm MỘT lần lúc khởi động, hỏng là tính năng hồ sơ tắt tới khi khởi động lại
+      Copilot. Ca chắc chắn xảy ra: máy khởi động lại, `copilot` lên trước
+      `copilot-db` (cố ý không phụ thuộc). Vá (`4294761`): (a) API thử mở lại CSDL
+      nền mỗi 30 giây khi đã cấu hình mà chưa mở được — `/health` vẫn không tự kết
+      nối; KHÔNG cứu được ca đổi `.env` (biến môi trường chỉ đọc lúc tạo container).
+      (b) Lỗi mở CSDL kèm gợi ý sửa: sai mật khẩu → «`POSTGRES_PASSWORD` chỉ được
+      đọc ở LẦN ĐẦU tạo volume» + lệnh `ALTER USER`; mật khẩu có ký tự đặc biệt phải
+      mã hoá phần trăm trong URL.
       - `src/luu_tru/baseline.py` (thuần Python): `gan_khoa` — chuẩn hoá tên phân hệ
         + chặn gộp nhầm trong cùng một lần + khoá luôn duy nhất; `doi_chieu` — gán
         trạng thái từng dòng baseline, gom rổ phát sinh; mức độ đóng băng, lần này
