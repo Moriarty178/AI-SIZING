@@ -16,7 +16,7 @@ import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.giao_dien import (bang_baseline, bang_lan_sua, bang_phat_sinh,
+from src.giao_dien import (bang_baseline, bang_lan_sua, bang_phat_sinh, bang_tu_dong,
                            csdl_san_sang, nhan_ho_so, noi_dung_goc_tu_cho_sua,
                            tom_tat_ho_so, CACH_TIM_CHINH_XAC,
                            CAN_MODEL, CHE_DO, cau_gioi_han, chay_checklist,
@@ -330,9 +330,13 @@ def hien_sua_finding(kh: KhachAPI, ho_so_id: int, fb_id: int, vung: str):
         cho.get("ghi_chu") or "")
     for doan in cho.get("doan") or []:
         st.caption(f"{doan.get('location')} · {doan.get('kind')}"
+                   + (f" · chỉ hiện dòng nhắc tên phân hệ "
+                      f"({len(doan['rows']) - 1}/{doan.get('tong_dong', 0) - 1} dòng)"
+                      if doan.get("loc_theo_ten") else "")
                    + (" · đã cắt bớt" if doan.get("cat_bot") else ""))
         if doan.get("rows"):
-            st.dataframe(doan["rows"], hide_index=True, use_container_width=True)
+            st.dataframe(bang_tu_dong(doan["rows"]), hide_index=True,
+                         use_container_width=True)
         else:
             st.text(doan.get("text") or "")
     if cho.get("con_nua"):

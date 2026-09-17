@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 4 / 14 | 🟡 5.0b · 5.0 · 5.0a · 5.1 XONG. **5.2 code xong 09-17, CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_2.py`) |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 5 / 14 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · **5.2 NGHIỆM THU ĐẠT 09-17** (định vị mục+trang 77,9%, đúng phần tử 0%). Tiếp: 5.3 |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) code xong, **chờ nghiệm thu trên máy nội bộ**.
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. Mục kế tiếp: **5.3** (tái thẩm định: C3 chọn lọc, C4 toàn bộ).
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1408,14 +1408,43 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       đã đổi là việc của 5.3.
 
 
-- [~] 5.2 — **Hiển thị chỗ cần sửa + ghi nhận giá trị sửa.** Từ finding
+- [x] 5.2 — **Hiển thị chỗ cần sửa + ghi nhận giá trị sửa.** Từ finding
       (`location` + `rule_ref` + `computed_evidence`) → hiện đúng đoạn/bảng trong
       bản sizing đang nói tới → người dùng nhập nội dung đã sửa → lưu vào
       `lan_sua`. **KHÔNG ghi ngược vào `.docx`** (hoãn, xem đầu GĐ 5). Đây là thứ
       nuôi cột "Lần sửa 1…n" của 5.6.
       → Endpoint: `GET /result/{ma}/noi-dung/{finding_id}` (nội dung gốc tại chỗ
       lỗi) + `POST /result/{ma}/lan-sua` (ghi nhận nội dung mới).
-      → 🟡 **CODE XONG 2026-09-17 — CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_2.py`).
+      → ✅ **NGHIỆM THU ĐẠT 2026-09-17** trên máy nội bộ, hồ sơ #1 VTracking 2.0.1
+      (`docs/nghiem-thu-5.2-20260917-135417.json`), commit `f9b40d8`: S1–S5 đạt —
+      719/719 dòng trả chỗ sửa, tài liệu còn trên máy, sửa 2 lần ra `so_lan` 1 → 2,
+      tên nguyên vẹn, thiếu danh tính → 400. 719 lượt hỏi mất 10,6 giây (15 ms/dòng).
+      → **Đ1 — công cụ định vị được tới đâu trên tài liệu thật:**
+
+      | Cách tìm | Dòng | Tỉ lệ |
+      |---|---|---|
+      | Mục + trang | 555 | 77,2% |
+      | Chỉ trang | 5 | 0,7% |
+      | **Đúng một phần tử** | **0** | **0%** |
+      | Chỉ gợi ý theo tên phân hệ | 112 | 15,6% |
+      | Không tìm được | 47 | 6,5% |
+
+      Tức là KHÔNG dòng nào chỉ thẳng được một đoạn/bảng; tốt nhất là khoanh một
+      mục trên một trang, và 22% dòng không khoanh được. Đòn bẩy thật nằm ở PHÍA
+      TRÍCH XUẤT: để C3/C5 ghi lại chỉ số phần tử hoặc câu trích làm căn cứ, thay vì
+      chỉ chuỗi `location`. Chưa làm — ghi lại làm việc cần cân nhắc sau GĐ 5.
+      → **Vá theo ảnh chụp nghiệm thu (chưa xem lại trên máy nội bộ):**
+      (a) Trong một mục, hiện theo THỨ TỰ TÀI LIỆU, trần 5 → 12 phần tử: xếp đoạn nhắc
+      tên lên trước làm năm ô bị nhãn ngắn («Mức tiêu thụ CPU của FrontEnd») chiếm
+      hết, bảng số — chỗ cần sửa — rơi ra ngoài. (b) Không định vị được: nếu có TIÊU ĐỀ
+      nhắc tên phân hệ thì hiện cả mục đó (tới tiêu đề kế tiếp cùng cấp) — ảnh 2, tiêu
+      đề «Định cỡ module Mongo (N + 1)» từng bị xếp thứ ba sau hai bảng không liên
+      quan. (c) Gợi ý rời: đoạn văn trước bảng, và bảng CHỈ hiện hàng tiêu đề + dòng
+      nhắc tên — ảnh 2, 25 dòng đầu bảng máy chủ không có dòng Mongo nào. Trong một
+      mục thì KHÔNG lọc (dòng CPU/RAM không lặp tên phân hệ). (d) Bảng hiện hàng đầu
+      làm tiêu đề cột thay cho `0, 1, 2…`; tiêu đề trùng (`Cores`/`Cores`) đánh số để
+      không mất cột.
+      → Code xong trước nghiệm thu:
       - `src/luu_tru/cho_sua.py` (thuần Python): từ `location` của lỗi tìm phần tử
         trong tài liệu — `phần tử #N` ra đúng một phần tử; `Mục X[, trang Y]` ra NHÓM
         phần tử của phạm vi đó, đoạn nhắc tên phân hệ xếp trước; không định vị được
@@ -1777,3 +1806,4 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **CSDL được thử mở lại NỀN mỗi 30 giây, thay vì kiểm một lần lúc khởi động** | Nghiệm thu 5.1 lộ ra: CSDL hỏng lúc khởi động là tính năng hồ sơ tắt tới lần khởi động lại, không ai biết. Ca chắc chắn xảy ra: máy khởi động lại, `copilot` lên trước `copilot-db` (cố ý không phụ thuộc). `/health` vẫn KHÔNG tự kết nối — lý do cũ vẫn đúng |
 | 2026-09-17 | **Giữ bền bản `.docx` đã nộp trong volume** (`tai_lieu/{mã việc}/{tên gốc}`), thay cho `/tmp` của container | 5.2 phải mở lại tài liệu nhiều ngày sau để hiện chỗ cần sửa; 5.3 sẽ cần so hai bản. Đổi mặc định lưu giữ hồ sơ khách — `DELETE /result` vẫn xoá sạch. **Cần người vận hành xác nhận** |
 | 2026-09-17 | **API sửa lỗi theo HỒ SƠ (`/ho-so/{id}/finding/{fb}`), không theo mã việc như phác thảo** | Một dòng baseline sống qua nhiều lượt chạy (nhiều mã việc); gắn vào một mã việc thì lịch sử sửa rời ra từng lượt |
+| 2026-09-17 | **Chỗ sửa hiện theo thứ tự tài liệu trong một mục; không định vị được thì tìm MỤC có tiêu đề nhắc phân hệ trước khi gom phần tử rời** | Ảnh chụp nghiệm thu 5.2: xếp theo «nhắc tên» làm nhãn ngắn đẩy bảng số ra ngoài, và đưa hai bảng không liên quan lên trước tiêu đề «Định cỡ module Mongo» |

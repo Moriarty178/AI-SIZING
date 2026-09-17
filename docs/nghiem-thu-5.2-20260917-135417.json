@@ -1,0 +1,44 @@
+{
+  "ho_so_id": 1,
+  "commit": "f9b40d8 (đóng dấu lúc build)",
+  "so_dong": 719,
+  "cach_tim": {
+    "khong_tim_duoc": 47,
+    "ten_phan_he": 112,
+    "muc_trang": 555,
+    "trang": 5
+  },
+  "giay_hoi_cho_sua": 10.6,
+  "tieu_chi": [
+    {
+      "ma": "S1",
+      "dat": true,
+      "chi_tiet": "719/719 dòng trả được chỗ sửa"
+    },
+    {
+      "ma": "S2",
+      "dat": true,
+      "chi_tiet": "0 dòng báo tài liệu «không còn trên máy chủ»"
+    },
+    {
+      "ma": "S3",
+      "dat": true,
+      "chi_tiet": "so_lan trả về [1, 2], lịch sử đọc lại 2 dòng"
+    },
+    {
+      "ma": "S4",
+      "dat": true,
+      "chi_tiet": "tên lưu «phongnh40» — gửi «phongnh40»"
+    },
+    {
+      "ma": "S5",
+      "dat": true,
+      "chi_tiet": "không danh tính → HTTP 400"
+    },
+    {
+      "ma": "Đ1",
+      "dat": null,
+      "chi_tiet": "định vị (phần tử/mục/trang) 560 = 77.9% · chỉ gợi ý theo tên phân hệ 112 = 15.6% · không tìm được 47 = 6.5% · chi tiết {'khong_tim_duoc': 47, 'ten_phan_he': 112, 'muc_trang': 555, 'trang': 5}"
+    }
+  ]
+}

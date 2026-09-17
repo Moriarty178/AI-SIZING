@@ -460,6 +460,28 @@ CACH_TIM_CHINH_XAC = ("phan_tu", "muc_trang", "muc", "trang")
 TOI_DA_NOI_DUNG_GOC = 2000
 
 
+def bang_tu_dong(rows: list[list[str]] | None) -> list[dict]:
+    """Bảng trong tài liệu → dòng cho `st.dataframe`, HÀNG ĐẦU làm tiêu đề cột.
+
+    Ảnh nghiệm thu 5.2: đưa thẳng list-of-lists thì tiêu đề cột là `0, 1, 2…` còn
+    hàng tiêu đề thật bị đẩy xuống làm dữ liệu. Tiêu đề trùng (`Cores`, `Cores`,
+    `RAM`, `RAM` — bảng hai cột giá trị + tỉ lệ) được đánh số, vì trùng khoá thì
+    dict nuốt mất một cột; tiêu đề rỗng thành «Cột N».
+    """
+    if not rows:
+        return []
+    dau, than = (rows[0], rows[1:]) if len(rows) > 1 else ([], rows)
+    so_cot = max(len(r) for r in rows)
+    ten: list[str] = []
+    for i in range(so_cot):
+        h = ((dau[i] if i < len(dau) else "") or "").strip() or f"Cột {i + 1}"
+        goc_h, n = h, 2
+        while h in ten:
+            h, n = f"{goc_h} ({n})", n + 1
+        ten.append(h)
+    return [{ten[i]: (r[i] if i < len(r) else "") for i in range(so_cot)} for r in than]
+
+
 def bang_lan_sua(d: dict) -> list[dict]:
     return [{"Lần": x.get("so_lan"), "Người ghi nhận": x.get("ten", ""),
              "Lúc": str(x.get("tao_luc", ""))[:19].replace("T", " "),

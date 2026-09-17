@@ -430,3 +430,37 @@ class TestSua:
         assert noi_dung_goc_tu_cho_sua(cho) == "A | 1\nB | 2"
         dai = {"cach_tim": "muc", "doan": [{"text": "x" * 5000}]}
         assert len(noi_dung_goc_tu_cho_sua(dai)) == TOI_DA_NOI_DUNG_GOC
+
+
+class TestBangTuDong:
+    """Ảnh nghiệm thu 5.2: tiêu đề cột hiện `0, 1, 2…`, hàng tiêu đề thật thành dữ liệu."""
+
+    def test_hang_dau_lam_tieu_de(self):
+        from src.giao_dien import bang_tu_dong
+        assert bang_tu_dong([["Máy chủ", "IP"], ["Master 01", "172.21.5.245"]]) == \
+            [{"Máy chủ": "Master 01", "IP": "172.21.5.245"}]
+
+    def test_tieu_de_trung_KHONG_nuot_cot(self):
+        from src.giao_dien import bang_tu_dong
+        r = bang_tu_dong([["Phân hệ", "Cores", "Cores", "RAM", "RAM"],
+                          ["Worker", "16", "7.9%", "32,000", "1%"]])
+        assert list(r[0]) == ["Phân hệ", "Cores", "Cores (2)", "RAM", "RAM (2)"]
+        assert r[0]["Cores (2)"] == "7.9%"
+
+    def test_tieu_de_rong_va_dong_dai_hon_tieu_de(self):
+        from src.giao_dien import bang_tu_dong
+        r = bang_tu_dong([["A", ""], ["1", "2", "3"]])
+        assert list(r[0]) == ["A", "Cột 2", "Cột 3"] and r[0]["Cột 3"] == "3"
+
+    def test_bang_mot_dong_giu_du_lieu(self):
+        from src.giao_dien import bang_tu_dong
+        assert bang_tu_dong([["x", "y"]]) == [{"Cột 1": "x", "Cột 2": "y"}]
+
+    def test_rong(self):
+        from src.giao_dien import bang_tu_dong
+        assert bang_tu_dong([]) == [] and bang_tu_dong(None) == []
+
+    def test_trung_voi_ten_da_danh_so_san(self):
+        from src.giao_dien import bang_tu_dong
+        r = bang_tu_dong([["A", "A (2)", "A"], ["1", "2", "3"]])
+        assert len(r[0]) == 3

@@ -53,3 +53,7 @@ docs/result_*.json
 # Bản sao lồng của repo trên laptop — một kho git RIÊNG, có thể mang commit
 # chưa đẩy, nên không xoá (2026-09-17). Chỉ chặn để không bị gắn vào như gitlink.
 /ToolSizing/
+
+# Ảnh chụp giao diện khi nghiệm thu — hiện nội dung hồ sơ khách (IP nội bộ,
+# số liệu định cỡ). Chỉ để trao đổi, không commit (2026-09-17).
+docs/image/
