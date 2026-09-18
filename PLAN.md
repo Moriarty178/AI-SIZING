@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 6 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 nghiệm thu đạt 09-18 (⚠️ rủi ro chưa sửa «phân hệ ma»). **5.4 CODE XONG 09-18, CHỜ NGHIỆM THU** (báo lỗi hệ thống; lược đồ lên bản 3 có migration) |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 7 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · **5.4 NGHIỆM THU ĐẠT 09-18** (báo lỗi hệ thống cả hai rổ; lược đồ lên bản 3, migration chạy thật trên PostgreSQL). ⚠️ Rủi ro chưa sửa «phân hệ ma». Tiếp: 5.6 + 5.9 |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) code xong, **chờ nghiệm thu**.
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) **nghiệm thu đạt 2026-09-18**. Mục kế tiếp: **5.6 + 5.9** (bảng lịch sử sửa lỗi + ba cột Admin).
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1621,10 +1621,17 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       để 5.2b nhảy đúng bảng/đoạn thay vì tiêu đề mục. Tốn thêm lượt model → đo lại
       thời gian và độ ổn định (5.0b) sau khi đổi.
 
-- [~] 5.4 — **Nút "Báo lỗi hệ thống".** Người dùng thấy một lỗi bị ping lại dù đã
+- [x] 5.4 — **Nút "Báo lỗi hệ thống".** Người dùng thấy một lỗi bị ping lại dù đã
       sửa nhiều lần, hoặc thấy báo không hợp lý → chọn finding + điền lý do → đẩy
       lên hàng chờ Admin. Nối với phân loại `bao_sai` sẵn có của 4.1.
-      → 🟡 **CODE XONG 2026-09-18 — CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_4.py`).
+      → ✅ **NGHIỆM THU ĐẠT 2026-09-18** trên máy nội bộ, hồ sơ #1
+      (`docs/nghiem-thu-5.4-20260918-112906.json`, commit `95cda60`): B1–B6 đạt.
+      **Migration chạy thật trên PostgreSQL**: log `[csdl] nâng lược đồ 2 → 3`,
+      `/health` báo `csdl.luoc_do = "3"`, và hồ sơ cũ còn NGUYÊN — 719 dòng baseline,
+      6 lần, 174 dòng phát sinh. Báo được cả hai rổ, lời báo vào nhật ký 4.1.
+      → Lượt nghiệm thu còn xác nhận luôn chẩn đoán «phân hệ ma» của 5.3: dòng ĐẦU
+      TIÊN của rổ phát sinh là `EVD-17#SAN Switch` — lỗi của một «phân hệ» mà tài liệu
+      không có.
       → **Báo được CẢ dòng trong rổ phát sinh**, không chỉ dòng baseline: 5.3 đo được
       rổ phát sinh là chỗ dòng vô lý đổ vào nhiều nhất (174 dòng «phân hệ ma» chỉ vì
       sửa một ô bảng). Không báo được ở đó thì đúng ca cần tiếng nói người dùng nhất

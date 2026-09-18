@@ -1,0 +1,45 @@
+{
+  "ho_so_id": 1,
+  "commit": "95cda60 (đóng dấu lúc build)",
+  "luoc_do": "3",
+  "so_baseline": 719,
+  "so_lan": 6,
+  "so_phat_sinh": 174,
+  "tieu_chi": [
+    {
+      "ma": "B1",
+      "dat": true,
+      "chi_tiet": "CSDL sẵn sàng: True · lược đồ trong CSDL: '3' (cần '3')"
+    },
+    {
+      "ma": "B2",
+      "dat": true,
+      "chi_tiet": "hồ sơ cũ: 719 dòng baseline · 6 lần · 174 dòng phát sinh ở lần mới nhất"
+    },
+    {
+      "ma": "B3",
+      "dat": true,
+      "chi_tiet": "báo dòng baseline → {'id': 1, 'khoa': 'PRC-07#he_thong', 'finding_id_goc': 'PRC-07#he_thong', 'nguon': 'baseline', 'nhat_ky': 'đã ghi nhật ký 4.1 (việc b585fae61dc2)'}"
+    },
+    {
+      "ma": "B4",
+      "dat": true,
+      "chi_tiet": "báo dòng phát sinh → {'id': 2, 'khoa': 'EVD-17#san switch', 'finding_id_goc': 'EVD-17#SAN Switch', 'nguon': 'phát sinh', 'nhat_ky': 'đã ghi nhật ký 4.1 (việc b585fae61dc2)'}"
+    },
+    {
+      "ma": "B5",
+      "dat": true,
+      "chi_tiet": "đọc lại 2 lời báo, tên lưu đúng: True · nhật ký 4.1: «đã ghi nhật ký 4.1 (việc b585fae61dc2)»"
+    },
+    {
+      "ma": "B6",
+      "dat": true,
+      "chi_tiet": "không danh tính → HTTP 400"
+    },
+    {
+      "ma": "Đ1",
+      "dat": null,
+      "chi_tiet": "hồ sơ có 2 lời báo sau lượt nghiệm thu này"
+    }
+  ]
+}
