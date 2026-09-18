@@ -171,6 +171,14 @@ def kiem_he_so_du_phong(doc: DocxDocument, rules: RuleSet
     return ra, tk
 
 
+def _dau_vao(ct: CongThucKhai, k: float | None = None) -> str:
+    """5.6 — đầu vào code đã dùng: công thức NGUYÊN VĂN tài liệu khai và hệ số quy tắc
+    đòi. Đường này không đi qua C3 nên không có tham số như quy tắc định lượng, nhưng
+    Admin vẫn cần biết code đọc được gì mới kết luận thế."""
+    return (f"công thức khai: {ct.can_cu()}"
+            + (f"; hệ số dự phòng quy tắc đòi: {k:g}" if k is not None else ""))
+
+
 def _chung(ct: CongThucKhai, ma: str, r, hau_to: str) -> dict:
     return dict(id=f"{ma}-hsdp-{hau_to}", rule_ref=ma,
                 location=ct.location, scope_key=ct.nhan_dong,
@@ -200,6 +208,7 @@ def _finding_thieu(ct: CongThucKhai, ma: str, r, k: float) -> Finding:
             f"{(' ' + ct.don_vi) if ct.don_vi else ''} nên số học không sai — "
             f"chỉ thiếu hệ số dự phòng {k:g}"
             + (f", nhân vào được {moi:,.0f}" if moi is not None else "")),
+        dau_vao=_dau_vao(ct, k),
         suggestion=(f"Nhân thêm hệ số dự phòng {k:g} cho thông lượng thiết bị mạng"
                     + (f" (thay cho {da_co} đang dùng)" if da_co else "")
                     + (f": kết quả {moi:,.0f}"
@@ -214,6 +223,7 @@ def _finding_dat(ct: CongThucKhai, ma: str, r, k: float) -> Finding:
         finding=(f"Công thức thông lượng cho «{ct.nhan_dong or 'mục này'}» đã có "
                  f"hệ số dự phòng {k:g} và số học khớp."),
         computed_evidence=f"kiểm lại {ct.can_cu()} — đúng, có nhân ×{k:g}",
+        dau_vao=_dau_vao(ct, k),
         confidence="cao", **_chung(ct, ma, r, "dat"))
 
 
@@ -223,5 +233,6 @@ def _finding_luong_nghia(ct: CongThucKhai, ma: str, r) -> Finding:
         finding=(f"Không kết luận được hệ số dự phòng cho «{ct.nhan_dong or 'mục này'}»: "
                  "cách đọc dấu phẩy trong công thức cho hai kết quả khác nhau."),
         computed_evidence=f"{ct.can_cu()} — khớp với cả hai lối đọc số",
+        dau_vao=_dau_vao(ct),
         suggestion="Ghi rõ hệ số dự phòng thành một thừa số riêng để tránh nhập nhằng.",
         confidence="thap", **_chung(ct, ma, r, "luongnghia"))

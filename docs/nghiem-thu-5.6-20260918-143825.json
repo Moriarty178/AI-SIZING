@@ -1,0 +1,44 @@
+{
+  "ho_so_id": 1,
+  "commit": "1d9ee55 (đóng dấu lúc build)",
+  "so_dong": 719,
+  "so_lan_sua_max": 2,
+  "trang_thai": {
+    "chua_dat": 52,
+    "chua_kiem_duoc": 660,
+    "dat": 7
+  },
+  "so_dong_an_mac_dinh": 660,
+  "tieu_chi": [
+    {
+      "ma": "A1",
+      "dat": true,
+      "chi_tiet": "719 dòng bảng / 719 dòng baseline · cột «Lần sửa 1…2»"
+    },
+    {
+      "ma": "A2",
+      "dat": true,
+      "chi_tiet": "1/2 dòng do C4 kết luận có giá trị đầu vào"
+    },
+    {
+      "ma": "A3",
+      "dat": true,
+      "chi_tiet": "2/2 dòng đọc lại đúng ghi chú, tên+vai+hai cột chọn đúng: True"
+    },
+    {
+      "ma": "A4",
+      "dat": true,
+      "chi_tiet": "vai người làm sizing → HTTP 403 · không danh tính → HTTP 400"
+    },
+    {
+      "ma": "A5",
+      "dat": true,
+      "chi_tiet": "lưu lại y nguyên → {'da_luu': 0, 'bo_qua': 2}"
+    },
+    {
+      "ma": "Đ1",
+      "dat": null,
+      "chi_tiet": "trạng thái {'chua_dat': 52, 'chua_kiem_duoc': 660, 'dat': 7} · bộ lọc mặc định ẩn 660/719 dòng · 1/2 dòng C4 có đầu vào"
+    }
+  ]
+}

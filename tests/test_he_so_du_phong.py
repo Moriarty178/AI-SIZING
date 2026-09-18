@@ -140,3 +140,14 @@ def test_chon_ma_quy_tac_theo_thiet_bi():
     d = _Doc(_Bang([["Firewall", "Thông lượng"], ["x", "= 100*1.1 = 110"]]))
     fs, _ = kiem_he_so_du_phong(d, load_rules())
     assert [f.rule_ref for f in fs] == [MA_FW]
+
+
+def test_dong_hsdp_cung_mang_dau_vao_code_da_dung():
+    """5.6: đường hệ số dự phòng cũng bị xếp «C4 kết luận» trên bảng Admin, nên nó
+    cũng phải nói ra code đọc được gì. Nghiệm thu 5.6 trên máy nội bộ đo ra 1/2 dòng
+    C4 thiếu cột này, và dòng thiếu chính là dòng của đường này."""
+    fs, _ = kiem_he_so_du_phong(_doc_vtracking_v1(), load_rules())
+    assert fs
+    for f in fs:
+        assert f.dau_vao.startswith("công thức khai: «"), f.dau_vao
+    assert "hệ số dự phòng quy tắc đòi: 1.2" in " ".join(f.dau_vao for f in fs)

@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 7 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 nghiệm thu đạt 09-18. **5.6 + 5.9 bước 1 CODE XONG 09-18, CHỜ NGHIỆM THU** (bảng Admin, ba cột, C4 xuất đầu vào). ⚠️ Rủi ro chưa sửa «phân hệ ma» |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · **5.6 + 5.9 bước 1 NGHIỆM THU ĐẠT 09-18** (bảng Admin 719 dòng, lọc ẩn 660). ⚠️ Rủi ro chưa sửa «phân hệ ma». Tiếp: 5.9 bước 2 (đề xuất sửa quy tắc) |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) **nghiệm thu đạt 2026-09-18**. **5.6 + 5.9 bước 1** (bảng lịch sử sửa lỗi + ba cột Admin) code xong, **chờ nghiệm thu**.
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) **nghiệm thu đạt 2026-09-18**. **5.6 + 5.9 bước 1** (bảng lịch sử sửa lỗi + ba cột Admin) **nghiệm thu đạt 2026-09-18**. Mục kế tiếp: **5.9 bước 2** (đề xuất sửa quy tắc).
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1670,7 +1670,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 - [ ] 5.5 — **Gửi phê duyệt.** User bấm gửi sizing cho Admin → trạng thái việc
       `cho_duyet`; Admin có hàng chờ.
 
-- [~] 5.6 — **Bảng lịch sử sửa lỗi.** Mỗi dòng = 1 lỗi cố định từ baseline (5.1);
+- [x] 5.6 — **Bảng lịch sử sửa lỗi.** Mỗi dòng = 1 lỗi cố định từ baseline (5.1);
       các cột "Lần sửa 1…n" — n = số lần sửa max trên toàn bộ lỗi; ô chứa chi
       tiết sửa là gì, lỗi không có lần sửa đó thì bỏ trống.
       → **Cột Trạng thái có BA giá trị, kèm nhãn ai kết luận:** `Đạt (C4 tính
@@ -1688,8 +1688,26 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       10% đặt trước khi đo.
       → Trần thực tế của cột này: 87% dòng là *Chưa kiểm được*, chỉ ~1,4% có con số
       do code tính (C3 trích được 34/397 trường ở lượt đo).
-      → 🟡 **CODE XONG 2026-09-18 — CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_6.py`), kèm
-      **bước 1 của 5.9** (ba cột Admin). Bước 2 của 5.9 — đề xuất sửa quy tắc — làm
+      → ✅ **NGHIỆM THU ĐẠT 2026-09-18** trên máy nội bộ, hồ sơ #1
+      (`docs/nghiem-thu-5.6-20260918-143825.json`, commit `1d9ee55`): A1–A5 đạt — 719
+      dòng bảng, cột «Lần sửa 1…2», ba cột Admin ghi/đọc đúng kèm tên + vai, vai người
+      làm sizing bị chặn 403, lưu lại y nguyên không thêm dòng lịch sử.
+      → **Đ1:** trạng thái lần này `chưa đạt 52 · chưa kiểm được 660 · đạt 7`; bộ lọc
+      mặc định ẩn **660/719 dòng** (92%) — đúng lý do đặt ra bộ lọc.
+      → ⚠️ **Nghiệm thu lộ ra hai điều, đã xử lý ngay:**
+      (a) **Chỉ 2/719 dòng được C4 kết luận** ở lần này, và 1 trong 2 dòng đó KHÔNG có
+      giá trị đầu vào — vì nó đến từ đường **hệ số dự phòng** (`he_so_du_phong.py`),
+      một đường C4 riêng không đi qua `QuantitativeValidator`. Đã bổ sung `dau_vao`
+      cho đường đó (công thức nguyên văn tài liệu khai + hệ số quy tắc đòi).
+      (b) **C5 dùng lại 0/146 ở lượt nghiệm thu** — đúng như thiết kế nhưng đáng lẽ
+      phải báo trước: đổi cách khoá C5 sang theo vùng (cùng ngày) làm mọi khoá C5 cũ
+      không còn khớp, nên lần thẩm định ĐẦU TIÊN sau khi đổi phải hỏi lại toàn bộ C5
+      (27 phút). Từ lần sau mới thấy phần tiết kiệm.
+      → Còn một con số CHƯA giải thích được: lượt này C3 dùng lại 82/118, và tổng lượt
+      C3 tụt từ 132 (L3 hôm trước, cùng tệp) xuống 118 — tức danh sách phân hệ lần này
+      khác lần trước. Cần `thay_doi` + `phat_lai.goi_moi_vi_du` của bản ghi việc để
+      biết là tệp nộp khác hay lượt «nhận diện phân hệ» không khớp khoá.
+      Kèm **bước 1 của 5.9** (ba cột Admin). Bước 2 của 5.9 — đề xuất sửa quy tắc — làm
       riêng sau (người dùng chốt 2026-09-18: tách hai bước để nghiệm thu sớm).
       → **C4 nay xuất GIÁ TRỊ ĐẦU VÀO riêng** (`Finding.dau_vao`, ghi vào
       `ket_qua_lan.dau_vao` từng lần): «cpu_95th=85; nguong_cpu=80». Đây là việc PLAN
