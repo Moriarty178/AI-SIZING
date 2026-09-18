@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 6 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · **5.3 NGHIỆM THU ĐẠT 09-18** (nộp y nguyên: 267/268 lượt dùng lại; C5 chuyển sang khoá theo vùng). ⚠️ Rủi ro chưa sửa «phân hệ ma»: sửa 1 ô bảng → 174 lỗi phát sinh. Tiếp: 5.4 |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 6 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 nghiệm thu đạt 09-18 (⚠️ rủi ro chưa sửa «phân hệ ma»). **5.4 CODE XONG 09-18, CHỜ NGHIỆM THU** (báo lỗi hệ thống; lược đồ lên bản 3 có migration) |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh. Mục kế tiếp: **5.4** (nút «Báo lỗi hệ thống»).
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) code xong, **chờ nghiệm thu**.
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1621,12 +1621,42 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       để 5.2b nhảy đúng bảng/đoạn thay vì tiêu đề mục. Tốn thêm lượt model → đo lại
       thời gian và độ ổn định (5.0b) sau khi đổi.
 
-- [ ] 5.4 — **Nút "Báo lỗi hệ thống".** Người dùng thấy một lỗi bị ping lại dù đã
+- [~] 5.4 — **Nút "Báo lỗi hệ thống".** Người dùng thấy một lỗi bị ping lại dù đã
       sửa nhiều lần, hoặc thấy báo không hợp lý → chọn finding + điền lý do → đẩy
       lên hàng chờ Admin. Nối với phân loại `bao_sai` sẵn có của 4.1.
-      → Nay có thêm một loại dòng CHẮC CHẮN người dùng sẽ báo: rổ phát sinh bị lấp bởi
-      «phân hệ ma» (5.3). Phải báo được cả dòng trong rổ phát sinh, không chỉ dòng
-      baseline.
+      → 🟡 **CODE XONG 2026-09-18 — CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_4.py`).
+      → **Báo được CẢ dòng trong rổ phát sinh**, không chỉ dòng baseline: 5.3 đo được
+      rổ phát sinh là chỗ dòng vô lý đổ vào nhiều nhất (174 dòng «phân hệ ma» chỉ vì
+      sửa một ô bảng). Không báo được ở đó thì đúng ca cần tiếng nói người dùng nhất
+      lại không có nút nào.
+      → **LƯỢC ĐỒ LÊN BẢN 3, và từ nay có MIGRATION THẬT** (`luoc_do.nang_cap`):
+      `bao_cao_loi` đổi hình dạng (thêm `ho_so_id`, hai nguồn `finding_baseline_id` /
+      `finding_phat_sinh_id` với ràng buộc đúng một cái, `khoa` chép lại lúc báo).
+      Máy nội bộ đang giữ hồ sơ thật 6 lần thẩm định — bắt xoá volume để đổi một bảng
+      RỖNG là mất dữ liệu người dùng vì lý do của chúng ta. Nâng cấp chạy trong cùng
+      giao dịch với việc ghi số phiên bản; bảng cũ mà CÒN DÒNG thì DỪNG và nói ra
+      (không bao giờ tự xoá). `/health` báo `csdl.luoc_do` đọc thẳng từ CSDL.
+      → Code xong trước nghiệm thu:
+      - `luoc_do.nang_cap` + `kho.khoi_tao` tự nâng; `kho.phien_ban_luoc_do`.
+      - `kho.them_bao_cao_loi` / `ds_bao_cao_loi`; `doc_ho_so` thêm `so_bao_loi` cho
+        CẢ HAI rổ; `doc_finding` trả kèm các lời báo của dòng đó.
+      - API `POST|GET /ho-so/{id}/bao-loi` (thiếu danh tính → 400, dòng không thuộc hồ
+        sơ → 404, lý do rỗng / chỉ đúng một nguồn → 422).
+      - **Nối 4.1**: mỗi lời báo cũng vào `phan_hoi` + nhật ký CSV của LẦN MỚI NHẤT với
+        phân loại `bao_sai` — dataset cải tiến công cụ chỉ có MỘT chỗ. Chạy tốt nhất có
+        thể: hỏng thì lời báo vẫn còn, câu trả lời nói rõ vì sao không ghi được (NT4).
+      - Giao diện: cột «Đã báo lỗi» ở cả hai bảng; rổ phát sinh nay CHỌN được dòng;
+        khối «🚩 Báo lỗi hệ thống» ở khung chi tiết và ở dòng phát sinh đang chọn.
+      - 21 test mới (kể cả hai test nâng cấp lược đồ: nâng xong dữ liệu còn nguyên, và
+        bảng cũ còn dòng thì DỪNG). Tổng 963.
+      → **Chú ý:**
+      (1) **Báo lỗi KHÔNG đòi hồ sơ «đang sửa»** — người dùng hay nhận ra dòng vô lý
+      đúng lúc xem lại trước khi gửi duyệt, hoặc khi Admin hỏi tới. Chặn lúc đó là vứt
+      đúng phản hồi đáng giá nhất.
+      (2) Dòng trong rổ phát sinh tính lại theo TỪNG lần (5.1) nên có thể biến mất ở
+      lần sau; lời báo chép sẵn `khoa` để vẫn đọc được.
+      (3) Hàng chờ phía Admin (đọc, đánh dấu đã xử lý, lọc «Lỗi ở phía: Hệ thống AI»)
+      là 5.9/5.12 — mục này mới lo phía người dùng.
 
 ### 5C — Quản trị & phê duyệt phía Admin
 
@@ -1941,3 +1971,5 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **C5 CHẶT khi thẩm định lại: sửa bất kỳ đâu là hỏi lại toàn bộ C5, kèm đo** | Người dùng chốt. C5 đọc cả tài liệu; «chỉ hỏi lại phân hệ có vùng đổi» sẽ bỏ sót khi nội dung về phân hệ A nằm ở mục khác (bảng tổng hợp cuối cụm). Đo Đ3 trên máy nội bộ rồi mới quyết có nới không |
 | 2026-09-18 | **C5 cấp phân hệ khoá dùng lại theo «vùng phân hệ + phần chung», bỏ cách chặt sau MỘT ngày** | Số đo Đ3 của chính lượt nghiệm thu 5.3: 90/129 lượt có vùng không đổi, 85 lượt hỏi lại ra ĐÚNG kết luận cũ, 5 lượt khác đều thuộc phân hệ không ai sửa (dao động model). Tức làm chặt vừa tốn thêm ~90 lượt vừa THÊM nhiễu. Lời nhắc gửi model không đổi, chỉ khoá hẹp lại |
 | 2026-09-18 | **«Phân hệ ma» ghi lại làm rủi ro đã biết, KHÔNG sửa ngay** | Người dùng chốt làm 5.4 trước. Sửa một ô bảng làm lượt «nhận diện phân hệ» (đọc cả tài liệu) kể thêm 3 phân hệ ⇒ 174 dòng phát sinh. Phương án đã phác: giữ danh sách phân hệ khi tiêu đề tài liệu không đổi, mốc bảng tìm lại theo nội dung |
+| 2026-09-18 | **Lược đồ CSDL có MIGRATION thật từ bản 3, không bắt xoá volume** | Máy nội bộ đã giữ hồ sơ thật (6 lần, 719 dòng baseline) ở bản 2. Quy tắc cũ «lệch phiên bản thì DỪNG» đúng khi chưa ai có dữ liệu, nhưng nay dừng nghĩa là bắt người dùng xoá dữ liệu của họ vì một bảng RỖNG của chúng ta. Nâng cấp chạy cùng giao dịch với số phiên bản; bước nào đụng bảng còn dòng thì dừng, không bao giờ tự xoá |
+| 2026-09-18 | **Báo lỗi hệ thống trỏ được vào CẢ dòng rổ phát sinh, và không đòi hồ sơ «đang sửa»** | Rổ phát sinh là nơi dòng vô lý đổ vào nhiều nhất (5.3: 174 dòng «phân hệ ma» từ một ô bảng). Người dùng hay nhận ra lúc xem lại trước khi gửi duyệt hoặc khi Admin hỏi tới — chặn lúc đó là vứt đúng phản hồi đáng giá nhất (mục tiêu 4.1) |

@@ -16,7 +16,8 @@ import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.giao_dien import (bang_baseline, bang_lan_sua, bang_phat_sinh, bang_tu_dong,
+from src.giao_dien import (bang_bao_loi, bang_baseline, bang_lan_sua, bang_phat_sinh,
+                           bang_tu_dong,
                            csdl_san_sang, nhan_ho_so, noi_dung_goc_tu_cho_sua,
                            tom_tat_ho_so, tom_tat_thay_doi, tom_tat_vung_doi,
                            CACH_TIM_CHINH_XAC,
@@ -361,6 +362,9 @@ def hien_sua_finding(kh: KhachAPI, ho_so_id: int, fb_id: int, vung: str):
     st.caption("Công cụ **KHÔNG sửa file Word**. Sửa trong Word, ghi nhận ở đây, rồi "
                "nộp lại để thẩm định lại hồ sơ.")
 
+    hien_bao_loi(kh, ho_so_id, f"{vung}_{fb_id}", finding_baseline_id=fb_id,
+                 da_bao=d.get("bao_cao_loi"))
+
     if d.get("ho_so_trang_thai") != "dang_sua":
         st.info("Hồ sơ đã gửi duyệt — không ghi nhận sửa được nữa.")
         return
@@ -382,6 +386,45 @@ def hien_sua_finding(kh: KhachAPI, ho_so_id: int, fb_id: int, vung: str):
                 return
             st.session_state[f"da_ghi_sua_{fb_id}"] = f"Đã ghi nhận lần sửa {r['so_lan']}."
             st.rerun()
+
+
+def hien_bao_loi(kh: KhachAPI, ho_so_id: int, khoa: str, *,
+                 finding_baseline_id: int | None = None,
+                 finding_phat_sinh_id: int | None = None, da_bao=None):
+    """5.4 — nút «Báo lỗi hệ thống» cho MỘT dòng, dùng chung cho cả hai rổ.
+
+    Báo được cả khi hồ sơ đã gửi duyệt: người dùng hay nhận ra một dòng vô lý đúng lúc
+    xem lại lần cuối, hoặc khi Admin hỏi tới.
+    """
+    tb = st.session_state.pop(f"da_bao_loi_{khoa}", None)
+    if tb:
+        st.success(tb)
+    with st.expander("🚩 Báo lỗi hệ thống — dòng này báo sai hoặc vô lý", expanded=False):
+        bang = bang_bao_loi(da_bao)
+        if bang:
+            st.dataframe(bang, hide_index=True, use_container_width=True)
+        if st.session_state.get("danh_tinh") is None:
+            st.warning("Nhập tên ở thanh bên để báo lỗi — Admin cần biết ai báo.")
+            return
+        with st.form(key=f"form_bao_loi_{khoa}", clear_on_submit=True):
+            ly_do = st.text_area(
+                "Vì sao dòng này là lỗi của hệ thống?", max_chars=2000,
+                placeholder="vd: đã sửa và nộp lại ba lần, lỗi vẫn bị báo; hoặc: "
+                            "«Tủ rack» không phải một phân hệ")
+            if st.form_submit_button("Gửi cho Admin"):
+                if not ly_do.strip():
+                    st.error("Chưa nhập lý do.")
+                    return
+                try:
+                    r = kh.bao_loi(ho_so_id, ly_do,
+                                   finding_baseline_id=finding_baseline_id,
+                                   finding_phat_sinh_id=finding_phat_sinh_id)
+                except LoiAPI as e:
+                    st.error(f"Không gửi được: {e}")
+                    return
+                st.session_state[f"da_bao_loi_{khoa}"] = (
+                    f"Đã gửi cho Admin (dòng {r.get('khoa')}). {r.get('nhat_ky', '')}")
+                st.rerun()
 
 
 def mo_ho_so_da_co():
@@ -441,7 +484,22 @@ def hien_ho_so(kh: KhachAPI, ho_so_id: int, vung: str = "viec"):
                     f"({t['phat_sinh']} lỗi — KHÔNG cộng vào số lỗi baseline)")
         ps = bang_phat_sinh(d)
         if ps:
-            st.dataframe(ps, use_container_width=True, hide_index=True)
+            st.caption("👉 **Chọn một dòng** để báo lỗi hệ thống nếu dòng đó vô lý — "
+                       "ví dụ lỗi của một «phân hệ» mà tài liệu không có.")
+            ev_ps = st.dataframe(ps, use_container_width=True, hide_index=True,
+                                 on_select="rerun", selection_mode="single-row",
+                                 key=f"{vung}_bang_phat_sinh_{ho_so_id}")
+            c_ps = list(getattr(getattr(ev_ps, "selection", None), "rows", []) or [])
+            if c_ps and c_ps[0] < len(d.get("phat_sinh") or []):
+                r = d["phat_sinh"][c_ps[0]]
+                with st.container(border=True):
+                    st.markdown(f"#### {r.get('rule_ref') or '—'} · "
+                                f"{r.get('scope_goc') or 'toàn hệ thống'}")
+                    st.markdown(r.get("noi_dung") or "")
+                    st.caption(f"Mức độ: {r.get('muc_do')} · Vị trí: "
+                               f"{r.get('vi_tri') or 'không có'}")
+                    hien_bao_loi(kh, ho_so_id, f"{vung}_ps_{r['id']}",
+                                 finding_phat_sinh_id=r["id"])
         else:
             st.caption("Không có lỗi nào mới xuất hiện so với baseline.")
 

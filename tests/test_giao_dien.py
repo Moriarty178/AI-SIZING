@@ -497,3 +497,30 @@ class TestThamDinhLai53:
         assert tom_tat_vung_doi({"vung_doi": ["redis"], "vung_moi": [], "chung_doi": False}) \
             == "phân hệ đổi: redis · phần chung (ngoài mọi phân hệ) không đổi"
         assert "CÓ đổi" in tom_tat_vung_doi({"vung_doi": [], "chung_doi": True})
+
+
+class TestBaoLoi54:
+    """5.4 — bảng lời báo «hệ thống báo sai» và cột đếm trên hai rổ."""
+
+    def test_bang_bao_loi_noi_ro_ro_nao_va_admin_xu_ly_chua(self):
+        from src.giao_dien import bang_bao_loi
+        r = bang_bao_loi([
+            {"tao_luc": "2026-09-18T10:17:03+07:00", "ten": "Nguyễn Văn A",
+             "khoa": "ARC-06#tủ rack", "finding_phat_sinh_id": 7, "ly_do": "không có thật",
+             "da_xu_ly": False},
+            {"tao_luc": "2026-09-18T09:00:00", "ten": "A", "khoa": "CPU-01#kafka",
+             "finding_baseline_id": 3, "ly_do": "sửa rồi vẫn báo", "da_xu_ly": True}])
+        assert [x["Rổ"] for x in r] == ["phát sinh", "baseline"]
+        assert r[0]["Lúc"] == "2026-09-18 10:17:03" and r[0]["Admin đã xử lý"] == "chưa"
+        assert r[1]["Admin đã xử lý"] == "rồi"
+
+    def test_rong(self):
+        from src.giao_dien import bang_bao_loi
+        assert bang_bao_loi(None) == [] and bang_bao_loi([]) == []
+
+    def test_cot_da_bao_loi_tren_ca_hai_bang(self):
+        from src.giao_dien import bang_baseline, bang_phat_sinh
+        d = {"baseline": [{"rule_ref": "CPU-01", "so_bao_loi": 2}],
+             "phat_sinh": [{"rule_ref": "ARC-06", "so_bao_loi": 1}]}
+        assert bang_baseline(d)[0]["Đã báo lỗi"] == 2
+        assert bang_phat_sinh(d)[0]["Đã báo lỗi"] == 1

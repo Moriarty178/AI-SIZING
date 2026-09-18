@@ -27,23 +27,28 @@ khi ghép vào tool sizing có đăng nhập thật thì không backfill đượ
 ## Đổi lược đồ
 
 `create_all` chỉ TẠO bảng thiếu, không SỬA bảng đã có. Nên có `PHIEN_BAN_LUOC_DO`:
-khởi tạo trên một CSDL mang phiên bản khác thì DỪNG và nói ra (NT4), không chạy
-tiếp trên lược đồ lệch. Đổi lược đồ = tăng số này + viết migration.
+khởi tạo trên một CSDL mang phiên bản KHÁC thì hoặc nâng cấp được (`nang_cap`), hoặc
+DỪNG và nói ra (NT4) — không bao giờ chạy tiếp trên lược đồ lệch.
 
 **Phiên bản 2 (5.1, 2026-09-17)** — thêm `finding_phat_sinh`, và các cột
 `lan_tham_dinh.ten_file`, `finding_baseline.computed_evidence` / `nhom_c7`. Bản 1
 chưa từng được dựng trên PostgreSQL thật nào nên không có migration; CSDL nào lỡ
 mang bản 1 sẽ bị chặn ở `khoi_tao` và phải xoá volume `copilot-db-data`.
+
+**Phiên bản 3 (5.4, 2026-09-18)** — `bao_cao_loi` đổi hình dạng để báo được cả dòng
+trong RỔ PHÁT SINH, không chỉ dòng baseline. Từ bản này có migration thật
+(`nang_cap`): máy nội bộ đã có hồ sơ thật chạy 6 lần, bắt xoá volume để đổi một bảng
+rỗng là mất dữ liệu người dùng vì lý do của chúng ta.
 """
 from __future__ import annotations
 
 from sqlalchemy import (Boolean, CheckConstraint, Column, DateTime, ForeignKey,
                         Integer, MetaData, String, Table, Text, UniqueConstraint,
-                        false, func)
+                        false, func, text)
 
 from .danh_tinh import TEN_TOI_DA, VAI
 
-PHIEN_BAN_LUOC_DO = "2"
+PHIEN_BAN_LUOC_DO = "3"
 
 # Đặt tên ràng buộc tường minh: PostgreSQL tự sinh tên khác SQLite, và migration
 # sau này phải gọi được đúng tên.
@@ -194,13 +199,35 @@ lan_sua = Table(
 )
 
 # 5.4 — người dùng báo "hệ thống báo sai / sửa mãi vẫn bị ping".
+#
+# Trỏ được vào MỘT trong HAI nguồn: dòng baseline, hoặc dòng trong rổ phát sinh của
+# một lần thẩm định. Rổ phát sinh là nơi loại dòng vô lý dễ xuất hiện nhất — nghiệm
+# thu 5.3 (2026-09-18) đo được: sửa một ô bảng mà rổ phát sinh có 174 dòng vì C3 kể
+# thêm ba phân hệ không có ở lần trước. Không báo được dòng phát sinh thì đúng ca cần
+# tiếng nói của người dùng nhất lại không có nút nào.
+#
+# `ho_so_id` giữ riêng: dòng phát sinh thuộc về một LẦN, nhưng Admin đọc hàng chờ
+# theo HỒ SƠ, và câu hỏi "hồ sơ này bị báo mấy lần" không được phụ thuộc vào việc
+# join qua lần nào.
 bao_cao_loi = Table(
     "bao_cao_loi", metadata,
     Column("id", Integer, primary_key=True),
-    _fk("finding_baseline"),
+    _fk("ho_so"),
+    Column("finding_baseline_id", Integer,
+           ForeignKey("finding_baseline.id", ondelete="CASCADE"), nullable=True,
+           index=True),
+    Column("finding_phat_sinh_id", Integer,
+           ForeignKey("finding_phat_sinh.id", ondelete="CASCADE"), nullable=True,
+           index=True),
+    # Khoá của dòng bị báo, chép lại lúc báo: rổ phát sinh tính lại theo TỪNG lần
+    # (5.1), nên dòng bị báo có thể biến mất ở lần sau — lời báo thì phải còn đọc được.
+    Column("khoa", String(400), nullable=False, server_default=""),
     Column("ly_do", Text, nullable=False),
     # `false()` chứ không phải "0": PostgreSQL và SQLite viết hằng boolean khác nhau.
     Column("da_xu_ly", Boolean, nullable=False, server_default=false()),
+    CheckConstraint(
+        "(finding_baseline_id IS NULL) <> (finding_phat_sinh_id IS NULL)",
+        name="mot_nguon"),
     _luc(), *_actor(),
 )
 
@@ -252,3 +279,31 @@ de_xuat_quy_tac = Table(
 # `lan_tham_dinh` (đã có actor), `thong_tin_luoc_do` là siêu dữ liệu.
 BANG_CO_ACTOR = ("ho_so", "lan_tham_dinh", "finding_baseline", "lan_sua",
                  "bao_cao_loi", "ghi_chu_admin", "quyet_dinh", "de_xuat_quy_tac")
+
+
+# --------------------------------------------------------------- nâng cấp --
+def nang_cap(c, tu: str) -> list[str]:
+    """Nâng CSDL từ phiên bản `tu` lên `PHIEN_BAN_LUOC_DO`. Trả danh sách việc đã làm.
+
+    Ném `ValueError` khi không có đường nâng cấp — bên gọi đổi thành lỗi nói rõ phải
+    làm gì. KHÔNG bao giờ tự xoá dữ liệu người dùng: bước nào đụng tới bảng còn dòng
+    thì dừng và báo, để người vận hành quyết.
+    """
+    da_lam: list[str] = []
+    while tu != PHIEN_BAN_LUOC_DO:
+        if tu == "2":
+            # 5.4 đổi hình dạng `bao_cao_loi` (thêm hồ sơ + nguồn phát sinh). Bảng này
+            # chưa có tính năng nào ghi vào, nên bình thường nó rỗng: dựng lại là đủ.
+            n = c.execute(text("SELECT COUNT(*) FROM bao_cao_loi")).scalar() or 0
+            if n:
+                raise ValueError(
+                    f"bảng `bao_cao_loi` đang có {n} dòng nên không dựng lại tự động "
+                    "được — cần migration viết tay trước khi nâng lên bản 3")
+            c.execute(text("DROP TABLE bao_cao_loi"))
+            bao_cao_loi.create(c)
+            da_lam.append("bao_cao_loi: dựng lại theo bản 3 (5.4)")
+            tu = "3"
+            continue
+        raise ValueError(f"không có đường nâng cấp từ phiên bản lược đồ {tu!r} lên "
+                         f"{PHIEN_BAN_LUOC_DO!r}")
+    return da_lam

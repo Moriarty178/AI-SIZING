@@ -79,12 +79,12 @@ class TestLuocDo:
         k.khoi_tao()
         k.khoi_tao()
 
-    def test_lech_phien_ban_luoc_do_thi_DUNG(self, kho):
+    def test_lech_phien_ban_khong_nang_cap_duoc_thi_DUNG(self, kho):
         """`create_all` không sửa bảng đã có. Chạy tiếp trên lược đồ lệch là để lỗi
         hiện ra ở một câu SQL nào đó, xa chỗ gây ra nó."""
         with kho.engine.begin() as c:
             c.execute(sa.update(ld.thong_tin_luoc_do).values(gia_tri="0"))
-        with pytest.raises(LoiCSDL, match="migration"):
+        with pytest.raises(LoiCSDL, match="không có đường nâng cấp"):
             kho.khoi_tao()
 
     @pytest.mark.parametrize("bang", ld.BANG_CO_ACTOR)
@@ -98,6 +98,50 @@ class TestLuocDo:
         assert set(ld.metadata.tables) >= {
             "ho_so", "lan_tham_dinh", "finding_baseline", "ket_qua_lan", "lan_sua",
             "bao_cao_loi", "ghi_chu_admin", "quyet_dinh", "de_xuat_quy_tac"}
+
+
+class TestNangCapLenBan3:
+    """5.4 — máy nội bộ đang giữ hồ sơ thật ở bản 2; đổi `bao_cao_loi` không được
+    bắt xoá volume."""
+
+    @staticmethod
+    def _ha_ve_ban_2(kho):
+        with kho.engine.begin() as c:
+            c.execute(sa.text("DROP TABLE bao_cao_loi"))
+            c.execute(sa.text(
+                "CREATE TABLE bao_cao_loi (id INTEGER PRIMARY KEY, "
+                "finding_baseline_id INTEGER NOT NULL, ly_do TEXT NOT NULL, "
+                "da_xu_ly BOOLEAN NOT NULL DEFAULT 0, "
+                "tao_luc TIMESTAMP, vai VARCHAR(20), ten VARCHAR(200))"))
+            c.execute(sa.update(ld.thong_tin_luoc_do).values(gia_tri="2"))
+
+    def test_nang_cap_giu_nguyen_du_lieu_va_len_ban_3(self, kho):
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
+                                  findings=[_fd("A#x")])
+        self._ha_ve_ban_2(kho)
+        kho.khoi_tao()
+        with kho.engine.connect() as c:
+            assert c.execute(sa.select(ld.thong_tin_luoc_do.c.gia_tri)).scalar() == "3"
+        assert len(kho.doc_ho_so(r["ho_so_id"])["baseline"]) == 1, "hồ sơ còn nguyên"
+        fb = kho.doc_ho_so(r["ho_so_id"])["baseline"][0]["id"]
+        assert kho.them_bao_cao_loi(r["ho_so_id"], danh_tinh=_dt(), ly_do="sai",
+                                    finding_baseline_id=fb)["id"]
+
+    def test_bang_cu_CON_DONG_thi_dung_lai_chu_khong_xoa(self, kho):
+        """Không bao giờ tự xoá dữ liệu người dùng vì lý do của chúng ta."""
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
+                                  findings=[_fd("A#x")])
+        self._ha_ve_ban_2(kho)
+        with kho.engine.begin() as c:
+            c.execute(sa.text(
+                "INSERT INTO bao_cao_loi (finding_baseline_id, ly_do, vai, ten) "
+                "VALUES (1, 'lời báo cũ', 'nguoi_lam_sizing', 'A')"))
+        with pytest.raises(LoiCSDL, match="migration viết tay"):
+            kho.khoi_tao()
+        with kho.engine.connect() as c:
+            assert c.execute(sa.text("SELECT COUNT(*) FROM bao_cao_loi")).scalar() == 1
+            assert c.execute(sa.select(ld.thong_tin_luoc_do.c.gia_tri)).scalar() == "2"
+        assert r["ho_so_id"]
 
 
 # ------------------------------------------------ hồ sơ → lần → baseline ---
@@ -285,8 +329,8 @@ class TestGhiLanThamDinh:
             ("m2", 2)
         assert kho.lan_moi_nhat(999) is None
 
-    def test_phien_ban_luoc_do_la_2(self):
-        assert ld.PHIEN_BAN_LUOC_DO == "2"
+    def test_phien_ban_luoc_do_la_3(self):
+        assert ld.PHIEN_BAN_LUOC_DO == "3"
 
 
 # --- 2026-09-17: lỗi mở CSDL phải nói cách sửa ----------------------------------
@@ -381,3 +425,72 @@ class TestLanSua:
         h, (a, _) = self._ho_so(kho)
         with pytest.raises(ValueError):
             kho.them_lan_sua(h, a, danh_tinh=_dt(), noi_dung_sua=nd)
+
+
+class TestBaoCaoLoi:
+    """5.4 — người dùng báo «hệ thống báo sai», cho cả hai rổ."""
+
+    @pytest.fixture
+    def ho_so(self, kho):
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
+                                  findings=[_fd("A#x")])
+        kho.ghi_lan_tham_dinh(ma_viec="m2", ten_file="a.docx", danh_tinh=_dt(),
+                              ho_so_id=r["ho_so_id"], findings=[_fd("A#x"), _fd("B#y")])
+        d = kho.doc_ho_so(r["ho_so_id"])
+        return r["ho_so_id"], d["baseline"][0]["id"], d["phat_sinh"][0]["id"]
+
+    def test_bao_duoc_dong_baseline_va_dong_PHAT_SINH(self, kho, ho_so):
+        h, fb, ps = ho_so
+        assert kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="sửa rồi vẫn báo",
+                                    finding_baseline_id=fb)["khoa"] == "A#x"
+        r = kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="phân hệ này không có thật",
+                                 finding_phat_sinh_id=ps)
+        assert (r["khoa"], r["nguon"]) == ("B#y", "phát sinh")
+        ds = kho.ds_bao_cao_loi(h)
+        assert [x["khoa"] for x in ds] == ["B#y", "A#x"], "mới nhất trước"
+        assert {x["ten"] for x in ds} == {"Nguyễn Văn A"} and ds[0]["da_xu_ly"] is False
+
+    def test_dem_theo_tung_dong_trong_ca_hai_ro(self, kho, ho_so):
+        h, fb, ps = ho_so
+        kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="x", finding_baseline_id=fb)
+        kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="y", finding_baseline_id=fb)
+        kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="z", finding_phat_sinh_id=ps)
+        d = kho.doc_ho_so(h)
+        assert {b["khoa"]: b["so_bao_loi"] for b in d["baseline"]} == {"A#x": 2}
+        assert d["phat_sinh"][0]["so_bao_loi"] == 1
+        assert len(kho.doc_finding(h, fb)["bao_cao_loi"]) == 2
+
+    def test_dong_cua_ho_so_KHAC_bi_tu_choi(self, kho, ho_so):
+        from src.luu_tru.kho import KhongCoFinding
+        h, fb, ps = ho_so
+        h2 = kho.ghi_lan_tham_dinh(ma_viec="m3", ten_file="b.docx", danh_tinh=_dt(),
+                                   findings=[_fd("C#z")])["ho_so_id"]
+        for kw in ({"finding_baseline_id": fb}, {"finding_phat_sinh_id": ps}):
+            with pytest.raises(KhongCoFinding):
+                kho.them_bao_cao_loi(h2, danh_tinh=_dt(), ly_do="x", **kw)
+
+    def test_phai_chi_dung_MOT_dong_va_co_ly_do(self, kho, ho_so):
+        h, fb, ps = ho_so
+        with pytest.raises(ValueError, match="MỘT dòng"):
+            kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="x",
+                                 finding_baseline_id=fb, finding_phat_sinh_id=ps)
+        with pytest.raises(ValueError, match="MỘT dòng"):
+            kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="x")
+        with pytest.raises(ValueError, match="lý do"):
+            kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="   ",
+                                 finding_baseline_id=fb)
+
+    def test_ho_so_da_gui_duyet_VAN_bao_duoc(self, kho, ho_so):
+        """Người dùng hay nhận ra dòng vô lý đúng lúc xem lại trước khi gửi duyệt,
+        hoặc khi Admin hỏi tới — chặn lúc đó là vứt đúng phản hồi đáng giá nhất."""
+        h, fb, _ = ho_so
+        kho.dat_trang_thai_ho_so(h, "cho_duyet")
+        assert kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="x",
+                                    finding_baseline_id=fb)["id"]
+
+    def test_xoa_ho_so_keo_theo_loi_bao(self, kho, ho_so):
+        h, fb, _ = ho_so
+        kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="x", finding_baseline_id=fb)
+        with kho.engine.begin() as c:
+            c.execute(sa.delete(ld.ho_so).where(ld.ho_so.c.id == h))
+        assert kho.ds_bao_cao_loi(h) == []

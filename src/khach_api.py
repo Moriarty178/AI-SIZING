@@ -193,6 +193,18 @@ class KhachAPI:
                          method="POST", du_lieu=than,
                          kieu="application/json; charset=utf-8")
 
+    def bao_loi(self, ho_so_id: int, ly_do: str, *, finding_baseline_id: int | None = None,
+                finding_phat_sinh_id: int | None = None) -> dict:
+        """5.4 — báo một dòng là lỗi của hệ thống (đúng một trong hai id)."""
+        than = json.dumps({"ly_do": ly_do, "finding_baseline_id": finding_baseline_id,
+                           "finding_phat_sinh_id": finding_phat_sinh_id},
+                          ensure_ascii=False).encode("utf-8")
+        return self._goi(f"/ho-so/{int(ho_so_id)}/bao-loi", method="POST", du_lieu=than,
+                         kieu="application/json; charset=utf-8")
+
+    def ds_bao_loi(self, ho_so_id: int) -> list[dict]:
+        return self._goi(f"/ho-so/{int(ho_so_id)}/bao-loi")["bao_loi"]
+
     def viec(self, ma: str) -> dict:
         return self._goi(f"/result/{ma}")
 

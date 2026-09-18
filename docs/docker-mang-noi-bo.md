@@ -224,6 +224,22 @@ con số trong bảng của MỘT phân hệ, thêm MỘT câu vào đầu mục
 py scripts/nghiem_thu_5_3.py --ho-so 1 "D:\duong\dan\Sizing ABC.docx" "D:\duong\dan\Sizing ABC - da sua.docx" --api http://localhost:8902 --ten "Tên bạn"
 ```
 
+Nghiệm thu 5.4 (nút «Báo lỗi hệ thống») — không gọi model, chạy vài giây. Việc đáng
+lo của mục này là **migration lược đồ lên bản 3**: Copilot tự nâng lúc khởi động, script
+kiểm hồ sơ cũ còn nguyên rồi mới thử nút báo lỗi. Script ghi hai lời báo thật vào hồ sơ:
+
+```powershell
+curl.exe http://localhost:8902/health      # "csdl": {"san_sang": true, "luoc_do": "3"}
+py scripts/nghiem_thu_5_4.py --ho-so 1 --api http://localhost:8902 --ten "Tên bạn"
+```
+
+⚠️ **Lược đồ CSDL lên bản 3 (5.4).** Từ bản này Copilot có migration thật: khởi động
+trên CSDL bản 2 thì nó tự dựng lại bảng `bao_cao_loi` (bảng rỗng, chưa tính năng nào ghi
+vào) rồi ghi số phiên bản mới — trong CÙNG một giao dịch, hỏng thì lùi cả hai. Nếu bảng
+đó đã có dòng, Copilot DỪNG và nói ra thay vì xoá dữ liệu người dùng; lúc đó cần
+migration viết tay. Log khởi động in `[csdl] nâng lược đồ 2 → 3: …`, và `/health` báo
+`csdl.luoc_do` đọc thẳng từ CSDL.
+
 Từ 5.3, mỗi việc lưu thêm `.cache/cong_viec/{mã việc}.phat_lai.json` — câu trả lời model
 của lượt đó (nguyên văn giá trị và trích dẫn lấy từ tài liệu), để lần thẩm định lại sau
 dùng lại. Xoá việc xoá kèm tệp này. Lần thẩm định lại ĐẦU TIÊN sau khi nâng cấp chạy

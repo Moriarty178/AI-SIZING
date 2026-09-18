@@ -14,6 +14,8 @@
     GET    /ho-so/{id}      5.1 — baseline cố định + trạng thái lần mới nhất + rổ phát sinh
     GET    /ho-so/{id}/finding/{fb}          5.2 — một lỗi + chỗ trong tài liệu + lịch sử sửa
     POST   /ho-so/{id}/finding/{fb}/lan-sua  5.2 — ghi nhận đã sửa gì (cần danh tính)
+    GET    /ho-so/{id}/bao-loi   5.4 — các lời báo «hệ thống báo sai» của hồ sơ
+    POST   /ho-so/{id}/bao-loi   5.4 — báo một dòng (baseline hoặc phát sinh) là lỗi hệ thống
     DELETE /result/{ma}     xoá việc, báo cáo VÀ tài liệu đã nộp (KHÔNG đụng nhật ký)
     GET    /health          cho healthcheck của container
 
@@ -102,6 +104,18 @@ def _ghi_ho_so(cv, du_lieu: dict | None) -> dict:
 bo_chay = BoChay(kho, sau_khi_xong=_ghi_ho_so)
 
 
+def _tt_csdl() -> dict:
+    """Trạng thái CSDL cho `/health`, kèm phiên bản lược đồ ĐANG trong CSDL (5.4 có
+    migration thật, nên người vận hành phải thấy được nó đã chạy chưa)."""
+    d = trang_thai_csdl.as_dict()
+    if kho_csdl is not None:
+        try:
+            d["luoc_do"] = kho_csdl.phien_ban_luoc_do()
+        except Exception as e:                  # CSDL rớt giữa chừng: nói ra, đừng 500
+            d["luoc_do"] = f"không đọc được: {type(e).__name__}"
+    return d
+
+
 def _can_csdl():
     if kho_csdl is None:
         raise HTTPException(409, "Hồ sơ Giai đoạn 5 cần CSDL — "
@@ -171,7 +185,7 @@ def health() -> dict:
             # Kiểm TRƯỚC khi đốt 32 phút cho một cặp lượt đo độ ổn định, thay vì
             # phát hiện sau khi đã chạy xong (2026-09-16).
             "cache_bat": BoNhoDem().bat,
-            "csdl": trang_thai_csdl.as_dict(),
+            "csdl": _tt_csdl(),
             "model_san_sang": tt.san_sang, "ghi_chu_model": tt.thong_diep.strip(),
             "dang_cho": sum(1 for c in kho.danh_sach() if not c.xong_roi)}
 
@@ -361,6 +375,67 @@ def ghi_lan_sua(ho_so_id: int, fb_id: int, vao: LanSuaVao, request: Request) -> 
         raise HTTPException(409, str(e))
     except ValueError as e:
         raise HTTPException(422, str(e))
+
+
+class BaoLoiVao(BaseModel):
+    ly_do: str = Field(min_length=1, max_length=2000)
+    # Đúng MỘT trong hai — lớp lưu trữ kiểm lại, ở đây chỉ nhận.
+    finding_baseline_id: int | None = None
+    finding_phat_sinh_id: int | None = None
+
+
+def _ghi_nhat_ky_4_1(ho_so_id: int, finding_id_goc: str, ly_do: str) -> str:
+    """5.4 nối với vòng phản hồi 4.1: lời báo cũng vào nhật ký «Báo sai» của LẦN MỚI
+    NHẤT, để dataset cải tiến công cụ chỉ có MỘT chỗ.
+
+    Chạy tốt nhất có thể: hỏng thì lời báo trong CSDL vẫn còn, và câu trả lời nói ra
+    vì sao không ghi được (NT4).
+    """
+    if not finding_id_goc:
+        return "bỏ qua nhật ký 4.1: dòng này không có finding_id gốc"
+    lan = kho_csdl.lan_moi_nhat(ho_so_id) if kho_csdl else None
+    ma = (lan or {}).get("ma_viec") or ""
+    if not ma or kho.lay(ma) is None:
+        return "bỏ qua nhật ký 4.1: không còn việc của lần thẩm định mới nhất"
+    if finding_id_goc not in {f["id"] for f in (kho.findings(ma) or {})
+                              .get("findings", [])}:
+        return "bỏ qua nhật ký 4.1: dòng không có trong tập finding của lần mới nhất"
+    try:
+        kho.luu_phan_hoi(ma, {finding_id_goc: {
+            "ghi_chu": f"[Báo lỗi hệ thống] {ly_do}", "phan_loai": "bao_sai"}})
+        return f"đã ghi nhật ký 4.1 (việc {ma})"
+    except (OSError, KeyError, ValueError) as e:
+        return f"bỏ qua nhật ký 4.1: {type(e).__name__}: {e}"[:200]
+
+
+@app.post("/ho-so/{ho_so_id}/bao-loi", status_code=201)
+def bao_loi(ho_so_id: int, vao: BaoLoiVao, request: Request) -> dict:
+    from src.luu_tru.kho import KhongCoFinding
+    k = _can_csdl()
+    try:
+        dt = tu_header(request.headers)
+    except ValueError as e:
+        raise HTTPException(400, f"Danh tính trong header không hợp lệ: {e}")
+    if dt is None:
+        raise HTTPException(400, "Báo lỗi hệ thống cần danh tính — nhập tên ở thanh bên.")
+    try:
+        r = k.them_bao_cao_loi(
+            ho_so_id, danh_tinh=dt, ly_do=vao.ly_do,
+            finding_baseline_id=vao.finding_baseline_id,
+            finding_phat_sinh_id=vao.finding_phat_sinh_id)
+    except KhongCoFinding as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {**r, "nhat_ky": _ghi_nhat_ky_4_1(ho_so_id, r["finding_id_goc"], vao.ly_do)}
+
+
+@app.get("/ho-so/{ho_so_id}/bao-loi")
+def ds_bao_loi(ho_so_id: int) -> dict:
+    k = _can_csdl()
+    if k.trang_thai_ho_so(ho_so_id) is None:
+        raise HTTPException(404, f"Không có hồ sơ #{ho_so_id}")
+    return {"bao_loi": k.ds_bao_cao_loi(ho_so_id)}
 
 
 class MucPhanHoiVao(BaseModel):

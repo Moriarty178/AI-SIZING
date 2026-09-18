@@ -10,6 +10,8 @@ Giao diện và API không viết SQL. Khi ghép vào tool sizing, chỉ lớp n
   `them_lan_sua` (người dùng ghi nhận đã sửa gì).
 - 5.3 — `lan_moi_nhat`: lần thẩm định mới nhất của hồ sơ, để lần sau dùng lại câu trả
   lời model của nó.
+- 5.4 — `them_bao_cao_loi` / `ds_bao_cao_loi`: người dùng báo «hệ thống báo sai», cho
+  cả dòng baseline lẫn dòng trong rổ phát sinh.
 """
 from __future__ import annotations
 
@@ -34,7 +36,7 @@ class KhongThamDinhLaiDuoc(LoiCSDL):
 
 
 class KhongCoFinding(LoiCSDL):
-    """Dòng baseline không có, hoặc không thuộc hồ sơ đang nói tới."""
+    """Dòng lỗi không có, hoặc không thuộc hồ sơ đang nói tới."""
 
 
 class HoSoKhongDangSua(LoiCSDL):
@@ -42,6 +44,7 @@ class HoSoKhongDangSua(LoiCSDL):
 
 
 TOI_DA_NOI_DUNG_SUA = 10_000
+TOI_DA_LY_DO = 2_000
 
 
 def _bat_khoa_ngoai_sqlite(engine: Engine) -> None:
@@ -94,10 +97,27 @@ class KhoCSDL:
                 c.execute(insert(ld.thong_tin_luoc_do).values(
                     khoa="phien_ban", gia_tri=ld.PHIEN_BAN_LUOC_DO))
             elif co != ld.PHIEN_BAN_LUOC_DO:
-                raise LoiCSDL(
-                    f"CSDL {self.url_an} mang lược đồ phiên bản {co}, mã hiện tại "
-                    f"cần {ld.PHIEN_BAN_LUOC_DO}. Cần chạy migration trước — KHÔNG "
-                    "chạy tiếp trên lược đồ lệch.")
+                # Nâng cấp TRONG CÙNG giao dịch với việc ghi số phiên bản: hỏng giữa
+                # chừng thì lùi cả hai, không để lại CSDL nửa bản này nửa bản kia.
+                try:
+                    da_lam = ld.nang_cap(c, co)
+                except ValueError as e:
+                    raise LoiCSDL(
+                        f"CSDL {self.url_an} mang lược đồ phiên bản {co}, mã hiện tại "
+                        f"cần {ld.PHIEN_BAN_LUOC_DO}, và {e}. KHÔNG chạy tiếp trên "
+                        "lược đồ lệch.") from e
+                c.execute(update(ld.thong_tin_luoc_do)
+                          .where(ld.thong_tin_luoc_do.c.khoa == "phien_ban")
+                          .values(gia_tri=ld.PHIEN_BAN_LUOC_DO))
+                print(f"[csdl] nâng lược đồ {co} → {ld.PHIEN_BAN_LUOC_DO}: "
+                      + "; ".join(da_lam), flush=True)
+
+    def phien_ban_luoc_do(self) -> str:
+        """Phiên bản lược đồ ĐANG NẰM TRONG CSDL — `/health` báo lại để người vận hành
+        thấy migration đã chạy chưa, không phải đoán qua log."""
+        with self.engine.connect() as c:
+            return c.execute(select(ld.thong_tin_luoc_do.c.gia_tri).where(
+                ld.thong_tin_luoc_do.c.khoa == "phien_ban")).scalar() or ""
 
     # ------------------------------------------ viên gạch — dùng chung một c --
     @staticmethod
@@ -251,8 +271,21 @@ class KhoCSDL:
                 .join(fb, fb.c.id == ld.lan_sua.c.finding_baseline_id)
                 .where(fb.c.ho_so_id == ho_so_id)
                 .group_by(ld.lan_sua.c.finding_baseline_id)).all())
+            # 5.4 — đã báo lỗi hệ thống mấy lần, cho cả hai rổ.
+            bl = ld.bao_cao_loi
+            so_bao = dict(c.execute(
+                select(bl.c.finding_baseline_id, func.count())
+                .where(bl.c.ho_so_id == ho_so_id,
+                       bl.c.finding_baseline_id.is_not(None))
+                .group_by(bl.c.finding_baseline_id)).all())
+            so_bao_ps = dict(c.execute(
+                select(bl.c.finding_phat_sinh_id, func.count())
+                .where(bl.c.ho_so_id == ho_so_id,
+                       bl.c.finding_phat_sinh_id.is_not(None))
+                .group_by(bl.c.finding_phat_sinh_id)).all())
             for b in baseline:
                 b["so_lan_sua"] = so_sua.get(b["id"], 0)
+                b["so_bao_loi"] = so_bao.get(b["id"], 0)
             moi_nhat = cac_lan[-1]["id"] if cac_lan else None
             if moi_nhat is not None:
                 theo_b = {r.finding_baseline_id: r for r in c.execute(
@@ -265,6 +298,8 @@ class KhoCSDL:
                     b["computed_evidence_lan"] = r.computed_evidence if r else ""
             phat_sinh = [] if moi_nhat is None else [_dict(r) for r in c.execute(
                 select(ps).where(ps.c.lan_tham_dinh_id == moi_nhat).order_by(ps.c.id))]
+            for r in phat_sinh:
+                r["so_bao_loi"] = so_bao_ps.get(r["id"], 0)
         return {"ho_so": _dict(h), "so_loi_baseline": len(baseline),
                 "cac_lan": cac_lan, "baseline": baseline, "phat_sinh": phat_sinh}
 
@@ -292,6 +327,10 @@ class KhoCSDL:
             d["lan_sua"] = [_dict(x) for x in c.execute(
                 select(ls).where(ls.c.finding_baseline_id == fb_id)
                 .order_by(ls.c.so_lan))]
+            d["bao_cao_loi"] = [_dict(x) for x in c.execute(
+                select(ld.bao_cao_loi)
+                .where(ld.bao_cao_loi.c.finding_baseline_id == fb_id)
+                .order_by(ld.bao_cao_loi.c.id))]
             d["ho_so_trang_thai"] = c.execute(select(ld.ho_so.c.trang_thai).where(
                 ld.ho_so.c.id == ho_so_id)).scalar()
         return d
@@ -328,6 +367,60 @@ class KhoCSDL:
                 noi_dung_sua=noi_dung_sua, vai=danh_tinh.vai,
                 ten=danh_tinh.ten)).inserted_primary_key[0]
         return {"id": i, "so_lan": so}
+
+    # ------------------------------------------------------------------ 5.4 --
+    def them_bao_cao_loi(self, ho_so_id: int, *, danh_tinh: DanhTinh, ly_do: str,
+                         finding_baseline_id: int | None = None,
+                         finding_phat_sinh_id: int | None = None) -> dict:
+        """Người dùng báo một dòng là lỗi của hệ thống. Đúng MỘT nguồn: dòng baseline
+        hoặc dòng trong rổ phát sinh.
+
+        KHÔNG đòi hồ sơ «đang sửa»: người dùng hay nhận ra một dòng vô lý ĐÚNG LÚC
+        đang xem lại trước khi gửi duyệt, hoặc sau khi Admin hỏi tới. Chặn lúc đó là
+        vứt đi đúng phản hồi đáng giá nhất (mục tiêu 4.1: dữ liệu để sửa công cụ).
+        """
+        ly_do = (ly_do or "").strip()
+        if not ly_do:
+            raise ValueError("Chưa nhập lý do báo lỗi.")
+        if len(ly_do) > TOI_DA_LY_DO:
+            raise ValueError(f"Lý do dài {len(ly_do)} ký tự, tối đa {TOI_DA_LY_DO}.")
+        if (finding_baseline_id is None) == (finding_phat_sinh_id is None):
+            raise ValueError("Phải chỉ đúng MỘT dòng: baseline hoặc phát sinh.")
+
+        fb, ps, lan = ld.finding_baseline, ld.finding_phat_sinh, ld.lan_tham_dinh
+        with self.engine.begin() as c:
+            if c.execute(select(ld.ho_so.c.id).where(
+                    ld.ho_so.c.id == ho_so_id)).first() is None:
+                raise KhongCoFinding(f"Không có hồ sơ #{ho_so_id}.")
+            if finding_baseline_id is not None:
+                r = c.execute(select(fb.c.khoa, fb.c.finding_id_goc).where(
+                    fb.c.id == finding_baseline_id,
+                    fb.c.ho_so_id == ho_so_id)).first()
+                nguon = "baseline"
+            else:
+                r = c.execute(
+                    select(ps.c.khoa, ps.c.finding_id_goc)
+                    .join(lan, lan.c.id == ps.c.lan_tham_dinh_id)
+                    .where(ps.c.id == finding_phat_sinh_id,
+                           lan.c.ho_so_id == ho_so_id)).first()
+                nguon = "phát sinh"
+            if r is None:
+                raise KhongCoFinding(
+                    f"Dòng {nguon} #{finding_baseline_id or finding_phat_sinh_id} "
+                    f"không thuộc hồ sơ #{ho_so_id}.")
+            i = c.execute(insert(ld.bao_cao_loi).values(
+                ho_so_id=ho_so_id, finding_baseline_id=finding_baseline_id,
+                finding_phat_sinh_id=finding_phat_sinh_id, khoa=r.khoa or "",
+                ly_do=ly_do, vai=danh_tinh.vai, ten=danh_tinh.ten)).inserted_primary_key[0]
+        return {"id": i, "khoa": r.khoa or "", "finding_id_goc": r.finding_id_goc or "",
+                "nguon": nguon}
+
+    def ds_bao_cao_loi(self, ho_so_id: int) -> list[dict]:
+        """Mọi lời báo của một hồ sơ, mới nhất trước — hàng chờ của Admin (5.12)."""
+        b = ld.bao_cao_loi
+        with self.engine.connect() as c:
+            return [_dict(r) for r in c.execute(
+                select(b).where(b.c.ho_so_id == ho_so_id).order_by(b.c.id.desc()))]
 
     def dat_trang_thai_ho_so(self, ho_so_id: int, trang_thai: str) -> None:
         """Dùng ở 5.5/5.8; ở 5.1 chỉ để test chặn thẩm định lại hồ sơ đã gửi duyệt."""

@@ -451,6 +451,7 @@ def bang_baseline(d: dict) -> list[dict]:
             "Căn cứ lần này": b.get("computed_evidence_lan", ""),
             "Vị trí": b.get("vi_tri", ""),
             "Số lần sửa": b.get("so_lan_sua", 0),
+            "Đã báo lỗi": b.get("so_bao_loi", 0),
         })
     return ra
 
@@ -546,5 +547,23 @@ def tom_tat_vung_doi(tk_phat_lai: dict | None) -> str:
 def bang_phat_sinh(d: dict) -> list[dict]:
     return [{"Quy tắc": p.get("rule_ref", ""), "Phân hệ": p.get("scope_goc", ""),
              "Mức độ": p.get("muc_do", ""), "Nội dung": p.get("noi_dung", ""),
-             "Căn cứ": p.get("computed_evidence", ""), "Vị trí": p.get("vi_tri", "")}
+             "Căn cứ": p.get("computed_evidence", ""), "Vị trí": p.get("vi_tri", ""),
+             "Đã báo lỗi": p.get("so_bao_loi", 0)}
             for p in d.get("phat_sinh") or []]
+
+
+# ---------------------------------------------------- 5.4 — báo lỗi hệ thống --
+def bang_bao_loi(rows: list[dict] | None) -> list[dict]:
+    """Lời báo «hệ thống báo sai» → dòng bảng. Dùng cho khung chi tiết một lỗi và
+    cho danh sách cả hồ sơ."""
+    ra = []
+    for r in rows or []:
+        ra.append({
+            "Lúc": str(r.get("tao_luc") or "")[:19].replace("T", " "),
+            "Người báo": r.get("ten", ""),
+            "Dòng": r.get("khoa", ""),
+            "Rổ": "phát sinh" if r.get("finding_phat_sinh_id") else "baseline",
+            "Lý do": r.get("ly_do", ""),
+            "Admin đã xử lý": "rồi" if r.get("da_xu_ly") else "chưa",
+        })
+    return ra
