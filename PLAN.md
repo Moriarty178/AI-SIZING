@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 6 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · **5.3 NGHIỆM THU ĐẠT 09-18** (nộp y nguyên: 267/268 lượt dùng lại). ⚠️ Lộ ra «phân hệ ma»: sửa 1 ô bảng → 174 lỗi phát sinh |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 6 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · **5.3 NGHIỆM THU ĐẠT 09-18** (nộp y nguyên: 267/268 lượt dùng lại; C5 chuyển sang khoá theo vùng). ⚠️ Rủi ro chưa sửa «phân hệ ma»: sửa 1 ô bảng → 174 lỗi phát sinh. Tiếp: 5.4 |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18** — và lộ ra lỗi «phân hệ ma»: sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh.
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh. Mục kế tiếp: **5.4** (nút «Báo lỗi hệ thống»).
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1530,15 +1530,25 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       | L1 bản gốc (chưa có bản ghi) | 268 | 0 | 268 (đệm lời gọi đỡ gần hết) | 184 s |
       | L2 bản gốc | 268 | **267** | 1 | 172 s |
       | L3 bản đã sửa MỘT ô bảng | 307 | 76 (C3 76/132) | 231 (C5 175/175) | 1577 s |
+
+      (L3 chạy bằng bản C5 CHẶT. Sau khi chuyển C5 sang khoá theo vùng, thử lại trên
+      chính VTracking ở laptop bằng model giả: sửa một ô bảng + chèn một câu ⇒ tới model
+      **61/235 lượt** thay vì 151 — C3 dùng lại 84/109, C5 dùng lại 90/126.)
       → **Dùng lại chạy đúng như thiết kế**: nộp y nguyên chỉ hỏi lại đúng lượt đã hỏng;
       một ô bảng đổi (Mục 1.1, trang 59) làm C3 hỏi lại 56 lượt và dùng lại 76.
-      → ⚠️ **NGHIỆM THU LỘ RA MỘT LỖI NẶNG HƠN CHÍNH MỤC NÀY — «phân hệ ma»:** sửa ĐÚNG
+      → ⚠️ **RỦI RO ĐÃ BIẾT, CHƯA SỬA — «phân hệ ma»** (người dùng chốt 2026-09-18:
+      ghi lại, làm 5.4 trước): sửa ĐÚNG
       MỘT Ô BẢNG mà lần thẩm định lại sinh **174 lỗi phát sinh** (L1/L2: 1). Nguyên nhân:
       lượt «nhận diện phân hệ» đọc cả tài liệu nên phải hỏi lại, và lần này model kể thêm
       ba «phân hệ» không có ở lần trước (`SAN Switch`, `Thiết bị mạng`, `Tủ rack`) —
       174 = 3 × 58 dòng mỗi phân hệ. Kéo theo: C3 +11 lượt, C5 +29 lượt, và 174 dòng rác
       trong đúng cái rổ sinh ra để người dùng thấy «cú sửa của tôi làm vỡ gì».
       Đây là dao động của model (5.0b đo ~1,4%) nhưng ở lượt có SỨC LAN TOẢ LỚN NHẤT.
+      Phương án đã phác khi cần sửa: giữ nguyên danh sách phân hệ của lần trước khi các
+      TIÊU ĐỀ của tài liệu không đổi (phân hệ vốn được nhận ra theo mục riêng, mà sửa
+      một ô bảng thì không đụng tiêu đề), mốc bảng của phân hệ tìm lại theo NỘI DUNG
+      bảng để không trỏ lệch khi chỉ số dịch. Chưa làm — 5.4 («Báo lỗi hệ thống») chính
+      là chỗ người dùng báo lại loại dòng vô lý này.
       → **Đ3 — nếu C5 cấp phân hệ chỉ hỏi lại khi vùng phân hệ hoặc phần chung đổi:**
       129 lượt so sánh được, **90 lượt sẽ dùng lại được**, trong đó 85 giống và **5 khác**
       (ARC-14#mongo, ARC-14#postgres, STO-17#minio, EVD-19#minio, EVD-19#redis — đều là
@@ -1558,9 +1568,12 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       Khoá BỎ nhãn vị trí (`[Mục X, trang Y]`, `BẢNG #N`, đuôi số tên lược đồ
       `GanBang{N}`): chèn một câu làm lệch chỉ số và số trang của mọi thứ phía sau mà
       nội dung không đổi. Ngoại lệ: nhận diện phân hệ trả CHỈ SỐ bảng nên giữ vị trí.
-      → **C5 CHẶT + ĐO** (người dùng chốt 2026-09-17): C5 gửi cả tài liệu nên sửa bất
-      kỳ đâu là hỏi lại toàn bộ C5. Kèm phép đo cho lần sau: quy tắc C5 cấp phân hệ mà
-      «vùng phân hệ + phần chung» không đổi, model hỏi lại có ra kết luận khác không.
+      → **C5 cấp phân hệ khoá theo VÙNG** (đổi 2026-09-18, sau khi có số đo Đ3 — trước
+      đó làm chặt: sửa bất kỳ đâu là hỏi lại toàn bộ C5). Lời nhắc gửi model KHÔNG đổi
+      (vẫn cả tài liệu), chỉ khoá dùng lại hẹp lại còn «mục của phân hệ đó + phần chung
+      ngoài mọi phân hệ». Quy tắc cấp hệ thống vẫn khoá theo cả tài liệu. Giá đã biết:
+      nội dung về phân hệ A nằm trong mục của phân hệ B thì sửa ở B không làm A hỏi lại
+      — có nút «Thẩm định lại toàn bộ» cho ca đó.
       → Code xong trước nghiệm thu:
       - `src/llm/phat_lai.py` (khoá, ghi/dùng lại, phép đo C5), `src/extraction/vung.py`
         (vùng phân hệ + vân tay nội dung; `khoang_phan_he` chuyển nguyên từ C3),
@@ -1611,6 +1624,9 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 - [ ] 5.4 — **Nút "Báo lỗi hệ thống".** Người dùng thấy một lỗi bị ping lại dù đã
       sửa nhiều lần, hoặc thấy báo không hợp lý → chọn finding + điền lý do → đẩy
       lên hàng chờ Admin. Nối với phân loại `bao_sai` sẵn có của 4.1.
+      → Nay có thêm một loại dòng CHẮC CHẮN người dùng sẽ báo: rổ phát sinh bị lấp bởi
+      «phân hệ ma» (5.3). Phải báo được cả dòng trong rổ phát sinh, không chỉ dòng
+      baseline.
 
 ### 5C — Quản trị & phê duyệt phía Admin
 
@@ -1923,3 +1939,5 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-17 | **5.3 dùng lại câu trả lời model theo NỘI DUNG từng lượt hỏi, không hợp nhất tập trường theo «phần đã sửa»** | Pipeline chạy trọn trên bản mới nên C4 và mọi cổng code chạy lại toàn bộ đúng như lượt mới; lượt nào đọc chỗ sửa thì khoá tự khác. Đường hợp nhất tự viết phải xử lý mâu thuẫn giữa bảng, cổng một-ô-một-tham-số, đổi tên phân hệ — mỗi chỗ là một cách sai lặng lẽ. Phần không đổi còn cho ĐÚNG kết quả cũ, không dao động |
 | 2026-09-17 | **Khoá dùng lại BỎ nhãn vị trí, trừ lượt nhận diện phân hệ** | Chèn một câu làm lệch chỉ số + số trang mọi phần tử phía sau. Câu trả lời C3/C5 không chứa vị trí (code neo lại vào bản mới); nhận diện phân hệ trả CHỈ SỐ bảng nên phải giữ. Chạy trọn pipeline bắt thêm tên lớp `GanBang{N}` mang chỉ số |
 | 2026-09-17 | **C5 CHẶT khi thẩm định lại: sửa bất kỳ đâu là hỏi lại toàn bộ C5, kèm đo** | Người dùng chốt. C5 đọc cả tài liệu; «chỉ hỏi lại phân hệ có vùng đổi» sẽ bỏ sót khi nội dung về phân hệ A nằm ở mục khác (bảng tổng hợp cuối cụm). Đo Đ3 trên máy nội bộ rồi mới quyết có nới không |
+| 2026-09-18 | **C5 cấp phân hệ khoá dùng lại theo «vùng phân hệ + phần chung», bỏ cách chặt sau MỘT ngày** | Số đo Đ3 của chính lượt nghiệm thu 5.3: 90/129 lượt có vùng không đổi, 85 lượt hỏi lại ra ĐÚNG kết luận cũ, 5 lượt khác đều thuộc phân hệ không ai sửa (dao động model). Tức làm chặt vừa tốn thêm ~90 lượt vừa THÊM nhiễu. Lời nhắc gửi model không đổi, chỉ khoá hẹp lại |
+| 2026-09-18 | **«Phân hệ ma» ghi lại làm rủi ro đã biết, KHÔNG sửa ngay** | Người dùng chốt làm 5.4 trước. Sửa một ô bảng làm lượt «nhận diện phân hệ» (đọc cả tài liệu) kể thêm 3 phân hệ ⇒ 174 dòng phát sinh. Phương án đã phác: giữ danh sách phân hệ khi tiêu đề tài liệu không đổi, mốc bảng tìm lại theo nội dung |

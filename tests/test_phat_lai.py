@@ -108,8 +108,8 @@ class TestGhiVaDungLai:
         p1 = PhatLai()
         assert p1.goi(c, _LD, _tin("[Mục I] a"), thanh_phan="c3").gia_tri == "16"
         p2 = PhatLai(json.loads(json.dumps(p1.xuat())), tu_viec="v1")
-        kq, dung_lai = p2.goi_kem_nguon(c, _LD, _tin("[Mục IX] a"), thanh_phan="c3")
-        assert (kq.gia_tri, dung_lai, c.so_goi) == ("16", True, 1)
+        kq = p2.goi(c, _LD, _tin("[Mục IX] a"), thanh_phan="c3")
+        assert (kq.gia_tri, c.so_goi) == ("16", 1)
         assert p2.thong_ke()["c3"] == {"dung_lai": 1, "goi_moi": 0, "goi_moi_vi_du": []}
 
     def test_ban_ghi_luot_sau_DU_ca_phan_dung_lai(self):
@@ -148,31 +148,44 @@ class TestGhiVaDungLai:
         assert c.so_goi == 1
 
 
-class TestDoC5:
-    def _hai_luot(self, truoc, sau):
+class TestKhoaTheoVung:
+    """C5 gửi model cả tài liệu nhưng khoá theo vùng của phân hệ (chốt 2026-09-18)."""
+
+    def test_doi_phan_NGOAI_vung_van_dung_lai_duoc(self):
+        c = _Dem({"gia_tri": "16"})
+        vung = "[Mục II.1] Kafka 16 core"
         p1 = PhatLai()
-        for k, (kv, kl) in truoc.items():
-            p1.ghi_do_c5(k, khoa_vung=kv, ket_luan=kl, dung_lai=False)
+        p1.goi(c, _LD, _tin(f"{vung}\n[Mục II.2] Redis 8 core"), thanh_phan="c5",
+               vung_tai_lieu=(f"{vung}\n[Mục II.2] Redis 8 core", vung))
         p2 = PhatLai(p1.xuat())
-        for k, (kv, kl, dl) in sau.items():
-            p2.ghi_do_c5(k, khoa_vung=kv, ket_luan=kl, dung_lai=dl)
-        return p2.thong_ke()["do_c5_theo_vung"]
+        p2.goi(c, _LD, _tin(f"{vung}\n[Mục II.2] Redis 12 core"), thanh_phan="c5",
+               vung_tai_lieu=(f"{vung}\n[Mục II.2] Redis 12 core", vung))
+        assert c.so_goi == 1 and p2.thong_ke()["c5"]["dung_lai"] == 1
 
-    def test_dem_ket_luan_khac_khi_vung_KHONG_doi(self):
-        d = self._hai_luot(
-            {"EVD-17#kafka": ("v1", "dat"), "EVD-18#kafka": ("v1", "dat"),
-             "EVD-17#redis": ("r1", "khong_dat"), "EVD-19#redis": ("r1", "dat")},
-            {"EVD-17#kafka": ("v1", "dat", False), "EVD-18#kafka": ("v1", "khong_dat", False),
-             "EVD-17#redis": ("r2", "dat", False), "EVD-19#redis": ("r2", "dat", False),
-             "EVD-20#moi": ("m", "dat", False)})
-        assert (d["so_sanh_duoc"], d["vung_khong_doi"], d["giong"], d["khac"]) == (4, 2, 1, 1)
-        assert (d["vung_doi"], d["vung_doi_khac"]) == (2, 1)
-        assert d["khac_vi_du"] == ["EVD-18#kafka: dat → khong_dat"]
+    def test_doi_TRONG_vung_thi_hoi_lai(self):
+        c = _Dem({"gia_tri": "16"}, {"gia_tri": "18"})
+        p1 = PhatLai()
+        p1.goi(c, _LD, _tin("cả tài liệu"), thanh_phan="c5",
+               vung_tai_lieu=("cả tài liệu", "[Mục II.1] Kafka 16 core"))
+        p2 = PhatLai(p1.xuat())
+        kq = p2.goi(c, _LD, _tin("cả tài liệu"), thanh_phan="c5",
+                    vung_tai_lieu=("cả tài liệu", "[Mục II.1] Kafka 18 core"))
+        assert (kq.gia_tri, c.so_goi) == ("18", 2)
 
-    def test_luot_DUNG_LAI_khong_duoc_dem_vao_phep_do(self):
-        d = self._hai_luot({"A#x": ("v", "dat")}, {"A#x": ("v", "dat", True)})
-        assert d["so_sanh_duoc"] == 0
+    def test_vung_rong_thi_khoa_theo_ca_tai_lieu(self):
+        """Quy tắc cấp hệ thống, hoặc phân hệ không biết vùng — không được nới khoá.
 
+        Bản đầu thay đoạn tài liệu bằng chuỗi RỖNG, tức khoá không còn chứa tài liệu:
+        mọi quy tắc cấp hệ thống dùng lại kết luận cũ kể cả khi tài liệu đã đổi."""
+        c = _Dem({"gia_tri": "a"}, {"gia_tri": "b"})
+        p1 = PhatLai()
+        p1.goi(c, _LD, _tin("tài liệu bản 1"), thanh_phan="c5", vung_tai_lieu=("x", ""))
+        p2 = PhatLai(p1.xuat())
+        p2.goi(c, _LD, _tin("tài liệu bản 2"), thanh_phan="c5", vung_tai_lieu=("x", ""))
+        assert c.so_goi == 2
+
+
+class TestVungDoi:
     def test_bao_vung_doi_vung_moi_va_phan_chung(self):
         p1 = PhatLai()
         p1.ghi_vung({"": "c", "kafka": "k", "redis": "r"})
@@ -284,12 +297,14 @@ class TestTronPipeline:
         assert pl["c3"]["dung_lai"] > 0 and pl["c3"]["goi_moi"] > 0
         assert "Redis · nhóm" in hoi_lai and "Kafka · nhóm" not in hoi_lai
         assert "Mục II.1" not in hoi_lai, "bảng Kafka không đọc ô đã sửa — phải dùng lại"
-        # Chặt (chốt 2026-09-17): C5 gửi cả tài liệu ⇒ hỏi lại TOÀN BỘ C5.
-        assert pl["c5"]["dung_lai"] == 0
-        assert pl["c5"]["goi_moi"] == kq1.thong_ke["phat_lai"]["c5"]["goi_moi"]
+        # C5 khoá theo vùng (chốt 2026-09-18): quy tắc của Kafka dùng lại được, quy
+        # tắc cấp hệ thống và của Redis thì hỏi lại.
+        c5 = " | ".join(pl["c5"]["goi_moi_vi_du"])
+        assert pl["c5"]["dung_lai"] > 0 and "#Kafka" not in c5
+        assert "#Redis" in c5 and "#he_thong" in c5
         assert (pl["vung_doi"], pl["chung_doi"]) == (["redis"], False)
 
-    def test_chen_doan_o_DAU_lam_lech_chi_so_va_trang_van_dung_lai_phan_he(self, lan_1):
+    def test_chen_doan_o_DAU_lam_lech_chi_so_va_trang_van_dung_lai_C3_phan_he(self, lan_1):
         goc, _, ban_ghi, _ = lan_1
         moi = _word(chen_dau=True)
         kafka = [e for e in read_docx(goc).elements if e.kind == "table"][0]
@@ -304,14 +319,15 @@ class TestTronPipeline:
         assert "nhận diện phân hệ" in hoi_lai, "lượt trả chỉ số bảng giữ vị trí trong khoá"
         assert (pl["vung_doi"], pl["chung_doi"]) == ([], True)
 
-    def test_do_c5_ghi_duoc_cho_quy_tac_cap_phan_he(self, lan_1):
-        _, _, ban_ghi, _ = lan_1
-        assert any(k.endswith("#kafka") for k in ban_ghi["do_c5"])
-        kq = _chay(_word(redis_cpu="12"), ModelTheoNoiDung(), PhatLai(ban_ghi))
-        d = kq.thong_ke["phat_lai"]["do_c5_theo_vung"]
-        assert d["so_sanh_duoc"] > 0
-        assert d["vung_khong_doi"] > 0, "quy tắc của Kafka: vùng Kafka + phần chung không đổi"
-        assert d["vung_doi"] > 0, "quy tắc của Redis: vùng Redis đổi"
+    def test_sua_PHAN_CHUNG_thi_moi_quy_tac_C5_deu_hoi_lai(self, lan_1):
+        """Vùng khoá của một phân hệ gồm cả phần chung: sửa phần giới thiệu là mọi kết
+        luận định tính đều có thể đổi."""
+        _, kq1, ban_ghi, _ = lan_1
+        kq = _chay(_word(chen_dau=True), ModelTheoNoiDung(), PhatLai(ban_ghi))
+        pl = kq.thong_ke["phat_lai"]
+        assert pl["c5"]["dung_lai"] == 0
+        assert pl["c5"]["goi_moi"] == kq1.thong_ke["phat_lai"]["c5"]["goi_moi"]
+        assert pl["chung_doi"] is True
 
 
 # ------------------------------------------------------------ bộ chạy việc --

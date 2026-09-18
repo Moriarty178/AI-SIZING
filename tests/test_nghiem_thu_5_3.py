@@ -23,7 +23,7 @@ def _viec(*, phat_lai="dùng lại 268/268 lượt hỏi", c3=(0, 0), c5=(0, 0),
 def _ket(**kw):
     l1 = kw.pop("l1", _viec(phat_lai="không dùng lại được — …", c3=(0, 121), c5=(0, 147)))
     l2 = kw.pop("l2", _viec(c3=(121, 0), c5=(147, 0), thay_doi={"giong_het": True}))
-    l3 = kw.pop("l3", _viec(c3=(100, 21), c5=(0, 147),
+    l3 = kw.pop("l3", _viec(c3=(100, 21), c5=(90, 57),
                             thay_doi={"giong_het": False, "sua": 1, "them": 1, "xoa": 0,
                                       "vi_tri": ["Mục 1.1, trang 18 · bảng · sửa"]},
                             vung_doi=["frontend"], chung_doi=False))
@@ -64,9 +64,16 @@ def test_L3_hoi_lai_het_C3_thi_R5_truot():
     assert k["R5"]["dat"] is False
 
 
-def test_L3_dung_lai_C5_thi_R6_truot_vi_da_chot_lam_chat():
-    k = _ket(l3=_viec(c3=(100, 21), c5=(100, 47), thay_doi={"giong_het": False, "sua": 1}))
+def test_L3_hoi_lai_HET_C5_du_phan_chung_khong_doi_thi_R6_truot():
+    k = _ket(l3=_viec(c3=(100, 21), c5=(0, 147), chung_doi=False,
+                      thay_doi={"giong_het": False, "sua": 1}))
     assert k["R6"]["dat"] is False
+
+
+def test_phan_CHUNG_doi_thi_R6_chi_do():
+    k = _ket(l3=_viec(c3=(100, 21), c5=(0, 147), chung_doi=True,
+                      thay_doi={"giong_het": False, "sua": 1}))
+    assert k["R6"]["dat"] is None and "phần CHUNG đổi" in k["R6"]["chi_tiet"]
 
 
 def test_nop_nham_ban_goc_o_L3_thi_R4_truot():

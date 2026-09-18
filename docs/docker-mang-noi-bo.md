@@ -218,7 +218,7 @@ Nghiệm thu 5.3 (thẩm định lại chỉ hỏi model cho phần đã đổi)
 của hồ sơ nghiệm thu, và một bản đã sửa. Tạo bản sửa: mở bản gốc bằng Word, sửa MỘT
 con số trong bảng của MỘT phân hệ, thêm MỘT câu vào đầu mục của phân hệ đó, rồi
 «Save As» sang tên khác. Script thẩm định lại ba lần (gốc · gốc · bản sửa) và tự chấm
-6 tiêu chí; đệm lời gọi bật thì lần 1–2 vài phút, lần 3 hỏi lại toàn bộ C5 (~147 lượt):
+6 tiêu chí; đệm lời gọi bật thì lần 1–2 vài phút, lần 3 hỏi lại phần đọc tới chỗ sửa:
 
 ```powershell
 py scripts/nghiem_thu_5_3.py --ho-so 1 "D:\duong\dan\Sizing ABC.docx" "D:\duong\dan\Sizing ABC - da sua.docx" --api http://localhost:8902 --ten "Tên bạn"

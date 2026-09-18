@@ -24,16 +24,21 @@ Ba lần thẩm định lại liền nhau trên cùng hồ sơ:
          cùng đạt / chưa đạt / chưa kiểm được / phát sinh.                      (cứng)
 - **R4** L3 thấy bản sửa khác bản gốc, và nói ra chỗ khác.                       (cứng)
 - **R5** L3 dùng lại được MỘT PHẦN C3 — hỏi lại có chọn lọc, không phải hỏi hết. (cứng)
-- **R6** L3 hỏi lại TOÀN BỘ C5 — cách làm chặt người dùng chốt 2026-09-17.       (cứng)
+- **R6** L3 dùng lại được C5 của phân hệ KHÔNG bị sửa (chốt 2026-09-18). Chỉ đo
+         nếu phần chung đổi — lúc đó mọi quy tắc C5 hỏi lại là đúng.            (cứng)
 - **Đ1** Thời gian và số lượt thật sự tới model của từng lần.
 - **Đ2** Phân hệ nào có nội dung đổi; phần chung có đổi không.
-- **Đ3** Đo cho quyết định lần sau: quy tắc C5 cấp phân hệ mà vùng phân hệ + phần
-         chung KHÔNG đổi, model hỏi lại có cho kết luận khác lần trước không.
+- **Đ3** C5 dùng lại được bao nhiêu, và những phân hệ nào phải hỏi lại.
 - **Đ4** Dòng baseline đổi trạng thái giữa L2 và L3, chia theo nằm trong / ngoài
          phân hệ có nội dung đổi, và theo ai kết luận (C4 / C5 / không rõ).
 
 ⚠️ Chạy trên hồ sơ nghiệm thu (vd #1), không trên hồ sơ thật của người dùng: thêm ba
 lần thẩm định vào lịch sử hồ sơ.
+
+⚠️ **Rủi ro đã biết, chưa sửa (đo được 2026-09-18):** lượt «nhận diện phân hệ» đọc cả
+tài liệu nên L3 phải hỏi lại, và model có thể kể thêm phân hệ không có ở lần trước —
+mỗi phân hệ như thế đẻ ra ~58 dòng trong rổ phát sinh. Xem Đ2 (`vung_moi`) trước khi
+đọc số lỗi phát sinh của L3.
 
 Kết quả chỉ chứa số đếm, mã quy tắc, tên phân hệ và nhãn vị trí — không có nội dung tài
 liệu, commit được.
@@ -128,8 +133,10 @@ def cham(*, l1: dict, l2: dict, l3: dict, dem_1: dict, dem_2: dict) -> list[dict
     ghi("R5", _so(c3, "dung_lai") > 0 and _so(c3, "goi_moi") > 0,
         f"C3 dùng lại {_so(c3, 'dung_lai')}, hỏi lại {_so(c3, 'goi_moi')}")
     c5 = pl3.get("c5") or {}
-    ghi("R6", _so(c5, "dung_lai") == 0 and _so(c5, "goi_moi") > 0,
-        f"C5 dùng lại {_so(c5, 'dung_lai')}, hỏi lại {_so(c5, 'goi_moi')}")
+    chung_doi = bool(pl3.get("chung_doi"))
+    ghi("R6", None if chung_doi else (_so(c5, "dung_lai") > 0 and _so(c5, "goi_moi") > 0),
+        f"C5 dùng lại {_so(c5, 'dung_lai')}, hỏi lại {_so(c5, 'goi_moi')}"
+        + (" · phần CHUNG đổi nên hỏi lại hết là đúng — chỉ đo" if chung_doi else ""))
 
     for ten, v in (("L1", l1), ("L2", l2), ("L3", l3)):
         p = _pl(v)
@@ -140,7 +147,10 @@ def cham(*, l1: dict, l2: dict, l3: dict, dem_1: dict, dem_2: dict) -> list[dict
             f"{_so(v, 'thong_ke_cache', 'ghi_them')}")
     ghi("Đ2", None, f"phân hệ đổi {pl3.get('vung_doi')} · mới {pl3.get('vung_moi')} · "
                     f"phần chung đổi: {pl3.get('chung_doi')}")
-    ghi("Đ3", None, json.dumps(pl3.get("do_c5_theo_vung") or {}, ensure_ascii=False))
+    hoi_lai_c5 = sorted({x.split("#", 1)[-1] for x in (c5.get("goi_moi_vi_du") or [])})
+    ghi("Đ3", None, f"C5 dùng lại {_so(c5, 'dung_lai')}/"
+                    f"{_so(c5, 'dung_lai') + _so(c5, 'goi_moi')} · phạm vi phải hỏi lại: "
+                    f"{', '.join(hoi_lai_c5) or '—'}")
     return kq
 
 

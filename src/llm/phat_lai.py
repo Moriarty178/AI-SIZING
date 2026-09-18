@@ -22,11 +22,18 @@ văn giá trị/trích dẫn, rồi CODE neo lại vào bản MỚI. Ngoại l�
 hệ: nó trả `bang_cau_hinh` là chỉ số bảng — lượt đó giữ nguyên vị trí trong khoá
 (`giu_vi_tri=True`), nếu không một ảnh chèn thêm sẽ làm mốc phân hệ trỏ lệch một bảng.
 
-## Chặt: C5 đọc cả tài liệu nên sửa bất kỳ đâu là hỏi lại toàn bộ C5
+## C5 cấp phân hệ: khoá theo VÙNG của phân hệ + phần chung
 
-Người dùng chốt 2026-09-17: làm CHẶT, và ĐO xem nếu C5 cấp phân hệ chỉ hỏi lại khi vùng
-của phân hệ đó hoặc phần chung đổi thì có kết luận nào khác không (`ghi_do_c5`). Số đo đó
-để quyết lần sau — không dùng để bỏ lượt gọi nào ở đây.
+C5 gửi model cả tài liệu, nên nếu khoá theo đúng thứ model đọc thì sửa bất kỳ đâu cũng
+phải hỏi lại toàn bộ C5. Bản đầu làm đúng như thế (chặt) và ĐO trong lượt nghiệm thu
+2026-09-18: trong 129 lượt so sánh được, **90 lượt có «vùng phân hệ + phần chung» không
+đổi**, và 85/90 lượt model hỏi lại cho ĐÚNG kết luận cũ. 5 lượt khác đều thuộc phân hệ
+KHÔNG bị sửa (Mongo, Postgres, MinIO, Redis) — tức là dao động của model, không phải kết
+luận mới. Người dùng chốt 2026-09-18: chuyển sang khoá theo vùng.
+
+`vung_tai_lieu=(đoạn gửi model, đoạn dùng để khoá)`: lời nhắc gửi đi KHÔNG đổi (vẫn cả
+tài liệu), chỉ khoá hẹp lại. Giá phải trả đã biết: nội dung về phân hệ A nằm trong mục
+của phân hệ B thì sửa ở B không làm A hỏi lại — người dùng có nút «Thẩm định lại toàn bộ».
 
 ## Không dùng lại cái gì
 
@@ -66,10 +73,20 @@ def bo_vi_tri(s: str) -> str:
 
 
 def khoa_loi_goi(schema: type[BaseModel], messages: list[dict], *, model, nhiet_do,
-                 max_tokens, giu_vi_tri: bool = False) -> str:
-    tin = [{**m, "content": (m.get("content") if giu_vi_tri
-                             or not isinstance(m.get("content"), str)
-                             else bo_vi_tri(m["content"]))} for m in messages]
+                 max_tokens, giu_vi_tri: bool = False,
+                 vung_tai_lieu: tuple[str, str] | None = None) -> str:
+    def _noi_dung(m):
+        c = m.get("content")
+        if not isinstance(c, str):
+            return c
+        # CẢ HAI vế phải khác rỗng. Vế sau rỗng nghĩa là «khoá theo cả tài liệu» (quy
+        # tắc cấp hệ thống, hoặc không biết vùng của phân hệ) — thay bằng rỗng thì khoá
+        # KHÔNG còn chứa tài liệu, và lượt đó sẽ dùng lại kể cả khi tài liệu đã đổi.
+        if vung_tai_lieu and all(vung_tai_lieu):
+            c = c.replace(*vung_tai_lieu)
+        return c if giu_vi_tri else bo_vi_tri(c)
+
+    tin = [{**m, "content": _noi_dung(m)} for m in messages]
     js = schema.model_json_schema()
     ten = schema.__name__
     if not giu_vi_tri:
@@ -99,36 +116,32 @@ class PhatLai:
         # không được làm chết luồng chạy việc.
         hop_le = (isinstance(cu, dict) and cu.get("phien_ban") == PHIEN_BAN
                   and all(isinstance(cu.get(k, {}), dict)
-                          for k in ("phan_hoi", "do_c5", "vung")))
+                          for k in ("phan_hoi", "vung")))
         cu = cu if hop_le else {}
         self.co_ban_cu = hop_le
         self.tu_viec = tu_viec if hop_le else ""
         self._cu: dict[str, str] = dict(cu.get("phan_hoi") or {})
-        self._cu_do: dict[str, dict] = dict(cu.get("do_c5") or {})
         self._cu_vung: dict[str, str] = dict(cu.get("vung") or {})
         self._moi: dict[str, str] = {}
-        self._moi_do: dict[str, dict] = {}
         self._vung: dict[str, str] = {}
         self._khoa = threading.Lock()
         self._dem = {"c3": _Dem(), "c5": _Dem()}
 
     # ------------------------------------------------------------------
     def goi(self, client, schema: type[BaseModel], messages: list[dict], *,
-            thanh_phan: str, nhan: str = "", giu_vi_tri: bool = False, **kw):
+            thanh_phan: str, nhan: str = "", giu_vi_tri: bool = False,
+            vung_tai_lieu: tuple[str, str] | None = None, **kw):
         """Thay cho `client.extract(schema, messages, **kw)`. Lỗi của client đi thẳng
-        ra ngoài như cũ — bên gọi đã có đường xuống cấp cho nó (NT4)."""
-        return self.goi_kem_nguon(client, schema, messages, thanh_phan=thanh_phan,
-                                  nhan=nhan, giu_vi_tri=giu_vi_tri, **kw)[0]
+        ra ngoài như cũ — bên gọi đã có đường xuống cấp cho nó (NT4).
 
-    def goi_kem_nguon(self, client, schema: type[BaseModel], messages: list[dict], *,
-                      thanh_phan: str, nhan: str = "", giu_vi_tri: bool = False,
-                      **kw) -> tuple[BaseModel, bool]:
-        """Như `goi`, kèm cờ câu trả lời có phải dùng lại không — phần đo của C5 cần
-        biết từng lượt, mà đếm chênh bộ đếm thì sai khi chạy song song."""
+        `vung_tai_lieu=(đoạn trong lời nhắc, đoạn dùng để khoá)`: chỉ đổi KHOÁ, lời nhắc
+        gửi model giữ nguyên. C5 cấp phân hệ dùng nó để khoá theo vùng của phân hệ.
+        """
         k = khoa_loi_goi(schema, messages,
                          model=kw.get("model") or getattr(client, "chat_model", None),
                          nhiet_do=getattr(client, "temperature", None),
-                         max_tokens=kw.get("max_tokens"), giu_vi_tri=giu_vi_tri)
+                         max_tokens=kw.get("max_tokens"), giu_vi_tri=giu_vi_tri,
+                         vung_tai_lieu=vung_tai_lieu)
         dem = self._dem.setdefault(thanh_phan, _Dem())
         cu = self._cu.get(k)
         if cu is not None:
@@ -140,52 +153,20 @@ class PhatLai:
                 with self._khoa:
                     self._moi[k] = cu
                     dem.dung_lai += 1
-                return kq, True
+                return kq
         kq = client.extract(schema, messages, **kw)
         with self._khoa:
             self._moi[k] = kq.model_dump_json()
             dem.goi_moi += 1
             if nhan and len(dem.goi_moi_vi_du) < TOI_DA_VI_DU:
                 dem.goi_moi_vi_du.append(nhan)
-        return kq, False
+        return kq
 
-    # ------------------------------------------------------------ phần đo --
+    # ----------------------------------------------- vùng (chỉ để BÁO) --
     def ghi_vung(self, vung: dict[str, str]) -> None:
         """{tên phân hệ đã chuẩn hoá | "" cho phần chung: vân tay nội dung}."""
         with self._khoa:
             self._vung = dict(vung)
-
-    def ghi_do_c5(self, khoa_ket_qua: str, *, khoa_vung: str, ket_luan: str,
-                  dung_lai: bool) -> None:
-        with self._khoa:
-            self._moi_do[khoa_ket_qua] = {"khoa_vung": khoa_vung, "ket_luan": ket_luan,
-                                          "dung_lai": dung_lai}
-
-    def _do_c5(self) -> dict:
-        """Nếu C5 cấp phân hệ chỉ hỏi lại khi vùng của nó hoặc phần chung đổi, bao nhiêu
-        lượt SẼ được dùng lại, và trong đó bao nhiêu lượt model (hỏi lại thật lần này)
-        cho kết luận KHÁC lần trước. Chỉ đếm lượt hỏi lại thật: lượt dùng lại thì kết
-        luận trùng lần trước là điều hiển nhiên, không nói gì."""
-        d = {"so_sanh_duoc": 0, "vung_khong_doi": 0, "giong": 0, "khac": 0,
-             "vung_doi": 0, "vung_doi_khac": 0, "khac_vi_du": []}
-        for khoa, r in self._moi_do.items():
-            truoc = self._cu_do.get(khoa)
-            if r["dung_lai"] or truoc is None:
-                continue
-            d["so_sanh_duoc"] += 1
-            if r["khoa_vung"] == truoc.get("khoa_vung"):
-                d["vung_khong_doi"] += 1
-                if r["ket_luan"] == truoc.get("ket_luan"):
-                    d["giong"] += 1
-                else:
-                    d["khac"] += 1
-                    if len(d["khac_vi_du"]) < TOI_DA_VI_DU:
-                        d["khac_vi_du"].append(
-                            f"{khoa}: {truoc.get('ket_luan')} → {r['ket_luan']}")
-            else:
-                d["vung_doi"] += 1
-                d["vung_doi_khac"] += r["ket_luan"] != truoc.get("ket_luan")
-        return d
 
     # ------------------------------------------------------------------
     def thong_ke(self) -> dict:
@@ -200,11 +181,9 @@ class PhatLai:
                 ra["vung_moi"] = sorted(t for t in self._vung
                                         if t and t not in self._cu_vung)
                 ra["chung_doi"] = self._cu_vung.get("") != self._vung.get("")
-            if self.co_ban_cu:
-                ra["do_c5_theo_vung"] = self._do_c5()
             return ra
 
     def xuat(self) -> dict:
         with self._khoa:
             return {"phien_ban": PHIEN_BAN, "phan_hoi": dict(self._moi),
-                    "do_c5": dict(self._moi_do), "vung": dict(self._vung)}
+                    "vung": dict(self._vung)}

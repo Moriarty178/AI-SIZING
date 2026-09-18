@@ -32,15 +32,13 @@ from __future__ import annotations
 import threading
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import hashlib
-import json
 from dataclasses import dataclass, field
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 from ..extraction.schema import SizingCore
-from ..extraction.vung import chuan_ten, van_tay, vung_phan_he
+from ..extraction.vung import vung_phan_he
 from ..ingestion.anchor import neo
 from ..ingestion.docx_reader import DocxDocument
 from ..llm.client import ExtractionFailed, LLMClient, LLMError
@@ -105,8 +103,9 @@ class QualitativeValidator:
         self.rules = rules or load_rules()
         self.model = model
         # 5.3 — dùng lại câu trả lời của lần trước khi nội dung lượt hỏi không đổi.
-        # C5 gửi CẢ tài liệu nên sửa bất kỳ đâu là hỏi lại — chặt, người dùng chốt
-        # 2026-09-17. Xem `src/llm/phat_lai.py`.
+        # C5 gửi CẢ tài liệu, nhưng KHOÁ dùng lại của quy tắc cấp phân hệ chỉ tính
+        # theo vùng của phân hệ đó + phần chung (người dùng chốt 2026-09-18 trên số đo
+        # nghiệm thu 5.3: 85/90 lượt hỏi lại cho đúng kết luận cũ). Xem `phat_lai.py`.
         self.phat_lai = phat_lai
         self._vung: tuple | None = None
         self.on_tien_do = on_tien_do      # không có tiến trình thì trông y hệt treo
@@ -114,9 +113,26 @@ class QualitativeValidator:
         self.tk = ThongKeDT()
 
     # ------------------------------------------------------------------
-    def ngu_canh(self, doc: DocxDocument) -> str:
-        return "\n".join(f"[{e.location}] {e.text}"
-                         for e in doc.elements if e.text)[:MAX_KY_TU_NGU_CANH]
+    def ngu_canh(self, doc: DocxDocument, chi_so=None) -> str:
+        """Ngữ cảnh gửi model. `chi_so` giới hạn phần tử — chỉ dùng để DỰNG KHOÁ dùng
+        lại, không dùng khi gọi model (C5 vẫn đọc cả tài liệu)."""
+        return "\n".join(f"[{e.location}] {e.text}" for e in doc.elements
+                         if e.text and (chi_so is None or e.index in chi_so)
+                         )[:MAX_KY_TU_NGU_CANH]
+
+    def vung_khoa(self, doc: DocxDocument, core: SizingCore, scope_key: str) -> str:
+        """Phần tài liệu quyết định kết luận của một quy tắc cấp phân hệ: mục của phân
+        hệ đó + phần chung (ngoài mọi phân hệ). Rỗng = khoá theo cả tài liệu."""
+        if not scope_key:
+            return ""
+        if self._vung is None or self._vung[0] is not doc or self._vung[1] is not core:
+            self._vung = (doc, core, *vung_phan_he(doc, core))
+        _, _, theo_ten, chung = self._vung
+        ph = next((p for p in core.phan_he
+                   if scope_key in (p.ten_phan_he, p.scope_key)), None)
+        if ph is None or theo_ten.get(ph.ten_phan_he) is None:
+            return ""                       # không biết vùng → khoá theo cả tài liệu
+        return self.ngu_canh(doc, set(theo_ten[ph.ten_phan_he]) | set(chung))
 
     def _rule_quote(self, rule: Rule) -> str:
         """Trích dẫn phía QUY TẮC — luôn từ `rules.yaml`, không bao giờ từ model.
@@ -193,19 +209,21 @@ class QualitativeValidator:
 
         # --- hỏi model -------------------------------------------------
         self.tk.tang("luot_goi")
+        nc = self.ngu_canh(doc)
         tin = [
             {"role": "system", "content": HE_THONG},
             {"role": "user", "content":
                 f"{self._loi_nhac(rule, scope_key)}\n\n{NHAC_NHO}\n\n"
-                f"=== TÀI LIỆU ===\n{self.ngu_canh(doc)}"},
+                f"=== TÀI LIỆU ===\n{nc}"},
         ]
         try:
             if self.phat_lai is None:
                 nx = self.client.extract(NhanXetDinhTinh, tin, model=self.model)
             else:
-                nx, dung_lai = self.phat_lai.goi_kem_nguon(
+                nx = self.phat_lai.goi(
                     self.client, NhanXetDinhTinh, tin, model=self.model,
-                    thanh_phan="c5", nhan=f"{rule.id}#{scope_key or 'he_thong'}")
+                    thanh_phan="c5", nhan=f"{rule.id}#{scope_key or 'he_thong'}",
+                    vung_tai_lieu=(nc, self.vung_khoa(doc, core, scope_key)))
         except (ExtractionFailed, LLMError) as e:
             self.tk.tang("luot_goi_hong")
             self.tk.them_loi(f"{rule.id}#{scope_key}: {e}")
@@ -216,35 +234,7 @@ class QualitativeValidator:
                 severity="info")
             return RuleOutcome(rule.id, scope_key, "khong_danh_gia_duoc", f, str(e))
 
-        if self.phat_lai is not None:
-            try:
-                self._ghi_do(rule, doc, core, scope_key, nx, dung_lai)
-            except Exception as e:          # phần ĐO hỏng không được làm hỏng kết luận
-                self.tk.them_loi(f"đo 5.3 {rule.id}#{scope_key}: {type(e).__name__}: {e}")
         return self._doc_nhan_xet(rule, doc, scope_key, nx)
-
-    # ---------------------------------------------------------- phần đo 5.3 --
-    def _ghi_do(self, rule: Rule, doc: DocxDocument, core: SizingCore, scope_key: str,
-                nx: NhanXetDinhTinh, dung_lai: bool) -> None:
-        """Ghi kết luận kèm vân tay «vùng của phân hệ + phần chung» — để ĐO, không để
-        quyết định. Quy tắc cấp hệ thống đọc cả tài liệu theo cả hai cách làm, nên
-        không có gì để đo."""
-        if not scope_key:
-            return
-        if self._vung is None or self._vung[0] is not doc or self._vung[1] is not core:
-            self._vung = (doc, core, *vung_phan_he(doc, core))
-        _, _, theo_ten, chung = self._vung
-        ph = next((p for p in core.phan_he
-                   if scope_key in (p.ten_phan_he, p.scope_key)), None)
-        vung = theo_ten.get(ph.ten_phan_he) if ph else None
-        if vung is None:            # không biết vùng → coi như cả tài liệu
-            vung = [e.index for e in doc.elements]
-        khoa_vung = hashlib.sha256(json.dumps(
-            [rule.id, scope_key, self._loi_nhac(rule, scope_key), HE_THONG, NHAC_NHO,
-             self.model, van_tay(doc, set(vung) | set(chung))],
-            ensure_ascii=False).encode("utf-8")).hexdigest()
-        self.phat_lai.ghi_do_c5(f"{rule.id}#{chuan_ten(scope_key)}", khoa_vung=khoa_vung,
-                                ket_luan=nx.ket_luan, dung_lai=dung_lai)
 
     # ------------------------------------------------------------------
     def _doc_nhan_xet(self, rule: Rule, doc: DocxDocument, scope_key: str,
