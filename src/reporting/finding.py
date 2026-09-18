@@ -46,6 +46,11 @@ class Finding:
     rule_quote: str = ""               # trích dẫn nguyên văn tài liệu tiêu chí
     location: str = ""                 # "Mục IV.1.2, trang 8"
     computed_evidence: str = ""        # con số do code tính ra
+    # 5.6 — GIÁ TRỊ ĐẦU VÀO code đã dùng, tách khỏi kết quả tính. C4 tất định với đầu
+    # vào, nhưng đầu vào do C3 trích và dao động: 5.0b đo chỉ 8/11 dòng do code kết
+    # luận trùng ở cả hai lượt. Không hiện đầu vào thì Admin thấy trạng thái lật mà
+    # không biết vì sao — mà lý do gần như luôn là "C3 lần này trích ra số khác".
+    dau_vao: str = ""
     suggestion: str = ""
     confidence: Confidence = "cao"
     checklist_ref: list[str] = field(default_factory=list)

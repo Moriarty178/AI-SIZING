@@ -1,4 +1,4 @@
-"""5.4 — API nút «Báo lỗi hệ thống»: báo được cả dòng baseline lẫn dòng phát sinh.
+"""5.4 — nút «Báo lỗi hệ thống» và 5.6/5.9 — bảng Admin, qua API.
 
 OFFLINE, pipeline giả trả `Finding` thật nên đi qua đúng `xuat_findings` như lượt chạy
 thật — cần thế thì mới kiểm được việc nối sang nhật ký phản hồi 4.1.
@@ -140,3 +140,42 @@ def test_viec_cua_lan_moi_nhat_da_bi_xoa_thi_van_bao_duoc(client, ho_so):
     main.kho.xoa(main.kho_csdl.lan_moi_nhat(h)["ma_viec"])
     r = _bao(client, h, ly_do="x", finding_baseline_id=fb)
     assert r.status_code == 201 and r.json()["nhat_ky"].startswith("bỏ qua nhật ký 4.1")
+
+
+# ----------------------------------------------- 5.6/5.9 — bảng cho Admin ----
+ADMIN = thanh_header(tao_danh_tinh("admin", "Trần Thẩm Định"))
+
+
+def test_bang_admin_mang_lan_sua_va_ghi_chu(client, ho_so):
+    h, fb, _ = ho_so
+    client.post(f"/ho-so/{h}/finding/{fb}/lan-sua",
+                json={"noi_dung_sua": "đổi 12 → 16 core"}, headers=NGUOI)
+    r = client.post(f"/ho-so/{h}/ghi-chu-admin", headers=ADMIN, json={"muc": [
+        {"finding_baseline_id": fb, "ghi_chu": "sai phía công cụ",
+         "danh_gia": "can_ban", "loi_o_phia": "he_thong_ai"}]})
+    assert r.status_code == 200 and r.json() == {"da_luu": 1, "bo_qua": 0}
+    d = client.get(f"/ho-so/{h}/bang-admin").json()
+    assert d["so_lan_sua_max"] == 1
+    b = d["baseline"][0]
+    assert b["lan_sua"][0]["noi_dung_sua"] == "đổi 12 → 16 core"
+    assert b["ghi_chu_admin"]["loi_o_phia"] == "he_thong_ai"
+    assert b["ghi_chu_admin"]["ten"] == "Trần Thẩm Định"
+
+
+def test_chi_vai_admin_ghi_duoc_ba_cot(client, ho_so):
+    h, fb, _ = ho_so
+    than = {"muc": [{"finding_baseline_id": fb, "ghi_chu": "x"}]}
+    assert client.post(f"/ho-so/{h}/ghi-chu-admin", json=than,
+                       headers=NGUOI).status_code == 403
+    assert client.post(f"/ho-so/{h}/ghi-chu-admin", json=than).status_code == 400
+    assert client.post(f"/ho-so/{h}/ghi-chu-admin", json=than,
+                       headers=ADMIN).status_code == 200
+
+
+def test_gia_tri_la_va_ho_so_la(client, ho_so):
+    h, fb, _ = ho_so
+    assert client.post(f"/ho-so/{h}/ghi-chu-admin", headers=ADMIN, json={"muc": [
+        {"finding_baseline_id": fb, "danh_gia": "phe_duyet"}]}).status_code == 422
+    assert client.post("/ho-so/4242/ghi-chu-admin", headers=ADMIN, json={"muc": [
+        {"finding_baseline_id": fb}]}).status_code == 404
+    assert client.get("/ho-so/4242/bang-admin").status_code == 404

@@ -14,6 +14,8 @@
     GET    /ho-so/{id}      5.1 — baseline cố định + trạng thái lần mới nhất + rổ phát sinh
     GET    /ho-so/{id}/finding/{fb}          5.2 — một lỗi + chỗ trong tài liệu + lịch sử sửa
     POST   /ho-so/{id}/finding/{fb}/lan-sua  5.2 — ghi nhận đã sửa gì (cần danh tính)
+    GET    /ho-so/{id}/bang-admin      5.6 — bảng lịch sử sửa lỗi (mọi lần sửa + ghi chú Admin)
+    POST   /ho-so/{id}/ghi-chu-admin   5.9 — ba cột Admin (chỉ vai admin)
     GET    /ho-so/{id}/bao-loi   5.4 — các lời báo «hệ thống báo sai» của hồ sơ
     POST   /ho-so/{id}/bao-loi   5.4 — báo một dòng (baseline hoặc phát sinh) là lỗi hệ thống
     DELETE /result/{ma}     xoá việc, báo cáo VÀ tài liệu đã nộp (KHÔNG đụng nhật ký)
@@ -436,6 +438,60 @@ def ds_bao_loi(ho_so_id: int) -> dict:
     if k.trang_thai_ho_so(ho_so_id) is None:
         raise HTTPException(404, f"Không có hồ sơ #{ho_so_id}")
     return {"bao_loi": k.ds_bao_cao_loi(ho_so_id)}
+
+
+class MucGhiChuAdminVao(BaseModel):
+    finding_baseline_id: int
+    ghi_chu: str = Field(default="", max_length=10_000)
+    danh_gia: Literal["", "chap_nhan", "tu_choi", "can_ban"] = ""
+    loi_o_phia: Literal["", "nguoi_lam_sizing", "he_thong_ai"] = ""
+
+
+class GhiChuAdminVao(BaseModel):
+    muc: list[MucGhiChuAdminVao] = Field(min_length=1, max_length=2000)
+
+
+def _admin(request: Request):
+    """Ba cột 5.9 là tiếng nói của người thẩm định — dòng phải mang đúng vai Admin.
+
+    Danh tính vẫn KHÔNG xác thực (5.0a): ai cũng chọn được vai Admin trên giao diện
+    demo. Kiểm ở đây là để không ghi nhầm dòng của người làm sizing thành ý kiến
+    Admin, không phải để bảo vệ.
+    """
+    try:
+        dt = tu_header(request.headers)
+    except ValueError as e:
+        raise HTTPException(400, f"Danh tính trong header không hợp lệ: {e}")
+    if dt is None:
+        raise HTTPException(400, "Ghi chú Admin cần danh tính — nhập tên ở thanh bên.")
+    if dt.vai != "admin":
+        raise HTTPException(403, f"Chỉ vai «admin» ghi được ba cột này; đang là "
+                                 f"«{dt.vai}».")
+    return dt
+
+
+@app.get("/ho-so/{ho_so_id}/bang-admin")
+def bang_admin(ho_so_id: int) -> dict:
+    d = _can_csdl().doc_bang_admin(ho_so_id)
+    if d is None:
+        raise HTTPException(404, f"Không có hồ sơ #{ho_so_id}")
+    return d
+
+
+@app.post("/ho-so/{ho_so_id}/ghi-chu-admin")
+def ghi_chu_admin(ho_so_id: int, vao: GhiChuAdminVao, request: Request) -> dict:
+    from src.luu_tru.kho import KhongCoFinding
+    k = _can_csdl()
+    dt = _admin(request)
+    if k.trang_thai_ho_so(ho_so_id) is None:
+        raise HTTPException(404, f"Không có hồ sơ #{ho_so_id}")
+    try:
+        return k.luu_ghi_chu_admin(ho_so_id, danh_tinh=dt,
+                                   muc=[m.model_dump() for m in vao.muc])
+    except KhongCoFinding as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
 
 
 class MucPhanHoiVao(BaseModel):

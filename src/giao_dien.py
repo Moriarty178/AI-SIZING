@@ -552,6 +552,111 @@ def bang_phat_sinh(d: dict) -> list[dict]:
             for p in d.get("phat_sinh") or []]
 
 
+# --------------------------------------------- 5.6/5.9 — bảng cho Admin ------
+NHAN_DANH_GIA = {"": "(chưa)", "chap_nhan": "Chấp nhận", "tu_choi": "Từ chối",
+                 "can_ban": "Cần bàn"}
+NHAN_LOI_O_PHIA = {"": "(chưa)", "nguoi_lam_sizing": "Người làm sizing",
+                   "he_thong_ai": "Hệ thống AI"}
+COT_GHI_CHU, COT_DANH_GIA, COT_LOI_O_PHIA = ("Ghi chú Admin", "Trạng thái Admin",
+                                             "Lỗi ở phía")
+COT_ADMIN = (COT_GHI_CHU, COT_DANH_GIA, COT_LOI_O_PHIA)
+NHAN_CHUA_KIEM = NHAN_TRANG_THAI_HO_SO["chua_kiem_duoc"]
+
+
+def bang_admin(d: dict) -> list[dict]:
+    """Một dòng mỗi lỗi baseline: trạng thái lần mới nhất, ĐẦU VÀO code đã dùng, nội
+    dung từng lần sửa, số lời báo lỗi hệ thống, và ba cột Admin.
+
+    Cột «Lần sửa k» dựng theo số lần sửa NHIỀU NHẤT trên toàn hồ sơ, dòng nào không có
+    lần đó thì để trống — đúng hình bảng người dùng mô tả.
+    """
+    n = int(d.get("so_lan_sua_max") or 0)
+    ra = []
+    for b in d.get("baseline") or []:
+        muc = b.get("muc_do", "")
+        if b.get("muc_do_lan"):
+            muc = f"{muc} (lần này: {b['muc_do_lan']})"
+        ga = b.get("ghi_chu_admin") or {}
+        dong = {
+            "id": b.get("id"),
+            "Quy tắc": b.get("rule_ref", ""),
+            "Phân hệ": b.get("scope_goc", ""),
+            "Mức độ": muc,
+            "Trạng thái": NHAN_TRANG_THAI_HO_SO.get(b.get("trang_thai"), "—"),
+            "Ai kết luận": NHAN_KET_LUAN_BOI.get(b.get("ket_luan_boi"), "—"),
+            "Nội dung (lần đầu)": b.get("noi_dung", ""),
+            "Căn cứ lần này": b.get("computed_evidence_lan", ""),
+            # 5.0b: chỉ 8/11 dòng do code kết luận trùng ở cả hai lượt, vì đầu vào do
+            # C3 trích và dao động. Không có cột này thì Admin thấy trạng thái lật mà
+            # không biết vì sao.
+            "Đầu vào code đã dùng": b.get("dau_vao_lan", ""),
+            "Vị trí": b.get("vi_tri", ""),
+            "Đã báo lỗi": b.get("so_bao_loi", 0),
+        }
+        ls = {int(x.get("so_lan") or 0): x for x in (b.get("lan_sua") or [])}
+        for k in range(1, n + 1):
+            dong[f"Lần sửa {k}"] = str((ls.get(k) or {}).get("noi_dung_sua") or "")
+        dong[COT_GHI_CHU] = str(ga.get("ghi_chu") or "")
+        dong[COT_DANH_GIA] = NHAN_DANH_GIA.get(ga.get("danh_gia") or "", "(chưa)")
+        dong[COT_LOI_O_PHIA] = NHAN_LOI_O_PHIA.get(ga.get("loi_o_phia") or "", "(chưa)")
+        ra.append(dong)
+    return ra
+
+
+def _da_dung_toi(r: dict) -> bool:
+    """Đã có người đụng vào dòng này: sửa, báo lỗi, hoặc Admin ghi chú."""
+    return bool(r.get("Đã báo lỗi") or r.get(COT_GHI_CHU)
+                or r.get(COT_DANH_GIA, "(chưa)") != "(chưa)"
+                or r.get(COT_LOI_O_PHIA, "(chưa)") != "(chưa)"
+                or any(v for k, v in r.items() if k.startswith("Lần sửa ")))
+
+
+def loc_bang_admin(rows: list[dict], *, hien_chua_kiem: bool = False,
+                   tim: str = "") -> tuple[list[dict], int]:
+    """(dòng để hiện, số dòng đang ẩn).
+
+    Mặc định ẩn nhóm «chưa kiểm được» — 664/719 dòng ở hồ sơ thật, tức Admin phải cuộn
+    qua 92% dòng công cụ KHÔNG kết luận được gì mới tới dòng có nội dung. Nhưng KHÔNG
+    ẩn dòng đã có người đụng tới (đã sửa / đã báo lỗi / đã ghi chú): giấu đúng thứ
+    người ta vừa làm là cách nhanh nhất để mất niềm tin. Số dòng ẩn luôn hiện ra.
+    """
+    t = " ".join((tim or "").split()).casefold()
+    ra = []
+    for r in rows:
+        if not hien_chua_kiem and r.get("Trạng thái") == NHAN_CHUA_KIEM \
+                and not _da_dung_toi(r):
+            continue
+        if t and t not in " ".join(
+                str(r.get(c, "")) for c in ("Quy tắc", "Phân hệ", "Nội dung (lần đầu)",
+                                            "Vị trí")).casefold():
+            continue
+        ra.append(r)
+    return ra, len(rows) - len(ra)
+
+
+def thay_doi_admin(goc: list[dict], sau: list[dict]) -> list[dict]:
+    """Chỉ những dòng Admin ĐÃ ĐỔI, dạng gửi lên API (mã, không phải nhãn).
+
+    Gửi cả bảng thì mỗi lần bấm Lưu là 719 dòng mới trong bảng CHỈ THÊM — lịch sử ghi
+    chú sẽ chìm trong bản sao của chính nó.
+    """
+    ma_dg = {v: k for k, v in NHAN_DANH_GIA.items()}
+    ma_lop = {v: k for k, v in NHAN_LOI_O_PHIA.items()}
+    cu = {r.get("id"): r for r in goc}
+    ra = []
+    for r in sau:
+        t = cu.get(r.get("id"))
+        if t is None:
+            continue
+        if all(str(r.get(c, "")) == str(t.get(c, "")) for c in COT_ADMIN):
+            continue
+        ra.append({"finding_baseline_id": int(r["id"]),
+                   "ghi_chu": str(r.get(COT_GHI_CHU) or ""),
+                   "danh_gia": ma_dg.get(str(r.get(COT_DANH_GIA) or ""), ""),
+                   "loi_o_phia": ma_lop.get(str(r.get(COT_LOI_O_PHIA) or ""), "")})
+    return ra
+
+
 # ---------------------------------------------------- 5.4 — báo lỗi hệ thống --
 def bang_bao_loi(rows: list[dict] | None) -> list[dict]:
     """Lời báo «hệ thống báo sai» → dòng bảng. Dùng cho khung chi tiết một lỗi và

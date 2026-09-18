@@ -233,6 +233,20 @@ curl.exe http://localhost:8902/health      # "csdl": {"san_sang": true, "luoc_do
 py scripts/nghiem_thu_5_4.py --ho-so 1 --api http://localhost:8902 --ten "Tên bạn"
 ```
 
+Nghiệm thu 5.6/5.9 bước 1 (bảng Admin + ba cột). Nên kèm tệp `.docx` đã nộp lần
+trước: cột «đầu vào code đã dùng» chỉ có từ lần thẩm định chạy trên bản 5.6 trở đi, và
+thẩm định lại bằng đúng tệp cũ thì 5.3 dùng lại toàn bộ câu trả lời model (vài phút,
+không tốn lượt gọi nào):
+
+```powershell
+py scripts/nghiem_thu_5_6.py --ho-so 1 "D:\duong\dan\Sizing ABC.docx" --api http://localhost:8902 --ten "Tên bạn"
+```
+
+Bảng Admin nằm trong giao diện: chọn **Vai = Admin** ở thanh bên rồi mở khối
+«🛠 Bảng thẩm định của Admin». Mặc định bảng ẩn nhóm «chưa kiểm được» (ở hồ sơ thật là
+664/719 dòng) nhưng vẫn giữ dòng đã có người sửa, đã báo lỗi hoặc đã ghi chú; số dòng
+đang ẩn hiện ngay trên bảng.
+
 ⚠️ **Lược đồ CSDL lên bản 3 (5.4).** Từ bản này Copilot có migration thật: khởi động
 trên CSDL bản 2 thì nó tự dựng lại bảng `bao_cao_loi` (bảng rỗng, chưa tính năng nào ghi
 vào) rồi ghi số phiên bản mới — trong CÙNG một giao dịch, hỏng thì lùi cả hai. Nếu bảng

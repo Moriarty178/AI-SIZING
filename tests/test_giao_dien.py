@@ -524,3 +524,73 @@ class TestBaoLoi54:
              "phat_sinh": [{"rule_ref": "ARC-06", "so_bao_loi": 1}]}
         assert bang_baseline(d)[0]["Đã báo lỗi"] == 2
         assert bang_phat_sinh(d)[0]["Đã báo lỗi"] == 1
+
+
+class TestBangAdmin56:
+    """5.6/5.9 — dựng bảng Admin, lọc mặc định, và chỉ gửi dòng đã đổi."""
+
+    @staticmethod
+    def _d(**kw):
+        b = {"id": 1, "rule_ref": "CPU-01", "scope_goc": "Kafka", "muc_do": "major",
+             "trang_thai": "chua_dat", "ket_luan_boi": "c4", "noi_dung": "CPU vượt ngưỡng",
+             "computed_evidence_lan": "`cpu<80` sai", "dau_vao_lan": "cpu_95th=85",
+             "vi_tri": "Mục I", "so_bao_loi": 0, "lan_sua": [], "ghi_chu_admin": {}}
+        b.update(kw)
+        return {"so_lan_sua_max": kw.pop("_max", 0), "baseline": [b]}
+
+    def test_cot_lan_sua_theo_dong_nhieu_nhat_va_o_trong_khi_thieu(self):
+        from src.giao_dien import bang_admin
+        d = self._d(_max=2, lan_sua=[{"so_lan": 1, "noi_dung_sua": "đổi 12 → 16"}])
+        r = bang_admin(d)[0]
+        assert r["Lần sửa 1"] == "đổi 12 → 16" and r["Lần sửa 2"] == ""
+
+    def test_hien_dau_vao_code_da_dung(self):
+        """5.0b: chỉ 8/11 dòng do code kết luận trùng ở hai lượt — Admin phải thấy
+        đầu vào mới biết vì sao trạng thái lật."""
+        from src.giao_dien import bang_admin
+        assert bang_admin(self._d())[0]["Đầu vào code đã dùng"] == "cpu_95th=85"
+
+    def test_ba_cot_admin_hien_nhan_tieng_Viet(self):
+        from src.giao_dien import COT_DANH_GIA, COT_GHI_CHU, COT_LOI_O_PHIA, bang_admin
+        d = self._d(ghi_chu_admin={"ghi_chu": "xem lại", "danh_gia": "can_ban",
+                                   "loi_o_phia": "he_thong_ai"})
+        r = bang_admin(d)[0]
+        assert (r[COT_GHI_CHU], r[COT_DANH_GIA], r[COT_LOI_O_PHIA]) == \
+            ("xem lại", "Cần bàn", "Hệ thống AI")
+
+    def test_mac_dinh_an_chua_kiem_duoc_nhung_GIU_dong_da_co_nguoi_dung_toi(self):
+        from src.giao_dien import bang_admin, loc_bang_admin
+        d = self._d(_max=1)
+        d["baseline"] += [
+            {**d["baseline"][0], "id": 2, "trang_thai": "chua_kiem_duoc"},
+            {**d["baseline"][0], "id": 3, "trang_thai": "chua_kiem_duoc",
+             "so_bao_loi": 1},
+            {**d["baseline"][0], "id": 4, "trang_thai": "chua_kiem_duoc",
+             "lan_sua": [{"so_lan": 1, "noi_dung_sua": "đã sửa"}]},
+            {**d["baseline"][0], "id": 5, "trang_thai": "chua_kiem_duoc",
+             "ghi_chu_admin": {"ghi_chu": "để đó"}}]
+        hien, an = loc_bang_admin(bang_admin(d))
+        assert [r["id"] for r in hien] == [1, 3, 4, 5] and an == 1
+        het, an2 = loc_bang_admin(bang_admin(d), hien_chua_kiem=True)
+        assert len(het) == 5 and an2 == 0
+
+    def test_loc_theo_chu(self):
+        from src.giao_dien import bang_admin, loc_bang_admin
+        d = self._d()
+        d["baseline"].append({**d["baseline"][0], "id": 2, "scope_goc": "Redis",
+                              "rule_ref": "STO-17"})
+        assert [r["id"] for r in loc_bang_admin(bang_admin(d), tim="redis")[0]] == [2]
+        assert [r["id"] for r in loc_bang_admin(bang_admin(d), tim="CPU-01")[0]] == [1]
+
+    def test_chi_gui_dong_DA_DOI_va_doi_nhan_ve_ma(self):
+        from src.giao_dien import COT_DANH_GIA, COT_GHI_CHU, bang_admin, thay_doi_admin
+        d = self._d()
+        d["baseline"].append({**d["baseline"][0], "id": 2})
+        goc = bang_admin(d)
+        sau = [dict(goc[0]), dict(goc[1])]
+        sau[1][COT_GHI_CHU] = "cần bàn thêm"
+        sau[1][COT_DANH_GIA] = "Từ chối"
+        assert thay_doi_admin(goc, sau) == [
+            {"finding_baseline_id": 2, "ghi_chu": "cần bàn thêm", "danh_gia": "tu_choi",
+             "loi_o_phia": ""}]
+        assert thay_doi_admin(goc, goc) == [], "bấm Lưu hai lần không nhân bản lịch sử"

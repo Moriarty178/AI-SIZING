@@ -494,3 +494,69 @@ class TestBaoCaoLoi:
         with kho.engine.begin() as c:
             c.execute(sa.delete(ld.ho_so).where(ld.ho_so.c.id == h))
         assert kho.ds_bao_cao_loi(h) == []
+
+
+class TestBangAdmin:
+    """5.6/5.9 — bảng lịch sử sửa lỗi + ba cột Admin (CHỈ THÊM)."""
+
+    @pytest.fixture
+    def ho_so(self, kho):
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
+                                  findings=[_fd("A#x", dau_vao="cpu_95th=85; nguong=80"),
+                                            _fd("B#y")])
+        h = r["ho_so_id"]
+        fb = [b["id"] for b in kho.doc_ho_so(h)["baseline"]]
+        kho.them_lan_sua(h, fb[0], danh_tinh=_dt(), noi_dung_sua="đổi 12 → 16 core")
+        kho.them_lan_sua(h, fb[0], danh_tinh=_dt(), noi_dung_sua="bổ sung sở cứ tải")
+        kho.them_lan_sua(h, fb[1], danh_tinh=_dt(), noi_dung_sua="thêm mô hình logic")
+        kho.them_bao_cao_loi(h, danh_tinh=_dt(), ly_do="vô lý", finding_baseline_id=fb[1])
+        return h, fb
+
+    def _admin(self):
+        from src.luu_tru.danh_tinh import tao_danh_tinh
+        return tao_danh_tinh("admin", "Trần Thẩm Định")
+
+    def test_moi_dong_mang_du_lan_sua_dau_vao_va_so_bao_loi(self, kho, ho_so):
+        h, fb = ho_so
+        d = kho.doc_bang_admin(h)
+        assert d["so_lan_sua_max"] == 2, "cột «Lần sửa 1…n» dựng theo dòng nhiều nhất"
+        a, b = d["baseline"]
+        assert [x["noi_dung_sua"] for x in a["lan_sua"]] == ["đổi 12 → 16 core",
+                                                             "bổ sung sở cứ tải"]
+        assert a["dau_vao_lan"] == "cpu_95th=85; nguong=80", "đầu vào C4 đã dùng"
+        assert (b["so_bao_loi"], b["ly_do_bao_loi"]) == (1, ["vô lý"])
+        assert a["ghi_chu_admin"] == {}
+
+    def test_ghi_ba_cot_va_doc_lai_dong_MOI_NHAT(self, kho, ho_so):
+        h, fb = ho_so
+        r = kho.luu_ghi_chu_admin(h, danh_tinh=self._admin(), muc=[
+            {"finding_baseline_id": fb[0], "ghi_chu": "chấp nhận cách tính",
+             "danh_gia": "chap_nhan", "loi_o_phia": None}])
+        assert r == {"da_luu": 1, "bo_qua": 0}
+        kho.luu_ghi_chu_admin(h, danh_tinh=self._admin(), muc=[
+            {"finding_baseline_id": fb[0], "ghi_chu": "xem lại: sai phía công cụ",
+             "danh_gia": "can_ban", "loi_o_phia": "he_thong_ai"}])
+        ga = kho.doc_bang_admin(h)["baseline"][0]["ghi_chu_admin"]
+        assert (ga["danh_gia"], ga["loi_o_phia"]) == ("can_ban", "he_thong_ai")
+        assert ga["ten"] == "Trần Thẩm Định" and ga["vai"] == "admin"
+
+    def test_luu_lai_y_nguyen_thi_KHONG_them_dong_lich_su(self, kho, ho_so):
+        h, fb = ho_so
+        m = [{"finding_baseline_id": fb[0], "ghi_chu": "x", "danh_gia": "tu_choi",
+              "loi_o_phia": "nguoi_lam_sizing"}]
+        kho.luu_ghi_chu_admin(h, danh_tinh=self._admin(), muc=m)
+        assert kho.luu_ghi_chu_admin(h, danh_tinh=self._admin(), muc=m) == \
+            {"da_luu": 0, "bo_qua": 1}
+
+    def test_gia_tri_la_hoac_dong_ho_so_khac_bi_chan(self, kho, ho_so):
+        from src.luu_tru.kho import KhongCoFinding
+        h, fb = ho_so
+        with pytest.raises(ValueError, match="không hợp lệ"):
+            kho.luu_ghi_chu_admin(h, danh_tinh=self._admin(), muc=[
+                {"finding_baseline_id": fb[0], "danh_gia": "phe_duyet"}])
+        with pytest.raises(KhongCoFinding):
+            kho.luu_ghi_chu_admin(h, danh_tinh=self._admin(), muc=[
+                {"finding_baseline_id": 99999, "ghi_chu": "x"}])
+
+    def test_ho_so_khong_ton_tai(self, kho):
+        assert kho.doc_bang_admin(4242) is None

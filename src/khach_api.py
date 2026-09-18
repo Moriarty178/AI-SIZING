@@ -193,6 +193,16 @@ class KhachAPI:
                          method="POST", du_lieu=than,
                          kieu="application/json; charset=utf-8")
 
+    def bang_admin(self, ho_so_id: int) -> dict:
+        """5.6 — bảng lịch sử sửa lỗi cho Admin."""
+        return self._goi(f"/ho-so/{int(ho_so_id)}/bang-admin")
+
+    def ghi_chu_admin(self, ho_so_id: int, muc: list[dict]) -> dict:
+        """5.9 — ba cột Admin; chỉ gửi những dòng ĐÃ ĐỔI."""
+        than = json.dumps({"muc": muc}, ensure_ascii=False).encode("utf-8")
+        return self._goi(f"/ho-so/{int(ho_so_id)}/ghi-chu-admin", method="POST",
+                         du_lieu=than, kieu="application/json; charset=utf-8")
+
     def bao_loi(self, ho_so_id: int, ly_do: str, *, finding_baseline_id: int | None = None,
                 finding_phat_sinh_id: int | None = None) -> dict:
         """5.4 — báo một dòng là lỗi của hệ thống (đúng một trong hai id)."""

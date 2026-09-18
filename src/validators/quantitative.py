@@ -61,10 +61,27 @@ class QuantitativeValidator:
                 return ph.location
         return ""
 
+    @staticmethod
+    def _dau_vao(rule: Rule, env: dict) -> str:
+        """Giá trị đầu vào code ĐÃ DÙNG cho lượt chấm này (5.6).
+
+        Lấy theo `inputs` của quy tắc cộng `compare_with` — đúng những tên quy tắc
+        khai, không đổ cả `env` (có cả hằng số toàn cục). Thiếu tên nào thì ghi
+        «(thiếu)»: đó là thông tin, không phải chỗ trống.
+        """
+        ten = [i.name for i in rule.inputs]
+        if rule.compare_with and rule.compare_with not in ten:
+            ten.append(rule.compare_with)
+        return "; ".join(
+            f"{n}={_fmt(env[n]) if isinstance(env.get(n), (int, float)) and not isinstance(env.get(n), bool) else env[n]}"
+            if n in env else f"{n}=(thiếu)" for n in ten)
+
     def _finding(self, rule: Rule, category: str, text: str, *, doc: SizingCore,
                  scope_key: str, computed_evidence: str = "", suggestion: str = "",
-                 severity: str | None = None, confidence: str = "cao") -> Finding:
+                 severity: str | None = None, confidence: str = "cao",
+                 dau_vao: str = "") -> Finding:
         return Finding(
+            dau_vao=dau_vao,
             id=f"{rule.id}#{scope_key or 'he_thong'}",
             severity=severity or rule.severity,           # type: ignore[arg-type]
             category=category,                            # type: ignore[arg-type]
@@ -109,6 +126,7 @@ class QuantitativeValidator:
             f"Đã kiểm {rule.id} ({rule.name}): ĐẠT.",
             doc=doc, scope_key=scope_key,
             computed_evidence=mo_ta_phep_tinh + f"{so}",
+            dau_vao=self._dau_vao(rule, env),
             suggestion="", severity="info", confidence="cao")
 
     def check_rule(self, rule: Rule, doc: SizingCore, scope_key: str = "") -> RuleOutcome:
@@ -147,7 +165,7 @@ class QuantitativeValidator:
                 f"Chưa kiểm được {rule.id} ({rule.name}) vì tài liệu thiếu: "
                 f"{', '.join(missing)}.",
                 doc=doc, scope_key=scope_key,
-                suggestion=goi_y,
+                suggestion=goi_y, dau_vao=self._dau_vao(rule, env),
                 severity="minor", confidence="cao")
             return RuleOutcome(rule.id, scope_key, "khong_danh_gia_duoc", f,
                                f"thiếu: {', '.join(missing)}")
@@ -161,6 +179,7 @@ class QuantitativeValidator:
                 f"theo hai cách: {names}.",
                 doc=doc, scope_key=scope_key,
                 computed_evidence="; ".join(a.note for a in ambiguous if a.note),
+                dau_vao=self._dau_vao(rule, env),
                 suggestion="Ghi rõ đơn vị và dấu phân cách để không còn hiểu hai cách.",
                 severity="minor", confidence="vua")
             return RuleOutcome(rule.id, scope_key, "khong_danh_gia_duoc", f,
@@ -180,7 +199,8 @@ class QuantitativeValidator:
             f = self._finding(
                 rule, "vuot_nguong", self._message(rule, env, {}),
                 doc=doc, scope_key=scope_key,
-                computed_evidence=f"`{rule.check}` sai với {shown}")
+                computed_evidence=f"`{rule.check}` sai với {shown}",
+                dau_vao=self._dau_vao(rule, env))
             return RuleOutcome(rule.id, scope_key, "vi_pham", f)
 
         # --- formula: tính lại rồi đối chiếu ----------------------------
@@ -211,7 +231,8 @@ class QuantitativeValidator:
             doc=doc, scope_key=scope_key,
             computed_evidence=(f"tính lại `{rule.formula}` = {_fmt(expected)}, "
                                f"tài liệu khai {_fmt(declared)}, chênh {rel * 100:.1f}% "
-                               f"(dung sai cho phép {rule.tolerance * 100:g}%)"))
+                               f"(dung sai cho phép {rule.tolerance * 100:g}%)"),
+            dau_vao=self._dau_vao(rule, env))
         return RuleOutcome(rule.id, scope_key, "vi_pham", f)
 
     # ------------------------------------------------------------------

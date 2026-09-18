@@ -12,6 +12,9 @@ Giao diện và API không viết SQL. Khi ghép vào tool sizing, chỉ lớp n
   lời model của nó.
 - 5.4 — `them_bao_cao_loi` / `ds_bao_cao_loi`: người dùng báo «hệ thống báo sai», cho
   cả dòng baseline lẫn dòng trong rổ phát sinh.
+- 5.6/5.9 — `doc_bang_admin`: một dòng mỗi lỗi baseline, kèm mọi lần sửa, giá trị đầu
+  vào C4 đã dùng, số lời báo và ghi chú Admin mới nhất; `luu_ghi_chu_admin` ghi ba cột
+  Admin theo kiểu CHỈ THÊM.
 """
 from __future__ import annotations
 
@@ -296,6 +299,7 @@ class KhoCSDL:
                     b["ket_luan_boi"] = r.ket_luan_boi if r else None
                     b["muc_do_lan"] = r.muc_do_lan if r else None
                     b["computed_evidence_lan"] = r.computed_evidence if r else ""
+                    b["dau_vao_lan"] = r.dau_vao if r else ""
             phat_sinh = [] if moi_nhat is None else [_dict(r) for r in c.execute(
                 select(ps).where(ps.c.lan_tham_dinh_id == moi_nhat).order_by(ps.c.id))]
             for r in phat_sinh:
@@ -324,6 +328,7 @@ class KhoCSDL:
             d["ket_luan_boi"] = k.ket_luan_boi if k else None
             d["muc_do_lan"] = k.muc_do_lan if k else None
             d["computed_evidence_lan"] = k.computed_evidence if k else ""
+            d["dau_vao_lan"] = k.dau_vao if k else ""
             d["lan_sua"] = [_dict(x) for x in c.execute(
                 select(ls).where(ls.c.finding_baseline_id == fb_id)
                 .order_by(ls.c.so_lan))]
@@ -421,6 +426,91 @@ class KhoCSDL:
         with self.engine.connect() as c:
             return [_dict(r) for r in c.execute(
                 select(b).where(b.c.ho_so_id == ho_so_id).order_by(b.c.id.desc()))]
+
+    # ------------------------------------------------------------ 5.6/5.9 --
+    def doc_bang_admin(self, ho_so_id: int) -> dict | None:
+        """Bảng lịch sử sửa lỗi cho Admin: MỘT dòng mỗi lỗi baseline (cố định từ 5.1),
+        kèm nội dung TỪNG lần sửa, giá trị đầu vào C4 đã dùng ở lần mới nhất, số lời báo
+        lỗi hệ thống, và ghi chú Admin mới nhất. None nếu không có hồ sơ.
+
+        Đọc riêng chứ không dùng `doc_ho_so`: bảng này cần nội dung từng lần sửa (bảng
+        kia chỉ đếm), và Admin mở nó độc lập với màn hình người làm sizing.
+        """
+        d = self.doc_ho_so(ho_so_id)
+        if d is None:
+            return None
+        fb, ls, bl, ga = (ld.finding_baseline, ld.lan_sua, ld.bao_cao_loi,
+                          ld.ghi_chu_admin)
+        theo_dong: dict[int, list] = {}
+        moi_nhat: dict[int, dict] = {}
+        with self.engine.connect() as c:
+            for r in c.execute(
+                    select(ls).join(fb, fb.c.id == ls.c.finding_baseline_id)
+                    .where(fb.c.ho_so_id == ho_so_id)
+                    .order_by(ls.c.finding_baseline_id, ls.c.so_lan)):
+                theo_dong.setdefault(r.finding_baseline_id, []).append(_dict(r))
+            # CHỈ THÊM: dòng có id lớn nhất của mỗi lỗi là dòng đang có hiệu lực.
+            for r in c.execute(
+                    select(ga).join(fb, fb.c.id == ga.c.finding_baseline_id)
+                    .where(fb.c.ho_so_id == ho_so_id).order_by(ga.c.id)):
+                moi_nhat[r.finding_baseline_id] = _dict(r)
+            ly_do: dict[int, list[str]] = {}
+            for r in c.execute(select(bl.c.finding_baseline_id, bl.c.ly_do).where(
+                    bl.c.ho_so_id == ho_so_id, bl.c.finding_baseline_id.is_not(None))
+                    .order_by(bl.c.id)):
+                ly_do.setdefault(r.finding_baseline_id, []).append(r.ly_do)
+        so_lan_sua_max = 0
+        for b in d["baseline"]:
+            b["lan_sua"] = theo_dong.get(b["id"], [])
+            b["ghi_chu_admin"] = moi_nhat.get(b["id"]) or {}
+            b["ly_do_bao_loi"] = ly_do.get(b["id"], [])
+            so_lan_sua_max = max(so_lan_sua_max, len(b["lan_sua"]))
+        d["so_lan_sua_max"] = so_lan_sua_max
+        return d
+
+    def luu_ghi_chu_admin(self, ho_so_id: int, *, danh_tinh: DanhTinh,
+                          muc: list[dict]) -> dict:
+        """Ghi ba cột Admin. CHỈ THÊM: mỗi lần đổi là một dòng mới, dòng mới nhất có
+        hiệu lực — Admin quyết phê duyệt dựa trên đây nên lịch sử phải còn.
+
+        Mục nào KHÔNG khác dòng mới nhất thì bỏ qua: bấm Lưu hai lần không được nhân
+        bản lịch sử (cùng luật với bảng ghi chú 4.1).
+        """
+        hop_le_dg = (None, "chap_nhan", "tu_choi", "can_ban")
+        hop_le_lop = (None, "nguoi_lam_sizing", "he_thong_ai")
+        fb, ga = ld.finding_baseline, ld.ghi_chu_admin
+        da_luu = bo_qua = 0
+        with self.engine.begin() as c:
+            thuoc = {r.id for r in c.execute(
+                select(fb.c.id).where(fb.c.ho_so_id == ho_so_id))}
+            cu: dict[int, dict] = {}
+            for r in c.execute(select(ga).join(fb, fb.c.id == ga.c.finding_baseline_id)
+                               .where(fb.c.ho_so_id == ho_so_id).order_by(ga.c.id)):
+                cu[r.finding_baseline_id] = _dict(r)
+            for m in muc:
+                i = int(m.get("finding_baseline_id") or 0)
+                if i not in thuoc:
+                    raise KhongCoFinding(f"Lỗi #{i} không thuộc hồ sơ #{ho_so_id}.")
+                ghi_chu = str(m.get("ghi_chu") or "").strip()
+                if len(ghi_chu) > TOI_DA_NOI_DUNG_SUA:
+                    raise ValueError(f"Ghi chú dài {len(ghi_chu)} ký tự, tối đa "
+                                     f"{TOI_DA_NOI_DUNG_SUA}.")
+                dg = m.get("danh_gia") or None
+                lop = m.get("loi_o_phia") or None
+                if dg not in hop_le_dg or lop not in hop_le_lop:
+                    raise ValueError(f"Giá trị không hợp lệ: danh_gia={dg!r}, "
+                                     f"loi_o_phia={lop!r}.")
+                truoc = cu.get(i) or {}
+                if (str(truoc.get("ghi_chu") or "") == ghi_chu
+                        and (truoc.get("danh_gia") or None) == dg
+                        and (truoc.get("loi_o_phia") or None) == lop):
+                    bo_qua += 1
+                    continue
+                c.execute(insert(ga).values(
+                    finding_baseline_id=i, ghi_chu=ghi_chu, danh_gia=dg,
+                    loi_o_phia=lop, vai=danh_tinh.vai, ten=danh_tinh.ten))
+                da_luu += 1
+        return {"da_luu": da_luu, "bo_qua": bo_qua}
 
     def dat_trang_thai_ho_so(self, ho_so_id: int, trang_thai: str) -> None:
         """Dùng ở 5.5/5.8; ở 5.1 chỉ để test chặn thẩm định lại hồ sơ đã gửi duyệt."""

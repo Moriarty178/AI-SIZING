@@ -16,8 +16,10 @@ import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.giao_dien import (bang_bao_loi, bang_baseline, bang_lan_sua, bang_phat_sinh,
-                           bang_tu_dong,
+from src.giao_dien import (bang_admin, bang_bao_loi, bang_baseline, bang_lan_sua,
+                           bang_phat_sinh, bang_tu_dong, COT_ADMIN, COT_DANH_GIA,
+                           COT_GHI_CHU, COT_LOI_O_PHIA, loc_bang_admin,
+                           NHAN_DANH_GIA, NHAN_LOI_O_PHIA, thay_doi_admin,
                            csdl_san_sang, nhan_ho_so, noi_dung_goc_tu_cho_sua,
                            tom_tat_ho_so, tom_tat_thay_doi, tom_tat_vung_doi,
                            CACH_TIM_CHINH_XAC,
@@ -446,6 +448,81 @@ def mo_ho_so_da_co():
         hien_ho_so(kh, int(h["id"]), vung="mo")
 
 
+def khoi_admin():
+    """5.6/5.9 — bảng lịch sử sửa lỗi + ba cột Admin. Chỉ hiện khi vai là Admin.
+
+    Danh tính là danh tính DEMO, không xác thực (5.0a) — khối này không phải lớp bảo
+    vệ, chỉ để người làm sizing không thấy một bảng không dành cho họ.
+    """
+    dt = st.session_state.get("danh_tinh")
+    if dt is None or dt.vai != "admin":
+        return
+    if not csdl_san_sang(st.session_state.get("_health_tho")):
+        return
+    kh = _khach()
+    with st.expander("🛠 Bảng thẩm định của Admin — lịch sử sửa & ba cột đánh giá",
+                     expanded=False):
+        try:
+            ds = kh.ds_ho_so()
+        except LoiAPI as e:
+            st.warning(f"Không lấy được danh sách hồ sơ: {e}")
+            return
+        if not ds:
+            st.caption("Chưa có hồ sơ nào.")
+            return
+        h = st.selectbox("Hồ sơ", ds, format_func=nhan_ho_so, key="admin_ho_so")
+        try:
+            d = kh.bang_admin(int(h["id"]))
+        except LoiAPI as e:
+            st.warning(f"Không đọc được bảng: {e}")
+            return
+        hien_bang_admin(kh, int(h["id"]), d)
+
+
+def hien_bang_admin(kh: KhachAPI, ho_so_id: int, d: dict):
+    tb = st.session_state.pop(f"da_luu_admin_{ho_so_id}", None)
+    if tb:
+        st.success(tb)
+    rows = bang_admin(d)
+    c1, c2 = st.columns([1, 2])
+    hien_het = c1.checkbox("Hiện cả nhóm «chưa kiểm được»",
+                           key=f"admin_hien_het_{ho_so_id}")
+    tim = c2.text_input("Lọc theo quy tắc / phân hệ / nội dung",
+                        key=f"admin_tim_{ho_so_id}", placeholder="vd: STO-17, Kafka")
+    hien, so_an = loc_bang_admin(rows, hien_chua_kiem=hien_het, tim=tim)
+    st.caption(f"{len(hien)}/{len(rows)} dòng — đang ẩn {so_an}. Mặc định ẩn nhóm "
+               "«chưa kiểm được» (công cụ không kết luận được gì), NHƯNG vẫn hiện dòng "
+               "đã có người sửa, đã báo lỗi hoặc đã ghi chú.")
+    if not hien:
+        st.info("Không có dòng nào khớp bộ lọc.")
+        return
+    cot = {
+        "id": st.column_config.NumberColumn("ID", disabled=True),
+        COT_GHI_CHU: st.column_config.TextColumn(COT_GHI_CHU, width="medium"),
+        COT_DANH_GIA: st.column_config.SelectboxColumn(
+            COT_DANH_GIA, options=list(NHAN_DANH_GIA.values())),
+        COT_LOI_O_PHIA: st.column_config.SelectboxColumn(
+            COT_LOI_O_PHIA, options=list(NHAN_LOI_O_PHIA.values())),
+    }
+    sau = st.data_editor(
+        hien, use_container_width=True, hide_index=True, column_config=cot,
+        disabled=[c for c in hien[0] if c not in COT_ADMIN],
+        key=f"admin_bang_{ho_so_id}")
+    doi = thay_doi_admin(hien, list(sau))
+    st.caption(f"{len(doi)} dòng đang có thay đổi chưa lưu.")
+    if st.button("💾 Lưu ghi chú Admin", key=f"admin_luu_{ho_so_id}",
+                 disabled=not doi, type="primary"):
+        try:
+            r = kh.ghi_chu_admin(ho_so_id, doi)
+        except LoiAPI as e:
+            st.error(f"Không lưu được: {e}")
+            return
+        st.session_state[f"da_luu_admin_{ho_so_id}"] = (
+            f"Đã lưu {r.get('da_luu', 0)} dòng (bỏ qua {r.get('bo_qua', 0)} dòng không "
+            "đổi). Mỗi lần lưu là một dòng lịch sử mới, không đè bản cũ.")
+        st.rerun()
+
+
 def hien_ho_so(kh: KhachAPI, ho_so_id: int, vung: str = "viec"):
     """5.1 — baseline CỐ ĐỊNH từ lần đầu + trạng thái lần mới nhất + rổ phát sinh."""
     try:
@@ -620,6 +697,7 @@ def main():
     tt = thanh_ben()
     st.title("Tự kiểm bản định cỡ")
     mo_ho_so_da_co()
+    khoi_admin()
 
     f = st.file_uploader("Chọn bản sizing (.docx)", type=["docx"])
     if f is None:

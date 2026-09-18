@@ -189,7 +189,7 @@ def _dong_ket_qua(f: dict, muc_do_baseline: str | None) -> dict:
         # hiện chú thích nhỏ bên cạnh chứ không đổi cột chính.
         "muc_do_lan": muc if muc_do_baseline and muc != muc_do_baseline else None,
         "computed_evidence": str(f.get("computed_evidence") or ""),
-        # C4 chưa xuất giá trị đầu vào riêng ra finding; `computed_evidence` đang
-        # chứa cả đầu vào lẫn kết quả. Để trống thay vì đoán cắt chuỗi.
-        "dau_vao": "",
+        # 5.6 — giá trị đầu vào C4 đã dùng cho LẦN NÀY. Trống với dòng của C5 hoặc
+        # cảnh báo NT4: chúng không có đầu vào nào do code đọc.
+        "dau_vao": str(f.get("dau_vao") or ""),
     }
