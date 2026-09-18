@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 5 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 đạt · **5.3 CODE XONG 09-17, CHỜ NGHIỆM THU** (dùng lại câu trả lời model theo nội dung lượt hỏi; C5 chặt) |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 6 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · **5.3 NGHIỆM THU ĐẠT 09-18** (nộp y nguyên: 267/268 lượt dùng lại). ⚠️ Lộ ra «phân hệ ma»: sửa 1 ô bảng → 174 lỗi phát sinh |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) code xong, **chờ nghiệm thu trên máy nội bộ**.
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18** — và lộ ra lỗi «phân hệ ma»: sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh.
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1506,7 +1506,7 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       → Streamlit chỉ nhúng iframe được; bấm dòng → nhảy cần custom component, nên
       bản dùng thật hợp với frontend đầy đủ hơn là Streamlit.
 
-- [~] 5.3 — **Tái thẩm định: C3 chọn lọc, C4 TOÀN BỘ.** Nút "Thẩm định lại"
+- [x] 5.3 — **Tái thẩm định: C3 chọn lọc, C4 TOÀN BỘ.** Nút "Thẩm định lại"
       trích xuất lại **chỉ phần tài liệu đã đổi** (chỗ tốn tiền: C3+C5 ~270 lượt
       gọi, ~22 phút), nhưng **chạy lại toàn bộ C4** trên tập trường đã hợp nhất —
       C4 là Python thuần gần như miễn phí, và quy tắc nhất quán so số GIỮA các mục,
@@ -1521,7 +1521,33 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       có bản ghi sửa ở 5.2, còn lại xếp "Biến mất, chưa rõ lý do".
       → **Đầu vào là PHIÊN BẢN tài liệu** (lưu bền `tai_lieu/{mã việc}/…`), không gắn
       với cách nó tới: upload hôm nay, nút Save của trình soạn thảo (5.2b) sau này.
-      → 🟡 **CODE XONG 2026-09-17 — CHỜ NGHIỆM THU** (`scripts/nghiem_thu_5_3.py`).
+      → ✅ **NGHIỆM THU ĐẠT 2026-09-18** trên máy nội bộ, hồ sơ #1 VTracking 2.0.1, ba
+      lần thẩm định lại liên tiếp (`docs/nghiem-thu-5.3-20260918-091118.json`, commit
+      `88f87ea`): R1–R2, R4–R6 đạt; R3 chỉ ĐO được vì L1 có 1 lượt C5 hỏng, L2 hỏi lại
+      đúng lượt đó (đúng thiết kế: lượt hỏng không được ghi).
+      | Lần | Lượt hỏi | Dùng lại | Tới model | Thời gian |
+      |---|---|---|---|---|
+      | L1 bản gốc (chưa có bản ghi) | 268 | 0 | 268 (đệm lời gọi đỡ gần hết) | 184 s |
+      | L2 bản gốc | 268 | **267** | 1 | 172 s |
+      | L3 bản đã sửa MỘT ô bảng | 307 | 76 (C3 76/132) | 231 (C5 175/175) | 1577 s |
+      → **Dùng lại chạy đúng như thiết kế**: nộp y nguyên chỉ hỏi lại đúng lượt đã hỏng;
+      một ô bảng đổi (Mục 1.1, trang 59) làm C3 hỏi lại 56 lượt và dùng lại 76.
+      → ⚠️ **NGHIỆM THU LỘ RA MỘT LỖI NẶNG HƠN CHÍNH MỤC NÀY — «phân hệ ma»:** sửa ĐÚNG
+      MỘT Ô BẢNG mà lần thẩm định lại sinh **174 lỗi phát sinh** (L1/L2: 1). Nguyên nhân:
+      lượt «nhận diện phân hệ» đọc cả tài liệu nên phải hỏi lại, và lần này model kể thêm
+      ba «phân hệ» không có ở lần trước (`SAN Switch`, `Thiết bị mạng`, `Tủ rack`) —
+      174 = 3 × 58 dòng mỗi phân hệ. Kéo theo: C3 +11 lượt, C5 +29 lượt, và 174 dòng rác
+      trong đúng cái rổ sinh ra để người dùng thấy «cú sửa của tôi làm vỡ gì».
+      Đây là dao động của model (5.0b đo ~1,4%) nhưng ở lượt có SỨC LAN TOẢ LỚN NHẤT.
+      → **Đ3 — nếu C5 cấp phân hệ chỉ hỏi lại khi vùng phân hệ hoặc phần chung đổi:**
+      129 lượt so sánh được, **90 lượt sẽ dùng lại được**, trong đó 85 giống và **5 khác**
+      (ARC-14#mongo, ARC-14#postgres, STO-17#minio, EVD-19#minio, EVD-19#redis — đều là
+      phân hệ KHÔNG bị sửa, tức 5 dòng này là dao động model chứ không phải kết luận mới).
+      39 lượt vùng đổi, 2 lượt đổi kết luận. Nghĩa là C5 theo vùng vừa rẻ hơn ~90 lượt vừa
+      BỚT nhiễu — số liệu để chốt, khác với lo ngại lúc thiết kế.
+      → **Đ4 — 18 dòng baseline đổi trạng thái giữa L2 và L3, 14 dòng NGOÀI phân hệ bị
+      sửa** (14 «không rõ» + 3 C5 + 1 C4). Đúng mức nhiễu 5.0b dự báo (~10 dòng/lần), nay
+      đo được và quy được về nguồn.
       → **Cách làm: DÙNG LẠI câu trả lời model theo NỘI DUNG từng lượt hỏi**
       (`src/llm/phat_lai.py`), không tự hợp nhất tập trường. Mỗi lượt chạy ghi lại mọi
       câu trả lời model (`{mã việc}.phat_lai.json`). Lần thẩm định lại chạy TRỌN

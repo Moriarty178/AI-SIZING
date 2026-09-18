@@ -1,0 +1,231 @@
+{
+  "ho_so_id": 1,
+  "commit": "88f87ea (đóng dấu lúc build)",
+  "ma_viec": [
+    "bc34c77764e3",
+    "f2a14c4b45aa",
+    "b585fae61dc2"
+  ],
+  "tieu_chi": [
+    {
+      "ma": "R1",
+      "dat": true,
+      "chi_tiet": "L2 so với L1: giống hệt"
+    },
+    {
+      "ma": "R2",
+      "dat": true,
+      "chi_tiet": "L2: «dùng lại 267/268 lượt hỏi model của lần trước (việc bc34c77764e3) — C3 121/121, C5 146/147» · hỏi lại C3 0 (L1 hỏng 0), C5 1 (L1 hỏng 1)"
+    },
+    {
+      "ma": "R3",
+      "dat": null,
+      "chi_tiet": "L2 có hỏi lại lượt hỏng của L1 — kết quả được phép lệch; đếm L1 {'dat': 1, 'chua_dat': 54, 'chua_kiem_duoc': 664, 'phat_sinh': 1} · L2 {'dat': 2, 'chua_dat': 54, 'chua_kiem_duoc': 663, 'phat_sinh': 1}"
+    },
+    {
+      "ma": "R4",
+      "dat": true,
+      "chi_tiet": "L3 so với L2: 1 chỗ đổi — Mục 1.1, trang 59 · bảng · sửa"
+    },
+    {
+      "ma": "R5",
+      "dat": true,
+      "chi_tiet": "C3 dùng lại 76, hỏi lại 56"
+    },
+    {
+      "ma": "R6",
+      "dat": true,
+      "chi_tiet": "C5 dùng lại 0, hỏi lại 175"
+    },
+    {
+      "ma": "Đ1.L1",
+      "dat": null,
+      "chi_tiet": "184 giây · hỏi lại C3 121 / C5 146 · dùng lại C3 0 / C5 0 · đệm lời gọi ghi thêm 6"
+    },
+    {
+      "ma": "Đ1.L2",
+      "dat": null,
+      "chi_tiet": "172 giây · hỏi lại C3 0 / C5 1 · dùng lại C3 121 / C5 146 · đệm lời gọi ghi thêm 1"
+    },
+    {
+      "ma": "Đ1.L3",
+      "dat": null,
+      "chi_tiet": "1577 giây · hỏi lại C3 56 / C5 175 · dùng lại C3 76 / C5 0 · đệm lời gọi ghi thêm 232"
+    },
+    {
+      "ma": "Đ2",
+      "dat": null,
+      "chi_tiet": "phân hệ đổi ['frontend', 'vlb'] · mới ['san switch', 'thiết bị mạng', 'tủ rack'] · phần chung đổi: False"
+    },
+    {
+      "ma": "Đ3",
+      "dat": null,
+      "chi_tiet": "{\"so_sanh_duoc\": 129, \"vung_khong_doi\": 90, \"giong\": 85, \"khac\": 5, \"vung_doi\": 39, \"vung_doi_khac\": 2, \"khac_vi_du\": [\"ARC-14#mongo: dat → khong_dat\", \"ARC-14#postgres: khong_dat → dat\", \"STO-17#minio: dat → khong_dat\", \"EVD-19#minio: dat → khong_dat\", \"EVD-19#redis: khong_dat → dat\"]}"
+    },
+    {
+      "ma": "Đ4",
+      "dat": null,
+      "chi_tiet": "{\"tong\": 18, \"ngoai_vung_doi\": 14, \"boi_c5\": 3, \"trong_vung_doi\": 4, \"boi_khong_ro\": 14, \"boi_c4\": 1}"
+    }
+  ],
+  "phat_lai_l3": {
+    "tu_viec": "f2a14c4b45aa",
+    "co_ban_cu": true,
+    "c3": {
+      "dung_lai": 76,
+      "goi_moi": 56,
+      "goi_moi_vi_du": [
+        "thông tin chung",
+        "nhận diện phân hệ",
+        "Worker (module xử lý nghiệp vụ) · nhóm BAK/phan_he",
+        "Worker (module xử lý nghiệp vụ) · nhóm ALC/phan_he",
+        "Worker (module xử lý nghiệp vụ) · nhóm ARC/phan_he",
+        "Worker (module xử lý nghiệp vụ) · nhóm EVD/phan_he",
+        "Worker (module xử lý nghiệp vụ) · nhóm STO/phan_he",
+        "Postgres · nhóm ALC/phan_he",
+        "hệ thống · nhóm LAN/he_thong",
+        "hệ thống · nhóm ARC/he_thong",
+        "Worker (module xử lý nghiệp vụ) · nhóm CPU/phan_he",
+        "hệ thống · nhóm RCK/he_thong",
+        "hệ thống · nhóm SAN/he_thong",
+        "Master (K8s Control plane) · nhóm ALC/phan_he",
+        "Master (K8s Control plane) · nhóm ARC/phan_he",
+        "Master (K8s Control plane) · nhóm BAK/phan_he",
+        "Master (K8s Control plane) · nhóm CPU/phan_he",
+        "Postgres · nhóm EVD/phan_he",
+        "Master (K8s Control plane) · nhóm STO/phan_he",
+        "hệ thống · nhóm ALC/he_thong",
+        "vLB (Virtual Load Balancer) · nhóm ALC/phan_he",
+        "vLB (Virtual Load Balancer) · nhóm ARC/phan_he",
+        "vLB (Virtual Load Balancer) · nhóm STO/phan_he",
+        "vLB (Virtual Load Balancer) · nhóm EVD/phan_he",
+        "vLB (Virtual Load Balancer) · nhóm CPU/phan_he",
+        "FrontEnd · nhóm BAK/phan_he",
+        "FrontEnd · nhóm ARC/phan_he",
+        "FrontEnd · nhóm CPU/phan_he",
+        "SAN Switch · nhóm ALC/phan_he",
+        "SAN Switch · nhóm ARC/phan_he",
+        "FrontEnd · nhóm ALC/phan_he",
+        "SAN Switch · nhóm CPU/phan_he",
+        "SAN Switch · nhóm EVD/phan_he",
+        "SAN Switch · nhóm STO/phan_he",
+        "Thiết bị mạng · nhóm ALC/phan_he",
+        "Thiết bị mạng · nhóm BAK/phan_he",
+        "hệ thống · nhóm TST/he_thong",
+        "vLB (Virtual Load Balancer) · nhóm BAK/phan_he",
+        "Tủ rack · nhóm ALC/phan_he",
+        "Master (K8s Control plane) · nhóm EVD/phan_he"
+      ]
+    },
+    "c5": {
+      "dung_lai": 0,
+      "goi_moi": 175,
+      "goi_moi_vi_du": [
+        "ARC-14#Redis",
+        "ARC-13#he_thong",
+        "ARC-14#NGINX",
+        "ARC-14#SAN Switch",
+        "ARC-14#Mongo",
+        "ARC-14#vLB (Virtual Load Balancer)",
+        "ARC-14#Thiết bị mạng",
+        "ARC-15#Worker (module xử lý nghiệp vụ)",
+        "ARC-14#Kafka",
+        "ARC-15#Protocol Adaptor",
+        "ARC-14#File storage",
+        "ARC-15#File storage",
+        "ARC-15#Kafka",
+        "ARC-15#Postgres",
+        "ARC-14#Tủ rack",
+        "ARC-15#MinIO",
+        "ARC-14#Master (K8s Control plane)",
+        "ARC-14#MinIO",
+        "ARC-15#Master (K8s Control plane)",
+        "ARC-15#SAN Switch",
+        "ARC-15#FrontEnd",
+        "ARC-14#FrontEnd",
+        "ARC-14#Postgres",
+        "ARC-16#Worker (module xử lý nghiệp vụ)",
+        "ARC-16#Protocol Adaptor",
+        "ARC-16#Video Streaming",
+        "ARC-16#Postgres",
+        "ARC-16#File storage",
+        "ARC-16#Mongo",
+        "ARC-16#MinIO",
+        "ARC-15#Mongo",
+        "ARC-16#Kafka",
+        "ARC-16#Redis",
+        "ARC-16#vLB (Virtual Load Balancer)",
+        "ARC-15#Redis",
+        "ARC-15#Video Streaming",
+        "ARC-16#SAN Switch",
+        "ARC-16#Tủ rack",
+        "ARC-16#Thiết bị mạng",
+        "STO-17#Worker (module xử lý nghiệp vụ)"
+      ]
+    },
+    "vung_doi": [
+      "frontend",
+      "vlb"
+    ],
+    "vung_moi": [
+      "san switch",
+      "thiết bị mạng",
+      "tủ rack"
+    ],
+    "chung_doi": false,
+    "do_c5_theo_vung": {
+      "so_sanh_duoc": 129,
+      "vung_khong_doi": 90,
+      "giong": 85,
+      "khac": 5,
+      "vung_doi": 39,
+      "vung_doi_khac": 2,
+      "khac_vi_du": [
+        "ARC-14#mongo: dat → khong_dat",
+        "ARC-14#postgres: khong_dat → dat",
+        "STO-17#minio: dat → khong_dat",
+        "EVD-19#minio: dat → khong_dat",
+        "EVD-19#redis: khong_dat → dat"
+      ]
+    }
+  },
+  "thay_doi_l3": {
+    "voi_viec": "f2a14c4b45aa",
+    "giong_het": false,
+    "sua": 1,
+    "them": 0,
+    "xoa": 0,
+    "vi_tri": [
+      "Mục 1.1, trang 59 · bảng · sửa"
+    ],
+    "con_nua": 0
+  },
+  "doi_trang_thai_l2_l3": {
+    "tong": 18,
+    "ngoai_vung_doi": 14,
+    "boi_c5": 3,
+    "trong_vung_doi": 4,
+    "boi_khong_ro": 14,
+    "boi_c4": 1,
+    "vi_du": [
+      "EVD-17#mongo: chua_kiem_duoc → chua_dat (ngoài vùng đổi)",
+      "EVD-19#frontend: chua_dat → chua_kiem_duoc",
+      "EVD-19#master: chua_dat → dat (ngoài vùng đổi)",
+      "EVD-19#postgres: chua_dat → chua_kiem_duoc (ngoài vùng đổi)",
+      "EVD-19#redis: chua_kiem_duoc → dat (ngoài vùng đổi)",
+      "ARC-15#worker: chua_dat → dat (ngoài vùng đổi)",
+      "ARC-16#vlb: chua_kiem_duoc → chua_dat",
+      "STO-17#nginx: chua_dat → chua_kiem_duoc (ngoài vùng đổi)",
+      "STO-17#postgres: chua_dat → chua_kiem_duoc (ngoài vùng đổi)",
+      "STO-17#vlb: chua_kiem_duoc → chua_dat",
+      "LBA-01-hsdp-thieu#3: chua_dat → dat (ngoài vùng đổi)",
+      "LBA-01-hsdp-thieu#4: chua_dat → dat (ngoài vùng đổi)",
+      "ARC-06#master: chua_kiem_duoc → dat (ngoài vùng đổi)",
+      "ARC-27#master: chua_kiem_duoc → chua_dat (ngoài vùng đổi)",
+      "BAK-09#frontend: chua_kiem_duoc → dat",
+      "ARC-14#mongo: dat → chua_kiem_duoc (ngoài vùng đổi)",
+      "ARC-14#postgres: chua_kiem_duoc → dat (ngoài vùng đổi)",
+      "NT4-C1: chua_kiem_duoc → dat (ngoài vùng đổi)"
+    ]
+  }
+}
