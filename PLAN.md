@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · **5.6 + 5.9 bước 1 NGHIỆM THU ĐẠT 09-18** (bảng Admin 719 dòng, lọc ẩn 660). ⚠️ Rủi ro chưa sửa «phân hệ ma». Tiếp: 5.9 bước 2 (đề xuất sửa quy tắc) |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · **5.6 + 5.9 bước 1 NGHIỆM THU ĐẠT 09-18** (bảng Admin 719 dòng, lọc ẩn 660). ⚠️ Rủi ro chưa sửa «phân hệ ma» (đo 09-21: không ổn định, lúc có lúc không). Tiếp: 5.9 bước 2 (đề xuất sửa quy tắc) |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) **nghiệm thu đạt 2026-09-18**. **5.6 + 5.9 bước 1** (bảng lịch sử sửa lỗi + ba cột Admin) **nghiệm thu đạt 2026-09-18**. Mục kế tiếp: **5.9 bước 2** (đề xuất sửa quy tắc).
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh; **đo 2026-09-21: ba phân hệ ma tự biến mất ở lượt sau, tức lỗi KHÔNG tái hiện theo ý muốn**. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) **nghiệm thu đạt 2026-09-18**. **5.6 + 5.9 bước 1** (bảng lịch sử sửa lỗi + ba cột Admin) **nghiệm thu đạt 2026-09-18**. Mục kế tiếp: **5.9 bước 2** (đề xuất sửa quy tắc).
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1703,10 +1703,27 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
       phải báo trước: đổi cách khoá C5 sang theo vùng (cùng ngày) làm mọi khoá C5 cũ
       không còn khớp, nên lần thẩm định ĐẦU TIÊN sau khi đổi phải hỏi lại toàn bộ C5
       (27 phút). Từ lần sau mới thấy phần tiết kiệm.
-      → Còn một con số CHƯA giải thích được: lượt này C3 dùng lại 82/118, và tổng lượt
-      C3 tụt từ 132 (L3 hôm trước, cùng tệp) xuống 118 — tức danh sách phân hệ lần này
-      khác lần trước. Cần `thay_doi` + `phat_lai.goi_moi_vi_du` của bản ghi việc để
-      biết là tệp nộp khác hay lượt «nhận diện phân hệ» không khớp khoá.
+      → **Con số C3 82/118 đã giải thích xong (2026-09-21)** bằng `thong_ke.phat_lai`
+      của bản ghi việc: `vung_doi = [frontend, vlb]`, `vung_moi = []`, `chung_doi =
+      false` ⇒ **tệp nộp lượt này KHÁC bản trước ở hai vùng phân hệ**, không phải cùng
+      tệp như tôi tưởng. Từ đó mọi con số khớp:
+      (1) 10 lượt hỏi lại đầu tiên là các lượt đọc CẢ tài liệu — «thông tin chung»,
+      «nhận diện phân hệ» và 8 nhóm cấp hệ thống (`ngu_canh(doc)`); đổi một chữ ở đâu
+      cũng đổi khoá của chúng. Đúng thiết kế, không phải lỗi.
+      (2) Hỏi lại «nhận diện phân hệ» ⇒ danh sách phân hệ khác ⇒ số lượt phụ thuộc
+      danh sách đó đổi theo: C3 132 → 118, C5 175 → 146.
+      → 🔴 **Điều đáng giá nhất lượt này: «phân hệ ma» KHÔNG ỔN ĐỊNH.** 146 khoá C5 của
+      lượt này không còn `SAN Switch`, `Thiết bị mạng`, `Tủ rack` — ba phân hệ bịa của
+      lượt trước đã tự biến mất khi tài liệu đổi vài chỗ. Tức cùng một công cụ, trên
+      gần cùng một tài liệu, lúc bịa lúc không. Rủi ro này NẶNG hơn lúc mới ghi nhận:
+      không thể chờ người dùng "gặp lại thì báo", vì nó không tái hiện theo ý muốn.
+      → Còn **10/36 lượt hỏi lại chưa khép**: 4 nhóm của `Postgres` và 6 nhóm của
+      `Master (K8s)` bị hỏi lại dù vân tay vùng của chúng KHÔNG đổi. Giả thuyết mạnh
+      nhất: các lượt ấy **HỎNG ở lần trước** — lượt hỏng không bao giờ được ghi vào kho
+      phát lại, nên lần sau không có gì để dùng lại. Kiểm bằng `thong_ke.luot_goi_hong`
+      + `thong_ke.loi` của việc `b585fae61dc2`. Đã vá chỗ làm phép kiểm này khó: dòng
+      lỗi C3 nay ghi kèm tên phân hệ (`extractor.py`), trước chỉ ghi tên nhóm nên
+      không đối chiếu được với `goi_moi_vi_du`.
       Kèm **bước 1 của 5.9** (ba cột Admin). Bước 2 của 5.9 — đề xuất sửa quy tắc — làm
       riêng sau (người dùng chốt 2026-09-18: tách hai bước để nghiệm thu sớm).
       → **C4 nay xuất GIÁ TRỊ ĐẦU VÀO riêng** (`Finding.dau_vao`, ghi vào

@@ -714,9 +714,12 @@ class Extractor:
         except (ExtractionFailed, LLMError) as e:
             # Hết lượt thử vẫn không ra JSON hợp lệ: KHÔNG bịa giá trị (NT4).
             # Để trống, C4 sẽ sinh finding "thiếu thông tin" cho từng tham số.
+            # Ghi kèm PHÂN HỆ, không chỉ tên nhóm: cùng một nhóm chạy cho mọi phân hệ,
+            # nên dòng lỗi trống tên phân hệ không đối chiếu được với `goi_moi_vi_du`
+            # của lần sau (chẩn đoán 2026-09-21 tắc đúng ở chỗ này).
             with self._khoa:
                 self.tk.luot_goi_hong += 1
-                self.tk.loi.append(f"{nhom.ten}: {e}")
+                self.tk.loi.append(f"{ten_phan_he or 'hệ thống'} · {nhom.ten}: {e}")
             return
 
         # Phần dưới chỉ tính toán, không gọi mạng — giữ khoá suốt cho gọn và an toàn
