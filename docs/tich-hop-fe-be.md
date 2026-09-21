@@ -67,6 +67,11 @@ Sửa FE = sửa file rồi `docker compose up -d --build --no-deps nginx`.
 Đừng bắt đầu sửa giao diện trước khi bốn cái này xanh. Cả bốn đều đã kiểm bằng
 cách đọc file, không phải đoán.
 
+> **Trạng thái 2026-09-21:** VC1, VC2, VC3 **đã sửa xong trên nhánh
+> `dev-integrate`** (chờ dựng thật trên máy nội bộ để xác nhận). VC4 là cạm bẫy
+> của bước 6.3, chưa tới lúc. Mô tả bên dưới giữ nguyên để biết **vì sao** mỗi
+> chỗ lại như thế; đừng "sửa lại cho gọn" mà không đọc.
+
 ### VC1 — `backend1/Dockerfile` KHÔNG build jar
 
 ```dockerfile
@@ -241,15 +246,19 @@ file sang Copilot. Đây là chỗ rẻ nhất và đúng nhất của cả GĐ 
   kéo sập web app.**
 - **Đ1** Đo: thời gian từ lúc bấm tới lúc có kết quả, số lượt hỏi tiến độ.
 
-## 6. Việc phải HỎI người dùng, không tự quyết
+## 6. Ba câu đã hỏi và đã được trả lời (2026-09-21)
 
-1. **MySQL của backend** — dùng CSDL sẵn có hay thêm service `mysql` vào compose?
-   (VC2. Trả lời được bằng một lệnh ở bước 2.)
-2. **Ai được gọi `/copilot/`** — mở cho mọi người đăng nhập, hay chặn các endpoint
-   Admin (`/quy-tac`, `/de-xuat`, `/ho-so/*/ghi-chu-admin`) ở nginx? Copilot
-   không tự bảo vệ được (mục 3.3).
-3. **`copilot-ui` (Streamlit) có giữ lại không** sau khi FE làm được việc của nó.
-   Khuyên: **giữ** — nó là đường của Admin cho 5.6/5.9 mà FE chưa làm.
+1. **MySQL của backend** → **thêm service `mysql:8` vào compose.** Đo cùng ngày
+   trên máy nội bộ: không có gì nghe ở cổng 3306, `.env` để trống cả ba biến
+   `SPRING_DATASOURCE_*`, và `backend1/target/` không tồn tại — tức chưa có CSDL
+   nào để trỏ vào, cũng chưa có jar nào.
+2. **Ai được gọi `/copilot/`** → **mở cho mọi người đã đăng nhập.** Ghi lại cho
+   rõ: nghĩa là ai mở được trang cũng gọi được **mọi** endpoint Copilot, kể cả
+   endpoint Admin của 5.9 — chúng chỉ đọc `vai` trong header chứ không xác thực.
+   Chấp nhận được trong mạng nội bộ; nếu một ngày mở ra ngoài thì đây là chỗ
+   đầu tiên phải chặn.
+3. **`copilot-ui` (Streamlit)** → **tạm thời giữ.** Nó là đường của Admin cho
+   5.6/5.9 mà FE chưa làm.
 
 ## 7. Cạm bẫy đã biết — đọc lại trước khi sửa FE
 

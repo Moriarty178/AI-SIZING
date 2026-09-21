@@ -71,8 +71,10 @@
     <script>
         // Cấu hình Backend URL
 
-        //const BACKEND_URL = '';
-        const BACKEND_URL = "http://localhost:8081";
+        // GĐ 6.1 — RỖNG nghĩa là cùng gốc với trang, nên `${BACKEND_URL}/api/…`
+        // thành `/api/…` và đi qua proxy của nginx. Dòng tuyệt đối cũ chỉ chạy
+        // khi backend chạy trần ở cổng 8081; trong compose nó không mở cổng nào.
+        const BACKEND_URL = "";
 
         // Kiểm tra xem user đã đăng nhập chưa từ localStorage
         function checkLogin() {

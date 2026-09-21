@@ -1,0 +1,18 @@
+# Ngữ cảnh build của dịch vụ `backend` là THƯ MỤC NÀY (compose: `context:
+# ./backend1`), nên `.dockerignore` ở gốc repo KHÔNG áp dụng vào đây.
+#
+# Cùng lối với file gốc: CHẶN TẤT CẢ rồi mở lại đúng thứ cần. Thêm một thư mục
+# mới thì mặc định BỊ CHẶN, không phải mặc định lọt vào image.
+#
+# Chặn `target/` là chính: sau một lần chạy Maven trên máy, nó có cả trăm MB và
+# sẽ bị nhét vào mọi lượt build, làm chậm mà chẳng để làm gì — tầng `build`
+# trong Dockerfile tự biên dịch lại từ `src`.
+*
+
+!pom.xml
+!src
+!.m2
+
+# `.m2` chỉ được vào vì `settings.xml` (gương Maven nội bộ). Nếu ai đó để cả kho
+# artefact ở đây thì chặn lại.
+.m2/repository

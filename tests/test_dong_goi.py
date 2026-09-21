@@ -224,3 +224,168 @@ class TestBoQuyTacOMayChu:
         """Gắn từ máy chủ là ĐÈ LÊN, không phải thay thế: `docker run` trần (không
         compose) vẫn phải có quy tắc, nếu không mọi lượt thẩm định ra 0 finding."""
         assert "COPY config ./config" in DOCKERFILE
+
+
+# ============================== GĐ 6 — tích hợp FE + BE ======================
+BE_DOCKERFILE = (GOC / "backend1" / "Dockerfile").read_text(encoding="utf-8")
+BE_LENH = "\n".join(d for d in BE_DOCKERFILE.splitlines()
+                    if d.strip() and not d.lstrip().startswith("#"))
+NGINX_CONF = (GOC / "nginx" / "nginx.conf").read_text(encoding="utf-8")
+# Chỉ phần LỆNH — chú thích cố ý nhắc tới `proxy_pass http://copilot:8000` để CẤM
+# nó, nên dò cả chú thích thì test tự đánh mình (đúng bẫy đã dính ở `LENH` phía trên).
+NGINX_LENH = "\n".join(d for d in NGINX_CONF.splitlines()
+                       if d.strip() and not d.lstrip().startswith("#"))
+
+
+class TestBackendTuBuildDuoc:
+    """6.1/VC1 — bản cũ chỉ `COPY target/sizing-*.jar`, tức đòi một jar đã có sẵn.
+    Đo 2026-09-21 trên máy nội bộ: `backend1/target/` không tồn tại, nên
+    `docker compose build backend` hỏng ngay ở dòng COPY."""
+
+    def test_co_tang_BUILD_chay_maven(self):
+        assert "AS build" in BE_LENH
+        assert "mvn -B -DskipTests clean package" in BE_LENH
+
+    def test_jar_lay_tu_tang_build_chu_KHONG_tu_may_chu(self):
+        assert "COPY --from=build" in BE_LENH
+        assert "COPY target/" not in BE_LENH and "COPY --chown=appuser:appgroup target/" \
+            not in BE_LENH
+
+    def test_dung_settings_xml_cua_repo(self):
+        """Mạng nội bộ chặn Maven Central; `backend1/.m2/settings.xml` trỏ Nexus
+        nội bộ và ĐÃ nằm trong repo. Jenkins gắn cùng nội dung từ máy chủ — cách
+        đó không dựng tay được."""
+        assert "COPY .m2/settings.xml" in BE_LENH
+        assert (GOC / "backend1" / ".m2" / "settings.xml").exists()
+
+    def test_anh_chay_van_chi_co_JRE(self):
+        """Gộp Maven vào ảnh chạy là cộng ~300 MB cho mỗi lần deploy."""
+        cuoi = BE_LENH[BE_LENH.rindex("FROM "):]
+        assert "jre" in cuoi.split("\n")[0]
+        assert "mvn" not in cuoi
+
+    def test_co_dockerignore_rieng_chan_target(self):
+        """Ngữ cảnh build là `./backend1`, nên `.dockerignore` ở gốc KHÔNG áp
+        dụng. Không có file riêng thì `target/` (hàng trăm MB sau một lần chạy
+        Maven trên máy) bị nhét vào mọi lượt build."""
+        p = GOC / "backend1" / ".dockerignore"
+        assert p.exists()
+        d = p.read_text(encoding="utf-8")
+        assert d.splitlines()[-1] or True
+        dong = [x.strip() for x in d.splitlines() if x.strip()
+                and not x.lstrip().startswith("#")]
+        assert "*" in dong, "phải CHẶN TẤT CẢ rồi mở lại, như file ở gốc"
+        assert "!pom.xml" in dong and "!src" in dong and "!.m2" in dong
+        assert "!target" not in dong
+
+
+class TestMySQLChoBackend:
+    """6.1/VC2 — `application.yaml` trỏ `jdbc:mysql://localhost:3306/…`, mà
+    `localhost` BÊN TRONG container là chính container ấy. Đo 2026-09-21: máy nội
+    bộ không có gì nghe ở 3306 và `.env` để trống cả ba biến datasource."""
+
+    MY = COMPOSE["services"]["mysql"]
+
+    def test_co_dich_vu_mysql(self):
+        assert self.MY["image"].startswith("mysql:8"), self.MY["image"]
+
+    def test_KHONG_mo_cong_ra_may_chu(self):
+        """Cùng lý do với `copilot-db`: chỉ `backend` trong `app-net` cần tới nó."""
+        assert "ports" not in self.MY
+
+    def test_utf8mb4_dat_o_MAY_CHU_csdl(self):
+        """Tài liệu sizing đầy tiếng Việt. V1 khai charset cho từng BẢNG, nhưng
+        kết nối và biến hệ thống vẫn theo mặc định của server."""
+        c = " ".join(str(x) for x in self.MY["command"])
+        assert "--character-set-server=utf8mb4" in c
+        assert "utf8mb4_unicode_ci" in c
+
+    def test_du_lieu_nam_o_volume_rieng(self):
+        assert any(str(v).startswith("mysql-data:") for v in self.MY["volumes"])
+        assert "mysql-data" in (COMPOSE.get("volumes") or {})
+
+    def test_KHONG_gop_voi_csdl_cua_copilot(self):
+        """Hai hệ thống, hai lược đồ, hai bộ migration. Flyway của Spring không
+        hiểu lược đồ Copilot và ngược lại."""
+        assert self.MY["image"] != COMPOSE["services"]["copilot-db"]["image"]
+        assert not any("copilot-db-data" in str(v) for v in self.MY["volumes"])
+
+    def test_MOT_bien_mat_khau_dung_cho_ca_hai_dich_vu(self):
+        """Khai mật khẩu ở hai chỗ là cách chắc chắn để chúng lệch nhau."""
+        assert "MYSQL_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-}" in self.MY["environment"]
+        be = COMPOSE["services"]["backend"]["environment"]
+        assert "SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-}" in be
+
+    def test_KHONG_dat_MYSQL_USER_thanh_root(self):
+        """MySQL từ chối khởi động với `MYSQL_USER=root`."""
+        u = next(x for x in self.MY["environment"] if x.startswith("MYSQL_USER="))
+        assert not u.endswith("root")
+
+
+class TestBackendNoiDungCSDL:
+    BE = COMPOSE["services"]["backend"]
+
+    def test_cho_csdl_KHOE_roi_moi_len(self):
+        """Flyway chạy lúc khởi động và `ddl-auto: validate` không tự tạo bảng —
+        lên trước CSDL là hỏng hẳn, không phải chậm một nhịp."""
+        assert self.BE["depends_on"]["mysql"]["condition"] == "service_healthy"
+
+    def test_url_mac_dinh_tro_vao_dich_vu_mysql_KHONG_phai_localhost(self):
+        url = next(x for x in self.BE["environment"] if "SPRING_DATASOURCE_URL" in x)
+        assert "jdbc:mysql://mysql:3306/" in url
+        assert "localhost:3306" not in url
+
+    def test_co_bien_tai_khoan_mam(self):
+        """Migration V1–V7 KHÔNG chèn user nào. Thiếu biến này thì dựng xong sẽ
+        đứng trước màn đăng nhập mà không có tài khoản nào để vào."""
+        assert "DEFAULT_USERS=${DEFAULT_USERS:-}" in self.BE["environment"]
+
+
+class TestDuongCopilotQuaNginx:
+    """6.2 — FE nói với Copilot qua nginx, cùng gốc, không CORS."""
+
+    def test_co_location_copilot(self):
+        assert "location /copilot/" in NGINX_LENH
+
+    def test_proxy_pass_dung_BIEN_de_copilot_tat_khong_lam_sap_nginx(self):
+        """Tiêu chí T6. `proxy_pass` viết thẳng tên máy thì nginx phân giải DNS
+        lúc NẠP CẤU HÌNH và không khởi động nổi khi `copilot` đang tắt — tức tắt
+        Copilot là sập cả Tool Sizing."""
+        assert "proxy_pass http://copilot:8000" not in NGINX_LENH
+        assert "set $copilot_upstream" in NGINX_LENH
+        assert "proxy_pass http://$copilot_upstream" in NGINX_LENH
+        assert "resolver 127.0.0.11" in NGINX_LENH
+
+    def test_cat_tien_to_copilot_truoc_khi_chuyen_tiep(self):
+        """Dùng biến thì nginx KHÔNG tự cắt tiền tố `location` nữa."""
+        assert "rewrite ^/copilot/(.*)$ /$1 break;" in NGINX_LENH
+
+    def test_cho_phep_tai_file_lon(self):
+        i = NGINX_LENH.index("location /copilot/")
+        khoi = NGINX_LENH[i:NGINX_LENH.index("location /api/", i)]
+        assert "client_max_body_size 100M" in khoi
+
+    def test_nginx_KHONG_phu_thuoc_copilot(self):
+        """Phụ thuộc thì `up -d nginx` kéo theo Copilot, và tắt Copilot lại thành
+        chặn nginx — vòng lại đúng chỗ T6 cấm."""
+        assert "copilot" not in (COMPOSE["services"]["nginx"].get("depends_on") or {})
+
+
+class TestFEKhongGoiThangCongBackend:
+    """6.1/VC3 — `backend` KHÔNG mở cổng ra máy chủ, nên mọi lời gọi tuyệt đối
+    tới `localhost:8081` từ trình duyệt đều rơi vào chỗ không ai nghe."""
+
+    @pytest.mark.parametrize("duong", [
+        "frontend/script.js", "frontend/login.html", "dashboard/js/api.js"])
+    def test_khong_con_dia_chi_tuyet_doi(self, duong):
+        van = (GOC / duong).read_text(encoding="utf-8")
+        lenh = [d for d in van.splitlines()
+                if "localhost:8081" in d
+                and not d.lstrip().startswith(("//", "#", "<!--"))]
+        assert lenh == [], lenh
+
+    def test_goc_api_la_duong_tuong_doi(self):
+        assert "const API_BASE_URL = '/api';" in \
+            (GOC / "frontend" / "script.js").read_text(encoding="utf-8")
+        assert "const API_BASE = '/api';" in \
+            (GOC / "dashboard" / "js" / "api.js").read_text(encoding="utf-8")

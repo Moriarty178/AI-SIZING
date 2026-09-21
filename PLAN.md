@@ -15,7 +15,7 @@
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
 | 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · 5.6 + 5.9 bước 1 nghiệm thu đạt 09-18. **5.9 bước 2 (đề xuất sửa quy tắc) CODE XONG 09-21, chờ nghiệm thu** — `rules.yaml` nay gắn từ máy chủ. ⚠️ Rủi ro chưa sửa «phân hệ ma» (đo 09-21: không ổn định, lúc có lúc không) |
-| 6 | Tích hợp vào Tool Sizing (FE + BE) | 0 / 5 | 🔵 **ĐANG LÀM — nhánh `dev-integrate`** (2026-09-21). Khảo sát xong, 4 vật cản đã định vị. Tiếp: 6.1 chạy được FE+BE đã, chưa đụng Copilot |
+| 6 | Tích hợp vào Tool Sizing (FE + BE) | 0 / 5 | 🔵 **ĐANG LÀM — nhánh `dev-integrate`**. 6.1 (FE+BE chạy được: backend tự build, thêm MySQL, bỏ địa chỉ tuyệt đối) và 6.2 (`/copilot/` qua nginx) **code xong 09-21, chờ dựng thật trên máy nội bộ**. Tiếp: 6.3 tab «Thẩm định sizing» |
 
 **Đang tập trung (cập nhật 2026-09-21):** **GĐ 6 — tích hợp vào Tool Sizing**, trên nhánh `dev-integrate`. Người dùng chốt 2026-09-21: **tạm dừng nâng cấp Copilot** (5.9 bước 2 để lại ở trạng thái chờ nghiệm thu, 5.7/5.8/5.10–5.12 chưa làm) để ghép Copilot vào frontend + backend sẵn có thành một hệ thống hoàn chỉnh. Khảo sát và thiết kế: **`docs/tich-hop-fe-be.md`**.
 
@@ -1873,8 +1873,10 @@ Hai chỗ ghép, không hơn: (1) tab **"Thẩm định sizing"** để tải fi
 khi đăng nhập; (2) nút **"Thẩm định sizing"** ngay sau khi Tool Sizing xuất DOCX,
 dùng lại chính blob vừa xuất.
 
-- [ ] 6.1 — **Chạy được FE + BE trước đã, CHƯA đụng Copilot.** Gỡ ba vật cản đã
-      định vị 2026-09-21:
+- [~] 6.1 — **Chạy được FE + BE trước đã, CHƯA đụng Copilot.**
+      → 🟡 **CODE XONG 2026-09-21 — CHỜ DỰNG THẬT trên máy nội bộ.** Ba vật cản
+      đã gỡ; 24 test mới khoá lại ở `tests/test_dong_goi.py`. Máy xách tay không
+      có Docker nên không tự dựng được — số đo phải lấy từ máy nội bộ.
       → **VC1** `backend1/Dockerfile` chỉ `COPY target/sizing-*.jar`, KHÔNG build.
       Máy sạch `docker compose build backend` là hỏng. `Jenkinsfile` cho cách
       thật: chạy Maven trong container `registry.kcntt.net/library/maven:3.9-…`
@@ -1887,10 +1889,35 @@ dùng lại chính blob vừa xuất.
       (`script.js:1`, `login.html:75`, `dashboard/js/api.js:7`) trong khi
       `backend` KHÔNG mở cổng ra máy chủ. Đưa cả ba về đường tương đối `/api` để
       đi qua proxy nginx (cùng gốc, không CORS).
+      → **Đã làm:** `backend1/Dockerfile` thành hai tầng, tầng `build` chạy Maven
+      với `backend1/.m2/settings.xml` (Nexus nội bộ) ĐÃ CÓ SẴN trong repo; thêm
+      `backend1/.dockerignore` (ngữ cảnh build là `./backend1` nên file ở gốc
+      KHÔNG áp dụng, `target/` sẽ lọt vào mọi lượt build). Thêm dịch vụ `mysql:8`
+      + volume `mysql-data`, `utf8mb4` đặt ở MÁY CHỦ CSDL, không mở cổng ra máy
+      chủ; `backend` chờ `mysql` khoẻ rồi mới lên. Ba địa chỉ tuyệt đối
+      `http://localhost:8081` thành đường tương đối `/api`.
+      → ⚠️ **Tài khoản mầm:** migration V1–V7 KHÔNG chèn user nào, nên CSDL mới
+      là đứng trước màn đăng nhập mà không vào được. Backend có sẵn
+      `DefaultUserLoader` đọc biến `DEFAULT_USERS` dạng
+      `tên:mật khẩu:vai[:sđt]` (vai: `user` · `admin1` · `admin2`) — nay khai ở
+      compose và `.env.example`.
+      → ⚠️ **Mìn trong `backend1/.m2/settings.xml`:** khối `<proxies>` có
+      `<host>...</host>` — đúng chữ ba chấm — mà `active=true`. Vô hại CHỈ VÌ
+      `nonProxyHosts` có `*.kcntt.net` nên mọi thứ đi thẳng tới Nexus. Ngày nào
+      Maven phải với ra ngoài kcntt.net thì đây là chỗ nó hỏng, và thông báo lỗi
+      sẽ không nhắc tới file này.
       → **Tiêu chí:** mở cổng 9000 → đăng nhập → danh sách dự án → mở một dự án →
       xuất DOCX được. Không cần Copilot chạy.
 
-- [ ] 6.2 — **Đường mạng: thêm `location /copilot/` vào `nginx/nginx.conf`**
+- [~] 6.2 — **Đường mạng: thêm `location /copilot/` vào `nginx/nginx.conf`**
+      → 🟡 **CODE XONG 2026-09-21 — CHỜ DỰNG THẬT.**
+      → ⚠️ **Chỗ suýt làm hỏng tiêu chí T6:** `proxy_pass http://copilot:8000/`
+      viết thẳng tên máy thì nginx phân giải DNS NGAY LÚC NẠP CẤU HÌNH và
+      **không khởi động nổi** khi `copilot` đang tắt — tức tắt Copilot là sập
+      luôn cả Tool Sizing. Đã đổi sang đặt đích vào BIẾN (`set
+      $copilot_upstream` + `resolver 127.0.0.11`) để hoãn phân giải tới từng
+      yêu cầu; dùng biến thì nginx không tự cắt tiền tố `location` nữa nên phải
+      `rewrite` lấy lại phần đuôi. `nginx` CỐ Ý không `depends_on: copilot`.
       (`proxy_pass http://copilot:8000/`, `client_max_body_size 100M`, timeout
       300s cho lúc TẢI LÊN). Không mở cổng mới: người dùng chỉ cần cổng 9000;
       8902/8903 giữ cho Admin và script nghiệm thu.
@@ -2169,3 +2196,7 @@ dùng lại chính blob vừa xuất.
 | 2026-09-21 | **Công cụ KHÔNG tự ghi `rules.yaml`; nó chỉ kiểm và đối chiếu** | Cách rẻ hơn là cho Admin bấm Áp rồi máy ghi đè file. Bác bỏ vì hai lẽ đo được: (1) 4605 dòng `rules.yaml` phần lớn là CHÚ THÍCH hướng dẫn người nghiệp vụ, mà `yaml.safe_dump` một `dict` đã nạp sẽ xoá sạch; (2) sửa file trên máy chủ thì có `git diff` làm đường lùi, còn ghi từ container thì không — mà một quy tắc sai đã chạy vài chục hồ sơ thì không có đường lùi là hỏng thật. Bù lại, công cụ ĐỌC được file: đánh dấu «đã áp» bị từ chối (409) khi khối đang chạy chưa khớp đề xuất |
 | 2026-09-21 | **Eval set KHÔNG làm cổng đồng bộ của đề xuất sửa quy tắc** | PLAN hẹn «kiểm tự động: schema + công thức parse + eval set không tụt». Hai vế đầu chạy trong mili-giây; vế ba cần model và cả kho hồ sơ thật, hàng giờ — không thể nằm trong một lời gọi API. Điểm dừng `.cache/eval` cũng không tái dùng được vì nó lưu KẾT QUẢ finding, không lưu phần trích xuất. Nên eval thành một CỘT RIÊNG, người chạy tự gắn; giao diện nói thẳng «chưa ai đo» khi trống, để kiểm tự động không bị đọc nhầm thành bằng chứng chất lượng (NT4) |
 | 2026-09-21 | **«Phân hệ ma» KHÔNG ổn định — rủi ro nặng hơn lúc ghi nhận** | `thong_ke.phat_lai` của lượt 5.6 cho thấy 146 khoá C5 lần này không còn `SAN Switch` / `Thiết bị mạng` / `Tủ rack`: ba phân hệ bịa tự biến mất khi tài liệu đổi vài chỗ. Lúc chốt «ghi lại, sang 5.4» ta đang hiểu nó gắn với một ô bảng cụ thể, tức gặp lại thì lần được. Nay thì không — không tái hiện theo ý muốn, nên không chờ người dùng báo lại được |
+| 2026-09-21 | **Tạm dừng nâng cấp Copilot, chuyển sang tích hợp FE + BE** | Người dùng chốt. 5.9 bước 2 để lại ở trạng thái chờ nghiệm thu; 5.7 · 5.8 · 5.10–5.12 chưa làm. Làm trên nhánh `dev-integrate`. Quy trình thẩm định KHÔNG đổi — GĐ 6 chỉ đụng lớp giao diện và lớp mạng, đúng định hướng kiến trúc ghi từ đầu PLAN |
+| 2026-09-21 | **Thêm MySQL vào compose thay vì trỏ vào CSDL sẵn có** | Đo trên máy nội bộ: không có gì nghe ở cổng 3306, `.env` trống cả ba biến datasource, `backend1/target/` không tồn tại — tức chưa từng có CSDL lẫn jar nào. Thêm dịch vụ `mysql:8` + volume riêng thì Flyway tự dựng lược đồ từ V1 và không đụng CSDL thật nào. Một biến mật khẩu duy nhất (`SPRING_DATASOURCE_PASSWORD`) dùng cho cả hai dịch vụ: khai ở hai chỗ là cách chắc chắn để chúng lệch nhau |
+| 2026-09-21 | **`/copilot/` mở cho mọi người đã đăng nhập** | Người dùng chốt. Ghi rõ hệ quả: ai mở được trang cũng gọi được MỌI endpoint Copilot, kể cả endpoint Admin của 5.9 — chúng chỉ đọc `vai` trong header chứ không xác thực (5.0a). Chấp nhận được trong mạng nội bộ; mở ra ngoài thì đây là chỗ đầu tiên phải chặn |
+| 2026-09-21 | **nginx trỏ sang Copilot bằng BIẾN, không bằng tên máy** | `proxy_pass` với tên máy cố định làm nginx phân giải DNS lúc nạp cấu hình và không khởi động nổi khi `copilot` tắt — tắt Copilot là sập cả Tool Sizing, đúng thứ tiêu chí T6 cấm. Biến + `resolver` hoãn phân giải tới từng yêu cầu, Copilot tắt chỉ làm riêng tab thẩm định lỗi 502 |

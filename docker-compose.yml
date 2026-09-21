@@ -1,9 +1,61 @@
 services:
+  # ------------------------------------------------------------- MySQL (BE) --
+  # GĐ 6.1 (2026-09-21) — người dùng chốt: thêm CSDL vào compose thay vì trỏ vào
+  # một MySQL sẵn có. Đo trên máy nội bộ cùng ngày: KHÔNG có gì nghe ở cổng 3306
+  # và `.env` để trống cả ba biến `SPRING_DATASOURCE_*`, tức không có CSDL nào
+  # để trỏ vào cả.
+  #
+  # ⚠️ KHÔNG dính dáng gì tới `copilot-db` (PostgreSQL). Hai CSDL của hai hệ
+  # thống khác nhau, đừng gộp: lược đồ Copilot có migration riêng (bản 4) và
+  # Flyway của Spring sẽ không hiểu nó.
+  #
+  # KHÔNG mở cổng ra máy chủ, cùng lý do với `copilot-db`: chỉ `backend` trong
+  # `app-net` cần tới nó. Muốn soi CSDL thì `docker compose exec mysql mysql -u…`.
+  mysql:
+    container_name: sizing-mysql
+    image: mysql:8
+    # Tài liệu sizing đầy tiếng Việt. `utf8mb4` phải đặt ở MÁY CHỦ CSDL, không
+    # chỉ ở bảng: migration V1 khai `CHARSET=utf8mb4` cho từng bảng, nhưng kết
+    # nối và biến hệ thống vẫn theo mặc định của server nếu không ép ở đây.
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      # MỘT nguồn cho tài khoản ứng dụng: `backend` dùng đúng hai biến này để
+      # kết nối. Khai mật khẩu ở hai chỗ là cách chắc chắn để một ngày nào đó
+      # chúng lệch nhau và không ai hiểu vì sao backend không vào được CSDL.
+      # ⚠️ MySQL TỪ CHỐI `MYSQL_USER=root` — để trống thì dùng `sizing`.
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-sizing_local}
+      - MYSQL_USER=${SPRING_DATASOURCE_USERNAME:-sizing}
+      - MYSQL_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      # `$$` là `$` thoát cho compose — biến được đọc BÊN TRONG container.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    restart: always
+    networks:
+      - app-net
+
   backend:
     container_name: sizing-backend
     build:
       context: ./backend1
     restart: always
+    # Flyway chạy lúc khởi động và `ddl-auto: validate` không tự tạo bảng, nên
+    # backend lên trước CSDL là hỏng hẳn chứ không phải chậm một nhịp.
+    depends_on:
+      mysql:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -11,9 +63,18 @@ services:
         reservations:
           memory: 512M
     environment:
-      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      # Mặc định trỏ thẳng vào dịch vụ `mysql` ở trên. `application.yaml` trong
+      # jar ghi `jdbc:mysql://localhost:3306/…` — mà `localhost` BÊN TRONG
+      # container là chính container ấy, nên không đặt biến này là chắc chắn hỏng.
+      - "SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:mysql://mysql:3306/sizing_local?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}"
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-sizing}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-}
+      # Tài khoản mầm, dạng `tên:mật khẩu:vai[:số điện thoại]`, ngăn bằng dấu
+      # phẩy; vai hợp lệ: `user` · `admin1` · `admin2`. CSDL mới KHÔNG có tài
+      # khoản nào (migration V1–V7 không chèn user), nên thiếu biến này là dựng
+      # xong rồi đứng trước màn đăng nhập mà không vào được.
+      # `DefaultUserLoader` bỏ qua tài khoản đã tồn tại, chạy lại không sao.
+      - DEFAULT_USERS=${DEFAULT_USERS:-}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8081 2>&1 | grep -q '.' || exit 1"]
       interval: 15s
@@ -225,6 +286,7 @@ services:
 volumes:
   copilot-cache:
   copilot-db-data:
+  mysql-data:
 
 networks:
   app-net:

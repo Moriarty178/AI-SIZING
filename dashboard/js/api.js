@@ -3,8 +3,9 @@
  * Features: SecureStorage, RequestCache, ApiError, interceptors, retry, timeout
  */
 
-//const API_BASE = '/api';
-const API_BASE = 'http://localhost:8081/api';
+// GĐ 6.1 — đường TƯƠNG ĐỐI, qua proxy `/api/` của nginx. Dòng tuyệt đối cũ chỉ
+// chạy khi backend chạy trần ở cổng 8081; trong compose nó không mở cổng nào.
+const API_BASE = '/api';
 
 
 // ==================== API ERROR CLASS ====================

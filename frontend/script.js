@@ -1,4 +1,13 @@
-const API_BASE_URL = 'http://localhost:8081/api';
+// GĐ 6.1 — ĐƯỜNG TƯƠNG ĐỐI, đi qua proxy `/api/` của nginx.
+//
+// Bản cũ ghi thẳng `http://localhost:8081/api`. Nó chỉ chạy trên máy lập trình
+// viên có backend chạy trần: trong compose, dịch vụ `backend` KHÔNG mở cổng ra
+// máy chủ (không có `ports:`), nên trình duyệt gọi 8081 là không có ai nghe.
+// Đường tương đối còn cùng gốc với trang → không dính CORS.
+const API_BASE_URL = '/api';
+
+// Sizing Copilot, cũng qua nginx (`location /copilot/`). Xem docs/tich-hop-fe-be.md.
+const COPILOT_BASE_URL = '/copilot';
 
 // Biến lưu Project ID và ProjectData ID hiện tại
 let currentProjectId = localStorage.getItem('currentProjectId') || null;
