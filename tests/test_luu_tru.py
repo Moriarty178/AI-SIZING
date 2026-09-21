@@ -115,13 +115,15 @@ class TestNangCapLenBan3:
                 "tao_luc TIMESTAMP, vai VARCHAR(20), ten VARCHAR(200))"))
             c.execute(sa.update(ld.thong_tin_luoc_do).values(gia_tri="2"))
 
-    def test_nang_cap_giu_nguyen_du_lieu_va_len_ban_3(self, kho):
+    def test_nang_cap_giu_nguyen_du_lieu_va_len_ban_moi_nhat(self, kho):
+        """Bản 2 phải đi hết chuỗi 2 → 3 → 4 trong MỘT lần khởi tạo: máy nội bộ có
+        thể bỏ lỡ vài bản, không ai chạy nâng cấp từng nấc bằng tay."""
         r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
                                   findings=[_fd("A#x")])
         self._ha_ve_ban_2(kho)
         kho.khoi_tao()
         with kho.engine.connect() as c:
-            assert c.execute(sa.select(ld.thong_tin_luoc_do.c.gia_tri)).scalar() == "3"
+            assert c.execute(sa.select(ld.thong_tin_luoc_do.c.gia_tri)).scalar() == "4"
         assert len(kho.doc_ho_so(r["ho_so_id"])["baseline"]) == 1, "hồ sơ còn nguyên"
         fb = kho.doc_ho_so(r["ho_so_id"])["baseline"][0]["id"]
         assert kho.them_bao_cao_loi(r["ho_so_id"], danh_tinh=_dt(), ly_do="sai",
@@ -142,6 +144,46 @@ class TestNangCapLenBan3:
             assert c.execute(sa.text("SELECT COUNT(*) FROM bao_cao_loi")).scalar() == 1
             assert c.execute(sa.select(ld.thong_tin_luoc_do.c.gia_tri)).scalar() == "2"
         assert r["ho_so_id"]
+
+
+class TestNangCapLenBan4:
+    """5.9 bước 2 — `de_xuat_quy_tac` thêm `ho_so_id`, `ly_do`, `bang_chung_eval`."""
+
+    @staticmethod
+    def _ha_ve_ban_3(kho):
+        with kho.engine.begin() as c:
+            c.execute(sa.text("DROP TABLE de_xuat_quy_tac"))
+            c.execute(sa.text(
+                "CREATE TABLE de_xuat_quy_tac (id INTEGER PRIMARY KEY, "
+                "rule_ref VARCHAR(40) NOT NULL, noi_dung_cu TEXT NOT NULL, "
+                "noi_dung_moi TEXT NOT NULL, trang_thai VARCHAR(20) NOT NULL "
+                "DEFAULT 'cho_kiem', ket_qua_kiem TEXT NOT NULL DEFAULT '', "
+                "tao_luc TIMESTAMP, vai VARCHAR(20), ten VARCHAR(200))"))
+            c.execute(sa.update(ld.thong_tin_luoc_do).values(gia_tri="3"))
+
+    def test_len_ban_4_va_ho_so_con_nguyen(self, kho):
+        r = kho.ghi_lan_tham_dinh(ma_viec="m1", ten_file="a.docx", danh_tinh=_dt(),
+                                  findings=[_fd("A#x")])
+        self._ha_ve_ban_3(kho)
+        kho.khoi_tao()
+        with kho.engine.connect() as c:
+            assert c.execute(sa.select(ld.thong_tin_luoc_do.c.gia_tri)).scalar() == "4"
+        assert len(kho.doc_ho_so(r["ho_so_id"])["baseline"]) == 1
+        assert kho.them_de_xuat(rule_ref="STO-02", danh_tinh=_dt("admin"),
+                                noi_dung_cu="a", noi_dung_moi="b", ly_do="vì",
+                                ho_so_id=r["ho_so_id"])["id"]
+
+    def test_con_de_xuat_cu_thi_dung_lai_chu_khong_xoa(self, kho):
+        self._ha_ve_ban_3(kho)
+        with kho.engine.begin() as c:
+            c.execute(sa.text(
+                "INSERT INTO de_xuat_quy_tac (rule_ref, noi_dung_cu, noi_dung_moi, "
+                "vai, ten) VALUES ('STO-02', 'a', 'b', 'admin', 'Q')"))
+        with pytest.raises(LoiCSDL, match="migration viết tay"):
+            kho.khoi_tao()
+        with kho.engine.connect() as c:
+            assert c.execute(
+                sa.text("SELECT COUNT(*) FROM de_xuat_quy_tac")).scalar() == 1
 
 
 # ------------------------------------------------ hồ sơ → lần → baseline ---
@@ -224,9 +266,9 @@ def _fd(fid, **kw):
     return d
 
 
-def _dt():
+def _dt(vai: str = "nguoi_lam_sizing", ten: str = "Nguyễn Văn A"):
     from src.luu_tru.danh_tinh import tao_danh_tinh
-    return tao_danh_tinh("nguoi_lam_sizing", "Nguyễn Văn A")
+    return tao_danh_tinh(vai, ten)
 
 
 class TestGhiLanThamDinh:
@@ -329,8 +371,8 @@ class TestGhiLanThamDinh:
             ("m2", 2)
         assert kho.lan_moi_nhat(999) is None
 
-    def test_phien_ban_luoc_do_la_3(self):
-        assert ld.PHIEN_BAN_LUOC_DO == "3"
+    def test_phien_ban_luoc_do_la_4(self):
+        assert ld.PHIEN_BAN_LUOC_DO == "4"
 
 
 # --- 2026-09-17: lỗi mở CSDL phải nói cách sửa ----------------------------------
@@ -560,3 +602,77 @@ class TestBangAdmin:
 
     def test_ho_so_khong_ton_tai(self, kho):
         assert kho.doc_bang_admin(4242) is None
+
+
+# ---------------------------------------------- 5.9 bước 2 · đề xuất rules ---
+class TestDeXuatQuyTac:
+    """Kho chỉ CẤT đề xuất. Phép kiểm nội dung nằm ở `src/validators/de_xuat.py`;
+    đây chỉ gác những thứ CSDL phải gác."""
+
+    @staticmethod
+    def _admin():
+        return _dt("admin", "Quản trị")
+
+    def test_them_roi_doc_lai_du_truong(self, kho):
+        hs = kho.tao_ho_so("a.docx", vai="admin", ten="x")
+        r = kho.them_de_xuat(rule_ref="STO-02", danh_tinh=self._admin(),
+                             noi_dung_cu="  - id: STO-02\n", ly_do="RAID 6 quá chặt",
+                             noi_dung_moi="  - id: STO-02\n    severity: major\n",
+                             ho_so_id=hs, trang_thai="kiem_dat",
+                             ket_qua_kiem='{"dat": true}')
+        d = kho.ds_de_xuat()[0]
+        assert d["id"] == r["id"] and d["rule_ref"] == "STO-02"
+        assert d["ho_so_id"] == hs and d["ly_do"] == "RAID 6 quá chặt"
+        assert d["trang_thai"] == "kiem_dat" and d["vai"] == "admin"
+        assert d["noi_dung_cu"].startswith("  - id: STO-02")
+        assert d["bang_chung_eval"] == "", "chưa ai chạy eval thì phải rỗng, không bịa"
+
+    def test_khong_gan_ho_so_van_de_xuat_duoc(self, kho):
+        """Admin mở thẳng một quy tắc để sửa, không đi từ dòng lỗi nào."""
+        kho.them_de_xuat(rule_ref="KPI-01", danh_tinh=self._admin(),
+                         noi_dung_cu="a", noi_dung_moi="b")
+        assert kho.ds_de_xuat()[0]["ho_so_id"] is None
+
+    def test_ho_so_khong_co_thi_bao(self, kho):
+        from src.luu_tru.kho import KhongCoFinding
+        with pytest.raises(KhongCoFinding):
+            kho.them_de_xuat(rule_ref="KPI-01", danh_tinh=self._admin(),
+                             noi_dung_cu="a", noi_dung_moi="b", ho_so_id=4242)
+
+    def test_thieu_ma_hoac_noi_dung_bi_chan(self, kho):
+        for kw in ({"rule_ref": " "}, {"noi_dung_moi": "  "}):
+            with pytest.raises(ValueError):
+                kho.them_de_xuat(**{"rule_ref": "KPI-01", "noi_dung_cu": "a",
+                                    "noi_dung_moi": "b",
+                                    "danh_tinh": self._admin(), **kw})
+
+    def test_loc_theo_ma_va_trang_thai(self, kho):
+        for ma, tt in (("KPI-01", "cho_kiem"), ("KPI-01", "da_ap"),
+                       ("STO-02", "cho_kiem")):
+            kho.them_de_xuat(rule_ref=ma, danh_tinh=self._admin(), noi_dung_cu="a",
+                             noi_dung_moi="b", trang_thai=tt)
+        assert len(kho.ds_de_xuat(rule_ref="KPI-01")) == 2
+        assert len(kho.ds_de_xuat(trang_thai="cho_kiem")) == 2
+        assert len(kho.ds_de_xuat(rule_ref="KPI-01", trang_thai="da_ap")) == 1
+        assert [d["id"] for d in kho.ds_de_xuat()] == \
+            sorted([d["id"] for d in kho.ds_de_xuat()], reverse=True)
+
+    def test_doi_trang_thai_va_gan_bang_chung_eval(self, kho):
+        r = kho.them_de_xuat(rule_ref="KPI-01", danh_tinh=self._admin(),
+                             noi_dung_cu="a", noi_dung_moi="b")
+        d = kho.doi_trang_thai_de_xuat(r["id"], "da_ap",
+                                       bang_chung_eval="eval-dev 09-21: 0.62 → 0.64")
+        assert d["trang_thai"] == "da_ap" and "0.64" in d["bang_chung_eval"]
+        # Không truyền bằng chứng thì không được xoá cái đã có.
+        d2 = kho.doi_trang_thai_de_xuat(r["id"], "tu_choi")
+        assert d2["trang_thai"] == "tu_choi" and d2["bang_chung_eval"] == \
+            d["bang_chung_eval"]
+
+    def test_trang_thai_la_hoac_de_xuat_khong_co_thi_bao(self, kho):
+        from src.luu_tru.kho import KhongCoFinding
+        r = kho.them_de_xuat(rule_ref="KPI-01", danh_tinh=self._admin(),
+                             noi_dung_cu="a", noi_dung_moi="b")
+        with pytest.raises(ValueError, match="không hợp lệ"):
+            kho.doi_trang_thai_de_xuat(r["id"], "da_duyet")
+        with pytest.raises(KhongCoFinding):
+            kho.doi_trang_thai_de_xuat(4242, "da_ap")

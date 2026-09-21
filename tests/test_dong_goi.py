@@ -198,3 +198,29 @@ class TestCSDLKhongAnhHuongKhiPull:
         """`postgres:latest` sẽ nhảy phiên bản chính khi kéo lại, và PostgreSQL
         KHÔNG đọc được thư mục dữ liệu của phiên bản chính khác."""
         assert self.DB["image"].startswith("postgres:16")
+
+
+class TestBoQuyTacOMayChu:
+    """5.9 bước 2 — vật cản đã ghi trong PLAN: `rules.yaml` nằm TRONG image, nên
+    người chốt sửa quy tắc xong là `up -d` lần sau mất sạch, không ai báo gì."""
+
+    @staticmethod
+    def _v(dich_vu: str) -> list[str]:
+        return [str(x) for x in COMPOSE["services"][dich_vu]["volumes"]]
+
+    def test_ca_hai_dich_vu_gan_rules_yaml_tu_may_chu(self):
+        for dv in ("copilot", "copilot-ui"):
+            assert any(x.startswith("./config/rules.yaml:/app/config/rules.yaml")
+                       for x in self._v(dv)), self._v(dv)
+
+    def test_gan_CHI_DOC(self):
+        """Công cụ không bao giờ tự ghi vào bộ quy tắc: đề xuất nằm ở CSDL, người
+        chốt sửa file trên máy chủ (có `git diff` làm đường lùi)."""
+        for dv in ("copilot", "copilot-ui"):
+            r = next(x for x in self._v(dv) if "rules.yaml" in x)
+            assert r.endswith(":ro"), r
+
+    def test_image_VAN_co_bo_quy_tac_de_chay_mot_minh(self):
+        """Gắn từ máy chủ là ĐÈ LÊN, không phải thay thế: `docker run` trần (không
+        compose) vẫn phải có quy tắc, nếu không mọi lượt thẩm định ra 0 finding."""
+        assert "COPY config ./config" in DOCKERFILE

@@ -45,6 +45,7 @@ import urllib.error
 import urllib.request
 import uuid
 from dataclasses import dataclass, field
+from urllib.parse import quote, urlencode
 
 BIEN_DIA_CHI = "SIZING_COPILOT_API"
 DIA_CHI_MAC_DINH = "http://localhost:8000"
@@ -214,6 +215,38 @@ class KhachAPI:
 
     def ds_bao_loi(self, ho_so_id: int) -> list[dict]:
         return self._goi(f"/ho-so/{int(ho_so_id)}/bao-loi")["bao_loi"]
+
+    # ----------------------------------------------------- 5.9 bước 2 · quy tắc --
+    def quy_tac(self, ma: str) -> dict:
+        """Chi tiết một quy tắc + NGUYÊN VĂN khối YAML + các đề xuất của nó."""
+        return self._goi(f"/quy-tac/{quote(str(ma), safe='')}")
+
+    def kiem_quy_tac(self, ma: str, noi_dung_moi: str) -> dict:
+        """Kiểm thử một sửa đổi, KHÔNG lưu."""
+        than = json.dumps({"noi_dung_moi": noi_dung_moi},
+                          ensure_ascii=False).encode("utf-8")
+        return self._goi(f"/quy-tac/{quote(str(ma), safe='')}/kiem", method="POST",
+                         du_lieu=than, kieu="application/json; charset=utf-8")
+
+    def de_xuat_quy_tac(self, ma: str, noi_dung_moi: str, *, ly_do: str = "",
+                        ho_so_id: int | None = None) -> dict:
+        than = json.dumps({"noi_dung_moi": noi_dung_moi, "ly_do": ly_do,
+                           "ho_so_id": ho_so_id}, ensure_ascii=False).encode("utf-8")
+        return self._goi(f"/quy-tac/{quote(str(ma), safe='')}/de-xuat", method="POST",
+                         du_lieu=than, kieu="application/json; charset=utf-8")
+
+    def ds_de_xuat(self, *, rule_ref: str = "", trang_thai: str = "") -> list[dict]:
+        q = urlencode({k: v for k, v in
+                       (("rule_ref", rule_ref), ("trang_thai", trang_thai)) if v})
+        return self._goi("/de-xuat" + (f"?{q}" if q else ""))["de_xuat"]
+
+    def trang_thai_de_xuat(self, de_xuat_id: int, trang_thai: str, *,
+                           bang_chung_eval: str | None = None) -> dict:
+        than = json.dumps({"trang_thai": trang_thai,
+                           "bang_chung_eval": bang_chung_eval},
+                          ensure_ascii=False).encode("utf-8")
+        return self._goi(f"/de-xuat/{int(de_xuat_id)}/trang-thai", method="POST",
+                         du_lieu=than, kieu="application/json; charset=utf-8")
 
     def viec(self, ma: str) -> dict:
         return self._goi(f"/result/{ma}")

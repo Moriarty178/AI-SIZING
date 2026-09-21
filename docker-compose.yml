@@ -69,6 +69,16 @@ services:
       # ⚠️ TẠO FILE NÀY TRƯỚC khi `up`. Bind-mount một file chưa tồn tại thì
       # Docker tạo một THƯ MỤC trùng tên, và lỗi sau đó rất khó đoán.
       - ./config/settings.yaml:/app/config/settings.yaml:ro
+      # 5.9 bước 2 — BỘ QUY TẮC gắn từ máy chủ, không dùng bản nằm trong image.
+      # `Dockerfile.copilot` vẫn `COPY config ./config` để image chạy được một mình,
+      # nhưng ở đây bản của máy chủ ĐÈ lên. Trước thay đổi này, người chốt sửa quy
+      # tắc trong container thì `up -d` lần sau là mất sạch, mà không ai báo gì.
+      #
+      # `:ro` — container KHÔNG ghi vào bộ quy tắc. Đề xuất sửa nằm trong CSDL; áp
+      # thật là người sửa file này trên máy chủ rồi `docker restart sizing-copilot`
+      # (API đọc lại file mỗi lần gọi, nhưng C3/C5 nạp quy tắc lúc nhập module).
+      # Sửa trên máy chủ thì có `git diff` làm đường lùi — thứ một bảng CSDL không có.
+      - ./config/rules.yaml:/app/config/rules.yaml:ro
       # Trạng thái công việc (3.2) và đệm lời gọi model (2.12) nằm ở
       # `/app/.cache`, KHÔNG phải `/app/data` — bản 2026-09-11 gắn nhầm chỗ nên
       # việc đang chạy mất sạch mỗi lần container khởi động lại.
@@ -143,6 +153,10 @@ services:
       # đọc biến đó — nó chỉ gọi API.
     volumes:
       - ./config/settings.yaml:/app/config/settings.yaml:ro
+      # Giao diện cũng cần ĐÚNG bộ quy tắc ấy: màn hình quy tắc của Admin (5.9 bước
+      # 2) gọi API, nhưng `src/giao_dien.py` nạp `rules.yaml` lúc nhập module. Hai
+      # container lệch bộ quy tắc là loại sai khó thấy nhất — không có lỗi nào nổ ra.
+      - ./config/rules.yaml:/app/config/rules.yaml:ro
     command:
       - streamlit
       - run

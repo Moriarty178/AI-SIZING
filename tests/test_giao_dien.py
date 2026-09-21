@@ -594,3 +594,42 @@ class TestBangAdmin56:
             {"finding_baseline_id": 2, "ghi_chu": "cần bàn thêm", "danh_gia": "tu_choi",
              "loi_o_phia": ""}]
         assert thay_doi_admin(goc, goc) == [], "bấm Lưu hai lần không nhân bản lịch sử"
+
+
+# ------------------------------------------- 5.9 bước 2 — đề xuất sửa quy tắc --
+class TestDeXuatQuyTac59b:
+    def test_bang_de_xuat_doi_nhan_va_NOI_RO_chua_do_eval(self):
+        from src.giao_dien import bang_de_xuat
+        r = bang_de_xuat([{"id": 3, "rule_ref": "STO-02", "ten": "Quản trị",
+                           "trang_thai": "kiem_dat", "ly_do": "quá chặt",
+                           "tao_luc": "2026-09-21T09:10:11.5", "bang_chung_eval": "",
+                           "ho_so_id": 1}])[0]
+        assert r["Trạng thái"] == "Kiểm đạt — chờ người chốt áp"
+        assert r["Lúc"] == "2026-09-21 09:10:11"
+        assert r["Eval"] == "chưa ai đo", "trống mà im lặng thì tưởng đã đo (NT4)"
+
+    def test_bang_de_xuat_giu_bang_chung_eval_khi_co(self):
+        from src.giao_dien import bang_de_xuat
+        r = bang_de_xuat([{"id": 1, "bang_chung_eval": "recall 0.62 → 0.64"}])[0]
+        assert r["Eval"] == "recall 0.62 → 0.64"
+
+    def test_tom_tat_kiem_dat_luon_noi_CHUA_do_eval(self):
+        from src.giao_dien import tom_tat_kiem_de_xuat
+        s = tom_tat_kiem_de_xuat({"dat": True, "so_quy_tac": 151, "so_bieu_thuc": 137,
+                                  "chay_duoc_truoc": 77, "chay_duoc_sau": 76,
+                                  "canh_bao": ["severity đổi"]})
+        assert s.startswith("✓") and "77 → 76" in s and "1 cảnh báo" in s
+        assert "CHƯA đo eval" in s, "kiểm tự động KHÔNG phải bằng chứng chất lượng"
+
+    def test_tom_tat_kiem_hong_neu_ro_ly_do_dau_tien(self):
+        from src.giao_dien import tom_tat_kiem_de_xuat
+        s = tom_tat_kiem_de_xuat({"dat": False, "loi": ["`id` đổi từ …"]})
+        assert s.startswith("✗ KHÔNG áp được") and "`id` đổi" in s
+        assert tom_tat_kiem_de_xuat(None) == ""
+
+    def test_ma_quy_tac_xep_theo_so_dong_loi(self):
+        from src.giao_dien import ma_quy_tac_trong_ho_so
+        d = {"baseline": [{"rule_ref": "STO-02"}, {"rule_ref": "EVD-17"},
+                          {"rule_ref": "EVD-17"}, {"rule_ref": ""}, {}]}
+        assert ma_quy_tac_trong_ho_so(d) == ["EVD-17", "STO-02"]
+        assert ma_quy_tac_trong_ho_so(None) == []

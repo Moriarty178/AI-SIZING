@@ -18,6 +18,12 @@
     POST   /ho-so/{id}/ghi-chu-admin   5.9 — ba cột Admin (chỉ vai admin)
     GET    /ho-so/{id}/bao-loi   5.4 — các lời báo «hệ thống báo sai» của hồ sơ
     POST   /ho-so/{id}/bao-loi   5.4 — báo một dòng (baseline hoặc phát sinh) là lỗi hệ thống
+    GET    /quy-tac             5.9b — danh sách quy tắc đang chạy
+    GET    /quy-tac/{ma}        5.9b — chi tiết một quy tắc + NGUYÊN VĂN khối YAML
+    POST   /quy-tac/{ma}/kiem   5.9b — kiểm thử một sửa đổi, KHÔNG lưu, không cần CSDL
+    POST   /quy-tac/{ma}/de-xuat 5.9b — kiểm rồi lưu thành đề xuất (chỉ vai admin)
+    GET    /de-xuat             5.9b — danh sách đề xuất
+    POST   /de-xuat/{id}/trang-thai 5.9b — đánh dấu đã áp / từ chối / gắn bằng chứng eval
     DELETE /result/{ma}     xoá việc, báo cáo VÀ tài liệu đã nộp (KHÔNG đụng nhật ký)
     GET    /health          cho healthcheck của container
 
@@ -37,6 +43,7 @@ phải đặt sau cổng xác thực thật, và điều đó phải do người
 from __future__ import annotations
 
 import functools
+import json
 import pathlib
 import sys
 import threading
@@ -55,9 +62,16 @@ from src.giao_dien import kiem_model                             # noqa: E402
 from src.llm.cache import BoNhoDem                              # noqa: E402
 from src.luu_tru.cau_hinh import TrangThaiCSDL, mo_kho_tu_moi_truong  # noqa: E402
 from src.luu_tru.danh_tinh import tao_danh_tinh, tu_header          # noqa: E402
+from src.validators.de_xuat import doc_khoi, kiem_de_xuat        # noqa: E402
+from src.validators.rules_loader import DEFAULT_RULES_PATH, RuleSet  # noqa: E402
 from src.version import PHIEN_BAN_C3, commit_hien_tai            # noqa: E402
 
+import yaml                                                      # noqa: E402
+
 DUOI_CHO_PHEP = ".docx"
+# Bộ quy tắc đang chạy. Trong container là `/app/config/rules.yaml`, gắn từ máy chủ
+# (5.9 bước 2) — trước đó nó nằm TRONG image nên sửa xong là `up -d` lần sau mất.
+DUONG_RULES = DEFAULT_RULES_PATH
 CO_TOI_DA = 80 * 1024 * 1024        # 80 MB — bản sizing lớn nhất trong kho ~12 MB
 
 # Trần mức song song NHẬN từ người gọi. 12 là điểm bão hoà đo được 2026-09-09 và
@@ -451,7 +465,7 @@ class GhiChuAdminVao(BaseModel):
     muc: list[MucGhiChuAdminVao] = Field(min_length=1, max_length=2000)
 
 
-def _admin(request: Request):
+def _admin(request: Request, viec: str = "Ghi chú Admin"):
     """Ba cột 5.9 là tiếng nói của người thẩm định — dòng phải mang đúng vai Admin.
 
     Danh tính vẫn KHÔNG xác thực (5.0a): ai cũng chọn được vai Admin trên giao diện
@@ -463,10 +477,10 @@ def _admin(request: Request):
     except ValueError as e:
         raise HTTPException(400, f"Danh tính trong header không hợp lệ: {e}")
     if dt is None:
-        raise HTTPException(400, "Ghi chú Admin cần danh tính — nhập tên ở thanh bên.")
+        raise HTTPException(400, f"{viec} cần danh tính — nhập tên ở thanh bên.")
     if dt.vai != "admin":
-        raise HTTPException(403, f"Chỉ vai «admin» ghi được ba cột này; đang là "
-                                 f"«{dt.vai}».")
+        raise HTTPException(403, f"Chỉ vai «admin» làm được việc này ({viec}); "
+                                 f"đang là «{dt.vai}».")
     return dt
 
 
@@ -488,6 +502,158 @@ def ghi_chu_admin(ho_so_id: int, vao: GhiChuAdminVao, request: Request) -> dict:
     try:
         return k.luu_ghi_chu_admin(ho_so_id, danh_tinh=dt,
                                    muc=[m.model_dump() for m in vao.muc])
+    except KhongCoFinding as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+# --------------------------------------------------- 5.9 bước 2 · quy tắc --
+# Đọc `config/rules.yaml` NGUYÊN VĂN mỗi lần: file nằm ở bind-mount (xem
+# `docker-compose.yml`), nên người chốt sửa xong là API thấy ngay, KHÔNG phải dựng
+# lại image.
+#
+# CỐ Ý không đệm theo mtime. Phần đắt là `yaml.safe_load` (mỗi chỗ gọi tự parse lại),
+# còn đọc 200 KB thì không đáng gì — đệm chỉ đổi lấy một lớp lỗi mới: sửa file rồi
+# đọc lại ra bản CŨ vì hai lần ghi rơi vào cùng một nhịp đồng hồ. Mà đúng chỗ này là
+# chỗ phải đọc đúng: nó quyết định một đề xuất có được đánh dấu «đã áp» hay không.
+def _rules_hien_tai() -> str:
+    p = pathlib.Path(DUONG_RULES)
+    if not p.exists():
+        raise HTTPException(500, f"Không thấy bộ quy tắc ở `{DUONG_RULES}`.")
+    return p.read_text(encoding="utf-8")
+
+
+def _tom_tat_quy_tac(r) -> dict:
+    return {"id": r.id, "name": r.name, "type": r.type, "severity": r.severity,
+            "scope": r.scope, "enabled": r.enabled,
+            "applies_to_equipment": r.applies_to_equipment,
+            "khong_danh_gia_duoc": r.khong_danh_gia_duoc()}
+
+
+@app.get("/quy-tac")
+def ds_quy_tac() -> dict:
+    rs = RuleSet(yaml.safe_load(_rules_hien_tai()))
+    return {"so_quy_tac": len(rs), "chay_duoc": len(rs.runnable()),
+            "quy_tac": [_tom_tat_quy_tac(r) for r in rs.rules]}
+
+
+@app.get("/quy-tac/{ma}")
+def chi_tiet_quy_tac(ma: str) -> dict:
+    """Chi tiết + NGUYÊN VĂN khối YAML — thứ Admin sẽ sửa và dán lại."""
+    van = _rules_hien_tai()
+    rs = RuleSet(yaml.safe_load(van))
+    r = rs.get(ma)
+    if r is None:
+        raise HTTPException(404, f"Không có quy tắc `{ma}`")
+    d = dict(_tom_tat_quy_tac(r), khoi=doc_khoi(van, ma), raw=r.raw,
+             duong_dan=DUONG_RULES)
+    # Không có CSDL thì vẫn xem được quy tắc, chỉ là không có đề xuất nào để kể.
+    d["de_xuat"] = kho_csdl.ds_de_xuat(rule_ref=ma) if kho_csdl is not None else []
+    return d
+
+
+class KiemQuyTacVao(BaseModel):
+    noi_dung_moi: str = Field(min_length=1, max_length=20_000)
+
+
+class DeXuatVao(KiemQuyTacVao):
+    ly_do: str = Field(default="", max_length=10_000)
+    ho_so_id: int | None = None
+
+
+def _kiem(ma: str, noi_dung_moi: str) -> tuple[dict, object]:
+    try:
+        kq = kiem_de_xuat(_rules_hien_tai(), ma, noi_dung_moi)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    # `van_moi` là CẢ file — không trả ra: người chốt sửa file, không dán lại 4605 dòng.
+    return {"dat": kq.dat, "loi": kq.loi, "canh_bao": kq.canh_bao, "diff": kq.diff,
+            "tom_tat": kq.tom_tat(), "so_quy_tac": kq.so_quy_tac,
+            "so_bieu_thuc": kq.so_bieu_thuc,
+            "chay_duoc_truoc": kq.chay_duoc_truoc,
+            "chay_duoc_sau": kq.chay_duoc_sau}, kq
+
+
+@app.post("/quy-tac/{ma}/kiem")
+def kiem_quy_tac(ma: str, vao: KiemQuyTacVao, request: Request) -> dict:
+    """Kiểm thử, KHÔNG lưu gì. Không cần CSDL — chạy được cả trên máy không có CSDL."""
+    _admin(request, "Sửa quy tắc")
+    return _kiem(ma, vao.noi_dung_moi)[0]
+
+
+@app.post("/quy-tac/{ma}/de-xuat", status_code=201)
+def de_xuat_quy_tac(ma: str, vao: DeXuatVao, request: Request) -> dict:
+    """Kiểm rồi LƯU thành đề xuất. Không bao giờ ghi vào `config/rules.yaml`.
+
+    Lưu cả đề xuất KHÔNG đạt (`kiem_hong`): một lần sửa hỏng cũng là dữ liệu —
+    nó nói quy tắc ấy khó diễn đạt. Muốn thử nháp thì dùng `/kiem`.
+    """
+    from src.luu_tru.kho import KhongCoFinding
+    k = _can_csdl()
+    dt = _admin(request, "Đề xuất sửa quy tắc")
+    kq, _ = _kiem(ma, vao.noi_dung_moi)
+    van = _rules_hien_tai()
+    try:
+        cu = doc_khoi(van, ma)
+    except KeyError:
+        cu = ""
+    try:
+        r = k.them_de_xuat(
+            rule_ref=ma, danh_tinh=dt, noi_dung_cu=cu,
+            noi_dung_moi=vao.noi_dung_moi, ly_do=vao.ly_do, ho_so_id=vao.ho_so_id,
+            trang_thai="kiem_dat" if kq["dat"] else "kiem_hong",
+            ket_qua_kiem=json.dumps(kq, ensure_ascii=False))
+    except KhongCoFinding as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {"de_xuat": r, "kiem": kq}
+
+
+@app.get("/de-xuat")
+def ds_de_xuat(rule_ref: str = "", ho_so_id: int | None = None,
+               trang_thai: str = "") -> dict:
+    return {"de_xuat": _can_csdl().ds_de_xuat(
+        rule_ref=rule_ref, ho_so_id=ho_so_id, trang_thai=trang_thai)}
+
+
+class TrangThaiDeXuatVao(BaseModel):
+    trang_thai: Literal["cho_kiem", "kiem_dat", "kiem_hong", "da_ap", "tu_choi"]
+    bang_chung_eval: str | None = Field(default=None, max_length=10_000)
+
+
+@app.post("/de-xuat/{de_xuat_id}/trang-thai")
+def doi_trang_thai_de_xuat(de_xuat_id: int, vao: TrangThaiDeXuatVao,
+                           request: Request) -> dict:
+    """Đánh dấu đã áp / từ chối, hoặc gắn bằng chứng eval.
+
+    `da_ap` được ĐỐI CHIẾU với `config/rules.yaml` đang chạy: công cụ không tự ghi
+    file nên nó không biết ai đã áp hay chưa, nhưng nó ĐỌC được. Đánh dấu "đã áp"
+    trong khi file chưa đổi là ghi một điều sai vào lịch sử quyết định (NT4), nên
+    bị từ chối kèm chỗ lệch.
+    """
+    from src.luu_tru.kho import KhongCoFinding
+    k = _can_csdl()
+    _admin(request, "Đổi trạng thái đề xuất")
+    ds = [d for d in k.ds_de_xuat() if d["id"] == de_xuat_id]
+    if not ds:
+        raise HTTPException(404, f"Không có đề xuất #{de_xuat_id}")
+    d = ds[0]
+    if vao.trang_thai == "da_ap":
+        try:
+            dang_chay = doc_khoi(_rules_hien_tai(), d["rule_ref"])
+        except KeyError:
+            raise HTTPException(409, f"`config/rules.yaml` đang chạy không còn quy "
+                                     f"tắc `{d['rule_ref']}`.")
+        if dang_chay.strip() != (d["noi_dung_moi"] or "").strip():
+            raise HTTPException(409, (
+                f"Chưa áp được: khối `{d['rule_ref']}` trong `{DUONG_RULES}` đang "
+                "chạy KHÁC nội dung đề xuất. Sửa file rồi khởi động lại dịch vụ "
+                "`copilot`, sau đó đánh dấu lại."))
+    try:
+        return k.doi_trang_thai_de_xuat(de_xuat_id, vao.trang_thai,
+                                        bang_chung_eval=vao.bang_chung_eval)
     except KhongCoFinding as e:
         raise HTTPException(404, str(e))
     except ValueError as e:

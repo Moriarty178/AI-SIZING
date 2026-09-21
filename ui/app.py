@@ -16,7 +16,9 @@ import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.giao_dien import (bang_admin, bang_bao_loi, bang_baseline, bang_lan_sua,
+from src.giao_dien import (bang_admin, bang_bao_loi, bang_baseline, bang_de_xuat,
+                           bang_lan_sua, tom_tat_kiem_de_xuat,
+                           ma_quy_tac_trong_ho_so,
                            bang_phat_sinh, bang_tu_dong, COT_ADMIN, COT_DANH_GIA,
                            COT_GHI_CHU, COT_LOI_O_PHIA, loc_bang_admin,
                            NHAN_DANH_GIA, NHAN_LOI_O_PHIA, thay_doi_admin,
@@ -477,6 +479,106 @@ def khoi_admin():
             st.warning(f"Không đọc được bảng: {e}")
             return
         hien_bang_admin(kh, int(h["id"]), d)
+    hien_quy_tac(kh, int(h["id"]), d)
+
+
+def hien_quy_tac(kh: KhachAPI, ho_so_id: int, d: dict):
+    """5.9 bước 2 — xem quy tắc đang tham chiếu, đề xuất sửa, kiểm tự động.
+
+    Công cụ KHÔNG ghi vào `config/rules.yaml` (NT3 + không có đường lùi khi một quy
+    tắc sai đã chạy vài chục hồ sơ). Nó chỉ kiểm và cất đề xuất; người chốt sửa file
+    trên máy chủ rồi quay lại đánh dấu, và lúc đánh dấu thì công cụ ĐỐI CHIẾU với
+    file đang chạy.
+    """
+    with st.expander("📐 Quy tắc & đề xuất sửa (5.9)", expanded=False):
+        ds_ma = ma_quy_tac_trong_ho_so(d)
+        c1, c2 = st.columns([2, 1])
+        ma = c1.selectbox("Quy tắc đang tham chiếu trong hồ sơ", ds_ma or [""],
+                          key=f"qt_chon_{ho_so_id}",
+                          help="Xếp theo số dòng lỗi đang trỏ vào quy tắc đó.")
+        khac = c2.text_input("…hoặc gõ mã khác", key=f"qt_go_{ho_so_id}",
+                             placeholder="vd: KPI-05")
+        ma = (khac or ma or "").strip()
+        if not ma:
+            st.caption("Hồ sơ chưa có dòng nào gắn mã quy tắc.")
+            return
+        try:
+            q = kh.quy_tac(ma)
+        except LoiAPI as e:
+            st.warning(f"Không đọc được quy tắc `{ma}`: {e}")
+            return
+
+        st.markdown(f"**{q['id']} — {q.get('name', '')}**")
+        st.caption(f"{q.get('type', '')} · mức {q.get('severity', '')} · phạm vi "
+                   f"{q.get('scope', '')} · "
+                   + ("C4 chấm được" if not q.get("khong_danh_gia_duoc")
+                      else f"KHÔNG chấm được: {q['khong_danh_gia_duoc']}"))
+        st.code(q.get("khoi", ""), language="yaml")
+        st.caption(f"Nguyên văn khối trong `{q.get('duong_dan', '')}`. Sửa ngay bên "
+                   "dưới rồi bấm «Kiểm thử» — không có gì bị ghi cho tới khi bạn gửi.")
+
+        moi = st.text_area("Khối quy tắc đề xuất", value=q.get("khoi", ""), height=320,
+                           key=f"qt_moi_{ho_so_id}_{ma}")
+        ly_do = st.text_input("Vì sao sửa", key=f"qt_ly_do_{ho_so_id}_{ma}",
+                              placeholder="vd: ngưỡng 80% quá chặt với hệ thống nội bộ")
+        c3, c4 = st.columns(2)
+        if c3.button("🔍 Kiểm thử (không lưu)", key=f"qt_kiem_{ho_so_id}_{ma}"):
+            try:
+                st.session_state[f"qt_kq_{ma}"] = kh.kiem_quy_tac(ma, moi)
+            except LoiAPI as e:
+                st.error(f"Không kiểm được: {e}")
+        if c4.button("📨 Gửi đề xuất", key=f"qt_gui_{ho_so_id}_{ma}", type="primary"):
+            try:
+                r = kh.de_xuat_quy_tac(ma, moi, ly_do=ly_do, ho_so_id=ho_so_id)
+            except LoiAPI as e:
+                st.error(f"Không gửi được: {e}")
+            else:
+                st.session_state[f"qt_kq_{ma}"] = r.get("kiem")
+                st.success(f"Đã ghi đề xuất #{r['de_xuat']['id']}. Công cụ KHÔNG sửa "
+                           "`rules.yaml` — người chốt sửa file trên máy chủ rồi quay "
+                           "lại đánh dấu «đã áp».")
+        kq = st.session_state.get(f"qt_kq_{ma}")
+        if kq:
+            (st.success if kq.get("dat") else st.error)(tom_tat_kiem_de_xuat(kq))
+            for c in kq.get("canh_bao") or []:
+                st.warning(f"⚠ {c}")
+            for l in (kq.get("loi") or [])[1:]:
+                st.error(l)
+            if kq.get("diff"):
+                st.code(kq["diff"], language="diff")
+
+        st.divider()
+        _hien_ds_de_xuat(kh, q.get("de_xuat") or [], ma)
+
+
+def _hien_ds_de_xuat(kh: KhachAPI, ds: list[dict], ma: str):
+    st.markdown(f"**Đề xuất đã ghi cho `{ma}`**")
+    if not ds:
+        st.caption("Chưa có đề xuất nào.")
+        return
+    st.dataframe(bang_de_xuat(ds), use_container_width=True, hide_index=True)
+    cho = [d for d in ds if d.get("trang_thai") in ("kiem_dat", "cho_kiem")]
+    if not cho:
+        return
+    c1, c2, c3 = st.columns([1, 2, 1])
+    i = c1.selectbox("Đề xuất", [d["id"] for d in cho], key=f"qt_dx_{ma}")
+    ev = c2.text_input("Bằng chứng eval (dán số đo, nếu đã chạy)", key=f"qt_ev_{ma}",
+                       placeholder="vd: eval-dev 2026-09-21 · recall 0.62 → 0.64")
+    if c3.button("✅ Đã áp vào file", key=f"qt_ap_{ma}"):
+        try:
+            kh.trang_thai_de_xuat(int(i), "da_ap", bang_chung_eval=ev or None)
+        except LoiAPI as e:
+            st.error(f"{e}")
+        else:
+            st.success(f"Đề xuất #{i}: đã đối chiếu với file đang chạy và đánh dấu.")
+            st.rerun()
+    if c3.button("✖ Từ chối", key=f"qt_tu_choi_{ma}"):
+        try:
+            kh.trang_thai_de_xuat(int(i), "tu_choi", bang_chung_eval=ev or None)
+        except LoiAPI as e:
+            st.error(f"{e}")
+        else:
+            st.rerun()
 
 
 def hien_bang_admin(kh: KhachAPI, ho_so_id: int, d: dict):

@@ -14,11 +14,11 @@
 | 2 | Đa phương thức & tái sử dụng | 8 / 8 | 🟢 2.1–2.5 · 2.11 · 2.12 · 2.14 xong (2.3 CHẠY THẬT 08-09; 2.14 cắt nhiễu −90%); 2.6–2.10 · 2.13 bỏ theo định hướng 2026-09-15 |
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
-| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · **5.6 + 5.9 bước 1 NGHIỆM THU ĐẠT 09-18** (bảng Admin 719 dòng, lọc ẩn 660). ⚠️ Rủi ro chưa sửa «phân hệ ma» (đo 09-21: không ổn định, lúc có lúc không). Tiếp: 5.9 bước 2 (đề xuất sửa quy tắc) |
+| 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · 5.6 + 5.9 bước 1 nghiệm thu đạt 09-18. **5.9 bước 2 (đề xuất sửa quy tắc) CODE XONG 09-21, chờ nghiệm thu** — `rules.yaml` nay gắn từ máy chủ. ⚠️ Rủi ro chưa sửa «phân hệ ma» (đo 09-21: không ổn định, lúc có lúc không) |
 
 **Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
-PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh; **đo 2026-09-21: ba phân hệ ma tự biến mất ở lượt sau, tức lỗi KHÔNG tái hiện theo ý muốn**. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) **nghiệm thu đạt 2026-09-18**. **5.6 + 5.9 bước 1** (bảng lịch sử sửa lỗi + ba cột Admin) **nghiệm thu đạt 2026-09-18**. Mục kế tiếp: **5.9 bước 2** (đề xuất sửa quy tắc).
+PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh; **đo 2026-09-21: ba phân hệ ma tự biến mất ở lượt sau, tức lỗi KHÔNG tái hiện theo ý muốn**. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) **nghiệm thu đạt 2026-09-18**. **5.6 + 5.9 bước 1** (bảng lịch sử sửa lỗi + ba cột Admin) **nghiệm thu đạt 2026-09-18**. **5.9 bước 2** (đề xuất sửa quy tắc + gỡ vật cản `rules.yaml` nằm trong image) **code xong 2026-09-21, chờ nghiệm thu**; lược đồ CSDL lên bản 4.
 
 > ⚠️ **Buổi demo 2026-09-15 KHÔNG phải một lượt thẩm định có model.** Container
 > chạy với proxy công ty nạp vào lúc chạy, mọi lời gọi model trả trang lỗi Squid
@@ -1763,20 +1763,67 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 
 ### 5D — Cập nhật & cải tiến hệ thống AI
 
-- [ ] 5.9 — **Ba cột Admin trên bảng 5.6** — "Ghi chú" (text), "Trạng thái"
-      (chấp nhận/từ chối/cần bàn), "Lỗi ở phía" (người làm sizing / hệ thống AI).
-      Click `rule_ref` → hiện chi tiết quy tắc đang tham chiếu → Admin sửa theo
-      nghiệp vụ → **ghi ra ĐỀ XUẤT SỬA, không ghi thẳng đè `rules.yaml`.**
-      → Đường đi: đề xuất (ai · lúc nào · diff) → kiểm tự động (schema hợp lệ +
-      77 công thức còn parse + eval set không tụt) → người chốt mới áp vào
-      `config/rules.yaml`. NT3 vẫn giữ: quy tắc là dữ liệu, không sửa code/prompt.
+- [~] 5.9 — **Ba cột Admin trên bảng 5.6 + đề xuất sửa quy tắc.** Tách hai bước
+      (người dùng chốt 2026-09-18) để nghiệm thu sớm phần Admin.
+      → **Bước 1 — ba cột Admin** ("Ghi chú", "Trạng thái", "Lỗi ở phía"):
+      ✅ **NGHIỆM THU ĐẠT 2026-09-18** cùng 5.6.
+      → **Bước 2 — đề xuất sửa quy tắc:** 🟡 **CODE XONG 2026-09-21 — CHỜ NGHIỆM THU**
+      (`scripts/nghiem_thu_5_9.py`, B1–B6 + Đ1; không gọi model, chạy vài giây).
+      Chọn mã quy tắc → hiện NGUYÊN VĂN khối YAML → Admin sửa → kiểm tự động →
+      **ghi ra ĐỀ XUẤT, không ghi thẳng đè `rules.yaml`.**
       → Vì sao không ghi thẳng: một lần sửa sai âm thầm đổi mọi lượt thẩm định về
       sau cho tất cả mọi người, không có đường lùi khi quy tắc sai đã chạy vài
-      chục hồ sơ.
-      → ⚠️ **Vật cản triển khai phải xử lý trong mục này:** `config/rules.yaml`
-      hiện **nằm trong image** (`Dockerfile.copilot` — `COPY config ./config`), mà
-      compose chỉ bind-mount `settings.yaml`. Đề xuất và bản đã áp phải nằm ở
-      volume, nếu không thì `up -d` lần sau là mất sạch.
+      chục hồ sơ. NT3 vẫn giữ: quy tắc là dữ liệu, không sửa code/prompt.
+      → ✅ **Vật cản đã gỡ:** `config/rules.yaml` nay **bind-mount từ máy chủ** vào cả
+      `copilot` lẫn `copilot-ui`, chế độ chỉ-đọc (`Dockerfile.copilot` vẫn `COPY
+      config` để image chạy một mình được, bản máy chủ ĐÈ lên). Áp một đề xuất = sửa
+      file trên máy chủ rồi `docker restart` — có `git diff` làm đường lùi, thứ một
+      bảng CSDL không có. Test khoá ở `tests/test_dong_goi.py::TestBoQuyTacOMayChu`.
+      → ⚠️ **Hai chỗ PLAN ghi sai, đã sửa theo số đo 2026-09-21:**
+      (1) "77 công thức" → thật ra **151 quy tắc, 137 biểu thức** (`check` 63 ·
+      `formula` 37 · `applies_when` 37). Có test khoá con số này.
+      (2) "eval set không tụt" **KHÔNG làm cổng đồng bộ được**: chạy eval cần model
+      và cả kho hồ sơ thật, hàng giờ; điểm dừng `.cache/eval` cũng không tái dùng
+      được vì nó lưu KẾT QUẢ finding chứ không lưu phần trích xuất. Nên bằng chứng
+      eval là một CỘT RIÊNG của đề xuất (`bang_chung_eval`), người chạy tự gắn vào,
+      và giao diện nói thẳng "chưa ai đo" khi trống (NT4). Kiểm tự động không bao
+      giờ được hiểu là bằng chứng chất lượng.
+      → **Kiểm tự động gác gì** (`src/validators/de_xuat.py`) — chặn: khối phải là
+      YAML hợp lệ đúng hình dạng một mục của `rules:`; `id` KHÔNG đổi (nó nằm trong
+      `rule_ref` của 719 dòng baseline hồ sơ #1 và trong nhãn eval set); ghép vào cả
+      file phải nạp được thành `RuleSet`; danh sách mã quy tắc trước/sau phải y hệt;
+      **mọi biểu thức của CẢ bộ** còn phân tích được bằng asteval (không chỉ quy tắc
+      vừa sửa — một khối ghép lệch thụt đầu dòng làm hỏng `check` của quy tắc kế bên).
+      Cảnh báo mà vẫn áp được: quy tắc chuyển sang không đánh giá được, đổi `enabled`
+      / `type` / `scope` / `severity`.
+      → **Làm việc trên NGUYÊN VĂN khối, không `yaml.dump` lại cả file.** 4605 dòng
+      `rules.yaml` phần lớn là chú thích — đó là tài liệu cho người nghiệp vụ, dump
+      lại là xoá sạch.
+      → **Đánh dấu «đã áp» được ĐỐI CHIẾU với file đang chạy** (HTTP 409 nếu chưa
+      khớp): công cụ không ghi được `rules.yaml` nhưng nó đọc được, nên không cho ghi
+      một điều sai vào lịch sử quyết định.
+      → Code xong trước nghiệm thu:
+      - `src/validators/de_xuat.py` — `pham_vi_khoi` / `doc_khoi` / `ghep_khoi` /
+        `bieu_thuc_hong` / `kiem_de_xuat`.
+      - **Lược đồ bản 4** — `de_xuat_quy_tac` thêm `ho_so_id`, `ly_do`,
+        `bang_chung_eval`; migration 3 → 4 dựng lại bảng RỖNG, còn dòng thì DỪNG.
+        Chuỗi nâng cấp đi một mạch 2 → 3 → 4 trong một lần khởi động.
+      - `kho.them_de_xuat` / `ds_de_xuat` / `doi_trang_thai_de_xuat`.
+      - API `GET /quy-tac`, `GET /quy-tac/{ma}`, `POST /quy-tac/{ma}/kiem` (thử,
+        không lưu, không cần CSDL), `POST /quy-tac/{ma}/de-xuat`, `GET /de-xuat`,
+        `POST /de-xuat/{id}/trang-thai`. Xem quy tắc thì AI CŨNG xem được (NT2 —
+        người làm sizing phải đọc được căn cứ); sửa thì chỉ vai `admin`.
+      - Giao diện: khối «📐 Quy tắc & đề xuất sửa» trong phần Admin.
+      - 61 test mới. Tổng 1046.
+      → **Chú ý:**
+      (1) Chọn quy tắc bằng **danh sách xếp theo số dòng lỗi**, không phải bấm thẳng
+      vào ô `rule_ref` như PLAN viết: `st.data_editor` không bắt được sự kiện bấm ô.
+      Danh sách xếp nhiều-lỗi-trước nên quy tắc cần tìm luôn ở đầu (ở hồ sơ #1, «phân
+      hệ ma» làm một quy tắc sinh 174 dòng).
+      (2) Đề xuất KHÔNG đạt vẫn được lưu (`kiem_hong`) — một lần sửa hỏng cũng là dữ
+      liệu, nó nói quy tắc ấy khó diễn đạt. Muốn thử nháp thì dùng `/kiem`.
+      (3) Sau khi áp, PHẢI `docker restart` cả hai dịch vụ: API đọc file mỗi lần gọi
+      nhưng C3/C5 nạp quy tắc lúc nhập module.
 
 - [ ] 5.10 — **Admin thêm dòng mới** vào bảng 5.6 — cho ca Admin đọc file sizing
       và phát hiện lỗi mà AI chưa chỉ ra được. Dòng thêm tay phải phân biệt được
@@ -2046,3 +2093,6 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 | 2026-09-18 | **Lược đồ CSDL có MIGRATION thật từ bản 3, không bắt xoá volume** | Máy nội bộ đã giữ hồ sơ thật (6 lần, 719 dòng baseline) ở bản 2. Quy tắc cũ «lệch phiên bản thì DỪNG» đúng khi chưa ai có dữ liệu, nhưng nay dừng nghĩa là bắt người dùng xoá dữ liệu của họ vì một bảng RỖNG của chúng ta. Nâng cấp chạy cùng giao dịch với số phiên bản; bước nào đụng bảng còn dòng thì dừng, không bao giờ tự xoá |
 | 2026-09-18 | **Báo lỗi hệ thống trỏ được vào CẢ dòng rổ phát sinh, và không đòi hồ sơ «đang sửa»** | Rổ phát sinh là nơi dòng vô lý đổ vào nhiều nhất (5.3: 174 dòng «phân hệ ma» từ một ô bảng). Người dùng hay nhận ra lúc xem lại trước khi gửi duyệt hoặc khi Admin hỏi tới — chặn lúc đó là vứt đúng phản hồi đáng giá nhất (mục tiêu 4.1) |
 | 2026-09-18 | **Bảng Admin mặc định ẨN nhóm «chưa kiểm được», trừ dòng đã có người đụng tới** | 664/719 dòng ở hồ sơ thật là nhóm công cụ không kết luận được gì; đổ hết ra thì Admin cuộn qua 92% dòng vô ích mới tới dòng có nội dung. Nhưng giấu dòng người ta vừa sửa hoặc vừa báo lỗi là cách nhanh nhất để mất niềm tin — nên chúng luôn hiện, và số dòng ẩn hiện ngay trên bảng |
+| 2026-09-21 | **Công cụ KHÔNG tự ghi `rules.yaml`; nó chỉ kiểm và đối chiếu** | Cách rẻ hơn là cho Admin bấm Áp rồi máy ghi đè file. Bác bỏ vì hai lẽ đo được: (1) 4605 dòng `rules.yaml` phần lớn là CHÚ THÍCH hướng dẫn người nghiệp vụ, mà `yaml.safe_dump` một `dict` đã nạp sẽ xoá sạch; (2) sửa file trên máy chủ thì có `git diff` làm đường lùi, còn ghi từ container thì không — mà một quy tắc sai đã chạy vài chục hồ sơ thì không có đường lùi là hỏng thật. Bù lại, công cụ ĐỌC được file: đánh dấu «đã áp» bị từ chối (409) khi khối đang chạy chưa khớp đề xuất |
+| 2026-09-21 | **Eval set KHÔNG làm cổng đồng bộ của đề xuất sửa quy tắc** | PLAN hẹn «kiểm tự động: schema + công thức parse + eval set không tụt». Hai vế đầu chạy trong mili-giây; vế ba cần model và cả kho hồ sơ thật, hàng giờ — không thể nằm trong một lời gọi API. Điểm dừng `.cache/eval` cũng không tái dùng được vì nó lưu KẾT QUẢ finding, không lưu phần trích xuất. Nên eval thành một CỘT RIÊNG, người chạy tự gắn; giao diện nói thẳng «chưa ai đo» khi trống, để kiểm tự động không bị đọc nhầm thành bằng chứng chất lượng (NT4) |
+| 2026-09-21 | **«Phân hệ ma» KHÔNG ổn định — rủi ro nặng hơn lúc ghi nhận** | `thong_ke.phat_lai` của lượt 5.6 cho thấy 146 khoá C5 lần này không còn `SAN Switch` / `Thiết bị mạng` / `Tủ rack`: ba phân hệ bịa tự biến mất khi tài liệu đổi vài chỗ. Lúc chốt «ghi lại, sang 5.4» ta đang hiểu nó gắn với một ô bảng cụ thể, tức gặp lại thì lần được. Nay thì không — không tái hiện theo ý muốn, nên không chờ người dùng báo lại được |

@@ -672,3 +672,66 @@ def bang_bao_loi(rows: list[dict] | None) -> list[dict]:
             "Admin đã xử lý": "rồi" if r.get("da_xu_ly") else "chưa",
         })
     return ra
+
+
+# ------------------------------------------- 5.9 bước 2 — đề xuất sửa quy tắc --
+NHAN_TRANG_THAI_DE_XUAT = {
+    "cho_kiem": "Chờ kiểm",
+    "kiem_dat": "Kiểm đạt — chờ người chốt áp",
+    "kiem_hong": "Kiểm KHÔNG đạt",
+    "da_ap": "Đã áp vào rules.yaml",
+    "tu_choi": "Từ chối",
+}
+
+
+def bang_de_xuat(rows: list[dict] | None) -> list[dict]:
+    """Đề xuất sửa quy tắc → dòng bảng.
+
+    Cột «Eval» nói thẳng "chưa ai đo" khi trống: kiểm tự động KHÔNG chạy eval (cần
+    model + cả kho hồ sơ, hàng giờ), nên để trống mà không nói gì thì người đọc dễ
+    tưởng đã đo rồi (NT4).
+    """
+    ra = []
+    for r in rows or []:
+        tt = str(r.get("trang_thai") or "")
+        ra.append({
+            "ID": r.get("id"),
+            "Lúc": str(r.get("tao_luc") or "")[:19].replace("T", " "),
+            "Quy tắc": r.get("rule_ref", ""),
+            "Người đề xuất": r.get("ten", ""),
+            "Trạng thái": NHAN_TRANG_THAI_DE_XUAT.get(tt, tt),
+            "Lý do": r.get("ly_do", ""),
+            "Eval": r.get("bang_chung_eval") or "chưa ai đo",
+            "Hồ sơ": r.get("ho_so_id") or "",
+        })
+    return ra
+
+
+def tom_tat_kiem_de_xuat(kq: dict | None) -> str:
+    """Một dòng cho người đọc: đạt/không, kèm số cảnh báo. Không nuốt lỗi."""
+    if not kq:
+        return ""
+    if not kq.get("dat"):
+        loi = kq.get("loi") or ["không rõ lý do"]
+        return f"✗ KHÔNG áp được — {loi[0]}"
+    cb = kq.get("canh_bao") or []
+    return (f"✓ Kiểm đạt — {kq.get('so_quy_tac', 0)} quy tắc · "
+            f"{kq.get('so_bieu_thuc', 0)} biểu thức còn phân tích được · quy tắc C4 "
+            f"chạy được {kq.get('chay_duoc_truoc', 0)} → {kq.get('chay_duoc_sau', 0)}"
+            + (f" · ⚠ {len(cb)} cảnh báo" if cb else "")
+            + ". CHƯA đo eval — đây không phải bằng chứng chất lượng.")
+
+
+def ma_quy_tac_trong_ho_so(d: dict | None) -> list[str]:
+    """Mã quy tắc xuất hiện trong hồ sơ, NHIỀU LỖI NHẤT TRƯỚC.
+
+    Admin mở màn hình quy tắc gần như luôn vì một quy tắc đang báo nhiều: ở hồ sơ #1,
+    «phân hệ ma» làm một quy tắc duy nhất sinh 174 dòng. Xếp theo bảng chữ cái thì
+    đúng cái cần tìm lại nằm giữa danh sách 151 mã.
+    """
+    dem: dict[str, int] = {}
+    for r in (d or {}).get("baseline") or []:
+        ma = str(r.get("rule_ref") or "").strip()
+        if ma:
+            dem[ma] = dem.get(ma, 0) + 1
+    return [m for m, _ in sorted(dem.items(), key=lambda x: (-x[1], x[0]))]

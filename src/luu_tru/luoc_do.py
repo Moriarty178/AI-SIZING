@@ -39,6 +39,10 @@ mang bản 1 sẽ bị chặn ở `khoi_tao` và phải xoá volume `copilot-db-
 trong RỔ PHÁT SINH, không chỉ dòng baseline. Từ bản này có migration thật
 (`nang_cap`): máy nội bộ đã có hồ sơ thật chạy 6 lần, bắt xoá volume để đổi một bảng
 rỗng là mất dữ liệu người dùng vì lý do của chúng ta.
+
+**Phiên bản 4 (5.9 bước 2, 2026-09-21)** — `de_xuat_quy_tac` thêm `ho_so_id`,
+`ly_do`, `bang_chung_eval`. Bảng này chưa từng có tính năng nào ghi vào (5.9 bước 1
+chỉ làm ba cột Admin), nên nâng cấp = dựng lại; còn dòng thì DỪNG và báo.
 """
 from __future__ import annotations
 
@@ -48,7 +52,7 @@ from sqlalchemy import (Boolean, CheckConstraint, Column, DateTime, ForeignKey,
 
 from .danh_tinh import TEN_TOI_DA, VAI
 
-PHIEN_BAN_LUOC_DO = "3"
+PHIEN_BAN_LUOC_DO = "4"
 
 # Đặt tên ràng buộc tường minh: PostgreSQL tự sinh tên khác SQLite, và migration
 # sau này phải gọi được đúng tên.
@@ -259,19 +263,34 @@ quyet_dinh = Table(
     _luc(), *_actor(),
 )
 
-# 5.9 — sửa quy tắc bằng đề xuất: kiểm (schema + công thức còn parse + eval không
-# tụt) rồi người chốt mới áp. Một lần sửa sai đổi mọi lượt thẩm định về sau.
+# 5.9 bước 2 — sửa quy tắc bằng đề xuất: kiểm (nạp được + mọi biểu thức còn phân
+# tích được) rồi người chốt mới áp tay vào `config/rules.yaml`. Một lần sửa sai đổi
+# mọi lượt thẩm định về sau, cho tất cả mọi người.
+#
+# `noi_dung_cu`/`noi_dung_moi` là NGUYÊN VĂN khối YAML của quy tắc, không phải cả
+# file: cả file 4605 dòng mà phần lớn là chú thích hướng dẫn người nghiệp vụ, chép
+# nguyên vào CSDL mỗi lần đề xuất là vô ích. `noi_dung_cu` chụp lại lúc đề xuất — để
+# sau này còn đọc được người đề xuất nhìn thấy gì, kể cả khi file đã đổi.
 de_xuat_quy_tac = Table(
     "de_xuat_quy_tac", metadata,
     Column("id", Integer, primary_key=True),
+    # Hồ sơ làm nảy ra đề xuất. NULL được: Admin mở thẳng một quy tắc để sửa cũng
+    # hợp lệ, không nhất thiết phải từ một dòng lỗi.
+    Column("ho_so_id", Integer, ForeignKey("ho_so.id", ondelete="SET NULL"),
+           nullable=True, index=True),
     Column("rule_ref", String(40), nullable=False),
     Column("noi_dung_cu", Text, nullable=False),
     Column("noi_dung_moi", Text, nullable=False),
+    Column("ly_do", Text, nullable=False, server_default=""),
     Column("trang_thai", String(20), nullable=False, server_default="cho_kiem"),
     CheckConstraint(_trong("trang_thai", ("cho_kiem", "kiem_dat", "kiem_hong",
                                           "da_ap", "tu_choi")),
                     name="trang_thai"),
     Column("ket_qua_kiem", Text, nullable=False, server_default=""),
+    # Bằng chứng EVAL, người chạy gắn vào sau. Kiểm tự động KHÔNG chạy eval được:
+    # cần model và cả kho hồ sơ thật, hàng giờ — không thể là cổng đồng bộ của một
+    # lời gọi API. Để trống nghĩa là "chưa ai đo", và giao diện phải nói thế.
+    Column("bang_chung_eval", Text, nullable=False, server_default=""),
     _luc(), *_actor(),
 )
 
@@ -292,18 +311,32 @@ def nang_cap(c, tu: str) -> list[str]:
     da_lam: list[str] = []
     while tu != PHIEN_BAN_LUOC_DO:
         if tu == "2":
-            # 5.4 đổi hình dạng `bao_cao_loi` (thêm hồ sơ + nguồn phát sinh). Bảng này
-            # chưa có tính năng nào ghi vào, nên bình thường nó rỗng: dựng lại là đủ.
-            n = c.execute(text("SELECT COUNT(*) FROM bao_cao_loi")).scalar() or 0
-            if n:
-                raise ValueError(
-                    f"bảng `bao_cao_loi` đang có {n} dòng nên không dựng lại tự động "
-                    "được — cần migration viết tay trước khi nâng lên bản 3")
-            c.execute(text("DROP TABLE bao_cao_loi"))
-            bao_cao_loi.create(c)
+            # 5.4 đổi hình dạng `bao_cao_loi` (thêm hồ sơ + nguồn phát sinh).
+            _dung_lai_bang_rong(c, bao_cao_loi, ban="3", muc="5.4")
             da_lam.append("bao_cao_loi: dựng lại theo bản 3 (5.4)")
             tu = "3"
+            continue
+        if tu == "3":
+            # 5.9 bước 2 thêm `ho_so_id`, `ly_do`, `bang_chung_eval`.
+            _dung_lai_bang_rong(c, de_xuat_quy_tac, ban="4", muc="5.9 bước 2")
+            da_lam.append("de_xuat_quy_tac: dựng lại theo bản 4 (5.9 bước 2)")
+            tu = "4"
             continue
         raise ValueError(f"không có đường nâng cấp từ phiên bản lược đồ {tu!r} lên "
                          f"{PHIEN_BAN_LUOC_DO!r}")
     return da_lam
+
+
+def _dung_lai_bang_rong(c, bang: Table, *, ban: str, muc: str) -> None:
+    """Dựng lại một bảng ĐỔI HÌNH DẠNG mà chưa tính năng nào ghi vào.
+
+    Còn dòng thì DỪNG, không xoá: dữ liệu người dùng không bao giờ biến mất vì một
+    bước nâng cấp tự động. Người vận hành đọc lời báo rồi quyết.
+    """
+    n = c.execute(text(f"SELECT COUNT(*) FROM {bang.name}")).scalar() or 0
+    if n:
+        raise ValueError(
+            f"bảng `{bang.name}` đang có {n} dòng nên không dựng lại tự động được — "
+            f"cần migration viết tay trước khi nâng lên bản {ban} ({muc})")
+    c.execute(text(f"DROP TABLE {bang.name}"))
+    bang.create(c)

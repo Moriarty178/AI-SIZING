@@ -15,6 +15,8 @@ Giao diện và API không viết SQL. Khi ghép vào tool sizing, chỉ lớp n
 - 5.6/5.9 — `doc_bang_admin`: một dòng mỗi lỗi baseline, kèm mọi lần sửa, giá trị đầu
   vào C4 đã dùng, số lời báo và ghi chú Admin mới nhất; `luu_ghi_chu_admin` ghi ba cột
   Admin theo kiểu CHỈ THÊM.
+- 5.9 bước 2 — `them_de_xuat` / `ds_de_xuat` / `doi_trang_thai_de_xuat`: Admin đề
+  xuất sửa một quy tắc, công cụ kiểm, NGƯỜI mới áp vào `config/rules.yaml`.
 """
 from __future__ import annotations
 
@@ -511,6 +513,74 @@ class KhoCSDL:
                     loi_o_phia=lop, vai=danh_tinh.vai, ten=danh_tinh.ten))
                 da_luu += 1
         return {"da_luu": da_luu, "bo_qua": bo_qua}
+
+    # ------------------------------------------------------- 5.9 bước 2 --
+    def them_de_xuat(self, *, rule_ref: str, danh_tinh: DanhTinh, noi_dung_cu: str,
+                     noi_dung_moi: str, ly_do: str = "", ho_so_id: int | None = None,
+                     trang_thai: str = "cho_kiem", ket_qua_kiem: str = "") -> dict:
+        """Ghi một đề xuất sửa quy tắc. KHÔNG đụng vào `config/rules.yaml`.
+
+        Lưu `noi_dung_cu` (khối YAML lúc đề xuất) chứ không chỉ `noi_dung_moi`: khi
+        người chốt đọc lại sau vài tuần, file có thể đã đổi vì một đề xuất khác, và
+        không có bản cũ thì cái `diff` kia không còn nghĩa gì.
+        """
+        rule_ref = (rule_ref or "").strip()
+        if not rule_ref:
+            raise ValueError("Thiếu mã quy tắc.")
+        if not (noi_dung_moi or "").strip():
+            raise ValueError("Chưa nhập nội dung quy tắc đề xuất.")
+        for ten, v in (("Nội dung đề xuất", noi_dung_moi), ("Lý do", ly_do)):
+            if len(v or "") > TOI_DA_NOI_DUNG_SUA:
+                raise ValueError(f"{ten} dài {len(v)} ký tự, tối đa "
+                                 f"{TOI_DA_NOI_DUNG_SUA}.")
+        with self.engine.begin() as c:
+            if ho_so_id is not None and c.execute(select(ld.ho_so.c.id).where(
+                    ld.ho_so.c.id == ho_so_id)).first() is None:
+                raise KhongCoFinding(f"Không có hồ sơ #{ho_so_id}.")
+            r = c.execute(insert(ld.de_xuat_quy_tac).values(
+                ho_so_id=ho_so_id, rule_ref=rule_ref, noi_dung_cu=noi_dung_cu,
+                noi_dung_moi=noi_dung_moi, ly_do=(ly_do or "").strip(),
+                trang_thai=trang_thai, ket_qua_kiem=ket_qua_kiem,
+                vai=danh_tinh.vai, ten=danh_tinh.ten
+            ).returning(ld.de_xuat_quy_tac.c.id))
+            return {"id": r.scalar_one(), "rule_ref": rule_ref,
+                    "trang_thai": trang_thai}
+
+    def ds_de_xuat(self, *, rule_ref: str = "", ho_so_id: int | None = None,
+                   trang_thai: str = "") -> list[dict]:
+        """Đề xuất sửa quy tắc, mới nhất trước. Lọc rỗng = lấy tất."""
+        d = ld.de_xuat_quy_tac
+        q = select(d).order_by(d.c.id.desc())
+        if rule_ref:
+            q = q.where(d.c.rule_ref == rule_ref)
+        if ho_so_id is not None:
+            q = q.where(d.c.ho_so_id == ho_so_id)
+        if trang_thai:
+            q = q.where(d.c.trang_thai == trang_thai)
+        with self.engine.connect() as c:
+            return [_dict(r) for r in c.execute(q)]
+
+    def doi_trang_thai_de_xuat(self, de_xuat_id: int, trang_thai: str, *,
+                               bang_chung_eval: str | None = None) -> dict:
+        """Người chốt đánh dấu đã áp / từ chối, hoặc gắn bằng chứng eval vào.
+
+        KHÔNG tự chuyển sang `da_ap`: công cụ không sửa `rules.yaml`, nên nó không
+        biết đề xuất đã được áp hay chưa — người áp xong tự đánh dấu. Bên gọi (API)
+        đối chiếu lại với file đang chạy trước khi cho đánh dấu.
+        """
+        hop_le = ("cho_kiem", "kiem_dat", "kiem_hong", "da_ap", "tu_choi")
+        if trang_thai not in hop_le:
+            raise ValueError(f"Trạng thái {trang_thai!r} không hợp lệ "
+                             f"({', '.join(hop_le)}).")
+        d = ld.de_xuat_quy_tac
+        gt: dict = {"trang_thai": trang_thai}
+        if bang_chung_eval is not None:
+            gt["bang_chung_eval"] = bang_chung_eval
+        with self.engine.begin() as c:
+            if c.execute(select(d.c.id).where(d.c.id == de_xuat_id)).first() is None:
+                raise KhongCoFinding(f"Không có đề xuất #{de_xuat_id}.")
+            c.execute(update(d).where(d.c.id == de_xuat_id).values(**gt))
+            return _dict(c.execute(select(d).where(d.c.id == de_xuat_id)).one())
 
     def dat_trang_thai_ho_so(self, ho_so_id: int, trang_thai: str) -> None:
         """Dùng ở 5.5/5.8; ở 5.1 chỉ để test chặn thẩm định lại hồ sơ đã gửi duyệt."""

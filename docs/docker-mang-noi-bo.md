@@ -242,14 +242,41 @@ không tốn lượt gọi nào):
 py scripts/nghiem_thu_5_6.py --ho-so 1 "D:\duong\dan\Sizing ABC.docx" --api http://localhost:8902 --ten "Tên bạn"
 ```
 
-Bảng Admin nằm trong giao diện: chọn **Vai = Admin** ở thanh bên rồi mở khối
-«🛠 Bảng thẩm định của Admin». Mặc định bảng ẩn nhóm «chưa kiểm được» (ở hồ sơ thật là
-664/719 dòng) nhưng vẫn giữ dòng đã có người sửa, đã báo lỗi hoặc đã ghi chú; số dòng
-đang ẩn hiện ngay trên bảng.
+Nghiệm thu 5.9 bước 2 (đề xuất sửa quy tắc) — không gọi model, vài giây. Script
+ghi hai đề xuất thật vào CSDL nhưng **KHÔNG đụng tới `config/rules.yaml`** (kiểm lại
+bằng `git diff config/rules.yaml` trên máy chủ):
 
-⚠️ **Lược đồ CSDL lên bản 3 (5.4).** Từ bản này Copilot có migration thật: khởi động
-trên CSDL bản 2 thì nó tự dựng lại bảng `bao_cao_loi` (bảng rỗng, chưa tính năng nào ghi
-vào) rồi ghi số phiên bản mới — trong CÙNG một giao dịch, hỏng thì lùi cả hai. Nếu bảng
+```powershell
+curl.exe http://localhost:8902/health      # "csdl": {"san_sang": true, "luoc_do": "4"}
+py scripts/nghiem_thu_5_9.py --ho-so 1 --api http://localhost:8902 --ten "Tên bạn"
+```
+
+⚠️ **Bộ quy tắc nay gắn từ máy chủ, không dùng bản trong image (5.9 bước 2).**
+`docker-compose.yml` bind-mount `./config/rules.yaml` vào CẢ hai dịch vụ `copilot` và
+`copilot-ui`, chế độ chỉ-đọc. Trước thay đổi này, ai sửa quy tắc trong container thì
+`up -d` lần sau là mất sạch mà không có lời báo nào. Hệ quả cần nhớ:
+
+- **Áp một đề xuất = sửa `config/rules.yaml` trên máy chủ rồi `docker restart
+  sizing-copilot sizing-copilot-ui`.** API đọc lại file mỗi lần gọi, nhưng C3/C5 nạp
+  quy tắc lúc nhập module — không khởi động lại thì lượt thẩm định tiếp theo vẫn chạy
+  bộ quy tắc cũ.
+- Sửa trên máy chủ nghĩa là có `git diff` làm đường lùi. Đó là lý do công cụ KHÔNG tự
+  ghi file: một quy tắc sai âm thầm đổi mọi lượt thẩm định về sau cho tất cả mọi người.
+- Đánh dấu một đề xuất là «đã áp» sẽ bị TỪ CHỐI (HTTP 409) nếu khối trong file đang
+  chạy chưa khớp nội dung đề xuất — công cụ không ghi file được nhưng nó đọc được.
+- Kiểm tự động **không chạy eval set** (cần model + cả kho hồ sơ, hàng giờ). Nó chỉ
+  gác: bộ quy tắc còn nạp được, không mất/thêm quy tắc nào, mọi biểu thức còn phân
+  tích được. Bằng chứng eval là một ô riêng, người chạy tự dán vào.
+
+Màn hình quy tắc và bảng Admin nằm trong giao diện: chọn **Vai = Admin** ở thanh bên
+rồi mở khối «🛠 Bảng thẩm định của Admin» hoặc «📐 Quy tắc & đề xuất sửa». Mặc định
+bảng ẩn nhóm «chưa kiểm được» (ở hồ sơ thật là 664/719 dòng) nhưng vẫn giữ dòng đã có
+người sửa, đã báo lỗi hoặc đã ghi chú; số dòng đang ẩn hiện ngay trên bảng.
+
+⚠️ **Lược đồ CSDL lên bản 4 (5.9 bước 2); bản 3 là của 5.4.** Từ bản 3 Copilot có
+migration thật, và nó đi HẾT chuỗi trong một lần khởi động (2 → 3 → 4), nên máy bỏ lỡ
+vài bản vẫn nâng được một mạch. Mỗi bước dựng lại một bảng RỖNG — `bao_cao_loi` ở bản
+3, `de_xuat_quy_tac` ở bản 4 — rồi ghi số phiên bản mới — trong CÙNG một giao dịch, hỏng thì lùi cả hai. Nếu bảng
 đó đã có dòng, Copilot DỪNG và nói ra thay vì xoá dữ liệu người dùng; lúc đó cần
 migration viết tay. Log khởi động in `[csdl] nâng lược đồ 2 → 3: …`, và `/health` báo
 `csdl.luoc_do` đọc thẳng từ CSDL.
