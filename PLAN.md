@@ -15,8 +15,11 @@
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
 | 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · 5.6 + 5.9 bước 1 nghiệm thu đạt 09-18. **5.9 bước 2 (đề xuất sửa quy tắc) CODE XONG 09-21, chờ nghiệm thu** — `rules.yaml` nay gắn từ máy chủ. ⚠️ Rủi ro chưa sửa «phân hệ ma» (đo 09-21: không ổn định, lúc có lúc không) |
+| 6 | Tích hợp vào Tool Sizing (FE + BE) | 0 / 5 | 🔵 **ĐANG LÀM — nhánh `dev-integrate`** (2026-09-21). Khảo sát xong, 4 vật cản đã định vị. Tiếp: 6.1 chạy được FE+BE đã, chưa đụng Copilot |
 
-**Đang tập trung (cập nhật 2026-09-17):** **GĐ 5** — vòng lặp người dùng sửa lỗi
+**Đang tập trung (cập nhật 2026-09-21):** **GĐ 6 — tích hợp vào Tool Sizing**, trên nhánh `dev-integrate`. Người dùng chốt 2026-09-21: **tạm dừng nâng cấp Copilot** (5.9 bước 2 để lại ở trạng thái chờ nghiệm thu, 5.7/5.8/5.10–5.12 chưa làm) để ghép Copilot vào frontend + backend sẵn có thành một hệ thống hoàn chỉnh. Khảo sát và thiết kế: **`docs/tich-hop-fe-be.md`**.
+
+**Nền đã xong — GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
 PostgreSQL) và 5.0a (danh tính demo); **5.1** (baseline cố định + rổ lỗi phát sinh) **nghiệm thu đạt 2026-09-17 trên PostgreSQL thật**. **5.2** (hiện chỗ cần sửa + ghi nhận giá trị sửa) **nghiệm thu đạt 2026-09-17**. **5.3** (tái thẩm định: dùng lại câu trả lời model cho phần không đổi, C4 toàn bộ) **nghiệm thu đạt 2026-09-18**; C5 chuyển sang khoá theo vùng cùng ngày. Rủi ro chưa sửa: «phân hệ ma» — sửa một ô bảng làm model kể thêm 3 phân hệ không có thật ⇒ 174 lỗi phát sinh; **đo 2026-09-21: ba phân hệ ma tự biến mất ở lượt sau, tức lỗi KHÔNG tái hiện theo ý muốn**. **5.4** (nút «Báo lỗi hệ thống» + lược đồ bản 3) **nghiệm thu đạt 2026-09-18**. **5.6 + 5.9 bước 1** (bảng lịch sử sửa lỗi + ba cột Admin) **nghiệm thu đạt 2026-09-18**. **5.9 bước 2** (đề xuất sửa quy tắc + gỡ vật cản `rules.yaml` nằm trong image) **code xong 2026-09-21, chờ nghiệm thu**; lược đồ CSDL lên bản 4.
 
@@ -1856,6 +1859,76 @@ trong khi cả vòng lặp 5.3/5.6 chạy được mà không cần nó. Chưa h
 > dự 110–130 phút → thật 243 phút).
 
 ---
+
+## GIAI ĐOẠN 6 — Tích hợp vào Tool Sizing (FE + BE)  (nhánh `dev-integrate`)
+
+> **Khảo sát, thiết kế, cạm bẫy và tiêu chí đầy đủ: `docs/tich-hop-fe-be.md`.**
+> Mục này chỉ là bảng việc. Đọc file kia TRƯỚC khi sửa bất cứ dòng nào của FE.
+
+**Quy trình thẩm định của Copilot KHÔNG đổi.** Đầu vào vẫn là một `.docx`. GĐ 6
+chỉ làm lớp giao diện và lớp mạng — đúng định hướng kiến trúc ghi từ đầu PLAN:
+"chỉ đổi lớp kết nối, phần xử lý và lưu trữ không bị ảnh hưởng".
+
+Hai chỗ ghép, không hơn: (1) tab **"Thẩm định sizing"** để tải file lên ngay sau
+khi đăng nhập; (2) nút **"Thẩm định sizing"** ngay sau khi Tool Sizing xuất DOCX,
+dùng lại chính blob vừa xuất.
+
+- [ ] 6.1 — **Chạy được FE + BE trước đã, CHƯA đụng Copilot.** Gỡ ba vật cản đã
+      định vị 2026-09-21:
+      → **VC1** `backend1/Dockerfile` chỉ `COPY target/sizing-*.jar`, KHÔNG build.
+      Máy sạch `docker compose build backend` là hỏng. `Jenkinsfile` cho cách
+      thật: chạy Maven trong container `registry.kcntt.net/library/maven:3.9-…`
+      với `settings.xml` mirror nội bộ. Chọn giữa "chạy Maven trước" và "đổi sang
+      multi-stage" — **đo rồi mới chọn**.
+      → **VC2** Compose KHÔNG có MySQL cho backend, mà `application.yaml` trỏ
+      `jdbc:mysql://localhost:3306/…` — `localhost` trong container là chính nó.
+      Hỏi người dùng: dùng MySQL sẵn có hay thêm service `mysql:8`?
+      → **VC3** FE gọi thẳng `http://localhost:8081` ở BA chỗ
+      (`script.js:1`, `login.html:75`, `dashboard/js/api.js:7`) trong khi
+      `backend` KHÔNG mở cổng ra máy chủ. Đưa cả ba về đường tương đối `/api` để
+      đi qua proxy nginx (cùng gốc, không CORS).
+      → **Tiêu chí:** mở cổng 9000 → đăng nhập → danh sách dự án → mở một dự án →
+      xuất DOCX được. Không cần Copilot chạy.
+
+- [ ] 6.2 — **Đường mạng: thêm `location /copilot/` vào `nginx/nginx.conf`**
+      (`proxy_pass http://copilot:8000/`, `client_max_body_size 100M`, timeout
+      300s cho lúc TẢI LÊN). Không mở cổng mới: người dùng chỉ cần cổng 9000;
+      8902/8903 giữ cho Admin và script nghiệm thu.
+      → Vì sao qua nginx chứ không gọi thẳng 8902: cùng gốc nên không phải bật
+      CORS ở FastAPI. API vốn BẤT ĐỒNG BỘ (`POST /review` trả 202 kèm mã việc)
+      nên không có kết nối nào phải giữ 16 phút.
+      → Tiêu chí: `curl http://<máy>:9000/copilot/health` trả JSON.
+
+- [ ] 6.3 — **Chỗ ghép 1: tab "Thẩm định sizing".** Nút ở `nav.nav-right` (luôn
+      hiện sau đăng nhập) + tab thứ 6 trong `horizontal-tabs`, cả hai mở cùng một
+      khối `#page-tham-dinh` đặt NGANG HÀNG `#project-list-page`.
+      → ⚠️ **VC4:** `showSection` bị định nghĩa HAI LẦN (`script.js:11453` và
+      `:11509`) — bản sau đè bản trước, sửa nhầm bản là sửa vào chỗ không chạy.
+      Và tab mới **KHÔNG được** vào `TAB_FLOW_ORDER`, nếu không người dùng phải
+      điền xong cả 5 tab mới bấm được — trong khi cách dùng chính là tải file có
+      sẵn lên.
+      → Gửi header danh tính (tên + vai) lấy từ phiên đăng nhập; **KHÔNG** gửi
+      JWT sang Copilot — nó không kiểm được và cũng không nên biết.
+
+- [ ] 6.4 — **Chỗ ghép 2: nút ngay sau khi xuất DOCX.**
+      `exportSavedSnapshotToWord()` (`script.js:9104`) đã có sẵn **blob** `.docx`
+      trong trình duyệt. Giữ blob ấy lại và nộp thẳng cho `/copilot/review` —
+      không bắt người dùng tải về rồi chọn lại, không nhờ backend chuyển file.
+
+- [ ] 6.5 — **Nghiệm thu đầu-tới-cuối trên máy nội bộ, có model thật.** T1–T6 +
+      Đ1, chi tiết ở `docs/tich-hop-fe-be.md` mục 5. Hai tiêu chí đáng lo nhất:
+      **T3** cùng một file nộp qua FE và qua `copilot-ui` phải ra CÙNG số finding
+      (khác là lớp ghép đang làm hỏng dữ liệu); **T6** tắt `copilot` thì Tool
+      Sizing vẫn chạy bình thường — Copilot hỏng không được kéo sập web app.
+
+### Phải hỏi người dùng, không tự quyết
+
+1. MySQL của backend: dùng CSDL sẵn có hay thêm service `mysql` vào compose? (6.1)
+2. Mở `/copilot/` cho mọi người đăng nhập, hay chặn các endpoint Admin
+   (`/quy-tac`, `/de-xuat`, `/ho-so/*/ghi-chu-admin`) ở nginx? Copilot không tự
+   bảo vệ được — danh tính là danh tính demo, không xác thực (5.0a).
+3. Giữ `copilot-ui` (Streamlit) sau khi FE làm được việc của nó? Khuyên **giữ**:
+   nó là đường của Admin cho 5.6/5.9 mà FE chưa làm.
 
 ## Nhật ký quyết định
 

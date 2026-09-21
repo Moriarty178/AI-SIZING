@@ -98,6 +98,23 @@ repo cấm có `uv.lock` (`tests/test_dong_goi.py` khoá: Dockerfile dùng
 `uv run --no-sync …`; đã thêm `uv.lock` vào `.gitignore` để lỡ sinh ra cũng
 không commit được.
 
+## ĐANG LÀM: GIAI ĐOẠN 6 — tích hợp vào Tool Sizing (nhánh `dev-integrate`)
+
+Từ 2026-09-21, **tạm dừng nâng cấp Copilot** và chuyển sang ghép Copilot vào
+frontend + backend sẵn có thành một hệ thống hoàn chỉnh.
+
+- Nhánh làm việc: **`dev-integrate`** (không phải `dev-isolate`).
+- **Đọc `docs/tich-hop-fe-be.md` TRƯỚC khi sửa bất cứ dòng nào của FE/BE.** Ở đó
+  có khảo sát thật (không phỏng đoán), bốn vật cản đã định vị, thiết kế hai chỗ
+  ghép và tiêu chí nghiệm thu. `PLAN.md` mục GĐ 6 chỉ là bảng việc.
+- **Quy trình thẩm định của Copilot KHÔNG đổi.** Đầu vào vẫn là một `.docx`. GĐ 6
+  chỉ đụng lớp giao diện và lớp mạng. Nếu một thay đổi bắt phải sửa pipeline,
+  `rules.yaml` hay lược đồ CSDL của Copilot thì DỪNG LẠI và hỏi — gần như chắc
+  chắn là đang đi sai đường.
+- FE là HTML/CSS/JS tĩnh (không Node, không bundler); sửa file rồi dựng lại image
+  `nginx`. Backend là Spring Boot + MySQL + Flyway, **không** liên quan tới
+  PostgreSQL của Copilot; đừng gộp hai CSDL.
+
 ## Cách làm việc trên dự án này
 
 1. Trước khi bắt đầu, đọc `PLAN.md` để biết đang ở giai đoạn nào và mục tiếp theo.
