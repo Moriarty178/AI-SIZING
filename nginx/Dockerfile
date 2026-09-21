@@ -1,5 +1,8 @@
-FROM registry.kcntt.net/library/nginx:alpine
-# FROM nginx:latest
+# Ảnh nền lấy từ Docker Hub, KHÔNG từ `registry.kcntt.net` (đổi 2026-09-21):
+# registry nội bộ chỉ với tới được khi đang ở mạng công ty, nên máy lập trình
+# viên ngoài mạng ấy chết ngay ở dòng này. Giữ nguyên tag `alpine` — ảnh nội bộ
+# vốn là bản sao của chính nó, còn `latest` thì nhảy phiên bản khi kéo lại.
+FROM nginx:alpine
 
 # Bước 1: Chuẩn bị trước các thư mục hệ thống của Nginx dưới quyền root
 RUN touch /var/run/nginx.pid \

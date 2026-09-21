@@ -50,6 +50,11 @@ services:
     container_name: sizing-backend
     build:
       context: ./backend1
+      args:
+        # Nguồn phụ thuộc Maven. Mặc định `1` = gương Nexus nội bộ, tức máy nội
+        # bộ và Jenkins không phải đổi gì. Máy ngoài mạng công ty đặt `0` trong
+        # `.env` để đi thẳng Maven Central — xem `backend1/Dockerfile`.
+        - MAVEN_NEXUS_NOI_BO=${MAVEN_NEXUS_NOI_BO:-1}
     restart: always
     # Flyway chạy lúc khởi động và `ddl-auto: validate` không tự tạo bảng, nên
     # backend lên trước CSDL là hỏng hẳn chứ không phải chậm một nhịp.

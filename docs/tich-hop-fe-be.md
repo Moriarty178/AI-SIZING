@@ -260,6 +260,43 @@ file sang Copilot. Đây là chỗ rẻ nhất và đúng nhất của cả GĐ 
 3. **`copilot-ui` (Streamlit)** → **tạm thời giữ.** Nó là đường của Admin cho
    5.6/5.9 mà FE chưa làm.
 
+## 6b. Dựng trên máy NGOÀI mạng công ty (GĐ 6.1a, 2026-09-21)
+
+Trước 2026-09-21 mọi lệnh dựng đều phải chạy trên máy nội bộ. Đo lại thì lý do ấy
+sai một nửa: Docker có sẵn trên máy lập trình viên, cái thiếu là **đường mạng**.
+
+| | Máy ngoài (Wi-Fi nhà) | Máy nội bộ |
+|---|---|---|
+| `registry.kcntt.net` — ảnh nền backend + nginx | **TCP 443 hỏng** | có |
+| `nexus-lab.kcntt.net` — phụ thuộc Maven | **TCP 443 hỏng** | có |
+| Proxy `10.207.156.52:3128` — `uv` kéo gói lúc build Copilot | **không với tới** | có |
+| Docker Hub · ghcr.io · PyPI | được | được |
+| Model `10.221.58.70:8401` | không | có |
+
+Đã gỡ ba cái đầu:
+
+- **Ảnh nền chuyển hẳn sang Docker Hub** ở cả `backend1/Dockerfile` và
+  `nginx/Dockerfile`. Ảnh nội bộ vốn là bản sao của chính ảnh công khai ấy.
+- **Nguồn Maven** là nút bấm DUY NHẤT còn lại: `MAVEN_NEXUS_NOI_BO`, mặc định `1`
+  (Nexus nội bộ — máy nội bộ và Jenkins không phải đổi gì), máy ngoài đặt `0`.
+  Maven không cho mirror có điều kiện nên không gộp hai trường hợp được.
+- **Proxy**: máy ngoài để `HTTP_PROXY`/`HTTPS_PROXY` TRỐNG trong `.env`.
+
+Còn **model** thì không gỡ được — và đó không phải chuyện nhỏ nếu bỏ qua:
+
+> ⚠️ `10.221.58.70` từ ngoài mạng KHÔNG có đường đi, nên mỗi lượt gọi **treo** tới
+> hết `timeout_s: 120`, nhân `max_retries: 3` (`src/llm/client.py`), nhân ~268
+> lượt ở song song 12 ⇒ **hơn 2 giờ** cho một lượt chạy vô nghĩa.
+>
+> Cách chữa, sửa `config/settings.yaml` (đã gitignore, bind-mount — không vào repo):
+> `base_url: "http://127.0.0.1:1/v1"` và `timeout_s: 5`. Cổng đóng thì hỏng trong
+> vài mili-giây, cả lượt chạy xong trong vài giây và **vẫn ra finding** từ đường
+> thuần code C4 — đúng như sự cố Squid 2026-09-16 (43/43 lượt C3 hỏng, việc vẫn
+> báo xong với 61 finding).
+
+Nên **việc FE của 6.3/6.4 làm tại chỗ được**; chỉ **chất lượng thẩm định thật**
+(6.5) mới phải chạy trên máy nội bộ.
+
 ## 7. Cạm bẫy đã biết — đọc lại trước khi sửa FE
 
 - `showSection` định nghĩa **hai lần**; sửa bản ở `:11509`.
@@ -271,5 +308,8 @@ file sang Copilot. Đây là chỗ rẻ nhất và đúng nhất của cả GĐ 
   sẽ đỏ.
 - Mọi thay đổi `docker-compose.yml` đều có test khoá ở `tests/test_dong_goi.py` —
   chạy `uv run --no-sync pytest tests/test_dong_goi.py` sau khi sửa.
-- Máy tính xách tay **không có Docker và không có model**: mọi lệnh build và mọi
-  lượt thẩm định đều chạy trên máy nội bộ, do người dùng chạy.
+- `.dockerignore` ở gốc **chặn tất rồi mở lại theo danh sách**. Thêm thư mục mới
+  mà `nginx/Dockerfile` cần chép thì phải mở nó ra, nếu không build hỏng ở `COPY`
+  — đúng lỗi đã có từ lúc file ấy ra đời cho tới 2026-09-21.
+- Chỉ **lượt thẩm định thật** mới cần máy nội bộ (xem mục 6b). Build và chạy cả
+  bốn dịch vụ thì máy lập trình viên làm được.

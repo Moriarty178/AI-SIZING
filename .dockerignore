@@ -16,11 +16,24 @@
 !api
 !scripts
 
+# Web app nội bộ — `nginx/Dockerfile` chép đúng ba thứ này (GĐ 6.1a, 2026-09-21).
+# Thiếu chúng thì `docker compose build nginx` hỏng ở `COPY`, và hỏng trên MỌI
+# máy chứ không riêng máy ngoài mạng công ty. Không ai gặp vì file này sinh ra
+# cho phần Copilot (mục A1) và từ đó tới nay chưa ai dựng lại nginx.
+!frontend
+!dashboard
+!nginx
+
 # Chặn lại những thứ lọt vào qua các thư mục vừa mở
 **/__pycache__
 **/*.pyc
 **/*.pyo
 **/.pytest_cache
+
+# Bản nháp cũ của FE (`frontend/script.js.bak` 836 KB, `index.html.bak`,
+# `style.css.bak`). nginx phục vụ cả thư mục `frontend/` ở `/`, nên để chúng vào
+# image là ai cũng tải được `/script.js.bak` — phát mã nguồn bản cũ cho người lạ.
+**/*.bak
 
 # Cấu hình thật có endpoint nội bộ — mount lúc chạy, không nướng vào image.
 # (Khoá API luôn qua biến môi trường SIZING_COPILOT_API_KEY, không bao giờ ở đây.)

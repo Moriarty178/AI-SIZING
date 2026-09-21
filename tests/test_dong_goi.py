@@ -258,6 +258,15 @@ class TestBackendTuBuildDuoc:
         assert "COPY .m2/settings.xml" in BE_LENH
         assert (GOC / "backend1" / ".m2" / "settings.xml").exists()
 
+    def test_nguon_maven_doi_duoc_va_MAC_DINH_la_nexus_noi_bo(self):
+        """6.1a — ngoài mạng công ty, `nexus-lab.kcntt.net` không với tới được, mà
+        settings.xml mirror `*` sang đó. Maven không cho mirror có điều kiện nên
+        phải có nút bấm. Mặc định PHẢI là nội bộ: đổi mặc định là âm thầm đổi
+        nguồn phụ thuộc của máy nội bộ và của Jenkins."""
+        assert "ARG MAVEN_NEXUS_NOI_BO=1" in BE_LENH
+        args = COMPOSE["services"]["backend"]["build"]["args"]
+        assert "MAVEN_NEXUS_NOI_BO=${MAVEN_NEXUS_NOI_BO:-1}" in args
+
     def test_anh_chay_van_chi_co_JRE(self):
         """Gộp Maven vào ảnh chạy là cộng ~300 MB cho mỗi lần deploy."""
         cuoi = BE_LENH[BE_LENH.rindex("FROM "):]
@@ -389,3 +398,47 @@ class TestFEKhongGoiThangCongBackend:
             (GOC / "frontend" / "script.js").read_text(encoding="utf-8")
         assert "const API_BASE = '/api';" in \
             (GOC / "dashboard" / "js" / "api.js").read_text(encoding="utf-8")
+
+
+class TestDungDuocNgoaiMangCongTy:
+    """6.1a — đo 2026-09-21 trên máy lập trình viên (Wi-Fi nhà): TCP 443 tới
+    `registry.kcntt.net` và `nexus-lab.kcntt.net` đều hỏng, còn Docker Hub, ghcr.io
+    và PyPI thì được. Ảnh nền ghim registry nội bộ làm build chết ngay ở `FROM`,
+    trước cả khi chạm vào code."""
+
+    @pytest.mark.parametrize("duong", [
+        "Dockerfile.copilot", "backend1/Dockerfile", "nginx/Dockerfile"])
+    def test_KHONG_dockerfile_nao_con_ghim_registry_noi_bo(self, duong):
+        van = (GOC / duong).read_text(encoding="utf-8")
+        lenh = [d for d in van.splitlines()
+                if d.strip().upper().startswith(("FROM ", "COPY --FROM=REGISTRY"))
+                and "registry.kcntt.net" in d]
+        assert lenh == [], lenh
+
+    def test_anh_nen_ghim_tag_chu_KHONG_dung_latest(self):
+        """`nginx:latest` nhảy phiên bản khi kéo lại. Ảnh nội bộ cũ là `:alpine`,
+        giữ đúng tag ấy thì đổi registry không kéo theo đổi phiên bản."""
+        van = (GOC / "nginx" / "Dockerfile").read_text(encoding="utf-8")
+        f = [d for d in van.splitlines() if d.strip().startswith("FROM ")]
+        assert f == ["FROM nginx:alpine"], f
+
+
+class TestNguCanhBuildCoFE:
+    """6.1a — `.dockerignore` ở gốc CHẶN TẤT rồi mở lại theo danh sách, mà danh
+    sách không có `frontend`/`dashboard`/`nginx` — đúng ba thứ `nginx/Dockerfile`
+    chép. Tức `docker compose build nginx` hỏng ở `COPY`, trên MỌI máy. Không ai
+    gặp vì file ấy sinh ra cho phần Copilot và từ đó chưa ai dựng lại nginx."""
+
+    MO = [d.strip() for d in DOCKERIGNORE.splitlines() if d.strip().startswith("!")]
+
+    @pytest.mark.parametrize("thu_muc", ["frontend", "dashboard", "nginx"])
+    def test_mo_dung_thu_muc_nginx_can(self, thu_muc):
+        assert f"!{thu_muc}" in self.MO, self.MO
+
+    def test_chan_lai_ban_nhap_bak(self):
+        """nginx phục vụ cả `frontend/` ở `/`, nên `script.js.bak` (836 KB) lọt vào
+        image là ai cũng tải được mã nguồn bản cũ."""
+        dong = [d.strip() for d in DOCKERIGNORE.splitlines() if d.strip()
+                and not d.lstrip().startswith("#")]
+        assert "**/*.bak" in dong
+        assert not any(d.startswith("!") and d.endswith(".bak") for d in dong)

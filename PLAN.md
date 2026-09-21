@@ -15,7 +15,7 @@
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
 | 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · 5.6 + 5.9 bước 1 nghiệm thu đạt 09-18. **5.9 bước 2 (đề xuất sửa quy tắc) CODE XONG 09-21, chờ nghiệm thu** — `rules.yaml` nay gắn từ máy chủ. ⚠️ Rủi ro chưa sửa «phân hệ ma» (đo 09-21: không ổn định, lúc có lúc không) |
-| 6 | Tích hợp vào Tool Sizing (FE + BE) | 0 / 5 | 🔵 **ĐANG LÀM — nhánh `dev-integrate`**. 6.1 (FE+BE chạy được: backend tự build, thêm MySQL, bỏ địa chỉ tuyệt đối) và 6.2 (`/copilot/` qua nginx) **code xong 09-21, chờ dựng thật trên máy nội bộ**. Tiếp: 6.3 tab «Thẩm định sizing» |
+| 6 | Tích hợp vào Tool Sizing (FE + BE) | 0 / 6 | 🔵 **ĐANG LÀM — nhánh `dev-integrate`**. 6.1 (backend tự build, thêm MySQL, bỏ địa chỉ tuyệt đối), 6.1a (dựng được ngoài mạng công ty) và 6.2 (`/copilot/` qua nginx) **code xong 09-21**. Tiếp: dựng thử tại chỗ rồi 6.3 tab «Thẩm định sizing» |
 
 **Đang tập trung (cập nhật 2026-09-21):** **GĐ 6 — tích hợp vào Tool Sizing**, trên nhánh `dev-integrate`. Người dùng chốt 2026-09-21: **tạm dừng nâng cấp Copilot** (5.9 bước 2 để lại ở trạng thái chờ nghiệm thu, 5.7/5.8/5.10–5.12 chưa làm) để ghép Copilot vào frontend + backend sẵn có thành một hệ thống hoàn chỉnh. Khảo sát và thiết kế: **`docs/tich-hop-fe-be.md`**.
 
@@ -1909,6 +1909,38 @@ dùng lại chính blob vừa xuất.
       → **Tiêu chí:** mở cổng 9000 → đăng nhập → danh sách dự án → mở một dự án →
       xuất DOCX được. Không cần Copilot chạy.
 
+- [~] 6.1a — **Dựng được NGAY trên máy lập trình viên, không phải máy nội bộ.**
+      → 🟡 **CODE XONG 2026-09-21.** Người dùng hỏi vì sao phải gửi lệnh sang máy
+      nội bộ rồi chờ. Đo lại thì lý do cũ («laptop không có Docker») SAI: Docker
+      CLI 29.6.1 có sẵn, chỉ daemon chưa chạy. Cái thiếu là ĐƯỜNG MẠNG.
+      → **Bốn khác biệt đo bằng `Test-NetConnection`, không phải phỏng đoán:**
+      `registry.kcntt.net` (ảnh nền backend + nginx) và `nexus-lab.kcntt.net`
+      (phụ thuộc Maven) đều TCP 443 hỏng; proxy `10.207.156.52:3128` không với
+      tới; model `10.221.58.70:8401` không với tới. Docker Hub · ghcr.io · PyPI
+      thì được — cả ở máy ngoài lẫn máy nội bộ.
+      → **Đã gỡ ba cái đầu:** ảnh nền chuyển hẳn sang Docker Hub (người dùng chốt
+      2026-09-21: một đường duy nhất, không biến registry); nguồn Maven thành nút
+      bấm `MAVEN_NEXUS_NOI_BO` mặc định `1` — nút DUY NHẤT còn lại, vì Maven
+      không cho mirror có điều kiện; proxy để trống trong `.env` của máy ngoài.
+      → ⚠️ **Model thì không gỡ được, và bỏ qua là mất 2 giờ:** `10.221.58.70`
+      ngoài mạng không có đường đi nên mỗi lượt gọi TREO hết `timeout_s: 120`,
+      nhân `max_retries: 3`, nhân ~268 lượt ⇒ **hơn 2 giờ** cho một lượt vô
+      nghĩa. Chữa bằng `config/settings.yaml` (gitignore, bind-mount):
+      `base_url: http://127.0.0.1:1/v1` + `timeout_s: 5` → hỏng trong vài
+      mili-giây, lượt chạy xong trong vài giây và VẪN ra finding từ đường thuần
+      code C4. Người dùng chốt: chạy Copilot thật, không viết chế độ model giả.
+      → 🔴 **Phát hiện thêm — một vật cản chặn CẢ HAI máy:** `.dockerignore` ở gốc
+      chặn tất rồi mở lại theo danh sách, mà danh sách KHÔNG có `frontend`,
+      `dashboard`, `nginx` — đúng ba thứ `nginx/Dockerfile` chép. Tức
+      `docker compose build nginx` hỏng ở `COPY` từ lúc file ấy ra đời (mục A1)
+      tới nay; không ai gặp vì từ đó chưa ai dựng lại nginx. Đã mở, và chặn lại
+      `**/*.bak`: nginx phục vụ `frontend/` ở `/` nên `script.js.bak` (836 KB)
+      lọt vào image là ai cũng tải được mã nguồn bản cũ.
+      → ⚠️ Rủi ro chưa kiểm được: agent Jenkins `cnht_sizing` là máy KHÁC máy nội
+      bộ, không biết nó ra Docker Hub được không. Đường lùi là hai dòng `FROM`.
+      → 12 test mới ở `tests/test_dong_goi.py` (`TestDungDuocNgoaiMangCongTy`,
+      `TestNguCanhBuildCoFE`).
+
 - [~] 6.2 — **Đường mạng: thêm `location /copilot/` vào `nginx/nginx.conf`**
       → 🟡 **CODE XONG 2026-09-21 — CHỜ DỰNG THẬT.**
       → ⚠️ **Chỗ suýt làm hỏng tiêu chí T6:** `proxy_pass http://copilot:8000/`
@@ -2200,3 +2232,6 @@ dùng lại chính blob vừa xuất.
 | 2026-09-21 | **Thêm MySQL vào compose thay vì trỏ vào CSDL sẵn có** | Đo trên máy nội bộ: không có gì nghe ở cổng 3306, `.env` trống cả ba biến datasource, `backend1/target/` không tồn tại — tức chưa từng có CSDL lẫn jar nào. Thêm dịch vụ `mysql:8` + volume riêng thì Flyway tự dựng lược đồ từ V1 và không đụng CSDL thật nào. Một biến mật khẩu duy nhất (`SPRING_DATASOURCE_PASSWORD`) dùng cho cả hai dịch vụ: khai ở hai chỗ là cách chắc chắn để chúng lệch nhau |
 | 2026-09-21 | **`/copilot/` mở cho mọi người đã đăng nhập** | Người dùng chốt. Ghi rõ hệ quả: ai mở được trang cũng gọi được MỌI endpoint Copilot, kể cả endpoint Admin của 5.9 — chúng chỉ đọc `vai` trong header chứ không xác thực (5.0a). Chấp nhận được trong mạng nội bộ; mở ra ngoài thì đây là chỗ đầu tiên phải chặn |
 | 2026-09-21 | **nginx trỏ sang Copilot bằng BIẾN, không bằng tên máy** | `proxy_pass` với tên máy cố định làm nginx phân giải DNS lúc nạp cấu hình và không khởi động nổi khi `copilot` tắt — tắt Copilot là sập cả Tool Sizing, đúng thứ tiêu chí T6 cấm. Biến + `resolver` hoãn phân giải tới từng yêu cầu, Copilot tắt chỉ làm riêng tab thẩm định lỗi 502 |
+| 2026-09-21 | **Ảnh nền chuyển hẳn sang Docker Hub, bỏ `registry.kcntt.net`** | Người dùng chốt sau khi đo: máy lập trình viên không với tới được registry nội bộ nên build chết ngay ở `FROM`, trước cả khi chạm vào code. Ảnh nội bộ vốn là bản sao của ảnh công khai. Chọn một đường duy nhất thay vì thêm biến registry — đổi lại là nhận rủi ro agent Jenkins có ra Hub được không, mà đường lùi chỉ là hai dòng `FROM` |
+| 2026-09-21 | **Chạy Copilot thật với model hỏng, KHÔNG viết chế độ model giả** | Người dùng chốt. Rẻ hơn (không thêm dòng code nào vào đường sản phẩm) và không tạo ra một chế độ có thể bị bật nhầm ở nơi thật. Đổi lại phải trỏ `base_url` vào cổng đóng: để nguyên IP nội bộ thì mỗi lượt gọi treo 120s × 3 lần thử × 268 lượt |
+| 2026-09-21 | **`.dockerignore` ở gốc đang chặn chính FE mà nginx cần** | Tìm ra lúc chuẩn bị dựng tại chỗ. Danh sách mở thiếu `frontend`/`dashboard`/`nginx`, nên `build nginx` hỏng ở `COPY` trên MỌI máy — từ lúc file ấy ra đời (mục A1) tới nay, không ai gặp vì chưa ai dựng lại nginx. Bài học: danh sách mở an toàn hơn danh sách chặn, nhưng nó im lặng cho tới lần build sau, nên mỗi lần thêm thư mục phục vụ image thì phải mở kèm |
