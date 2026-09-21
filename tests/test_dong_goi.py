@@ -52,6 +52,17 @@ class TestDockerfile:
         assert "viettel-mitm-ca.pem* ./" in LENH
         assert 'if [ -f "$CA" ]' in LENH
 
+    def test_CA_noi_bo_CHI_dung_khi_co_proxy(self):
+        """Hỏng thật 2026-09-21 trên máy ngoài mạng công ty: `viettel-mitm-ca.pem`
+        KHÔNG nằm trong git nhưng vẫn còn trên đĩa, nên build ép `SSL_CERT_FILE`
+        sang CA của Viettel rồi đi thẳng ra PyPI — chứng chỉ thật của PyPI không do
+        CA ấy ký, `uv` chết với `invalid peer certificate: UnknownIssuer`.
+
+        Giả định cũ «máy ngoài mạng thì không có file này» sai ngay ở máy ngoài
+        mạng đầu tiên. CA ấy sinh ra VÌ proxy cắt TLS, nên phải buộc vào proxy.
+        """
+        assert '[ -n "${HTTPS_PROXY}${HTTP_PROXY}" ]' in LENH
+
     def test_dockerignore_mo_dung_CA_va_chan_pem_khac(self):
         assert "*.pem" in DOCKERIGNORE
         assert "!viettel-mitm-ca.pem" in DOCKERIGNORE

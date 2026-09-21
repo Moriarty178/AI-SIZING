@@ -1939,7 +1939,48 @@ dùng lại chính blob vừa xuất.
       → ⚠️ Rủi ro chưa kiểm được: agent Jenkins `cnht_sizing` là máy KHÁC máy nội
       bộ, không biết nó ra Docker Hub được không. Đường lùi là hai dòng `FROM`.
       → 12 test mới ở `tests/test_dong_goi.py` (`TestDungDuocNgoaiMangCongTy`,
-      `TestNguCanhBuildCoFE`).
+      `TestNguCanhBuildCoFE`). Tổng 1079.
+      → ✅ **DỰNG THẬT XONG NGAY TRÊN MÁY LẬP TRÌNH VIÊN 2026-09-21**, không cần máy
+      nội bộ: `nginx` dựng xong (`COPY frontend`/`dashboard` qua được — bằng chứng bản
+      vá `.dockerignore` đúng); `mysql:8` khoẻ, có `sizing_local` + tài khoản `sizing`;
+      **Maven kéo đủ Spring Boot 3.5.9 từ `repo.maven.apache.org` → BUILD SUCCESS**,
+      jar đóng gói xong; backend khoẻ, **Flyway áp đủ 7 migration lên v7**, Tomcat lên
+      cổng 8081, `DefaultUserLoader` tạo `admin` + `user1`.
+      → **T1 + T2 ĐẠT:** `GET http://localhost:9000/` → HTTP 200;
+      `POST /api/auth/login` qua proxy nginx → HTTP 200 kèm JWT, vai `admin2`.
+      → **T6 ĐẠT, và đo được ĐÚNG lúc `copilot` CHƯA hề chạy:** trang chủ vẫn 200 còn
+      `/copilot/health` trả 502. Đây là bằng chứng bản vá `resolver` + biến là cần
+      thiết — để `proxy_pass` tên máy cố định thì nginx đã không khởi động nổi và cả
+      Tool Sizing sập theo.
+      → ⚠️ Ghi lại chỗ CỐ Ý không đụng: `/api/` vẫn trỏ thẳng tên `backend`, nên nginx
+      không lên được nếu backend chết (`nginx -t` chạy trơ đã dựng lại đúng lỗi ấy).
+      Trong compose thì `depends_on: service_healthy` lo. Mở rộng sang `/api/` là đổi
+      hành vi một đường đang chạy tốt, ngoài phạm vi 6.2.
+      → 🔴 **Vật cản thứ hai chỉ lộ ra khi DỰNG THẬT — CA nội bộ dùng sai chỗ.** Build
+      ảnh Copilot chết với `invalid peer certificate: UnknownIssuer`.
+      `Dockerfile.copilot` bật CA MITM của Viettel chỉ dựa trên «có file
+      `viettel-mitm-ca.pem` không», với giả định ngầm «máy ngoài mạng nội bộ thì không
+      có file này» — giả định ấy SAI ngay ở máy ngoài mạng ĐẦU TIÊN: file không nằm
+      trong git nhưng vẫn còn trên đĩa từ lần trước. Build ép `SSL_CERT_FILE` sang CA
+      ấy rồi đi thẳng ra PyPI, mà chứng chỉ thật của PyPI không do nó ký.
+      Sửa đúng bản chất: CA ấy sinh ra VÌ proxy cắt TLS, nên chỉ dùng khi CÓ đặt
+      proxy (`[ -f "$CA" ] && [ -n "${HTTPS_PROXY}${HTTP_PROXY}" ]`). Không proxy thì
+      dùng nó không chỉ thừa mà còn làm hỏng TLS tới Internet thật. Có test khoá.
+      → **Bài học chung của hai vật cản này:** cả hai đều là giả định về môi trường
+      («chưa ai dựng lại nginx», «máy ngoài không có file CA») mà không có gì kiểm.
+      Chúng nằm im cho tới lần dựng thật đầu tiên. Đây chính là thứ việc dựng tại chỗ
+      mua được — nếu vẫn gửi lệnh sang máy nội bộ thì cả hai vẫn còn nguyên đó.
+      → ✅ **Đường FE → nginx → Copilot ĐÃ THÔNG, đo tại chỗ:**
+      `POST /copilot/review` → **HTTP 202** kèm mã việc; lượt chạy **xong trong 36,8
+      giây** với **57 finding** (`critical 2 · minor 35 · info 20`) — đúng như thiết
+      kế: model hỏng tức thì, pipeline xuống cấp theo NT4, đường thuần code C4 vẫn ra
+      kết quả. `GET /copilot/result/{ma}/bao-cao` và `/findings` đều 200.
+      **Không có bản vá `settings.yaml` thì chính lượt này mất hàng giờ** — đó là
+      khác biệt giữa 36 giây và 2 tiếng.
+      → Tiếng Việt qua đường này KHÔNG lỗi mã hoá (nghi ngờ ban đầu là do đường ống
+      terminal trên Windows, không phải do dịch vụ).
+      → **Còn lại của 6.1:** xuất DOCX (T2 phần sau) cần tạo một dự án thật trên giao
+      diện — làm cùng lúc với 6.4, vì 6.4 móc đúng vào hàm xuất ấy.
 
 - [~] 6.2 — **Đường mạng: thêm `location /copilot/` vào `nginx/nginx.conf`**
       → 🟡 **CODE XONG 2026-09-21 — CHỜ DỰNG THẬT.**

@@ -55,10 +55,23 @@ COPY pyproject.toml README.md viettel-mitm-ca.pem* ./
 
 # Lớp phụ thuộc tách khỏi lớp mã nguồn: sửa code không phải cài lại từ đầu.
 COPY src ./src
+# CA nội bộ chỉ dùng khi THẬT SỰ đi qua proxy MITM — tức khi có đặt proxy.
+#
+# ⚠️ Bản cũ chỉ hỏi "có file không". Giả định ngầm là «máy ngoài mạng nội bộ
+# không có file này», và nó SAI ngay ở máy ngoài mạng đầu tiên (2026-09-21):
+# `viettel-mitm-ca.pem` không nằm trong git nhưng vẫn còn trên đĩa từ lần trước,
+# nên build ép `SSL_CERT_FILE` sang CA của Viettel rồi đi thẳng ra PyPI — chứng
+# chỉ thật của PyPI không do CA ấy ký, `uv` chết với
+# `invalid peer certificate: UnknownIssuer`.
+#
+# Buộc vào proxy là đúng bản chất: CA ấy sinh ra VÌ proxy cắt TLS. Không có
+# proxy thì dùng nó không chỉ thừa mà còn làm hỏng TLS tới Internet thật.
 RUN CA=/app/viettel-mitm-ca.pem ; \
-    if [ -f "$CA" ]; then \
-        echo "→ dùng CA nội bộ cho TLS lúc build" ; \
+    if [ -f "$CA" ] && [ -n "${HTTPS_PROXY}${HTTP_PROXY}" ]; then \
+        echo "→ dùng CA nội bộ cho TLS lúc build (có proxy MITM)" ; \
         export SSL_CERT_FILE="$CA" REQUESTS_CA_BUNDLE="$CA" ; \
+    else \
+        echo "→ TLS mặc định (không đặt proxy)" ; \
     fi ; \
     uv pip install --system --no-cache ".[api,ui,db]"
 
