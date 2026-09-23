@@ -1,7 +1,9 @@
 # Hàng đợi thẩm định — xem, huỷ, chạy (GĐ 6, mục 6.6)
 
 > Đọc cùng `CLAUDE.md` và `docs/tich-hop-fe-be.md`. Viết 2026-09-23.
-> **Làm SAU 6.1b** (hợp nhất hai bản 6.1/6.2) — xem PLAN.md.
+> **Bản LÀM ĐƯỢC là mục 6.6 trong PLAN.md** — bảy bước kèm test, luật L1–L8, tiêu
+> chí Q1–Q8, viết để phiên Claude Code trên máy nội bộ tự làm theo. File này giữ
+> phần LÝ DO; khi hai chỗ lệch nhau thì PLAN.md 6.6 thắng.
 
 ## 0. Yêu cầu
 
@@ -185,8 +187,8 @@ người khác mà không phải Admin.
 
 ### 4.4 FE (trong phần "Thẩm định sizing" của 6.3)
 
-> ⚠️ Mã 6.3 hiện CHỈ có ở máy nội bộ; nó vào repo ở bước hợp nhất 6.1b. Chỗ móc
-> cụ thể chốt sau bước đó. Hai bẫy 6.3 đã gặp thật, áp luôn cho bảng hàng đợi:
+> ⚠️ Mã 6.3 CHỈ có ở máy nội bộ (người dùng chốt 2026-09-23 không hợp nhất; máy
+> nội bộ là nơi làm tiếp). Hai bẫy 6.3 đã gặp thật, áp luôn cho bảng hàng đợi:
 > `Finding.location` là CHUỖI, không phải object; vai Tool Sizing phải ánh xạ
 > `admin1`/`admin2` → `admin` (Copilot chỉ nhận `admin` / `nguoi_lam_sizing`) —
 > luật "Admin thấy tất" dựa đúng vào ánh xạ này.
@@ -245,8 +247,6 @@ Q1, Q3–Q7 kiểm được ngay trên máy lập trình viên (model trỏ cổ
 
 ## 6. Thứ tự làm
 
-0. **6.1b — hợp nhất hai bản 6.1/6.2.** Bước 3 và 4 dưới đây sửa vào
-   `nginx.conf` và mã FE 6.3 — phải biết bản nào thắng trước.
 1. `CongViec` + `BoChay` + `DaHuy` trong `PhatLai` — thuần Python, test offline với
    `ham_chay` giả chặn trên một `Event` (không cần model).
 2. API + test.

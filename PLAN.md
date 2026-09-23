@@ -15,9 +15,9 @@
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
 | 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · 5.6 + 5.9 bước 1 nghiệm thu đạt 09-18. **5.9 bước 2 (đề xuất sửa quy tắc) CODE XONG 09-21, chờ nghiệm thu** — `rules.yaml` nay gắn từ máy chủ. ⚠️ Rủi ro chưa sửa «phân hệ ma» (đo 09-21: không ổn định, lúc có lúc không) |
-| 6 | Tích hợp vào Tool Sizing (FE + BE) | 5 / 8 | 🔵 **ĐANG LÀM — nhánh `dev-integrate`**. 6.1 · 6.1a · 6.2 chạy thật cả ở máy lập trình viên lẫn máy nội bộ; 6.3 · 6.4 code xong **trên máy nội bộ** (nộp DOCX thật qua tab mới → 12 phút → 280 finding). ⚠️ **Hai bản 6.1/6.2 làm song song và KHÁC nhau** — mã của máy nội bộ chưa lên repo. Tiếp: **6.1b hợp nhất** → 6.5 nghiệm thu → 6.6 hàng đợi |
+| 6 | Tích hợp vào Tool Sizing (FE + BE) | 5 / 7 | 🔵 **ĐANG LÀM — máy nội bộ**. 6.1 · 6.1a · 6.2 chạy thật cả hai máy; 6.3 · 6.4 code xong trên máy nội bộ (nộp DOCX thật qua tab mới → 12 phút → 280 finding). 6.1b (hợp nhất) bỏ 09-23 — máy nội bộ là nơi làm tiếp. Tiếp: 6.5 nghiệm thu → **6.6 hàng đợi (kế hoạch chi tiết lập 09-23)** |
 
-**Đang tập trung (cập nhật 2026-09-23):** **GĐ 6 — tích hợp vào Tool Sizing**, trên nhánh `dev-integrate`. Người dùng chốt 2026-09-21: **tạm dừng nâng cấp Copilot** (5.9 bước 2 để lại ở trạng thái chờ nghiệm thu, 5.7/5.8/5.10–5.12 chưa làm) để ghép Copilot vào frontend + backend sẵn có thành một hệ thống hoàn chỉnh. Khảo sát và thiết kế: **`docs/tich-hop-fe-be.md`**. **Việc kế tiếp là 6.1b**: máy nội bộ đã tự làm lại 6.1/6.2 từ bản PLAN `b5806c0` mà không kéo mã 6.1 trên repo về, nên có hai bản khác nhau; phải hợp nhất trước khi làm tiếp. Sau đó 6.5 (nghiệm thu) và 6.6 (hàng đợi — `docs/hang-doi-tham-dinh.md`).
+**Đang tập trung (cập nhật 2026-09-23):** **GĐ 6 — tích hợp vào Tool Sizing**, trên nhánh `dev-integrate`. Người dùng chốt 2026-09-21: **tạm dừng nâng cấp Copilot** (5.9 bước 2 để lại ở trạng thái chờ nghiệm thu, 5.7/5.8/5.10–5.12 chưa làm) để ghép Copilot vào frontend + backend sẵn có thành một hệ thống hoàn chỉnh. Khảo sát và thiết kế: **`docs/tich-hop-fe-be.md`**. **Từ 2026-09-23 máy nội bộ là nơi làm tiếp** (Claude Code + model self-hosted): máy đó đã tự làm 6.1–6.4 từ bản PLAN `b5806c0`, và người dùng chốt KHÔNG hợp nhất với mã 6.1 trên repo. Việc kế: 6.5 (nghiệm thu), rồi **6.6 (xem hàng đợi)** — mục 6.6 viết để phiên trên máy nội bộ tự làm được, không cần hỏi lại.
 
 **Nền đã xong — GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
@@ -1993,7 +1993,10 @@ dùng lại chính blob vừa xuất.
       diện — làm cùng lúc với 6.4, vì 6.4 móc đúng vào hàm xuất ấy. *(Cập nhật
       2026-09-23: máy nội bộ đã xuất DOCX được ở mức API — xem 6.1.)*
 
-- [ ] 6.1b — **Hợp nhất hai bản 6.1/6.2 — LÀM TRƯỚC mọi việc khác của GĐ 6.**
+> **6.1b (hợp nhất hai bản 6.1/6.2) — BỎ theo người dùng chốt 2026-09-23:**
+> không hợp nhất; **máy nội bộ là nơi làm tiếp** từ đây (Claude Code + model
+> self-hosted). Ghi chú dưới GIỮ LẠI để tra khi nào cần đồng bộ hai bản.
+
       → **Chuyện gì đã xảy ra:** máy nội bộ lấy PLAN ở `b5806c0` (lúc mới lập kế
       hoạch GĐ 6), rồi TỰ làm 6.1–6.4 mà không kéo mã 6.1 đã có trên repo
       (`82c3482` → `e51951c`). Đo được: `PLAN_noi_bo.md` gần `b5806c0` nhất
@@ -2013,14 +2016,11 @@ dùng lại chính blob vừa xuất.
       | FE 6.3 / 6.4 | chưa có | có | **Nội bộ** |
       | `tests/test_dong_goi.py` | 62 test | 28 | **Repo** + thêm test cho các phần lấy từ nội bộ |
 
-      → **Cách làm:** máy nội bộ xuất MỘT tệp vá so với gốc chung rồi chép sang
-      (như đã làm với `PLAN_noi_bo.md`); máy lập trình viên hợp nhất theo bảng trên,
-      chạy đủ test, **dựng lại cả bốn dịch vụ tại chỗ**, rồi đẩy lên. Máy nội bộ sau
-      đó lấy bản đã hợp nhất — lấy thẳng, không tự gộp tay lần nữa.
-      → **Tiêu chí:** một nhánh duy nhất; máy lập trình viên và máy nội bộ đều
-      `docker compose up -d` được từ nó mà không sửa tay file nào ngoài `.env` /
-      `config/settings.yaml` / `settings.xml`; CSDL `sizing-db` của máy nội bộ còn
-      nguyên dự án đã tạo.
+      → ⚠️ **Hệ quả của việc KHÔNG hợp nhất, cần nhớ:** máy nội bộ đừng `git pull`
+      nhánh này (đụng độ ở compose, Dockerfile, nginx, FE). Và bản nginx ở máy nội bộ
+      (`proxy_pass` tên máy cố định) chỉ qua T6 khi tắt copilot SAU lúc nginx đã
+      chạy; khởi động lại nginx lúc copilot đang tắt thì nginx không lên — cách sửa
+      (biến + `resolver 127.0.0.11`) có ở `nginx/nginx.conf` của nhánh này.
 
 - [x] 6.2 — **Đường mạng: thêm `location /copilot/` vào `nginx/nginx.conf`**
       → ✅ **CHẠY THẬT Ở CẢ HAI MÁY.** Máy lập trình viên (bản repo, 2026-09-21):
@@ -2054,7 +2054,7 @@ dùng lại chính blob vừa xuất.
       → Gửi header danh tính (tên + vai) lấy từ phiên đăng nhập; **KHÔNG** gửi
       JWT sang Copilot — nó không kiểm được và cũng không nên biết.
       → ✅ **CODE XONG + CHẠY THẬT 2026-09-23 trên máy nội bộ.** ⚠️ **Mã chỉ có ở máy
-      đó, chưa lên repo** (6.1b). `#page-tham-dinh` có ô chọn `.docx` → `POST
+      đó, chưa lên repo** — không hợp nhất, xem ghi chú 6.1b. `#page-tham-dinh` có ô chọn `.docx` → `POST
       /copilot/review` → hỏi `/result/{ma}` mỗi 5 s → bảng lỗi gộp theo quy tắc (khớp
       `gop_pham_vi` của C7) + liên kết báo cáo Markdown. `openProject` /
       `showProjectList` / `startNewProject` đều ẩn trang này.
@@ -2070,7 +2070,7 @@ dùng lại chính blob vừa xuất.
       `exportSavedSnapshotToWord()` (`script.js:9104`) đã có sẵn **blob** `.docx`
       trong trình duyệt. Giữ blob ấy lại và nộp thẳng cho `/copilot/review` —
       không bắt người dùng tải về rồi chọn lại, không nhờ backend chuyển file.
-      → ✅ **CODE XONG 2026-09-23 trên máy nội bộ** (⚠️ chưa lên repo — 6.1b).
+      → ✅ **CODE XONG 2026-09-23 trên máy nội bộ** (⚠️ chưa lên repo — không hợp nhất, xem ghi chú 6.1b).
       `_blobVuaXuat` / `_tenFileVuaXuat` giữ blob ngay khi nhận từ `/api/export`;
       thông báo «Xuất file DOCX thành công» có thêm nút «Thẩm định sizing» gọi
       `nopThamDinh(blob, ten)`. **Chưa kiểm trên trình duyệt thật** (cần mở dự án có
@@ -2081,41 +2081,265 @@ dùng lại chính blob vừa xuất.
       **T3** cùng một file nộp qua FE và qua `copilot-ui` phải ra CÙNG số finding
       (khác là lớp ghép đang làm hỏng dữ liệu); **T6** tắt `copilot` thì Tool
       Sizing vẫn chạy bình thường — Copilot hỏng không được kéo sập web app.
-      → Chạy trên bản ĐÃ HỢP NHẤT (6.1b), không phải một trong hai bản hiện nay.
+      → Chạy trên bản của MÁY NỘI BỘ (không hợp nhất — ghi chú 6.1b).
       T6 phải thử CẢ HAI chiều: tắt copilot khi nginx đang chạy, VÀ khởi động lại
       nginx lúc copilot đang tắt.
 
 - [ ] 6.6 — **Xem hàng đợi thẩm định: huỷ việc đang chạy, chạy việc đang chờ.**
-      → **Thiết kế đầy đủ, luật, tiêu chí Q1–Q8: `docs/hang-doi-tham-dinh.md`.**
-      Đọc file đó trước khi sửa `src/cong_viec.py`.
-      → **Yêu cầu (người dùng, 2026-09-23):** trong «Thẩm định sizing» có bảng hàng
-      đợi Job_ID · tên file · trạng thái · action, xếp theo giờ nộp. Huỷ việc đang
-      chạy → hỏi «chạy (job_id) tiếp theo?» (Không = giữ, mỗi dòng chờ có Run). Nộp
-      khi việc khác chưa xong → hỏi «dừng (job_id) để chạy sizing mới?».
-      → **Người dùng chốt 2026-09-23:** mỗi người chỉ thấy việc của mình (Admin thấy
-      tất); việc bị dừng để nhường chỗ **bị huỷ hẳn**; Run khi đang có việc chạy =
-      dừng việc đó, chạy việc này. **Và xác nhận luôn mục 2.2 của thiết kế:** chỉ
-      dừng được việc của chính mình; «tạm giữ» là của từng người, không làm đứng
-      hàng của cả đơn vị; Run khi việc NGƯỜI KHÁC đang chạy = xếp lại vào hàng;
-      dòng chờ hiện «còn N sizing phía trước».
-      → ⚠️ **Huỷ không tức thì được** — xin dừng ở điểm kiểm kế tiếp, trễ cỡ một lượt
-      gọi model đang bay (15–40 s trên model thật). Điểm kiểm đặt ở `PhatLai.goi`:
-      đây là thay đổi DUY NHẤT chạm xuống dưới lớp hàng đợi, không đổi kết quả của
-      việc chạy tới cùng (Q8 kiểm điều đó).
-      → **Hai lỗi có sẵn sửa luôn trong mục này:** `DELETE` việc đang chạy để lại
-      luồng chạy mồ côi 16 phút; khởi động lại container biến mọi việc chờ thành
-      «hãy nộp lại».
-      → **Chưa làm (người dùng chốt 2026-09-23: chưa cần ngay):** nút huỷ một việc
-      đang CHỜ; giữ câu trả lời model của lượt bị huỷ để lần nộp lại dùng lại.
-      → **Phụ thuộc 6.1b:** phần FE móc vào mã 6.3 (đang chỉ có ở máy nội bộ), và
-      chặn `/copilot/jobs` sửa vào `nginx.conf` — phải biết bản nào thắng trước.
+      Kế hoạch lập 2026-09-23 trên máy lập trình viên; **LÀM trên máy nội bộ.**
+      **Đọc HẾT mục này trước khi sửa dòng nào.** Mục này tự đủ: tên hàm, tên
+      trường, luật, test và tiêu chí đều nằm ở đây. (Lý do dài hơn, nếu cần:
+      `docs/hang-doi-tham-dinh.md` trên nhánh GitHub `dev-integrate` — không bắt buộc.)
+      → **Được sửa:** `src/cong_viec.py`, `src/llm/phat_lai.py` (MỘT phép kiểm, bước
+      2), `api/main.py`, `nginx/nginx.conf`, mã FE của 6.3 (`frontend/index.html`,
+      `frontend/script.js`), và test. **KHÔNG sửa:** C1–C7 (`src/extraction/`,
+      `src/validators/`, `src/reporting/`, `src/pipeline.py`), `config/rules.yaml`,
+      lược đồ CSDL Copilot (`src/luu_tru/`).
+      → ⚠️ **Thay đổi ở `PhatLai.goi` ĐÃ ĐƯỢC NGƯỜI DÙNG DUYỆT 2026-09-23.** Nó là tầng
+      phát lại lời gọi model, không phải logic thẩm định, và không đổi kết quả của
+      việc chạy tới cùng (Q8 kiểm điều đó). KHÔNG cần dừng lại hỏi theo quy tắc
+      «không sửa pipeline» của GĐ 6 trong `CLAUDE.md`.
+
+      → **Yêu cầu (người dùng, 2026-09-23).** Trong trang «Thẩm định sizing»
+      (`#page-tham-dinh`) thêm bảng **Hàng đợi**: Job_ID · Tên file · Trạng thái ·
+      Action, xếp theo giờ nộp. Action: **Huỷ** với việc đang chạy, **Run** với việc
+      đang chờ.
+      (1) Huỷ việc đang chạy → hỏi «Có muốn chạy sizing (job_id) tiếp theo không?»
+          Có → chạy việc kế. Không → các việc chờ đứng yên, mỗi dòng chờ có Run.
+      (2) Nộp sizing mới khi một sizing khác chưa xong → hỏi «Có muốn dừng chạy
+          sizing (job_id) để chạy sizing mới không?» Có → chạy sizing mới. Không →
+          việc đang chạy chạy tiếp, sizing mới vào hàng chờ.
+
+      → **Luật đã chốt 2026-09-23 — làm ĐÚNG như vầy, không tự suy thêm.**
+      Hàng đợi là của CHUNG: một luồng chạy lần lượt cho mọi người
+      (`so_viec_song_song=1` — chạy song song chậm hơn, đã đo; KHÔNG đổi).
+      - **L1** Người dùng thường chỉ THẤY việc của chính mình. Admin (vai Copilot
+        `admin` = `admin1`/`admin2` của Tool Sizing) thấy mọi việc, kèm Người nộp.
+      - **L2** Chỉ dừng/huỷ được việc của chính mình. Admin: mọi việc.
+      - **L3** Việc bị dừng để nhường chỗ (câu (2) chọn Có, hoặc Run xác nhận dừng)
+        → `da_huy`, RA KHỎI hàng. Không quay lại hàng chờ.
+      - **L4** «Tạm giữ» là của TỪNG NGƯỜI. Chủ việc huỷ việc đang chạy của mình →
+        máy chủ giữ NGAY các việc chờ của chính người đó (`giu_lai=True`) — giữ
+        trước khi người dùng trả lời, vì trình duyệt có thể đóng và luồng không được
+        tự lấy việc kế trong lúc người dùng còn đọc câu hỏi. Việc của người khác
+        vẫn chạy đúng lượt. Admin huỷ việc của NGƯỜI KHÁC → không giữ gì.
+      - **L5** Chỉ hỏi «chạy tiếp theo?» khi L4 vừa giữ ít nhất một việc. «Việc tiếp
+        theo» = việc chờ sớm nhất của chính người đó.
+      - **L6** Câu (2) chỉ hiện khi việc đang chạy là của mình (hoặc mình là Admin).
+        Việc người khác đang chạy → KHÔNG hỏi, sizing mới vào cuối hàng.
+      - **L7** Nút trên một dòng CHỜ của mình (Admin: của bất kỳ ai):
+        · không có việc nào đang chạy → [Run] = chạy ngay;
+        · việc CỦA MÌNH đang chạy → [Run] = hỏi «dừng (việc đang chạy) để chạy (việc
+          này)?» → Có: việc đang chạy `da_huy` (L3), việc này lên ĐẦU hàng;
+        · việc NGƯỜI KHÁC đang chạy và dòng này ĐANG GIỮ → [Xếp lại vào hàng] = bỏ
+          `giu_lai`, việc về đúng chỗ theo giờ nộp;
+        · việc người khác đang chạy và dòng này KHÔNG giữ → không nút.
+      - **L8** Dòng chờ không giữ hiện «Chờ — còn N sizing phía trước»: chỉ CON SỐ,
+        không lộ tên file hay người nộp của việc khác.
+
+      → ⚠️ **Huỷ KHÔNG tức thì.** Python không giết được luồng; lượt gọi model đang
+      bay phải chờ nó về. Cơ chế: mỗi việc đang chạy có một `threading.Event`; huỷ =
+      bật Event; điểm kiểm ở đầu `PhatLai.goi` (mọi lượt gọi model C3/C5 trên đường
+      dịch vụ đều qua đây; C2 mặc định tắt và `/review` không bật được) và ở đầu
+      callback tiến độ. Trễ ≈ một lượt gọi model (15–40 s, xấu nhất `timeout_s`).
+      Giao diện PHẢI có trạng thái «Đang huỷ…».
+      → ⚠️ **Đã kiểm trong code (2026-09-23):** lỗi model bị bắt HẸP — `except
+      (ExtractionFailed, LLMError)` ở C3 và C5. `DaHuy` KHÔNG được kế thừa hai lớp
+      đó, không thì nó bị nuốt thành finding «không kiểm được» và việc «xong» với
+      một báo cáo rác. Chỗ `except Exception` rộng duy nhất trong `pipeline.py` bọc
+      phần vân tay vùng, không bọc C3/C5 — không phải sửa gì ở đó.
+
+      **Các bước — làm theo thứ tự, mỗi bước test xanh rồi mới sang bước sau.**
+
+      → **Bước 1 — trạng thái và trường mới** (`src/cong_viec.py`).
+      Hằng `DA_HUY = "da_huy"`; `CongViec.xong_roi` tính cả `DA_HUY`. Trường mới,
+      đều CÓ mặc định để file `.json` việc cũ nạp lại được (`_nap` đã lọc theo
+      trường khai báo): `giu_lai: bool = False`, `yeu_cau_huy: bool = False`,
+      `huy_boi: str = ""`, `huy_luc: float | None = None`. Chủ việc =
+      `cv.danh_tinh.get("ten", "")` (trường đã có, `/review` ghi `{vai, ten}`).
+      Test: file việc cũ không có trường mới vẫn nạp được.
+
+      → **Bước 2 — `DaHuy` và phép kiểm** (`src/llm/phat_lai.py`).
+      `class DaHuy(Exception)` — kế thừa THẲNG `Exception`. `PhatLai.__init__` thêm
+      `self.dung = None` (một `threading.Event` hoặc None). Dòng ĐẦU TIÊN của
+      `PhatLai.goi`, trước cả phần tra khoá: `if self.dung is not None and
+      self.dung.is_set(): raise DaHuy()`.
+      Test (`tests/test_phat_lai.py`): `dung` đã bật → `goi` ném `DaHuy` và KHÔNG
+      gọi `client.extract` (client giả ném lỗi nếu bị gọi); `dung` là None → mọi
+      test cũ trong file vẫn xanh.
+
+      → **Bước 3 — `BoChay`: hàng có thứ tự, giữ, huỷ, chạy** (`src/cong_viec.py`).
+      - Hàng là `list[str]` theo giờ nộp (thay `deque`). `nop(cv)` bỏ qua nếu mã đã
+        có trong hàng. `_vong` lấy việc ĐẦU TIÊN trong hàng còn `trang_thai == CHO`
+        và `not giu_lai`; mục không còn `CHO` (đã huỷ/xoá) thì bỏ khỏi hàng. Ghi lại
+        việc đang chạy vào `self._dang_chay` (một `set` mã việc).
+      - `_lam`: tạo `ev = threading.Event()`, cất vào `self._su_kien[ma]`, gán
+        `pl.dung = ev` ngay sau `_chuan_bi_phat_lai`. Dòng đầu của callback
+        `tien_do`: `if ev.is_set(): raise DaHuy()`.
+      - `_lam`: thêm `except DaHuy:` ĐẶT TRƯỚC `except Exception` →
+        `cap_nhat(ma, trang_thai=DA_HUY, ket_thuc=time.time(), yeu_cau_huy=False,
+        giai_doan="")`. KHÔNG `luu_bao_cao`, KHÔNG `_luu_findings`, KHÔNG
+        `luu_phat_lai`, KHÔNG `_goi_sau_khi_xong` — việc huỷ không có báo cáo và
+        không có dòng hồ sơ CSDL.
+      - Pipeline vẫn chạy xong bình thường dù đã xin huỷ (điểm kiểm tới muộn, ví dụ
+        đang ở C7) → `XONG` như thường, bỏ `yeu_cau_huy`, `loi` = «xong trước khi
+        kịp huỷ». Kết quả vẫn đúng — không vứt.
+      - `huy(ma, dt) -> dict`: không phải chủ và không phải admin →
+        `PermissionError`. Việc `CHO` → `DA_HUY` ngay, ra khỏi hàng. Việc
+        `DANG_CHAY` → `yeu_cau_huy=True`, `huy_boi=dt.ten`, `huy_luc`, bật Event;
+        nếu `dt` là CHỦ → L4 giữ các việc `CHO` của chủ, trả `tiep_theo` = việc chờ
+        sớm nhất của chủ (L5), không thì None. Việc đã kết thúc → `ValueError`.
+      - `tha(dt)`: bỏ `giu_lai` trên mọi việc `CHO` của `dt.ten`.
+      - `chay(ma, dt, dung_viec_dang_chay=False)`: theo L7. Cần dừng việc đang chạy
+        mà cờ còn False → ném lớp lỗi mới `CanXacNhan` mang `{ma, ten_file}` của
+        việc sẽ bị dừng. Dừng = huỷ việc đang chạy (`huy_boi` = người bấm), bỏ
+        `giu_lai` của `ma`, đưa `ma` lên ĐẦU hàng. «Xếp lại vào hàng» = chỉ bỏ
+        `giu_lai`, vị trí vẫn theo giờ nộp.
+      - `nop_uu_tien(cv, dt) -> str`: dùng cho câu (2) chọn Có. Có việc đang chạy
+        mà `dt` được dừng (L2) → huỷ nó (L3), đưa `cv` lên ĐẦU hàng, trả "". Không
+        được dừng → vào cuối hàng như `nop`, trả lý do để API nói ra.
+      - `cho_rong` chỉ chờ các việc `CHO` KHÔNG giữ — không thì test treo mãi khi
+        có việc đang giữ.
+      - Test (`tests/test_cong_viec.py`, dùng `_chay_gia` sẵn có; thêm một bản
+        `ham_chay` giả gọi `on_tien_do` trong vòng lặp có `time.sleep(0.05)` để giữ
+        việc ở trạng thái đang chạy): huỷ việc chờ; huỷ việc đang chạy → `DA_HUY`,
+        `kho.bao_cao(ma)` là None; huỷ khi còn việc chờ → chúng bị giữ và luồng
+        KHÔNG chạy chúng (đợi 1 s rồi kiểm vẫn `CHO`); `tha` → chúng chạy; A huỷ
+        việc B → `PermissionError`; admin huỷ việc B → được, việc chờ của B KHÔNG bị
+        giữ; `chay` không xác nhận → `CanXacNhan`; có xác nhận → việc cũ `DA_HUY`,
+        việc này chạy tiếp theo; `nop_uu_tien` khi việc NGƯỜI KHÁC đang chạy → vào
+        cuối hàng.
+
+      → **Bước 4 — sống qua khởi động lại** (`src/cong_viec.py`).
+      `KhoCongViec._nap`: việc `CHO` (kể cả đang giữ) GIỮ NGUYÊN `CHO` — tài liệu vẫn
+      trên đĩa ở `tai_lieu/{ma}/`; nếu tệp đã mất → `GIAN_DOAN`, `loi` = «tài liệu
+      không còn trên đĩa, hãy nộp lại». `DANG_CHAY` → `GIAN_DOAN` như cũ; riêng việc
+      đang chạy mà `yeu_cau_huy=True` → `DA_HUY` (người dùng đã muốn huỷ).
+      `BoChay.bat_dau()` xếp mọi việc `CHO` trong kho vào hàng theo `tao_luc` trước
+      khi khởi luồng.
+      Lý do: có nút «Không» thì việc chờ có thể nằm đó hàng giờ; một lần
+      `docker compose up -d` không được âm thầm biến cả hàng thành «hãy nộp lại».
+      Test: kho có việc `CHO` + giữ, nạp lại → vẫn `CHO` + giữ; `bat_dau` → việc
+      không giữ chạy, việc giữ không chạy. Test cũ
+      `test_viec_dang_chay_luc_tien_trinh_chet_thanh_GIAN_DOAN` vẫn phải xanh.
+
+      → **Bước 5 — API** (`api/main.py`).
+      Mọi endpoint hàng đợi BẮT BUỘC có danh tính: `tu_header(request.headers)`;
+      None → 400. Admin = `dt.vai == "admin"`.
+      - `GET /hang-doi` → `{"dang_chay", "hang", "gan_day"}`:
+        · `hang`: việc `CHO` + `DANG_CHAY` người gọi NHÌN THẤY (L1), theo thứ tự
+          hàng. Mỗi dòng: `ma, ten_file, trang_thai, tao_luc, giu_lai, yeu_cau_huy,
+          giai_doan, tien_do, so_truoc` (N của L8; dòng đang giữ thì null), `chu`
+          (CHỈ khi người gọi là admin), `hanh_dong` (tập con của `huy`, `chay`,
+          `xep_lai` — tính theo L2/L7), `chay_se_dung` (`{ma, ten_file}` của việc sẽ
+          bị dừng nếu bấm Run, hoặc null).
+        · `dang_chay`: `{"co_the_dung": bool, "ma", "ten_file"}` — `ma`/`ten_file`
+          CHỈ có khi `co_the_dung` (việc của mình, hoặc mình là admin). Việc người
+          khác đang chạy → chỉ `{"co_the_dung": false}`.
+        · `gan_day`: 10 việc đã kết thúc gần nhất người gọi nhìn thấy (xong · hong ·
+          da_huy · gian_doan), kèm `huy_boi`.
+        · **`hanh_dong` tính ở MÁY CHỦ; FE chỉ vẽ nút theo nó.** Luật nằm một chỗ và
+          có test Python — FE không tự tính luật.
+      - `POST /hang-doi/{ma}/huy` → `{"trang_thai": "dang_huy"|"da_huy",
+        "tiep_theo": {ma, ten_file}|null}`. Không có việc → 404; `PermissionError`
+        → 403.
+      - `POST /hang-doi/tiep-tuc` → `{"da_tha": n}` (thả việc đang giữ của người gọi).
+      - `POST /hang-doi/{ma}/chay`, body `{"dung_viec_dang_chay": false}` → 200;
+        `CanXacNhan` → **409** `{"can_xac_nhan": true, "viec_dang_chay": {ma,
+        ten_file}}`; 403/404 như trên.
+      - `POST /review`: thêm trường form `uu_tien: bool = False`; True → gọi
+        `bo_chay.nop_uu_tien` thay `nop`, kèm `ghi_chu_uu_tien` khi không dừng được.
+      - `DELETE /result/{ma}`: việc đang chạy → xin huỷ TRƯỚC rồi mới xoá. Hôm nay
+        nó chỉ xoá bản ghi và để luồng chạy mồ côi tới hết (~16 phút).
+      Test: file mới `tests/test_api_hang_doi.py`, theo khuôn
+      `tests/test_api_bao_loi.py` (`TestClient` + `BoChay` với `ham_chay` giả), ba
+      danh tính A, B, admin: A không thấy việc B, admin thấy và có `chu`; A huỷ việc
+      B → 403; Run cần dừng → 409 → gọi lại có xác nhận → 200; `hanh_dong` đúng ở
+      từng nhánh L7; `dang_chay` KHÔNG lộ `ma` việc người khác.
+
+      → **Bước 6 — nginx chặn `/copilot/jobs`** (`nginx/nginx.conf`).
+      Thêm TRƯỚC `location /copilot/`: `location = /copilot/jobs { return 403; }`
+      (khớp chính xác thắng khớp tiền tố). `GET /jobs` liệt kê việc của MỌI người
+      kèm tên file — để nguyên là vượt L1 chỉ bằng một địa chỉ. `copilot-ui` gọi
+      thẳng `http://copilot:8000` trong mạng compose nên không bị ảnh hưởng.
+      Test ở `tests/test_dong_goi.py`: `nginx.conf` có `location = /copilot/jobs`
+      (dò phần LỆNH, bỏ các dòng bắt đầu bằng `#`).
+      ⚠️ Nói thẳng: danh tính Copilot KHÔNG xác thực (5.0a) — ai tự dựng header
+      được thì giả làm người khác được. «Chỉ thấy việc của mình» là ranh giới lịch
+      sự trong mạng nội bộ, không phải lớp bảo mật.
+
+      → **Bước 7 — FE** (trang `#page-tham-dinh` của 6.3).
+      - **Kiểm trước:** header danh tính phải mang `username` của Tool Sizing (duy
+        nhất), KHÔNG phải tên hiển thị — chủ việc được so bằng chính chuỗi này. Mã
+        6.3 đang gửi gì thì sửa về `username` nếu cần. Vai: `admin1`/`admin2` →
+        `admin`, còn lại → `nguoi_lam_sizing` (6.3 đã làm).
+      - Khối «Hàng đợi»: bảng Job_ID · Tên file · Trạng thái · Action (thêm cột Người
+        nộp khi dòng có `chu`). Gọi `GET /copilot/hang-doi` khi mở trang và mỗi 5 s
+        khi còn dòng `cho`/`dang_chay` (dùng lại nhịp 5 s sẵn có của 6.3); dừng hỏi
+        khi rời trang.
+      - Nhãn: `cho` không giữ → «Chờ — còn N sizing phía trước»; `cho` giữ → «Đang
+        giữ»; `dang_chay` → «Đang chạy — <giai_doan> <x>/<y>»; `yeu_cau_huy` →
+        «Đang huỷ…» và ẩn nút Huỷ. Khối «Gần đây» từ `gan_day`: `da_huy` → «Đã huỷ
+        (bởi <huy_boi>)».
+      - Vẽ nút ĐÚNG theo `hanh_dong`:
+        · `huy` → [Huỷ] → `POST /copilot/hang-doi/{ma}/huy` → có `tiep_theo` thì
+          `confirm("Có muốn chạy sizing " + tiep_theo.ma + " tiếp theo không?")` →
+          Có: `POST /copilot/hang-doi/tiep-tuc`.
+        · `chay` → [Run] → `POST /copilot/hang-doi/{ma}/chay`; gặp **409** →
+          `confirm("Có muốn dừng chạy sizing " + viec_dang_chay.ma + " để chạy
+          sizing " + ma + " không?")` → Có: gọi lại với
+          `{"dung_viec_dang_chay": true}`.
+        · `xep_lai` → [Xếp lại vào hàng] → `POST /copilot/hang-doi/{ma}/chay`.
+      - Nộp — CẢ HAI lối vào (ô chọn file và nút sau khi xuất DOCX) đều qua
+        `nopThamDinh(blob, ten)`: trước `POST /copilot/review`, gọi `GET
+        /copilot/hang-doi`; `dang_chay.co_the_dung` → `confirm("Có muốn dừng chạy
+        sizing " + dang_chay.ma + " để chạy sizing mới không?")` → gửi
+        `uu_tien=true|false`. Máy chủ vẫn tự kiểm lại (việc có thể vừa xong giữa
+        lúc hỏi và lúc nộp).
+      - Dùng `confirm()` của trình duyệt. Đổi sang modal của Tool Sizing là việc sau.
+      - Bẫy của 6.3 áp luôn ở đây: `Finding.location` là CHUỖI, không phải object.
+
+      → **Dựng lại sau khi sửa:** `uv run --no-sync pytest` xanh HẾT → `docker compose
+      up -d --build copilot copilot-ui nginx` (`copilot` và `copilot-ui` dùng CHUNG
+      một image).
+
+      → **Nghiệm thu trên máy nội bộ, có model thật — tiêu chí đặt TRƯỚC khi code.**
+      Dùng hai tài khoản thường (`user1`, `user2`) và một admin.
+      - **Q1** `user1` chỉ thấy việc của mình; admin thấy cả hai kèm Người nộp; mở
+        `http://<máy>:9000/copilot/jobs` → 403.
+      - **Q2** Huỷ việc đang chạy giữa C3: «Đang huỷ…» → «Đã huỷ»; KHÔNG có báo cáo,
+        KHÔNG có dòng hồ sơ CSDL. **Ghi lại độ trễ huỷ** (giây, từ lúc bấm tới
+        `da_huy`).
+      - **Q3** Hai việc chờ, huỷ việc đang chạy → «Không» → đợi 2 phút, hai việc vẫn
+        «Đang giữ» và có Run; Run một việc → nó chạy, việc kia vẫn giữ. Lặp lại,
+        chọn «Có» → việc kế chạy.
+      - **Q4** Việc của mình đang chạy, nộp file mới: «Có» → việc cũ «Đã huỷ», việc
+        mới chạy; «Không» → việc cũ chạy tiếp, việc mới cuối hàng. Thử CẢ HAI lối
+        nộp (ô chọn file, nút sau xuất DOCX).
+      - **Q5** Việc của `user1` đang chạy; `user2` nộp → KHÔNG bị hỏi, việc của
+        `user1` không bị động tới. Gọi thẳng `POST /copilot/hang-doi/<mã việc của
+        user1>/huy` với danh tính `user2` → 403.
+      - **Q6** Việc của `user2` đang chạy, `user1` có việc đang giữ → [Xếp lại vào
+        hàng] → việc về đúng chỗ theo giờ nộp.
+      - **Q7** Có việc đang giữ → `docker compose restart copilot` → việc vẫn «Đang
+        giữ»; việc đang chạy lúc ấy → «Gián đoạn».
+      - **Q8** Nộp lại `mau-sizing-chuan.docx`, chạy tới cùng → vẫn **280 finding**
+        (critical 3 · major 38 · minor 210 · info 29) như lượt 6.3. Đệm lời gọi đang
+        bật nên lượt này phát lại đúng câu trả lời cũ; khác 280 nghĩa là phép kiểm ở
+        `PhatLai.goi` đã làm đổi kết quả. Nếu đệm đã bị xoá thì chạy một lượt NGAY
+        TRƯỚC khi sửa code để lấy số gốc.
+
+      → **Chưa làm — người dùng chốt 2026-09-23: chưa cần ngay.** Nút huỷ một việc
+      đang CHỜ (API `huy` làm được sẵn, chỉ FE chưa có nút); giữ câu trả lời model
+      của lượt bị huỷ để lần nộp lại dùng lại (hôm nay chỉ ghi khi việc xong). Cũng
+      chưa làm: xác thực thật cho `/copilot/`; kiểm chủ việc ở `DELETE /result/{ma}`.
 
 ### Phải hỏi người dùng, không tự quyết
 
 **ĐÃ CHỐT 2026-09-21** (ghi lại ở bản nội bộ ngày 2026-09-23):
 
 1. MySQL của backend: **thêm dịch vụ MySQL mới vào compose** (6.1/VC2). Tên dịch
-   vụ và volume chốt ở 6.1b.
+   vụ và volume: máy nội bộ dùng `sizing-db` / `sizing-db-data` (ghi chú 6.1b).
 2. `/copilot/`: **mở cho mọi người đã đăng nhập** — không chặn endpoint Admin ở
    nginx. Danh tính là danh tính demo, không xác thực (5.0a).
 3. `copilot-ui` (Streamlit): **giữ** — là đường của Admin cho 5.6/5.9, và là mẫu
@@ -2373,3 +2597,4 @@ dùng lại chính blob vừa xuất.
 | 2026-09-23 | **Hai bản 6.1/6.2 làm song song — hợp nhất (6.1b) TRƯỚC mọi việc mới** | Máy nội bộ làm lại 6.1–6.4 từ PLAN `b5806c0` mà không kéo mã 6.1 trên repo. Chọn bản giữ theo lý do kỹ thuật từng chỗ (bảng ở 6.1b), không theo máy nào: nội bộ thắng ở CA Maven, `settings.xml`, tên dịch vụ MySQL, FE; repo thắng ở nginx, ảnh nền, CA khi build Copilot, `.dockerignore`, test. Làm 6.6 trước khi hợp nhất là xây thêm trên hai nền khác nhau |
 | 2026-09-23 | **Hàng đợi: mỗi người chỉ thấy và chỉ dừng được việc của mình** | Người dùng chốt ba câu (chỉ thấy việc mình · việc bị dừng thì huỷ hẳn · Run khi đang chạy = dừng rồi chạy) và xác nhận phần suy ra: hàng đợi là của CHUNG một luồng, nên cho A dừng việc của B là để A huỷ hẳn 15 phút của B mà không nhìn thấy nó; «tạm giữ» là của từng người để một câu «Không» không làm đứng hàng cả đơn vị |
 | 2026-09-23 | **Huỷ việc đang chạy: xin dừng ở `PhatLai.goi`, không giết luồng** | Python không giết được luồng và lượt gọi HTTP đang bay phải chờ về. Chỉ kiểm ở callback tiến độ thì `ThreadPoolExecutor` vẫn chạy hết ~118 việc con đã nộp — huỷ mất gần cả lượt. `PhatLai.goi` là chỗ mọi lượt gọi model trên đường dịch vụ đều đi qua (C2 mặc định tắt); lỗi model bị bắt hẹp nên `DaHuy` không bị xuống cấp thành «không kiểm được» |
+| 2026-09-23 | **KHÔNG hợp nhất hai bản 6.1/6.2; máy nội bộ là nơi làm tiếp** | Người dùng chốt, thay cho dòng «hợp nhất (6.1b) TRƯỚC mọi việc mới» cùng ngày. Việc tiếp theo làm bằng Claude Code chạy model self-hosted trên máy nội bộ, nên mục 6.6 được viết TỰ ĐỦ: tên hàm, trường, luật L1–L8, bảy bước kèm test, tiêu chí Q1–Q8 — và nói rõ thay đổi ở `PhatLai.goi` đã được duyệt, để phiên đó không dừng lại ở quy tắc «không sửa pipeline» của GĐ 6. Luật hàng đợi tính ở MÁY CHỦ (`hanh_dong`), FE chỉ vẽ nút — luật nằm một chỗ và có test Python |
