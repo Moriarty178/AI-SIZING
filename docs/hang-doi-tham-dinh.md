@@ -1,8 +1,7 @@
-# Hàng đợi thẩm định — xem, huỷ, chạy (GĐ 6, mục 6.6 — số mục tạm)
+# Hàng đợi thẩm định — xem, huỷ, chạy (GĐ 6, mục 6.6)
 
 > Đọc cùng `CLAUDE.md` và `docs/tich-hop-fe-be.md`. Viết 2026-09-23.
-> Số mục **6.6 là tạm**: bản PLAN.md cập nhật trên máy nội bộ chưa push lên, nên
-> chưa biết GĐ 6 hiện đã tới số mấy. Ghép vào PLAN.md sau khi kéo được bản đó.
+> **Làm SAU 6.1b** (hợp nhất hai bản 6.1/6.2) — xem PLAN.md.
 
 ## 0. Yêu cầu
 
@@ -51,7 +50,7 @@ lớp hàng đợi (`src/cong_viec.py`), API và FE.
 - Việc bị dừng để nhường chỗ → `da_huy`, ra khỏi hàng.
 - Run khi đang có việc chạy → xác nhận → dừng việc đó (`da_huy`), chạy việc này.
 
-### 2.2 Suy ra từ ba câu trên — ⚠️ SỬA NẾU SAI
+### 2.2 Suy ra từ ba câu trên — người dùng XÁC NHẬN 2026-09-23
 
 Ba câu trả lời đúng từng câu, nhưng ghép lại có một chỗ chúng không tự nói: **hàng
 đợi của chung, mà mỗi người chỉ thấy phần của mình.** Nếu vẫn cho người A "dừng
@@ -186,8 +185,11 @@ người khác mà không phải Admin.
 
 ### 4.4 FE (trong phần "Thẩm định sizing" của 6.3)
 
-> ⚠️ Phần 6.3 trên máy nội bộ **chưa push**; mục này viết theo mô tả, chỗ móc cụ
-> thể chốt sau khi kéo được mã đó về.
+> ⚠️ Mã 6.3 hiện CHỈ có ở máy nội bộ; nó vào repo ở bước hợp nhất 6.1b. Chỗ móc
+> cụ thể chốt sau bước đó. Hai bẫy 6.3 đã gặp thật, áp luôn cho bảng hàng đợi:
+> `Finding.location` là CHUỖI, không phải object; vai Tool Sizing phải ánh xạ
+> `admin1`/`admin2` → `admin` (Copilot chỉ nhận `admin` / `nguoi_lam_sizing`) —
+> luật "Admin thấy tất" dựa đúng vào ánh xạ này.
 
 - Khối **"Hàng đợi"**: bảng Job_ID · tên file · trạng thái · action; Admin thêm cột
   Người nộp. Tự làm mới vài giây một lần khi còn việc `cho`/`dang_chay`.
@@ -243,6 +245,8 @@ Q1, Q3–Q7 kiểm được ngay trên máy lập trình viên (model trỏ cổ
 
 ## 6. Thứ tự làm
 
+0. **6.1b — hợp nhất hai bản 6.1/6.2.** Bước 3 và 4 dưới đây sửa vào
+   `nginx.conf` và mã FE 6.3 — phải biết bản nào thắng trước.
 1. `CongViec` + `BoChay` + `DaHuy` trong `PhatLai` — thuần Python, test offline với
    `ham_chay` giả chặn trên một `Event` (không cần model).
 2. API + test.
@@ -250,7 +254,7 @@ Q1, Q3–Q7 kiểm được ngay trên máy lập trình viên (model trỏ cổ
 4. FE — **sau khi kéo được mã 6.3 từ máy nội bộ.**
 5. Nghiệm thu tại chỗ Q1, Q3–Q7; máy nội bộ Q2 + Q8.
 
-## 7. Chưa làm — nêu ra để quyết sau
+## 7. Chưa làm — người dùng chốt 2026-09-23: chưa cần ngay
 
 - **Huỷ một việc đang CHỜ.** Yêu cầu chỉ cho dòng chờ nút Run. Người nộp nhầm file
   sẽ muốn gỡ nó khỏi hàng; API `huy` làm được sẵn, chỉ là FE chưa có nút.

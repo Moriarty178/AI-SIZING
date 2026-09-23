@@ -15,9 +15,9 @@
 | 3 | Tích hợp & tinh chỉnh | 3 / 3 | ✅ 3.1 API + 3.2 job queue XONG 09-09; 3.5 đóng gói Docker XONG 09-14, đã build + demo thật 09-15. 3.6–3.11 bỏ theo định hướng 2026-09-15 |
 | 4 | Vận hành & cải tiến | 1 / 1 | ✅ 4.1 vòng phản hồi XONG 09-14. 4.2–4.6 bỏ theo định hướng 2026-09-15 |
 | 5 | Vòng lặp thẩm định – sửa – tái thẩm định & phê duyệt | 8 / 16 | 🟡 5.0b · 5.0 · 5.0a · 5.1 · 5.2 · 5.3 · 5.4 · 5.6 + 5.9 bước 1 nghiệm thu đạt 09-18. **5.9 bước 2 (đề xuất sửa quy tắc) CODE XONG 09-21, chờ nghiệm thu** — `rules.yaml` nay gắn từ máy chủ. ⚠️ Rủi ro chưa sửa «phân hệ ma» (đo 09-21: không ổn định, lúc có lúc không) |
-| 6 | Tích hợp vào Tool Sizing (FE + BE) | 0 / 6 | 🔵 **ĐANG LÀM — nhánh `dev-integrate`**. 6.1 (backend tự build, thêm MySQL, bỏ địa chỉ tuyệt đối), 6.1a (dựng được ngoài mạng công ty) và 6.2 (`/copilot/` qua nginx) **code xong 09-21**. Tiếp: dựng thử tại chỗ rồi 6.3 tab «Thẩm định sizing» |
+| 6 | Tích hợp vào Tool Sizing (FE + BE) | 5 / 8 | 🔵 **ĐANG LÀM — nhánh `dev-integrate`**. 6.1 · 6.1a · 6.2 chạy thật cả ở máy lập trình viên lẫn máy nội bộ; 6.3 · 6.4 code xong **trên máy nội bộ** (nộp DOCX thật qua tab mới → 12 phút → 280 finding). ⚠️ **Hai bản 6.1/6.2 làm song song và KHÁC nhau** — mã của máy nội bộ chưa lên repo. Tiếp: **6.1b hợp nhất** → 6.5 nghiệm thu → 6.6 hàng đợi |
 
-**Đang tập trung (cập nhật 2026-09-21):** **GĐ 6 — tích hợp vào Tool Sizing**, trên nhánh `dev-integrate`. Người dùng chốt 2026-09-21: **tạm dừng nâng cấp Copilot** (5.9 bước 2 để lại ở trạng thái chờ nghiệm thu, 5.7/5.8/5.10–5.12 chưa làm) để ghép Copilot vào frontend + backend sẵn có thành một hệ thống hoàn chỉnh. Khảo sát và thiết kế: **`docs/tich-hop-fe-be.md`**.
+**Đang tập trung (cập nhật 2026-09-23):** **GĐ 6 — tích hợp vào Tool Sizing**, trên nhánh `dev-integrate`. Người dùng chốt 2026-09-21: **tạm dừng nâng cấp Copilot** (5.9 bước 2 để lại ở trạng thái chờ nghiệm thu, 5.7/5.8/5.10–5.12 chưa làm) để ghép Copilot vào frontend + backend sẵn có thành một hệ thống hoàn chỉnh. Khảo sát và thiết kế: **`docs/tich-hop-fe-be.md`**. **Việc kế tiếp là 6.1b**: máy nội bộ đã tự làm lại 6.1/6.2 từ bản PLAN `b5806c0` mà không kéo mã 6.1 trên repo về, nên có hai bản khác nhau; phải hợp nhất trước khi làm tiếp. Sau đó 6.5 (nghiệm thu) và 6.6 (hàng đợi — `docs/hang-doi-tham-dinh.md`).
 
 **Nền đã xong — GĐ 5** — vòng lặp người dùng sửa lỗi
 → tái thẩm định → Admin phê duyệt. Xong 5.0b (đo độ ổn định) và 5.0 (lưu trữ
@@ -1873,10 +1873,20 @@ Hai chỗ ghép, không hơn: (1) tab **"Thẩm định sizing"** để tải fi
 khi đăng nhập; (2) nút **"Thẩm định sizing"** ngay sau khi Tool Sizing xuất DOCX,
 dùng lại chính blob vừa xuất.
 
-- [~] 6.1 — **Chạy được FE + BE trước đã, CHƯA đụng Copilot.**
-      → 🟡 **CODE XONG 2026-09-21 — CHỜ DỰNG THẬT trên máy nội bộ.** Ba vật cản
-      đã gỡ; 24 test mới khoá lại ở `tests/test_dong_goi.py`. Máy xách tay không
-      có Docker nên không tự dựng được — số đo phải lấy từ máy nội bộ.
+- [x] 6.1 — **Chạy được FE + BE trước đã, CHƯA đụng Copilot.**
+      → ✅ **CHẠY THẬT Ở CẢ HAI MÁY — nhưng bằng HAI BẢN MÃ KHÁC NHAU** (xem 6.1b).
+      Bản trên repo: code 2026-09-21, dựng và chạy thật trên máy lập trình viên
+      2026-09-21 (chi tiết ở 6.1a). Bản máy nội bộ: làm lại từ đầu 2026-09-23, ghi
+      ở `PLAN_noi_bo.md` — tóm tắt ngay dưới.
+      → **Bản máy nội bộ (2026-09-23):** VC1 **đo rồi mới chọn** multi-stage —
+      Maven lạnh **54 s** / ấm **52 s** qua Nexus nội bộ, jar 78 MB; **CA MITM nạp vào
+      JVM cacerts lúc build** vì không có nó Maven hỏng **PKIX** (gặp thật);
+      `settings.xml` tuỳ chọn + gitignored, mỗi máy một mirror. VC2 dịch vụ
+      `sizing-db` (`mysql:8.4`, volume `sizing-db-data`, mật khẩu root
+      `SIZING_MYSQL_ROOT_PASSWORD`). Tạo dự án → **xuất DOCX HTTP 200 (2381 byte, mở
+      được)** — tức nửa sau của T2 đã đạt ở mức API; giao diện nghiệm thu trong 6.5.
+      → Bản gốc (2026-09-21): ba vật cản đã gỡ; 24 test mới khoá lại ở
+      `tests/test_dong_goi.py`.
       → **VC1** `backend1/Dockerfile` chỉ `COPY target/sizing-*.jar`, KHÔNG build.
       Máy sạch `docker compose build backend` là hỏng. `Jenkinsfile` cho cách
       thật: chạy Maven trong container `registry.kcntt.net/library/maven:3.9-…`
@@ -1909,7 +1919,7 @@ dùng lại chính blob vừa xuất.
       → **Tiêu chí:** mở cổng 9000 → đăng nhập → danh sách dự án → mở một dự án →
       xuất DOCX được. Không cần Copilot chạy.
 
-- [~] 6.1a — **Dựng được NGAY trên máy lập trình viên, không phải máy nội bộ.**
+- [x] 6.1a — **Dựng được NGAY trên máy lập trình viên, không phải máy nội bộ.**
       → 🟡 **CODE XONG 2026-09-21.** Người dùng hỏi vì sao phải gửi lệnh sang máy
       nội bộ rồi chờ. Đo lại thì lý do cũ («laptop không có Docker») SAI: Docker
       CLI 29.6.1 có sẵn, chỉ daemon chưa chạy. Cái thiếu là ĐƯỜNG MẠNG.
@@ -1980,10 +1990,44 @@ dùng lại chính blob vừa xuất.
       → Tiếng Việt qua đường này KHÔNG lỗi mã hoá (nghi ngờ ban đầu là do đường ống
       terminal trên Windows, không phải do dịch vụ).
       → **Còn lại của 6.1:** xuất DOCX (T2 phần sau) cần tạo một dự án thật trên giao
-      diện — làm cùng lúc với 6.4, vì 6.4 móc đúng vào hàm xuất ấy.
+      diện — làm cùng lúc với 6.4, vì 6.4 móc đúng vào hàm xuất ấy. *(Cập nhật
+      2026-09-23: máy nội bộ đã xuất DOCX được ở mức API — xem 6.1.)*
 
-- [~] 6.2 — **Đường mạng: thêm `location /copilot/` vào `nginx/nginx.conf`**
-      → 🟡 **CODE XONG 2026-09-21 — CHỜ DỰNG THẬT.**
+- [ ] 6.1b — **Hợp nhất hai bản 6.1/6.2 — LÀM TRƯỚC mọi việc khác của GĐ 6.**
+      → **Chuyện gì đã xảy ra:** máy nội bộ lấy PLAN ở `b5806c0` (lúc mới lập kế
+      hoạch GĐ 6), rồi TỰ làm 6.1–6.4 mà không kéo mã 6.1 đã có trên repo
+      (`82c3482` → `e51951c`). Đo được: `PLAN_noi_bo.md` gần `b5806c0` nhất
+      (+68/−30 dòng), và ghi «28/28 test đóng gói» trong khi repo đã 62. Mã của máy
+      nội bộ **chưa lên repo** — `git pull` ở đó bây giờ sẽ đụng độ ở mọi file dưới.
+      → **Chỗ lệch và bản nên giữ — theo lý do kỹ thuật, không theo máy nào:**
+
+      | Chỗ | Repo (`dev-integrate`) | Máy nội bộ | Giữ |
+      |---|---|---|---|
+      | CA MITM cho Maven | **không có** | nạp vào JVM cacerts | **Nội bộ** — bản repo gần như chắc chắn hỏng PKIX trên mạng công ty. Nhưng phải buộc vào proxy như `Dockerfile.copilot`, không thì máy ngoài mạng vấp lại đúng lỗi 6.1a |
+      | `settings.xml` | `backend1/.m2/settings.xml` **git đang theo dõi** (kèm mật khẩu Nexus) + nút `MAVEN_NEXUS_NOI_BO` | tuỳ chọn, gitignored | **Nội bộ**, nhưng ⚠️ bỏ theo dõi một file đang theo dõi thì `git pull` **XOÁ** nó ở máy khác — phải chép ra trước khi pull |
+      | Dịch vụ MySQL | `mysql` (`mysql:8`), volume `mysql-data`, `MYSQL_ROOT_PASSWORD` | `sizing-db` (`mysql:8.4`), volume `sizing-db-data`, `SIZING_MYSQL_ROOT_PASSWORD` | **Nội bộ** — đó là nơi chạy thật, đổi tên volume ở đó là mồ côi CSDL đang dùng; máy lập trình viên chỉ mất dữ liệu thử. Ghim `8.4` cũng rõ hơn (`mysql:8` hiện ra 8.4.11) |
+      | nginx `/copilot/` | biến + `resolver` | `proxy_pass` tên máy cố định | **Repo** — bản nội bộ đạt T6 chỉ khi tắt copilot SAU lúc nginx đã chạy; nginx khởi động lại lúc copilot tắt là **nginx không lên** (đã dựng lại được bằng `nginx -t` chạy trơ) |
+      | Ảnh nền | Docker Hub | chưa rõ | **Repo** — người dùng chốt 2026-09-21 |
+      | CA khi build Copilot | chỉ dùng khi có proxy | chưa rõ | **Repo** — lỗi thật 2026-09-21 |
+      | `.dockerignore` | mở FE + chặn `**/*.bak` | mở FE | **Repo** — chặn `.bak` để không phát mã nguồn cũ |
+      | FE 6.3 / 6.4 | chưa có | có | **Nội bộ** |
+      | `tests/test_dong_goi.py` | 62 test | 28 | **Repo** + thêm test cho các phần lấy từ nội bộ |
+
+      → **Cách làm:** máy nội bộ xuất MỘT tệp vá so với gốc chung rồi chép sang
+      (như đã làm với `PLAN_noi_bo.md`); máy lập trình viên hợp nhất theo bảng trên,
+      chạy đủ test, **dựng lại cả bốn dịch vụ tại chỗ**, rồi đẩy lên. Máy nội bộ sau
+      đó lấy bản đã hợp nhất — lấy thẳng, không tự gộp tay lần nữa.
+      → **Tiêu chí:** một nhánh duy nhất; máy lập trình viên và máy nội bộ đều
+      `docker compose up -d` được từ nó mà không sửa tay file nào ngoài `.env` /
+      `config/settings.yaml` / `settings.xml`; CSDL `sizing-db` của máy nội bộ còn
+      nguyên dự án đã tạo.
+
+- [x] 6.2 — **Đường mạng: thêm `location /copilot/` vào `nginx/nginx.conf`**
+      → ✅ **CHẠY THẬT Ở CẢ HAI MÁY.** Máy lập trình viên (bản repo, 2026-09-21):
+      copilot **chưa hề khởi động** → trang chủ 200, `/copilot/health` 502. Máy nội
+      bộ (2026-09-23): `/copilot/health` trả JSON; nộp DOCX thật qua nginx → 202 →
+      thấy giai đoạn C3 chạy; `stop copilot` **lúc nginx đang chạy** → Tool Sizing
+      vẫn 200. Hai phép thử KHÔNG tương đương — xem dòng nginx ở bảng 6.1b.
       → ⚠️ **Chỗ suýt làm hỏng tiêu chí T6:** `proxy_pass http://copilot:8000/`
       viết thẳng tên máy thì nginx phân giải DNS NGAY LÚC NẠP CẤU HÌNH và
       **không khởi động nổi** khi `copilot` đang tắt — tức tắt Copilot là sập
@@ -1999,7 +2043,7 @@ dùng lại chính blob vừa xuất.
       nên không có kết nối nào phải giữ 16 phút.
       → Tiêu chí: `curl http://<máy>:9000/copilot/health` trả JSON.
 
-- [ ] 6.3 — **Chỗ ghép 1: tab "Thẩm định sizing".** Nút ở `nav.nav-right` (luôn
+- [x] 6.3 — **Chỗ ghép 1: tab "Thẩm định sizing".** Nút ở `nav.nav-right` (luôn
       hiện sau đăng nhập) + tab thứ 6 trong `horizontal-tabs`, cả hai mở cùng một
       khối `#page-tham-dinh` đặt NGANG HÀNG `#project-list-page`.
       → ⚠️ **VC4:** `showSection` bị định nghĩa HAI LẦN (`script.js:11453` và
@@ -2009,26 +2053,73 @@ dùng lại chính blob vừa xuất.
       sẵn lên.
       → Gửi header danh tính (tên + vai) lấy từ phiên đăng nhập; **KHÔNG** gửi
       JWT sang Copilot — nó không kiểm được và cũng không nên biết.
+      → ✅ **CODE XONG + CHẠY THẬT 2026-09-23 trên máy nội bộ.** ⚠️ **Mã chỉ có ở máy
+      đó, chưa lên repo** (6.1b). `#page-tham-dinh` có ô chọn `.docx` → `POST
+      /copilot/review` → hỏi `/result/{ma}` mỗi 5 s → bảng lỗi gộp theo quy tắc (khớp
+      `gop_pham_vi` của C7) + liên kết báo cáo Markdown. `openProject` /
+      `showProjectList` / `startNewProject` đều ẩn trang này.
+      → **Chạy thật:** `mau-sizing-chuan.docx` qua nginx → 202 → **12 phút → 280
+      finding** (critical 3 · major 38 · minor 210 · info 29); `/findings` khớp
+      schema JS đọc.
+      → ⚠️ **Hai bẫy gặp thật:** (1) `Finding.location` là **CHUỖI** («Mục IV.1.2,
+      trang 8»), không phải object — bản JS đầu đọc `f.location.section` là sai.
+      (2) Vai phải ánh xạ `admin1`/`admin2` → `admin`; Copilot chỉ nhận `admin` /
+      `nguoi_lam_sizing`.
 
-- [ ] 6.4 — **Chỗ ghép 2: nút ngay sau khi xuất DOCX.**
+- [x] 6.4 — **Chỗ ghép 2: nút ngay sau khi xuất DOCX.**
       `exportSavedSnapshotToWord()` (`script.js:9104`) đã có sẵn **blob** `.docx`
       trong trình duyệt. Giữ blob ấy lại và nộp thẳng cho `/copilot/review` —
       không bắt người dùng tải về rồi chọn lại, không nhờ backend chuyển file.
+      → ✅ **CODE XONG 2026-09-23 trên máy nội bộ** (⚠️ chưa lên repo — 6.1b).
+      `_blobVuaXuat` / `_tenFileVuaXuat` giữ blob ngay khi nhận từ `/api/export`;
+      thông báo «Xuất file DOCX thành công» có thêm nút «Thẩm định sizing» gọi
+      `nopThamDinh(blob, ten)`. **Chưa kiểm trên trình duyệt thật** (cần mở dự án có
+      dữ liệu) — nằm trong 6.5.
 
 - [ ] 6.5 — **Nghiệm thu đầu-tới-cuối trên máy nội bộ, có model thật.** T1–T6 +
       Đ1, chi tiết ở `docs/tich-hop-fe-be.md` mục 5. Hai tiêu chí đáng lo nhất:
       **T3** cùng một file nộp qua FE và qua `copilot-ui` phải ra CÙNG số finding
       (khác là lớp ghép đang làm hỏng dữ liệu); **T6** tắt `copilot` thì Tool
       Sizing vẫn chạy bình thường — Copilot hỏng không được kéo sập web app.
+      → Chạy trên bản ĐÃ HỢP NHẤT (6.1b), không phải một trong hai bản hiện nay.
+      T6 phải thử CẢ HAI chiều: tắt copilot khi nginx đang chạy, VÀ khởi động lại
+      nginx lúc copilot đang tắt.
+
+- [ ] 6.6 — **Xem hàng đợi thẩm định: huỷ việc đang chạy, chạy việc đang chờ.**
+      → **Thiết kế đầy đủ, luật, tiêu chí Q1–Q8: `docs/hang-doi-tham-dinh.md`.**
+      Đọc file đó trước khi sửa `src/cong_viec.py`.
+      → **Yêu cầu (người dùng, 2026-09-23):** trong «Thẩm định sizing» có bảng hàng
+      đợi Job_ID · tên file · trạng thái · action, xếp theo giờ nộp. Huỷ việc đang
+      chạy → hỏi «chạy (job_id) tiếp theo?» (Không = giữ, mỗi dòng chờ có Run). Nộp
+      khi việc khác chưa xong → hỏi «dừng (job_id) để chạy sizing mới?».
+      → **Người dùng chốt 2026-09-23:** mỗi người chỉ thấy việc của mình (Admin thấy
+      tất); việc bị dừng để nhường chỗ **bị huỷ hẳn**; Run khi đang có việc chạy =
+      dừng việc đó, chạy việc này. **Và xác nhận luôn mục 2.2 của thiết kế:** chỉ
+      dừng được việc của chính mình; «tạm giữ» là của từng người, không làm đứng
+      hàng của cả đơn vị; Run khi việc NGƯỜI KHÁC đang chạy = xếp lại vào hàng;
+      dòng chờ hiện «còn N sizing phía trước».
+      → ⚠️ **Huỷ không tức thì được** — xin dừng ở điểm kiểm kế tiếp, trễ cỡ một lượt
+      gọi model đang bay (15–40 s trên model thật). Điểm kiểm đặt ở `PhatLai.goi`:
+      đây là thay đổi DUY NHẤT chạm xuống dưới lớp hàng đợi, không đổi kết quả của
+      việc chạy tới cùng (Q8 kiểm điều đó).
+      → **Hai lỗi có sẵn sửa luôn trong mục này:** `DELETE` việc đang chạy để lại
+      luồng chạy mồ côi 16 phút; khởi động lại container biến mọi việc chờ thành
+      «hãy nộp lại».
+      → **Chưa làm (người dùng chốt 2026-09-23: chưa cần ngay):** nút huỷ một việc
+      đang CHỜ; giữ câu trả lời model của lượt bị huỷ để lần nộp lại dùng lại.
+      → **Phụ thuộc 6.1b:** phần FE móc vào mã 6.3 (đang chỉ có ở máy nội bộ), và
+      chặn `/copilot/jobs` sửa vào `nginx.conf` — phải biết bản nào thắng trước.
 
 ### Phải hỏi người dùng, không tự quyết
 
-1. MySQL của backend: dùng CSDL sẵn có hay thêm service `mysql` vào compose? (6.1)
-2. Mở `/copilot/` cho mọi người đăng nhập, hay chặn các endpoint Admin
-   (`/quy-tac`, `/de-xuat`, `/ho-so/*/ghi-chu-admin`) ở nginx? Copilot không tự
-   bảo vệ được — danh tính là danh tính demo, không xác thực (5.0a).
-3. Giữ `copilot-ui` (Streamlit) sau khi FE làm được việc của nó? Khuyên **giữ**:
-   nó là đường của Admin cho 5.6/5.9 mà FE chưa làm.
+**ĐÃ CHỐT 2026-09-21** (ghi lại ở bản nội bộ ngày 2026-09-23):
+
+1. MySQL của backend: **thêm dịch vụ MySQL mới vào compose** (6.1/VC2). Tên dịch
+   vụ và volume chốt ở 6.1b.
+2. `/copilot/`: **mở cho mọi người đã đăng nhập** — không chặn endpoint Admin ở
+   nginx. Danh tính là danh tính demo, không xác thực (5.0a).
+3. `copilot-ui` (Streamlit): **giữ** — là đường của Admin cho 5.6/5.9, và là mẫu
+   tham khảo khi chuyển phần Admin sang frontend Tool Sizing sau này.
 
 ## Nhật ký quyết định
 
@@ -2276,3 +2367,9 @@ dùng lại chính blob vừa xuất.
 | 2026-09-21 | **Ảnh nền chuyển hẳn sang Docker Hub, bỏ `registry.kcntt.net`** | Người dùng chốt sau khi đo: máy lập trình viên không với tới được registry nội bộ nên build chết ngay ở `FROM`, trước cả khi chạm vào code. Ảnh nội bộ vốn là bản sao của ảnh công khai. Chọn một đường duy nhất thay vì thêm biến registry — đổi lại là nhận rủi ro agent Jenkins có ra Hub được không, mà đường lùi chỉ là hai dòng `FROM` |
 | 2026-09-21 | **Chạy Copilot thật với model hỏng, KHÔNG viết chế độ model giả** | Người dùng chốt. Rẻ hơn (không thêm dòng code nào vào đường sản phẩm) và không tạo ra một chế độ có thể bị bật nhầm ở nơi thật. Đổi lại phải trỏ `base_url` vào cổng đóng: để nguyên IP nội bộ thì mỗi lượt gọi treo 120s × 3 lần thử × 268 lượt |
 | 2026-09-21 | **`.dockerignore` ở gốc đang chặn chính FE mà nginx cần** | Tìm ra lúc chuẩn bị dựng tại chỗ. Danh sách mở thiếu `frontend`/`dashboard`/`nginx`, nên `build nginx` hỏng ở `COPY` trên MỌI máy — từ lúc file ấy ra đời (mục A1) tới nay, không ai gặp vì chưa ai dựng lại nginx. Bài học: danh sách mở an toàn hơn danh sách chặn, nhưng nó im lặng cho tới lần build sau, nên mỗi lần thêm thư mục phục vụ image thì phải mở kèm |
+| 2026-09-23 | **VC1 chọn multi-stage sau khi ĐO (máy nội bộ): Maven lạnh 54 s / ấm 52 s qua Nexus** | `docs/tich-hop-fe-be.md` đòi «đo rồi mới chọn». Build Maven trong container nhanh hơn tưởng nên «chạy Maven trước» không còn lợi thế tốc độ nào, chỉ còn thêm một bước người vận hành phải nhớ. CA MITM phải nạp vào JVM cacerts lúc build — không có nó Maven hỏng PKIX (gặp thật). Bản repo thiếu đúng phần CA này |
+| 2026-09-23 | **`settings.xml` của Maven: tuỳ chọn + gitignored (máy nội bộ chốt)** | Mỗi máy một mirror; Jenkins đã gắn file riêng `/home/sizing/settings.xml`. Commit vào repo là ép mọi máy dùng một mirror — và bản đang có trên repo còn chứa mật khẩu Nexus. Chưa áp vào repo: bỏ theo dõi một file đang theo dõi thì `git pull` xoá nó ở máy khác, nên làm trong 6.1b có bước chép ra trước |
+| 2026-09-23 | **`DEFAULT_USERS` phải đi qua `environment:` của `backend`** | Compose chỉ nạp `.env` vào container nào có `env_file` — `copilot` có, `backend` không. Để biến nằm trong `.env` thôi thì bảng `users` rỗng, đăng nhập không được, mà không có lỗi nào chỉ ra nguyên nhân (gặp thật ở máy nội bộ) |
+| 2026-09-23 | **Hai bản 6.1/6.2 làm song song — hợp nhất (6.1b) TRƯỚC mọi việc mới** | Máy nội bộ làm lại 6.1–6.4 từ PLAN `b5806c0` mà không kéo mã 6.1 trên repo. Chọn bản giữ theo lý do kỹ thuật từng chỗ (bảng ở 6.1b), không theo máy nào: nội bộ thắng ở CA Maven, `settings.xml`, tên dịch vụ MySQL, FE; repo thắng ở nginx, ảnh nền, CA khi build Copilot, `.dockerignore`, test. Làm 6.6 trước khi hợp nhất là xây thêm trên hai nền khác nhau |
+| 2026-09-23 | **Hàng đợi: mỗi người chỉ thấy và chỉ dừng được việc của mình** | Người dùng chốt ba câu (chỉ thấy việc mình · việc bị dừng thì huỷ hẳn · Run khi đang chạy = dừng rồi chạy) và xác nhận phần suy ra: hàng đợi là của CHUNG một luồng, nên cho A dừng việc của B là để A huỷ hẳn 15 phút của B mà không nhìn thấy nó; «tạm giữ» là của từng người để một câu «Không» không làm đứng hàng cả đơn vị |
+| 2026-09-23 | **Huỷ việc đang chạy: xin dừng ở `PhatLai.goi`, không giết luồng** | Python không giết được luồng và lượt gọi HTTP đang bay phải chờ về. Chỉ kiểm ở callback tiến độ thì `ThreadPoolExecutor` vẫn chạy hết ~118 việc con đã nộp — huỷ mất gần cả lượt. `PhatLai.goi` là chỗ mọi lượt gọi model trên đường dịch vụ đều đi qua (C2 mặc định tắt); lỗi model bị bắt hẹp nên `DaHuy` không bị xuống cấp thành «không kiểm được» |
